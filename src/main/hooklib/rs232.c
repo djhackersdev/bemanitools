@@ -4,6 +4,7 @@
 #include <devioctl.h>
 #include <ntddser.h>
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "hook/iohook.h"
@@ -11,6 +12,7 @@
 
 #include "util/hr.h"
 #include "util/log.h"
+#include "util/array.h"
 
 /* RS232 API hooks */
 
@@ -29,53 +31,128 @@ static BOOL STDCALL my_SetupComm(HANDLE fd, uint32_t in_q, uint32_t out_q);
 static BOOL STDCALL my_SetCommBreak(HANDLE fd);
 static BOOL STDCALL my_ClearCommBreak(HANDLE fd);
 
+static BOOL (STDCALL *real_ClearCommError)(
+        HANDLE fd,
+        uint32_t *errors,
+        COMSTAT *status);
+
+static BOOL (STDCALL *real_EscapeCommFunction)(HANDLE fd, uint32_t func);
+static BOOL (STDCALL *real_GetCommState)(HANDLE fd, DCB *dcb);
+static BOOL (STDCALL *real_PurgeComm)(HANDLE fd, uint32_t flags);
+static BOOL (STDCALL *real_SetCommMask)(HANDLE fd, uint32_t mask);
+static BOOL (STDCALL *real_SetCommState)(HANDLE fd, const DCB *dcb);
+static BOOL (STDCALL *real_SetCommTimeouts)(HANDLE fd, COMMTIMEOUTS *timeouts);
+static BOOL (STDCALL *real_SetupComm)(HANDLE fd, uint32_t in_q, uint32_t out_q);
+static BOOL (STDCALL *real_SetCommBreak)(HANDLE fd);
+static BOOL (STDCALL *real_ClearCommBreak)(HANDLE fd);
+
 static struct hook_symbol rs232_syms[] = {
     {
         .name   = "ClearCommError",
         .patch  = my_ClearCommError,
+        .link   = (void*) &real_ClearCommError,
     },
     {
         .name   = "EscapeCommFunction",
         .patch  = my_EscapeCommFunction,
+        .link   = (void*) &real_EscapeCommFunction,
     },
     {
         .name   = "GetCommState",
         .patch  = my_GetCommState,
+        .link   = (void*) &real_GetCommState,
     },
     {
         .name   = "PurgeComm",
         .patch  = my_PurgeComm,
+        .link   = (void*) &real_PurgeComm,
     },
     {
         .name   = "SetCommMask",
         .patch  = my_SetCommMask,
+        .link   = (void*) &real_SetCommMask,
     },
     {
         .name   = "SetCommState",
         .patch  = my_SetCommState,
+        .link   = (void*) &real_SetCommState,
     },
     {
         .name   = "SetCommTimeouts",
         .patch  = my_SetCommTimeouts,
+        .link   = (void*) &real_SetCommTimeouts,
     },
     {
         .name   = "SetupComm",
         .patch  = my_SetupComm,
+        .link   = (void*) &real_SetupComm,
     },
     {
         .name   = "SetCommBreak",
         .patch  = my_SetCommBreak,
+        .link   = (void*) &real_SetCommBreak,
     },
     {
         .name   = "ClearCommBreak",
         .patch  = my_ClearCommBreak,
+        .link   = (void*) &real_ClearCommBreak,
     },
 };
 
+static struct array hooked_port_fds;
+static bool rs232_limit_hooks;
+static CRITICAL_SECTION hooked_port_fds_cs;
+
+/**
+ * Some notes:
+ * 
+ * The point of this, is to allow rs232 hooks for only the descriptors that we hook.
+ * This is because the emulation here is incomplete.
+ * Although the IOCTL's do end up being passed to the real hardware, the game rejects some of the responses and hangs.
+ * By short circuiting out, and calling the real Comm functions instead, it works.
+ * And hence, card-reader passthrough works on IIDX25+/SDVX5+ finally without eamio-real
+ * 
+ */
+
 void rs232_hook_init(void)
 {
+    array_init(&hooked_port_fds);
+    InitializeCriticalSection(&hooked_port_fds_cs);
+
     hook_table_apply(NULL, "kernel32.dll", rs232_syms, lengthof(rs232_syms));
     log_info("IO Hook RS232 ioctl subsystem initialized");
+}
+
+void rs232_hook_limit_hooks(void)
+{
+    rs232_limit_hooks = true;
+}
+
+static BOOL rs232_check_fd(HANDLE fd) {
+    HANDLE check;
+
+    if (rs232_limit_hooks){
+        EnterCriticalSection(&hooked_port_fds_cs);
+        for (size_t i = 0 ; i < hooked_port_fds.nitems ; i++) {
+            check = *array_item(HANDLE, &hooked_port_fds, i);
+            if (check == fd) {
+                LeaveCriticalSection(&hooked_port_fds_cs);
+                return TRUE;
+            }
+        }
+
+        LeaveCriticalSection(&hooked_port_fds_cs);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+void rs232_hook_add_fd(HANDLE fd)
+{
+    EnterCriticalSection(&hooked_port_fds_cs);
+    *array_append(HANDLE, &hooked_port_fds) = fd;
+    LeaveCriticalSection(&hooked_port_fds_cs);
 }
 
 static BOOL STDCALL my_ClearCommError(
@@ -86,6 +163,10 @@ static BOOL STDCALL my_ClearCommError(
     struct irp irp;
     SERIAL_STATUS llstatus;
     HRESULT hr;
+
+    if (!rs232_check_fd(fd)) {
+        return real_ClearCommError(fd, errors, status);
+    }
 
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;
@@ -180,6 +261,10 @@ static BOOL STDCALL my_EscapeCommFunction(HANDLE fd, uint32_t cmd)
     uint32_t ioctl;
     HRESULT hr;
 
+    if (!rs232_check_fd(fd)) {
+        return real_EscapeCommFunction(fd, cmd);
+    }
+
     switch (cmd) {
     case CLRBREAK:  ioctl = IOCTL_SERIAL_SET_BREAK_OFF; break;
     case CLRDTR:    ioctl = IOCTL_SERIAL_CLR_DTR; break;
@@ -220,6 +305,10 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
     SERIAL_HANDFLOW handflow;
     SERIAL_LINE_CONTROL line_control;
     HRESULT hr;
+
+    if (!rs232_check_fd(fd)) {
+        return real_GetCommState(fd, dcb);
+    }
 
     /*
      * Validate params
@@ -393,6 +482,10 @@ static BOOL STDCALL my_PurgeComm(HANDLE fd, uint32_t flags)
     struct irp irp;
     HRESULT hr;
 
+    if (!rs232_check_fd(fd)) {
+        return real_PurgeComm(fd, flags);
+    }
+
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;
     irp.fd = fd;
@@ -414,6 +507,10 @@ static BOOL STDCALL my_SetCommMask(HANDLE fd, uint32_t mask)
 {
     struct irp irp;
     HRESULT hr;
+
+    if (!rs232_check_fd(fd)) {
+        return real_SetCommMask(fd, mask);
+    }
 
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;
@@ -439,6 +536,10 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
     SERIAL_HANDFLOW handflow;
     SERIAL_LINE_CONTROL line_control;
     HRESULT hr;
+
+    if (!rs232_check_fd(fd)) {
+        return real_SetCommState(fd, dcb);
+    }
 
     if (dcb == NULL) {
         log_warning("%s: DCB pointer is NULL", __func__);
@@ -616,6 +717,10 @@ static BOOL STDCALL my_SetCommTimeouts(HANDLE fd, COMMTIMEOUTS *src)
     SERIAL_TIMEOUTS dest;
     HRESULT hr;
 
+    if (!rs232_check_fd(fd)) {
+        return real_SetCommTimeouts(fd, src);
+    }
+
     dest.ReadIntervalTimeout            = src->ReadIntervalTimeout;
     dest.ReadTotalTimeoutMultiplier     = src->ReadTotalTimeoutMultiplier;
     dest.ReadTotalTimeoutConstant       = src->ReadTotalTimeoutConstant;
@@ -644,6 +749,10 @@ static BOOL STDCALL my_SetupComm(HANDLE fd, uint32_t in_q, uint32_t out_q)
     SERIAL_QUEUE_SIZE qs;
     HRESULT hr;
 
+    if (!rs232_check_fd(fd)) {
+        return real_SetupComm(fd, in_q, out_q);
+    }
+
     qs.InSize = in_q;
     qs.OutSize = out_q;
 
@@ -668,6 +777,10 @@ static BOOL STDCALL my_SetCommBreak(HANDLE fd)
     struct irp irp;
     HRESULT hr;
 
+    if (!rs232_check_fd(fd)) {
+        return real_SetCommBreak(fd);
+    }
+
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;
     irp.fd = fd;
@@ -686,6 +799,10 @@ static BOOL STDCALL my_ClearCommBreak(HANDLE fd)
 {
     struct irp irp;
     HRESULT hr;
+
+    if (!rs232_check_fd(fd)) {
+        return real_ClearCommBreak(fd);
+    }
 
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;

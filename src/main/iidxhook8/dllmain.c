@@ -126,6 +126,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
        API implementations with real IO devices */
     iohook_init(iidxhook_handlers, lengthof(iidxhook_handlers));
     rs232_hook_init();
+    rs232_hook_limit_hooks();
 
     if (!iidxhook8_config_io.disable_bio2_emu) {
         bio2_port_init(iidxhook8_config_io.disable_poll_limiter);

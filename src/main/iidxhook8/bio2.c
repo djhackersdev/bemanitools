@@ -13,6 +13,7 @@
 #include "acioemu/emu.h"
 
 #include "hook/iohook.h"
+#include "hooklib/rs232.h"
 
 #include "iidxhook8/bi2a.h"
 
@@ -31,6 +32,8 @@ void bio2_port_init(bool disable_poll_limiter)
     // they use the same framing
     ac_io_emu_init(&bio2_emu, L"COM4");
     bio2_emu_bi2a_init(&bio2_emu, disable_poll_limiter);
+
+    rs232_hook_add_fd(bio2_emu.fd);
 }
 
 void bio2_port_fini(void)

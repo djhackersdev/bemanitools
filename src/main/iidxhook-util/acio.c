@@ -14,6 +14,7 @@
 #include "acioemu/icca.h"
 
 #include "hook/iohook.h"
+#include "hooklib/rs232.h"
 
 #include "iidxhook-util/acio.h"
 
@@ -41,6 +42,8 @@ void iidxhook_util_acio_init(bool legacy_mode)
         ac_io_emu_icca_init(&iidxhook_util_acio_emu_icca[i],
             &iidxhook_util_acio_emu, i);
     }
+
+    rs232_hook_add_fd(iidxhook_util_acio_emu.fd);
 }
 
 void iidxhook_util_acio_fini(void)
