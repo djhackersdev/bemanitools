@@ -1,4 +1,6 @@
 # Release history
+## 5.27
+
 ## 5.26
 * iidxio-ezusb: Reduce sleep time to Sleep(1) to avoid framerate issues on some versions of iidx.
 * Bugfix: iidx d3d9 games, mainly the newer ones iidx 20-25, freezing. Happened on boot, during song selection or during the song.

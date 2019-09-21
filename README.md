@@ -1,5 +1,5 @@
 # Bemanitools 5
-Version: 5.26</br>
+Version: 5.27</br>
 [Release history](CHANGELOG.md)
 
 A collection of tools to run [various Bemani arcade games](#list-of-supported-games).
