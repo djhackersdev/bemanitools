@@ -2,8 +2,8 @@
 #define AC_IO_KFCA_H
 
 #define AC_IO_CMD_KFCA_POLL             0x0113
-#define AC_IO_CMD_KFCA_UNK_0120         0x0120
-#define AC_IO_CMD_KFCA_UNK_0128         0x0128
+#define AC_IO_CMD_KFCA_WATCHDOG         0x0120
+#define AC_IO_CMD_KFCA_AMP_CONTROL         0x0128
 
 #define AC_IO_KFCA_IN_GPIO_SYS_COIN     0x04
 /*  ... AC_IO_KFCA_IN_GPIO_SYS_COIN2    0x08 (maybe?) */
@@ -14,6 +14,7 @@
 #define AC_IO_KFCA_IN_GPIO_0_B          0x0002
 #define AC_IO_KFCA_IN_GPIO_0_A          0x0004
 #define AC_IO_KFCA_IN_GPIO_0_START      0x0008
+#define AC_IO_KFCA_IN_GPIO_0_RECORDER   0x0010
 #define AC_IO_KFCA_IN_GPIO_0_HEADPHONE  0x0020
 
 #define AC_IO_KFCA_IN_GPIO_1_FX_R       0x0008
@@ -39,6 +40,7 @@ struct ac_io_kfca_poll_in {
 struct ac_io_kfca_poll_out {
     uint32_t gpio;
     uint8_t pwm[18];
+    uint8_t unk[2];
 };
 
 #pragma pack(pop)

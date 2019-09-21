@@ -10,8 +10,8 @@
 
 enum sdvx_io_in_gpio_sys_bit {
     SDVX_IO_IN_GPIO_SYS_COIN = 2,
-    SDVX_IO_IN_GPIO_SYS_TEST = 4,
-    SDVX_IO_IN_GPIO_SYS_SERVICE = 5,
+    SDVX_IO_IN_GPIO_SYS_SERVICE = 4,
+    SDVX_IO_IN_GPIO_SYS_TEST = 5,
 };
 
 enum sdvx_io_in_gpio_0_bit {
@@ -19,7 +19,8 @@ enum sdvx_io_in_gpio_0_bit {
     SDVX_IO_IN_GPIO_0_B = 1,
     SDVX_IO_IN_GPIO_0_A = 2,
     SDVX_IO_IN_GPIO_0_START = 3,
-    SDVX_IO_IN_GPIO_0_HEADPHONE = 4,
+    SDVX_IO_IN_GPIO_0_RECORDER = 4,
+    SDVX_IO_IN_GPIO_0_HEADPHONE = 5,
 };
 
 enum sdvx_io_in_gpio_1_bit {

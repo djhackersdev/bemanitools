@@ -52,14 +52,14 @@ void kfca_dispatch_request(const struct ac_io_message *req)
 
         break;
 
-    case AC_IO_CMD_KFCA_UNK_0120:
-        log_misc("AC_IO_CMD_KFCA_UNK_%04X(%d)", cmd_code, req->addr);
+    case AC_IO_CMD_KFCA_WATCHDOG:
+        log_misc("AC_IO_CMD_KFCA_WATCHDOG(%d)", req->addr);
         kfca_report_status(req, 0x00);
 
         break;
 
-    case AC_IO_CMD_KFCA_UNK_0128:
-        log_misc("AC_IO_CMD_KFCA_UNK_0128(%d)", req->addr);
+    case AC_IO_CMD_KFCA_AMP_CONTROL:
+        log_misc("AC_IO_CMD_KFCA_AMP_CONTROL(%d)", req->addr);
         kfca_report_0128(req);
 
         break;
