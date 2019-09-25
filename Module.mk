@@ -130,6 +130,7 @@ include src/main/p4ioemu/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxio/Module.mk
+include src/main/sdvxio-kfca/Module.mk
 include src/main/security/Module.mk
 include src/main/unicorntail/Module.mk
 include src/main/util/Module.mk
@@ -402,6 +403,7 @@ $(zipdir)/sdvx.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/sdvxio.dll \
+		build/bin/indep-32/sdvxio-kfca.dll \
 		dist/sdvx/config.bat \
 		dist/sdvx/gamestart.bat \
 		| $(zipdir)/
