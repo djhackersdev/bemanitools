@@ -6,4 +6,5 @@ libs_aciotest     := \
 
 src_aciotest      := \
     icca.c \
+    kfca.c \
     main.c \
