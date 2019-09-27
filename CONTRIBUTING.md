@@ -19,8 +19,11 @@ project. Otherwise, you might waste your time on implementing something that won
 Please read our [development guidelines](doc/development.md) as they contain valuable information that your contribution
 meets our standards. 
 
-Once submitted, we will review your contribution and get back to you about any changes or when we merge them to our
-upstream repository. Your changes, once approved, will be included in the next release.
+Fork the upstream repository and start developing on your personal fork. Make sure to test your changes with games that
+are affected by them. Pay attention to the target platform/hardware you are testing on! This is valuable information
+that should be included in the PR.
+
+Once you completed your implementation, open a pull request on the upstream repository to propose your changes. We will review your contribution and get back to you about any changes or when we merge them to our upstream repository. Your changes, once approved, will be included in the next release.
 
 # Roadmap 
 No concrete roadmap or timeline exists. We want to continue adding support for new games as well as old games (some of
