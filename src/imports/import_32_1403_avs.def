@@ -1,0 +1,24 @@
+LIBRARY libavs-win32
+
+EXPORTS
+    avs_boot @298 NONAME
+    avs_net_ctrl @100 NONAME
+    avs_shutdown @299 NONAME
+    avs_thread_create @6 NONAME
+    avs_thread_destroy @8 NONAME
+    avs_thread_join @13 NONAME
+    log_body_info @363 NONAME
+    log_body_misc @364 NONAME
+    log_body_warning @362 NONAME
+    log_body_fatal @365 NONAME
+    property_create @129 NONAME
+    property_desc_to_buffer @131 NONAME
+    property_destroy @130 NONAME
+    property_insert_read @133 NONAME
+    property_node_remove @148 NONAME
+    property_psmap_import @163 NONAME
+    property_psmap_export @164 NONAME
+    property_read_query_memsize @161 NONAME
+    property_search @146 NONAME
+    std_getenv @208 NONAME
+    std_setenv @209 NONAME

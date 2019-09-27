@@ -1,0 +1,7 @@
+#ifndef EZUSB_IIDX_EMU_CONF_H
+#define EZUSB_IIDX_EMU_CONF_H
+
+// #define EZUSB_IIDX_EMU_NODE_FPGA_DUMP
+// #define EZUSB_IIDX_EMU_NODE_SRAM_DUMP
+
+#endif

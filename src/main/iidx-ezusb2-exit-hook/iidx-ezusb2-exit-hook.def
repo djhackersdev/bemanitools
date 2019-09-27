@@ -1,0 +1,4 @@
+LIBRARY iidx-ezusb2-exit-hook
+
+EXPORTS
+    DllMain@12 @1 NONAME

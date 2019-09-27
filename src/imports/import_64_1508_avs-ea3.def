@@ -1,0 +1,7 @@
+LIBRARY libavs-win64-ea3
+
+EXPORTS
+    ea3_boot @8 NONAME
+    ea3_get_boot_status @11 NONAME
+    ea3_get_pp_status @10 NONAME
+    ea3_shutdown @9 NONAME

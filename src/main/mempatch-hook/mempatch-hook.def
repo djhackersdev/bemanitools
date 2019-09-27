@@ -1,0 +1,4 @@
+LIBRARY mempatch-hook
+
+EXPORTS
+    DllMain@12 @1 NONAME

@@ -1,0 +1,6 @@
+build/
+.*.swp
+.idea
+.vscode
+.vs
+version

@@ -1,0 +1,5 @@
+LIBRARY avs2-ea3
+
+EXPORTS
+    ea3_boot @37 NONAME
+    ea3_shutdown @38 NONAME

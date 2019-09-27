@@ -1,0 +1,8 @@
+LIBRARY bstio
+
+EXPORTS
+    bst_io_fini
+    bst_io_get_input
+    bst_io_init
+    bst_io_read_input
+    bst_io_set_loggers

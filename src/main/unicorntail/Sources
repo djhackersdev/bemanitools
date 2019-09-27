@@ -1,0 +1,14 @@
+!include ../Common.inc
+
+TARGETNAME = unicorntail
+TARGETTYPE = DYNLINK
+
+SOURCES = \
+    unicorntail.c \
+
+TARGETLIBS =    $(SDK_LIB_PATH)/kernel32.lib \
+                ../libhook/$(OBJDIR)/$(O)/libhook.lib \
+                ../libp3io/$(OBJDIR)/$(O)/libp3io.lib \
+                ../libutil/$(OBJDIR)/$(O)/libutil.lib \
+                ../imports/$(O)/libavs.lib \
+

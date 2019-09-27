@@ -1,0 +1,9 @@
+LIBRARY ddrio
+
+EXPORTS
+    ddr_io_set_loggers
+    ddr_io_fini
+    ddr_io_init
+    ddr_io_read_pad
+    ddr_io_set_lights_extio
+    ddr_io_set_lights_p3io

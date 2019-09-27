@@ -1,0 +1,107 @@
+#define LOG_MODULE "aciodrv-icca"
+
+#include <string.h>
+
+#include "aciodrv/device.h"
+
+#include "util/log.h"
+
+static bool aciodrv_icca_queue_loop_start(uint8_t node_id)
+{
+    struct ac_io_message msg;
+
+    msg.addr = node_id;
+    msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_QUEUE_LOOP_START);
+    msg.cmd.nbytes = 1;
+    msg.cmd.status = 0;
+
+    if (!aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+        log_warning("Starting queue loop failed");
+        return false;
+    }
+
+    log_info("Started queue loop of node %d, status: %d",
+        node_id, msg.cmd.status);
+
+    return true;
+}
+
+bool aciodrv_icca_init(uint8_t node_id)
+{
+    if (!aciodrv_icca_queue_loop_start(node_id + 1)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool aciodrv_icca_set_state(uint8_t node_id, int slot_state,
+        struct ac_io_icca_state* state)
+{
+    struct ac_io_message msg;
+
+    msg.addr = node_id + 1;
+    msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_SET_SLOT_STATE);
+    msg.cmd.nbytes = 2;
+    /* buffer size of data we expect */
+    msg.cmd.raw[0] = sizeof(struct ac_io_icca_state);
+    msg.cmd.raw[1] = slot_state;
+
+    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
+            msg.cmd.raw[0])) {
+        log_warning("Setting state of node %d failed", node_id + 1);
+        return false;
+    }
+
+    if (state != NULL) {
+        memcpy(state, msg.cmd.raw, sizeof(struct ac_io_icca_state));
+    }
+
+    return true;
+}
+
+bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state)
+{
+    struct ac_io_message msg;
+
+    msg.addr = node_id + 1;
+    msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_POLL);
+    msg.cmd.nbytes = 1;
+    /* buffer size of data we expect */
+    msg.cmd.count = sizeof(struct ac_io_icca_state);
+
+    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
+            msg.cmd.count)) {
+        log_warning("Getting state of node %d failed", node_id + 1);
+        return false;
+    }
+
+    if (state != NULL) {
+        memcpy(state, msg.cmd.raw, sizeof(struct ac_io_icca_state));
+    }
+
+    return true;
+}
+
+bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state* state)
+{
+    struct ac_io_message msg;
+
+    msg.addr = node_id + 1;
+    msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_ENGAGE);
+    msg.cmd.nbytes = 1;
+    /* buffer size of data we expect */
+    msg.cmd.count = sizeof(struct ac_io_icca_state);
+
+    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
+            msg.cmd.count)) {
+        log_warning("Reading card of node %d failed", node_id + 1);
+        return false;
+    }
+
+    if (state != NULL) {
+        memcpy(state, msg.cmd.raw, sizeof(struct ac_io_icca_state));
+    }
+
+    return true;
+}

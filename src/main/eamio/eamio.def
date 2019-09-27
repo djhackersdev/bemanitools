@@ -1,0 +1,12 @@
+LIBRARY eamio
+
+EXPORTS
+    eam_io_fini
+    eam_io_init
+    eam_io_get_config_api
+    eam_io_get_keypad_state
+    eam_io_get_sensor_state
+    eam_io_read_card
+    eam_io_card_slot_cmd
+    eam_io_set_loggers
+    eam_io_poll

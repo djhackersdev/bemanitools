@@ -1,0 +1,5 @@
+LIBRARY libavs-win32-ea3
+
+EXPORTS
+    ea3_boot @8 NONAME
+    ea3_shutdown @9 NONAME
