@@ -63,6 +63,9 @@ You will find *.md files in various sub-packages that give you further instructi
 or FAQ. We advice you to read them as your questions and concerns might already be answered by them. If not, let us
 know if there is any information that you consider helpful or important to know and should be added.
 
+# Contributions
+Please refer to the [dedicated documentation](CONTRIBUTING.md).
+
 # Development
 ## API
 Please refer to the [API documentation](doc/api.md).
@@ -70,31 +73,6 @@ Please refer to the [API documentation](doc/api.md).
 ## Source Code
 The source code is included with this distribution package (src.zip). Please refer to the
 [development document](doc/development.md) for further details.
-
-## Bugs and TODOs
-We have our own issue tracker for this. If you want to contribute or have any bugs to report, please reach out to us on
-the various channels we are available on. Please help us by providing a detailed description of your concern including:
-* The version of bemanitools you are using
-* The games affected including version
-* Log output of bemanitools and the game
-* The APIs you have been using with bemanitools, e.g. iidxio-keyboard, eamio-keyboard.
-* The OS version you are running this on
-* Specs of your hardware including CPU, RAM, GPU
-* A detailed description of your issue. Describe the symptoms and the steps to trigger and reproduce them. Videos and
-screenshots might be helpful depending on the issue.
-
-## Contributions
-Patches are welcome! Let us know if you have any contributions, e.g. bugfixes, and send us a patch file. Please read
-our [development guidelines](doc/development.md) as they contain valuable information that your contribution meets our
-standards. 
-
-Once submitted, we will review your contribution and get back to you about any changes or when we merge them to our
-upstream repository. Your changes, once approved, will be included in the next release.
-
-## Roadmap 
-No concrete roadmap or timeline exists. We want to continue adding support for new games as well as old games (some of
-the old games supported by BT4 are not supported, yet). However, our time and workforce is limited. If you are
-interested in contributing, please check the [contribution section](#contributions).
 
 # License
 Source code license is the Unlicense; you are permitted to do with this as thou wilt. For details, please refer to the
