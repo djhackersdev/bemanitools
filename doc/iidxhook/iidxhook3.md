@@ -93,6 +93,22 @@ IIDX occasionally fails to boot with a "USBIO (FM-DL TIMEOUT)" error. If this
 happens, run the game again. 
 
 # Troubleshooting and FAQ
+## The game does not start at all
+If you try to run iidx16 or iidx17 and you see one of the following outputs when
+running the gamestart-XX.bat script:
+```
+Failed to launch hook EXE: 00000002
+```
+or
+```
+Injecting: iidxhook3.dll
+Debug active process
+Resuming remote process...
+```
+
+Make sure to check if you are using non htpac'd executables on iidx16 and iidx17
+and also non htpac'd libraries/dll files on iidx17. These won't work with BT
+and injecting the hook libraries.
 
 ## The game does not run "well" (frame drops, drifting offsync etc)
 This can be related to various issues:
