@@ -29,7 +29,16 @@
 
 ### Log output
 See attachment.
-<!--- Provide log output as attachment. Make sure to remove sensitive data like PCBIDs or device names if necessary -->
+<!--- Provide log output as attachment. Make sure to censor sensitive data like PCBIDs or device names if necessary -->
+
+### Configuration files
+See attachment.
+<!--- Provide any configuration files that you used, e.g. iidxhook-XX.conf. Make sure to censor sensitive data like
+PCBIDs -->
+
+### Command line arguments
+<!--- Provide how you run the game from the command line, e.g. which gamestart.bat you used and any additional arguments
+that you provided to it. Also provide the contents of the gamestart.bat you used if you altered it. -->
 
 ### APIs used
 * <!--- List all APIs you used as a bullet list, e.g. iidxio-keyboard, eamio-keyboard -->
