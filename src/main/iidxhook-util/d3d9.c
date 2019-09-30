@@ -47,6 +47,14 @@ static HWND STDCALL my_CreateWindowExA(
 
 static BOOL STDCALL my_GetClientRect(HWND hWnd, LPRECT lpRect);
 
+static BOOL my_SetRect(
+  LPRECT lprc,
+  int    xLeft,
+  int    yTop,
+  int    xRight,
+  int    yBottom
+);
+
 static HRESULT STDCALL my_CreateDevice(
         IDirect3D9 *self, UINT adapter, D3DDEVTYPE type, HWND hwnd,
         DWORD flags, D3DPRESENT_PARAMETERS *pp, IDirect3DDevice9 **pdev);
@@ -76,6 +84,9 @@ static HRESULT STDCALL my_BeginScene(IDirect3DDevice9* self);
 
 static HRESULT STDCALL my_EndScene(IDirect3DDevice9* self);
 
+static HRESULT STDCALL my_SetRenderTarget(IDirect3DDevice9* self, DWORD RenderTargetIndex, 
+        IDirect3DSurface9 *pRenderTarget);
+
 static void calc_win_size_with_framed(HWND hwnd, DWORD x, DWORD y,
         DWORD width, DWORD height, LPWINDOWPOS wp);
 
@@ -85,6 +96,21 @@ static HWND (STDCALL *real_CreateWindowExA)(
         HINSTANCE hInstance, LPVOID lpParam);
 
 static BOOL (STDCALL* real_GetClientRect)(HWND hWnd, LPRECT lpRect);
+
+static BOOL (STDCALL* real_SetRect)(
+  LPRECT lprc,
+  int    xLeft,
+  int    yTop,
+  int    xRight,
+  int    yBottom
+);
+
+// TODO cleanup, but this in a proper place
+static HRESULT (STDCALL* real_GetSurfaceLevel)(
+    IDirect3DTexture9* self,
+  UINT              Level,
+  IDirect3DSurface9 **ppSurfaceLevel
+);
 
 static IDirect3D9 * (STDCALL *real_Direct3DCreate9)(
         UINT sdk_ver);
@@ -177,6 +203,11 @@ static const struct hook_symbol d3d9_hook_user32_syms[] = {
         .patch  = my_GetClientRect,
         .link  = (void **) &real_GetClientRect
     },
+    {
+        .name   = "SetRect",
+        .patch  = my_SetRect,
+        .link  = (void **) &real_SetRect
+    },
 };
 
 /* ------------------------------------------------------------------------- */
@@ -242,6 +273,19 @@ static BOOL STDCALL my_GetClientRect(HWND hWnd, LPRECT lpRect)
     lpRect->bottom = d3d9_original_back_buffer_height;
 
     return TRUE;
+}
+
+static BOOL my_SetRect(
+  LPRECT lprc,
+  int    xLeft,
+  int    yTop,
+  int    xRight,
+  int    yBottom
+)
+{
+    log_misc("*** %d %d %d %d", xLeft, yTop, xRight, yBottom);
+
+    return real_SetRect(lprc, xLeft, yTop, xRight, yBottom);
 }
 
 static HRESULT STDCALL my_CreateDevice(
@@ -350,6 +394,8 @@ static HRESULT STDCALL my_CreateDevice(
     api_vtbl->EndScene = my_EndScene;
 
     real_SetRenderTarget = api_vtbl->SetRenderTarget;
+    //api_vtbl->SetRenderTarget = my_SetRenderTarget;
+
     real_GetRenderTarget = api_vtbl->GetRenderTarget;
     real_StretchRect = api_vtbl->StretchRect;
 
@@ -361,6 +407,14 @@ static HRESULT STDCALL my_CreateDevice(
         
         if (hr != D3D_OK) {
             log_warning("Creating intermediate render target for scaling back buffer failed: %ld", hr);
+            return hr;
+        }
+
+        // TODO cleanup better warning message
+        hr = api_vtbl->GetRenderTarget(*pdev, 0, &d3d9_original_back_buffer);
+
+        if (hr != D3D_OK) {
+            log_warning("Getting primary render target failed: %ld", hr);
             return hr;
         }
     }
@@ -414,6 +468,8 @@ static BOOL STDCALL my_EnumDisplayDevicesA(
     return ok;
 }
 
+static IDirect3DTexture9* final_image_texture;
+
 static HRESULT STDCALL my_CreateTexture(IDirect3DDevice9* self, UINT Width,
         UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool,
         IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle)
@@ -431,8 +487,25 @@ static HRESULT STDCALL my_CreateTexture(IDirect3DDevice9* self, UINT Width,
         Format = 21;
     }
 
+    if (Usage == D3DUSAGE_RENDERTARGET) {
+
+
+        HRESULT res = real_CreateTexture(self, Width, Height, Levels, Usage, Format, Pool,
+        ppTexture, pSharedHandle);
+
+        if (res == D3D_OK) {
+            // TODO logging trap final texture
+            log_warning("got final frame");
+            final_image_texture = *ppTexture;
+        } else {
+            // TODO warning
+            log_fatal("cannot create final frame texture");
+        }
+    } else {
+
     return real_CreateTexture(self, Width, Height, Levels, Usage, Format, Pool,
         ppTexture, pSharedHandle);
+    }
 }
 
 static HRESULT STDCALL my_SetRenderState(IDirect3DDevice9* self,
@@ -565,11 +638,63 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
                 data, stride);
 }
 
+
+
 static HRESULT STDCALL my_Present(IDirect3DDevice9* self,
         CONST RECT *pSourceRect, CONST RECT *pDestRect,
         HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion)
 {
     static uint64_t current_time = 0;
+
+    struct com_proxy *api_proxy;
+    IDirect3DSurface9* ppSurfaceLevel;
+    IDirect3DTexture9Vtbl *api_vtbl;
+log_warning("!!!!!!?????");
+    if (d3d9_scale_back_buffer_width > 0 && d3d9_scale_back_buffer_height > 0) {
+log_warning("00!!!!!!!!!!!!");
+    if (final_image_texture == NULL) {
+        log_fatal("null final image");
+    }
+
+    // TODO move out of render path
+    api_proxy = com_proxy_wrap(final_image_texture, sizeof(*final_image_texture->lpVtbl));
+    api_vtbl = api_proxy->vptr;
+log_warning("1!!!!!!!!!!!!");
+
+    HRESULT res = api_vtbl->GetSurfaceLevel(((IDirect3DTexture9*) api_proxy), 0, &ppSurfaceLevel);
+log_warning("2!!!!!!!!!!!!");
+if (res != D3D_OK) {
+                log_warning("Getting surface level failed: %ld", res);
+                return res;
+            }
+    
+    res = real_SetRenderTarget(self, 0, d3d9_original_back_buffer);
+log_warning("3!!!!!!!!!!!!");
+            if (res != D3D_OK) {
+                log_warning("Setting back back buffer render target failed: %ld", res);
+                return res;
+            }
+            
+            // TODO make this a struct with RECT and IDirect3DSurface9 -> two instances, game frame + framebuffer 
+            RECT rect;
+            rect.left = 0;
+            rect.top = 0;
+            rect.right = d3d9_original_back_buffer_width;
+            rect.bottom = d3d9_original_back_buffer_height;
+
+            log_misc(">>>>");
+
+            /* Must be called outside of begin-end scene block */
+            res = real_StretchRect(self, ppSurfaceLevel, &rect, d3d9_original_back_buffer, NULL, 
+                d3d9_scale_back_buffer_filter);
+
+            log_misc("<<<<<<");
+
+            if (res != D3D_OK) {
+                log_fatal("Setting back back buffer render target failed: %ld", res);
+                return res;
+            }
+    }
 
     HRESULT hr = real_Present(self, pSourceRect, pDestRect, hDestWindowOverride,
         pDirtyRegion);
@@ -596,60 +721,112 @@ static HRESULT STDCALL my_Present(IDirect3DDevice9* self,
     return hr;
 }
 
+static int bla = 0;
+
 static HRESULT STDCALL my_BeginScene(IDirect3DDevice9* self)
 {
     HRESULT res;
 
-    if (d3d9_scale_back_buffer_width > 0 && d3d9_scale_back_buffer_height > 0) {
-        res = real_GetRenderTarget(self, 0, &d3d9_original_back_buffer);
+return real_BeginScene(self);
 
-        if (res != D3D_OK) {
-            log_warning("Getting back buffer render target failed: %ld", res);
-            return res;
-        }
+    // if (bla < 1) {
+    //     bla = 0;
+    //     return D3D_OK;
+        
+    // } else {
+    //     bla++;
+    //     return real_BeginScene(self);
+        
+    // }
 
-        res = real_SetRenderTarget(self, 0, d3d9_scale_intermediate_render_target);
+    // if (d3d9_scale_back_buffer_width > 0 && d3d9_scale_back_buffer_height > 0) {
+    //     /* Starting iidx 20 (?), the game calls BeginScene twice in a row. Seems to be a mistake that can be handled
+    //        by d3d9 without breaking anything. However, this breaks our scaling code here. Check if we already backed up
+    //        the original back buffer (to be scaled) which tells us that BeginScene was already called, once.
+    //      */
 
-        if (res != D3D_OK) {
-            log_warning("Setting intermediate render target failed: %ld", res);
-            return res;
-        }
-    }
+    //     if (bla >= 1 && !d3d9_original_back_buffer) {
+    //         res = real_GetRenderTarget(self, 0, &d3d9_original_back_buffer);
 
-    return real_BeginScene(self);
+    //         bla = 0;
+
+    //         log_misc("begin scene d3d9_original_back_buffer %p", d3d9_original_back_buffer);
+
+    //         if (res != D3D_OK) {
+    //             log_warning("Getting back buffer render target failed: %ld", res);
+    //             return res;
+    //         }
+
+    //         res = real_SetRenderTarget(self, 0, d3d9_scale_intermediate_render_target);
+
+    //         if (res != D3D_OK) {
+    //             log_warning("Setting intermediate render target failed: %ld", res);
+    //             return res;
+    //         }
+    //     } else {
+    //         bla++;
+    //     }
+    // }
+
+    // return real_BeginScene(self);
 }
+
+static int bla2 = 0;
 
 static HRESULT STDCALL my_EndScene(IDirect3DDevice9* self)
 {
+    // if (bla2 < 1) {
+    //     bla2++;
+    //     return D3D_OK;
+        
+    // } else {
+    //     bla2 = 0;
+    //     return real_EndScene(self);
+    // }
+
+    // log_misc("end scene not skip");
+
     HRESULT res = real_EndScene(self);
 
-    if (res == D3D_OK) {
-        if (d3d9_scale_back_buffer_width > 0 && d3d9_scale_back_buffer_height > 0) {
-            res = real_SetRenderTarget(self, 0, d3d9_original_back_buffer);
+    // if (res == D3D_OK) {
+        // if (d3d9_scale_back_buffer_width > 0 && d3d9_scale_back_buffer_height > 0) {
+        //     res = real_SetRenderTarget(self, 0, d3d9_original_back_buffer);
 
-            if (res != D3D_OK) {
-                log_warning("Setting back back buffer render target failed: %ld", res);
-                return res;
-            }
+        //     if (res != D3D_OK) {
+        //         log_warning("Setting back back buffer render target failed: %ld", res);
+        //         return res;
+        //     }
             
-            RECT rect;
-            rect.left = 0;
-            rect.top = 0;
-            rect.right = d3d9_original_back_buffer_width;
-            rect.bottom = d3d9_original_back_buffer_height;
+        //     RECT rect;
+        //     rect.left = 0;
+        //     rect.top = 0;
+        //     rect.right = d3d9_original_back_buffer_width;
+        //     rect.bottom = d3d9_original_back_buffer_height;
 
-            /* Must be called outside of begin-end scene block */
-            res = real_StretchRect(self, d3d9_scale_intermediate_render_target, &rect, d3d9_original_back_buffer, NULL, 
-                d3d9_scale_back_buffer_filter);
+        //     log_misc(">>>>");
 
-            if (res != D3D_OK) {
-                log_warning("Stretching immediate render target to back buffer failed: %ld", res);
-                return res;
-            }
-        }
-    }
+        //     /* Must be called outside of begin-end scene block */
+        //     res = real_StretchRect(self, d3d9_scale_intermediate_render_target, &rect, d3d9_original_back_buffer, NULL, 
+        //         d3d9_scale_back_buffer_filter);
+
+        //     if (res != D3D_OK) {
+        //         log_warning("Stretching immediate render target to back buffer failed: %ld", res);
+        //         return res;
+        //     }
+
+        //     d3d9_original_back_buffer = NULL;
+        // }
+    // }
     
     return res;
+}
+
+static HRESULT STDCALL my_SetRenderTarget(IDirect3DDevice9* self, DWORD RenderTargetIndex, 
+        IDirect3DSurface9 *pRenderTarget)
+{
+    log_misc("set render target: %p", pRenderTarget);
+
+    return real_SetRenderTarget(self, RenderTargetIndex, pRenderTarget);
 }
 
 void d3d9_hook_init(void)
