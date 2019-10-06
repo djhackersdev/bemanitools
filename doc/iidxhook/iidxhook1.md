@@ -24,6 +24,12 @@ integrated sound chip, you have to replace RtEffect.dll with a stubbed/patched
 version (RtEffect_patched.dll). Otherwise, the game might crash instantly when
 trying to start it.
 
+In order to use the gfx feature patches, e.g. window mode, monitor check,
+frame rate locking, framebuffer up/-downscaling etc. you have to use the
+d3d8to9 wrapper library (get it from the bemanitools-supplement package).
+Bemanitools removed the old d3d8 hooking module to provide native d3d8 hooks
+due to compatibility and maintainability reasons.
+
 Run the appropriate gamestart-XX.bat file as admin, where XX is either 
 09, 10, 11, 12.
 
@@ -211,6 +217,3 @@ If one or multiple of these issues apply, use the built in scaling options by se
 to scale to. Usually, you want to set this to the monitor's native resolution, e.g.
 1920x1080 for full HD. You can play around with a few different filters using
 *gfx.scale_back_buffer_filter* which impacts image quality/blurriness on upscaling.
-If you want to use this with old d3d8 games (IIDX 9-13), you have to use the d3d8to9
-library from bemanitools-supplement because the d3d8 hook module cannot support this
-upscaling feature. Make sure to set *misc.use_d3d9_hooks=true*. 
