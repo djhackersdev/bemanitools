@@ -109,6 +109,16 @@
         } \
     } \
 
+#define check_fail() \
+    { \
+        check_failed(__FILE__, __LINE__, __func__, ""); \
+    } \
+
+#define check_fail_msg(expr) \
+    { \
+        check_failed(__FILE__, __LINE__, __func__, expr); \
+    } \
+
 void _Noreturn check_char_eq_failed(const char *file, int line,
         const char *func, char *expr, char result, char expected);
 void _Noreturn check_char_neq_failed(const char *file, int line,
@@ -132,5 +142,7 @@ void _Noreturn check_non_null_failed(const char *file, int line, const char *fun
         char *expr);
 void _Noreturn check_null_failed(const char *file, int line, const char *func,
         char *expr);
+void _Noreturn check_failed(const char *file, int line,
+        const char *func, char *expr);
 
 #endif

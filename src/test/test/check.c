@@ -140,3 +140,9 @@ void _Noreturn check_null_failed(const char *file, int line, const char *func,
             "\tExpected null value\n\n",
             expr);
 }
+
+void _Noreturn check_failed(const char *file, int line,
+        const char *func, char *expr)
+{
+    fail(file, line, func, "\t%s\n", expr);        
+}
