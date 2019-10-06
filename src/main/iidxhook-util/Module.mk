@@ -11,7 +11,6 @@ src_iidxhook-util     := \
     config-gfx.c \
     config-misc.c \
     config-sec.c \
-    d3d8.c \
     d3d9.c \
     eamuse.c \
     effector.c \
