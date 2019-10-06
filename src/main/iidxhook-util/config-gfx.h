@@ -17,7 +17,7 @@ struct iidxhook_config_gfx {
     int32_t window_height;
     uint16_t scale_back_buffer_width;
     uint16_t scale_back_buffer_height;
-    enum d3d9_back_buffer_scale_filter scale_back_buffer_filter;
+    enum iidxhook_util_d3d9_back_buffer_scale_filter scale_back_buffer_filter;
 };
 
 void iidxhook_config_gfx_init(struct cconfig* config);

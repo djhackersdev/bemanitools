@@ -220,13 +220,13 @@ void iidxhook_config_gfx_get(struct iidxhook_config_gfx* config_gfx,
     }
 
     if (!strcmp(tmp, "none")) {
-        config_gfx->scale_back_buffer_filter = D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
+        config_gfx->scale_back_buffer_filter = IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
     } else if (!strcmp(tmp, "linear")) {
-        config_gfx->scale_back_buffer_filter = D3D9_BACK_BUFFER_SCALE_FILTER_LINEAR;
+        config_gfx->scale_back_buffer_filter = IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_LINEAR;
     } else if (!strcmp(tmp, "point")) {
-        config_gfx->scale_back_buffer_filter = D3D9_BACK_BUFFER_SCALE_FILTER_POINT;
+        config_gfx->scale_back_buffer_filter = IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_POINT;
     } else {
-        config_gfx->scale_back_buffer_filter = D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
+        config_gfx->scale_back_buffer_filter = IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
 
         log_warning("Invalid value for key '%s' specified, fallback "
             "to default '%s'", IIDXHOOK_CONFIG_GFX_SCALE_BACK_BUFFER_FILTER_KEY,
