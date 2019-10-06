@@ -465,6 +465,7 @@ $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/iidxhook-util-config-gfx-test.exe \
 		build/bin/indep-32/iidxhook-util-config-misc-test.exe \
 		build/bin/indep-32/iidxhook-util-config-sec-test.exe \
+		build/bin/indep-32/inject.exe \
 		build/bin/indep-32/security-id-test.exe \
 		build/bin/indep-32/security-mcode-test.exe \
 		build/bin/indep-32/security-rp-test.exe \
