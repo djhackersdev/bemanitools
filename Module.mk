@@ -137,6 +137,7 @@ include src/main/util/Module.mk
 include src/main/vefxio/Module.mk
 
 include src/test/cconfig/Module.mk
+include src/test/d3d9hook/Module.mk
 include src/test/iidxhook-util/Module.mk
 include src/test/security/Module.mk
 include src/test/test/Module.mk
@@ -458,6 +459,8 @@ $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/cconfig-test.exe \
 		build/bin/indep-32/cconfig-util-test.exe \
 		build/bin/indep-32/cconfig-cmd-test.exe \
+		build/bin/indep-32/d3d9hook.dll \
+		build/bin/indep-32/d3d9hook-test.exe \
 		build/bin/indep-32/iidxhook-util-config-eamuse-test.exe \
 		build/bin/indep-32/iidxhook-util-config-gfx-test.exe \
 		build/bin/indep-32/iidxhook-util-config-misc-test.exe \

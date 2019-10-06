@@ -1,0 +1,5 @@
+LIBRARY d3d9hook
+
+EXPORTS
+    DllMain@12 @1 NONAME
+    
