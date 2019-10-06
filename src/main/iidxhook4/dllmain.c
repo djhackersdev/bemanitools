@@ -17,6 +17,8 @@
 
 #include "ezusb2-iidx-emu/msg.h"
 
+#include "hook/d3d9.h"
+
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
@@ -49,6 +51,44 @@ static const irp_handler_t iidxhook_handlers[] = {
     settings_hook_dispatch_irp,
 };
 
+static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
+    iidxhook_util_d3d9_irp_handler,
+};
+
+static void iidxhook4_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_gfx)
+{
+    struct iidxhook_util_d3d9_config d3d9_config;
+
+    iidxhook_util_d3d9_init_config(&d3d9_config);
+
+    d3d9_config.windowed = config_gfx->windowed;
+    d3d9_config.framed = config_gfx->framed;
+    d3d9_config.override_window_width = config_gfx->window_width;
+    d3d9_config.override_window_height = config_gfx->window_height;
+    d3d9_config.framerate_limit = config_gfx->frame_rate_limit;
+    d3d9_config.pci_vid = config_gfx->pci_id_vid;
+    d3d9_config.pci_pid = config_gfx->pci_id_pid;
+    d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
+    d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
+    d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
+
+    if (config_gfx->monitor_check == 0) {
+        log_info("Auto monitor check enabled");
+
+        d3d9_config.iidx09_to_19_monitor_check_cb = iidxhook_util_chart_patch_set_refresh_rate;
+        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+    } else if (config_gfx->monitor_check > 0) {
+        log_info("Manual monitor check, resulting refresh rate: %f", config_gfx->monitor_check);
+
+        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+        iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
+    }
+
+    iidxhook_util_d3d9_configure(&d3d9_config);
+
+    hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
+}
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     struct cconfig* config;
@@ -77,36 +117,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info(IIDXHOOK4_INFO_HEADER);
     log_info("Initializing iidxhook...");
 
-    if (config_gfx.windowed) {
-        d3d9_set_windowed(config_gfx.framed, config_gfx.window_width,
-            config_gfx.window_height);
-    }
-
-    if (config_gfx.pci_id_pid != 0 && config_gfx.pci_id_vid != 0) {
-        d3d9_set_pci_id(config_gfx.pci_id_pid, config_gfx.pci_id_vid);
-    }
-
-    if (config_gfx.frame_rate_limit > 0) {
-        d3d9_set_frame_rate_limit(config_gfx.frame_rate_limit);
-    }
-
-    if (config_gfx.monitor_check == 0) {
-        log_info("Auto monitor check enabled");
-        d3d9_enable_monitor_check(iidxhook_util_chart_patch_set_refresh_rate);
-        iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
-    } else if (config_gfx.monitor_check > 0) {
-        log_info("Manual monitor check, resulting refresh rate: %f", 
-            config_gfx.monitor_check);
-        iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
-        iidxhook_util_chart_patch_set_refresh_rate(config_gfx.monitor_check);
-    }
-
-    if (config_gfx.scale_back_buffer_width > 0 && config_gfx.scale_back_buffer_height > 0) {
-        d3d9_scale_back_buffer(config_gfx.scale_back_buffer_width, config_gfx.scale_back_buffer_height,
-            config_gfx.scale_back_buffer_filter);
-    }
+    iidxhook4_setup_d3d9_hooks(&config_gfx);
 
     /* Start up IIDXIO.DLL */
     log_info("Starting IIDX IO backend");
@@ -183,7 +194,6 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     acp_hook_init();
     adapter_hook_init();
-    d3d9_hook_init();
     settings_hook_init();
 
 end:
