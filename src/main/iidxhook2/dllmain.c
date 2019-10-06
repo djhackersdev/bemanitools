@@ -17,6 +17,7 @@
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx-emu/nodes.h"
 
+#include "hook/d3d9.h"
 #include "hook/iohook.h"
 #include "hook/table.h"
 
@@ -32,7 +33,7 @@
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/config-sec.h"
-#include "iidxhook-util/d3d8.h"
+#include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/eamuse.h"
 #include "iidxhook-util/effector.h"
 #include "iidxhook-util/settings.h"
@@ -55,8 +56,13 @@ static const irp_handler_t iidxhook_handlers[] = {
     settings_hook_dispatch_irp,
 };
 
+static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
+    iidxhook_util_d3d9_irp_handler,
+};
+
 static HANDLE STDCALL my_OpenProcess(DWORD, BOOL, DWORD);
 static HANDLE (STDCALL *real_OpenProcess)(DWORD, BOOL, DWORD);
+
 static bool iidxhook_init_check;
 
 static const struct hook_symbol init_hook_syms[] = {
@@ -66,6 +72,43 @@ static const struct hook_symbol init_hook_syms[] = {
         .link       = (void **) &real_OpenProcess
     },
 };
+
+static void iidxhook2_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_gfx,
+        const struct iidxhook_config_iidxhook2* config_iidxhook2)
+{
+    struct iidxhook_util_d3d9_config d3d9_config;
+
+    log_warning("d3d8 hook module deprecated, using d3d9 hook modules requiring d3d8to9 to work!");
+
+    iidxhook_util_d3d9_init_config(&d3d9_config);
+
+    d3d9_config.windowed = config_gfx->windowed;
+    d3d9_config.framed = config_gfx->framed;
+    d3d9_config.override_window_width = config_gfx->window_width;
+    d3d9_config.override_window_height = config_gfx->window_height;
+    d3d9_config.framerate_limit = config_gfx->frame_rate_limit;
+    d3d9_config.iidx13_fix_song_select_bg = config_iidxhook2->distorted_ms_bg_fix;
+    d3d9_config.iidx11_to_17_fix_uvs_bg_videos = config_gfx->bgvideo_uv_fix;
+    d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
+    d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
+    d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
+
+    if (config_gfx->monitor_check == 0) {
+        log_info("Auto monitor check enabled");
+
+        d3d9_config.iidx09_to_19_monitor_check_cb = iidxhook_util_chart_patch_set_refresh_rate;
+        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
+    } else if (config_gfx->monitor_check > 0) {
+        log_info("Manual monitor check, resulting refresh rate: %f", config_gfx->monitor_check);
+
+        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
+        iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
+    }
+
+    iidxhook_util_d3d9_configure(&d3d9_config);
+
+    hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
+}
 
 /**
  * This seems to be a good entry point to intercept
@@ -138,87 +181,7 @@ HANDLE STDCALL my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
 
     /* Direct3D and USER32 hooks */
 
-    /* There are a few features that cannot be implemented using d3d8, 
-       e.g. GPU based upscaling with filtering. When using d3d8to9, allow
-       using the d3d9 hooks instead because the game is running on d3d9. */
-    if (config_iidxhook2.use_d3d9_hooks) {
-        log_warning("d3d9 hook modules enabled. Requires d3d8to9!");
-
-        d3d9_hook_init();
-
-        if (config_gfx.bgvideo_uv_fix) {
-            /* Red, HS, DistorteD, only */
-            d3d9_iidx_fix_stretched_bg_videos();
-        }
-
-        if (config_gfx.windowed) {
-            d3d9_set_windowed(config_gfx.framed, config_gfx.window_width,
-                config_gfx.window_height);
-        }
-
-        if (config_gfx.frame_rate_limit > 0) {
-            d3d9_set_frame_rate_limit(config_gfx.frame_rate_limit);
-        }
-
-        if (config_gfx.monitor_check == 0) {
-            log_info("Auto monitor check enabled");
-            d3d9_enable_monitor_check(iidxhook_util_chart_patch_set_refresh_rate);
-            iidxhook_util_chart_patch_init(
-                IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-        } else if (config_gfx.monitor_check > 0) {
-            log_info("Manual monitor check, resulting refresh rate: %f", 
-                config_gfx.monitor_check);
-            iidxhook_util_chart_patch_init(
-                IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-            iidxhook_util_chart_patch_set_refresh_rate(config_gfx.monitor_check);
-        }
-
-        /* Fix DistorteD 3D background on music select screen */
-
-        if (config_iidxhook2.distorted_ms_bg_fix) {
-            d3d9_iidx_fix_13_song_select_bg();
-        }
-
-        if (config_gfx.scale_back_buffer_width > 0 && config_gfx.scale_back_buffer_height > 0) {
-            d3d9_scale_back_buffer(config_gfx.scale_back_buffer_width, config_gfx.scale_back_buffer_height,
-                config_gfx.scale_back_buffer_filter);
-        }
-    } else {
-        d3d8_hook_init();
-
-        if (config_gfx.bgvideo_uv_fix) {
-            /* Red, HS, DistorteD, only */
-            d3d8_iidx_fix_stretched_bg_videos();
-        }
-
-        if (config_gfx.windowed) {
-            d3d8_set_windowed(config_gfx.framed, config_gfx.window_width,
-                config_gfx.window_height);
-        }
-
-        if (config_gfx.frame_rate_limit > 0) {
-            d3d8_set_frame_rate_limit(config_gfx.frame_rate_limit);
-        }
-
-        if (config_gfx.monitor_check == 0) {
-            log_info("Auto monitor check enabled");
-            d3d8_enable_monitor_check(iidxhook_util_chart_patch_set_refresh_rate);
-            iidxhook_util_chart_patch_init(
-                IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-        } else if (config_gfx.monitor_check > 0) {
-            log_info("Manual monitor check, resulting refresh rate: %f", 
-                config_gfx.monitor_check);
-            iidxhook_util_chart_patch_init(
-                IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-            iidxhook_util_chart_patch_set_refresh_rate(config_gfx.monitor_check);
-        }
-
-        /* Fix DistorteD 3D background on music select screen */
-
-        if (config_iidxhook2.distorted_ms_bg_fix) {
-            d3d8_iidx_fix_13_song_select_bg();
-        }
-    }
+    iidxhook2_setup_d3d9_hooks(&config_gfx, &config_iidxhook2);
 
     /* Disable operator menu clock setting system clock time */
 
