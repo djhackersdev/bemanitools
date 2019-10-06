@@ -18,7 +18,6 @@ static void test_config_iidxhook2_defaults()
     cconfig_finit(config);
 
     check_bool_false(config_iidxhook2.distorted_ms_bg_fix);
-    check_bool_false(config_iidxhook2.use_d3d9_hooks);
 }
 
 static void test_config_iidxhook2()
@@ -31,14 +30,12 @@ static void test_config_iidxhook2()
     iidxhook_config_iidxhook2_init(config);
 
     cconfig_set2(config, "misc.distorted_ms_bg_fix", "true");
-    cconfig_set2(config, "misc.use_d3d9_hooks", "true");
 
     iidxhook_config_iidxhook2_get(&config_iidxhook2, config);
 
     cconfig_finit(config);
 
     check_bool_true(config_iidxhook2.distorted_ms_bg_fix);
-    check_bool_true(config_iidxhook2.use_d3d9_hooks);
 }
 
 static void test_config_iidxhook2_invalid_values()
@@ -51,14 +48,12 @@ static void test_config_iidxhook2_invalid_values()
     iidxhook_config_iidxhook2_init(config);
 
     cconfig_set2(config, "misc.distorted_ms_bg_fix", "123");
-    cconfig_set2(config, "misc.use_d3d9_hooks", "sss");
 
     iidxhook_config_iidxhook2_get(&config_iidxhook2, config);
 
     cconfig_finit(config);
 
     check_bool_false(config_iidxhook2.distorted_ms_bg_fix);
-    check_bool_false(config_iidxhook2.use_d3d9_hooks);
 }
 
 TEST_MODULE_BEGIN("iidxhook-config-iidxhook2")

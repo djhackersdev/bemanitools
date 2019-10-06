@@ -5,7 +5,6 @@
 
 struct iidxhook_config_iidxhook2 {
     bool distorted_ms_bg_fix;
-    bool use_d3d9_hooks;
 };
 
 void iidxhook_config_iidxhook2_init(struct cconfig* config);
