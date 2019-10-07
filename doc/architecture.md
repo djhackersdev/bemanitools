@@ -75,7 +75,10 @@ and created a solid foundation other games can build on.
 
 Because of that, we have 8 iidxhook implementations supporting sometimes different software features/fixes and
 hardware. The following sub-sub-sections list the most relevant aspects and modules to point out common and different
-higher level features.
+higher level features. 
+
+Essentially, the main module file of each iidxhook implementation just glues the APIs of the modules it requires
+together. An additional configuration layer allows users to tweak some of the features.
 
 #### iidxhook1 (9-12)
 * Ezusb C02 I/O emulation
