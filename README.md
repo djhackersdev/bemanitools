@@ -67,6 +67,10 @@ know if there is any information that you consider helpful or important to know 
 Please refer to the [dedicated documentation](CONTRIBUTING.md).
 
 # Development
+## Architecture
+A dedicate [architecture document](doc/architecture.md) outlines the architecture of Bemanitools and points out the most
+important aspects you should know before you get started with development.
+
 ## API
 Please refer to the [API documentation](doc/api.md).
 
