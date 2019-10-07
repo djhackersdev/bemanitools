@@ -1,5 +1,12 @@
 # Release history
 ## 5.27
+* Various documentation updates regarding development and how to contribute
+* KFCA emulation accuracy fixes
+* Fix passthrough of serial calls when using real hardware (e.g. card reader passthrough IIDX25+/SDVX5+)
+* Add sdvxio-kfca driver to talk to real SDVX hardware
+* Refactor d3d9 hook module to improve maintainability. Also fixes upscaling not working on IIDX20+.
+* Remove d3d8 hook module to improve maintainability. Make old d3d8 based games, e.g. iidxhook1/2, use d3d9 instead.
+Requires usage of d3d8to9 wrapper library to use gfx patching features.
 
 ## 5.26
 * iidxio-ezusb: Reduce sleep time to Sleep(1) to avoid framerate issues on some versions of iidx.
