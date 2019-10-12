@@ -140,8 +140,8 @@ static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_
 static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
-    struct bio2_bi2a_state *body;
-    struct bio2_bi2a_state_in *req_bi2a;
+    struct bi2a_iidx_state_out *body;
+    struct bi2a_iidx_state_in *req_bi2a;
 
     uint8_t input_sys = 0;
     uint8_t input_panel = 0;
@@ -156,8 +156,8 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
     resp.addr = req->addr | AC_IO_RESPONSE_FLAG;
     resp.cmd.code = req->cmd.code;
     resp.cmd.seq_no = req->cmd.seq_no;
-    resp.cmd.nbytes = sizeof(struct bio2_bi2a_state);
-    req_bi2a = (struct bio2_bi2a_state_in*)req->cmd.raw;
+    resp.cmd.nbytes = sizeof(struct bi2a_iidx_state_out);
+    req_bi2a = (struct bi2a_iidx_state_in*)req->cmd.raw;
 
     packed_lights.panel_lights = 0;
     for (size_t i = 0; i < 4; ++i) {
@@ -199,7 +199,7 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
     }
 
     body = (struct bio2_bi2a_state *)&resp.cmd.raw;
-    memset(body, 0, sizeof(struct bio2_bi2a_state));
+    memset(body, 0, sizeof(struct bi2a_iidx_state_out));
 
     // IIDX25 polls really really fast, this limits it to 1000Hz
     if (poll_delay) {
