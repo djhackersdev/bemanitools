@@ -1,5 +1,5 @@
-#ifndef BIO2EMU_H
-#define BIO2EMU_BIO2EMU_H
+#ifndef BIO2EMU_EMU_H
+#define BIO2EMU_EMU_H
 
 #include "hook/iohook.h"
 #include "acioemu/emu.h"
@@ -17,8 +17,7 @@ struct bio2emu_port {
 };
 
 
-void bio2emu_init_start();
-void bio2emu_init_end();
+void bio2emu_init();
 
 void bio2emu_port_init(struct bio2emu_port* bio2emu_emu);
 void bio2emu_port_fini(struct bio2emu_port* bio2emu_emu);

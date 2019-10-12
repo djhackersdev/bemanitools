@@ -149,11 +149,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     rs232_hook_limit_hooks();
 
     if (!iidxhook8_config_io.disable_bio2_emu) {
-        bio2emu_init_start();
-
+        bio2emu_init();
         bio2_emu_bi2a_init(&bio2_emu, iidxhook8_config_io.disable_poll_limiter);
-
-        bio2emu_init_end();
     }
 
     if (!iidxhook8_config_io.disable_card_reader_emu) {

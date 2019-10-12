@@ -28,13 +28,9 @@
 
 static struct array bio2_active_ports;
 
-void bio2emu_init_start()
+void bio2emu_init()
 {
     array_init(&bio2_active_ports);
-}
-
-void bio2emu_init_end()
-{
     bio2emu_setupapi_hook_init(&bio2_active_ports);
 }
 
