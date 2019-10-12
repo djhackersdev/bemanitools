@@ -1,4 +1,6 @@
 # Release history
+## 5.28
+
 ## 5.27
 * Various documentation updates regarding development and how to contribute
 * KFCA emulation accuracy fixes
