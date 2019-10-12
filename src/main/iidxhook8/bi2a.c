@@ -1,6 +1,7 @@
 #define LOG_MODULE "bio2emu-bi2a"
 
 #include "iidxhook8/bi2a.h"
+#include "bio2emu/emu.h"
 
 #include <windows.h> /* for _BitScanForward */
 
@@ -13,12 +14,11 @@
 #include "bemanitools/iidxio.h"
 
 static int get_default_slider_valid(size_t idx);
-static void bio2_emu_bi2a_cmd_send_version(const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_state(const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_empty(const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_status(const struct ac_io_message *req, uint8_t status);
+static void bio2_emu_bi2a_cmd_send_version(struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status);
 
-static struct ac_io_emu *bi2a_bio2;
 static int default_sliders[5];
 static bool poll_delay;
 
@@ -30,10 +30,10 @@ int get_default_slider_valid(size_t idx) {
     }
 }
 
-void bio2_emu_bi2a_init(struct ac_io_emu *bio2_emu, bool disable_poll_limiter)
+void bio2_emu_bi2a_init(struct bio2emu_port *bio2_emu, bool disable_poll_limiter)
 {
-    FILE* f;
-    bi2a_bio2 = bio2_emu;
+    bio2emu_port_init(bio2_emu);
+
     poll_delay = !disable_poll_limiter;
     if (!poll_delay) {
         log_warning("bio2_emu_bi2a_init: poll_delay has been disabled");
@@ -43,7 +43,7 @@ void bio2_emu_bi2a_init(struct ac_io_emu *bio2_emu, bool disable_poll_limiter)
         default_sliders[i] = -1;
     }
 
-    f = fopen("vefx.txt", "r");
+    FILE* f = fopen("vefx.txt", "r");
     if (f) {
         fscanf(f, "%d %d %d %d %d", &default_sliders[0], &default_sliders[1], &default_sliders[2], &default_sliders[3], &default_sliders[4]);
         fclose(f);
@@ -51,7 +51,7 @@ void bio2_emu_bi2a_init(struct ac_io_emu *bio2_emu, bool disable_poll_limiter)
 
 }
 
-void bio2_emu_bi2a_dispatch_request(const struct ac_io_message *req)
+void bio2_emu_bi2a_dispatch_request(struct bio2emu_port *bio2port, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
 
@@ -61,27 +61,27 @@ void bio2_emu_bi2a_dispatch_request(const struct ac_io_message *req)
         case BIO2_BI2A_CMD_UNK_0100:
         case BIO2_BI2A_CMD_UNK_0120:
             log_misc("BIO2_BI2A_CMD_UNK_%04X(%d)", cmd_code, req->addr);
-            bio2_emu_bi2a_send_status(req, 0x00);
+            bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
             break;
 
         case BIO2_BI2A_CMD_POLL:
             // log_misc("BIO2_BI2A_CMD_POLL");
-            bio2_emu_bi2a_send_state(req);
+            bio2_emu_bi2a_send_state(&bio2port->acio, req);
             break;
 
         case AC_IO_CMD_GET_VERSION:
             log_misc("BIO2_CMD_GET_VERSION(%d)", req->addr);
-            bio2_emu_bi2a_cmd_send_version(req);
+            bio2_emu_bi2a_cmd_send_version(&bio2port->acio, req);
             break;
 
         case AC_IO_CMD_START_UP:
             log_misc("BIO2_CMD_START_UP(%d)", req->addr);
-            bio2_emu_bi2a_send_status(req, 0x00);
+            bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
             break;
 
         case AC_IO_CMD_KEEPALIVE:
             log_misc("BIO2_CMD_KEEPALIVE(%d)", req->addr);
-            bio2_emu_bi2a_send_empty(req);
+            bio2_emu_bi2a_send_empty(&bio2port->acio, req);
             break;
 
         default:
@@ -90,7 +90,7 @@ void bio2_emu_bi2a_dispatch_request(const struct ac_io_message *req)
     }
 }
 
-static void bio2_emu_bi2a_cmd_send_version(const struct ac_io_message *req)
+static void bio2_emu_bi2a_cmd_send_version(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -108,10 +108,10 @@ static void bio2_emu_bi2a_cmd_send_version(const struct ac_io_message *req)
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
-    ac_io_emu_response_push(bi2a_bio2, &resp, 0);
+    ac_io_emu_response_push(emu, &resp, 0);
 }
 
-static void bio2_emu_bi2a_send_empty(const struct ac_io_message *req)
+static void bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -120,10 +120,10 @@ static void bio2_emu_bi2a_send_empty(const struct ac_io_message *req)
     resp.cmd.seq_no = req->cmd.seq_no;
     resp.cmd.nbytes = 0;
 
-    ac_io_emu_response_push(bi2a_bio2, &resp, 0);
+    ac_io_emu_response_push(emu, &resp, 0);
 }
 
-static void bio2_emu_bi2a_send_status(const struct ac_io_message *req, uint8_t status)
+static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status)
 {
     struct ac_io_message resp;
 
@@ -133,11 +133,11 @@ static void bio2_emu_bi2a_send_status(const struct ac_io_message *req, uint8_t s
     resp.cmd.nbytes = sizeof(resp.cmd.status);
     resp.cmd.status = status;
 
-    ac_io_emu_response_push(bi2a_bio2, &resp, 0);
+    ac_io_emu_response_push(emu, &resp, 0);
 }
 
 
-static void bio2_emu_bi2a_send_state(const struct ac_io_message *req)
+static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
     struct bio2_bi2a_state *body;
@@ -190,12 +190,12 @@ static void bio2_emu_bi2a_send_state(const struct ac_io_message *req)
 
     if (!iidx_io_ep1_send()) {
         log_warning("BIO2: iidx_io_ep1_send error");
-        return bio2_emu_bi2a_send_status(req, 0);
+        return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
     if (!iidx_io_ep3_write_16seg((const char*) req_bi2a->SEG16)) {
         log_warning("BIO2: iidx_io_ep3_write_16seg error");
-        return bio2_emu_bi2a_send_status(req, 0);
+        return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
     body = (struct bio2_bi2a_state *)&resp.cmd.raw;
@@ -208,7 +208,7 @@ static void bio2_emu_bi2a_send_state(const struct ac_io_message *req)
 
     if (!iidx_io_ep2_recv()) {
         log_warning("BIO2: iidx_io_ep2_recv error");
-        return bio2_emu_bi2a_send_status(req, 0);
+        return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
     body->TURNTABLE1 = iidx_io_ep2_get_turntable(0);
@@ -247,5 +247,5 @@ static void bio2_emu_bi2a_send_state(const struct ac_io_message *req)
     body->SYSTEM.v_service = (input_sys >> IIDX_IO_SYS_SERVICE) & 1;
     body->SYSTEM.v_coin = (input_sys >> IIDX_IO_SYS_COIN) & 1;
 
-    ac_io_emu_response_push(bi2a_bio2, &resp, 0);
+    ac_io_emu_response_push(emu, &resp, 0);
 }

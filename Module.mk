@@ -74,6 +74,7 @@ imps            += avs avs-ea3
 include src/main/aciodrv/Module.mk
 include src/main/acioemu/Module.mk
 include src/main/aciotest/Module.mk
+include src/main/bio2emu/Module.mk
 include src/main/bsthook/Module.mk
 include src/main/bstio/Module.mk
 include src/main/cconfig/Module.mk

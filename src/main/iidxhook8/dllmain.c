@@ -23,11 +23,12 @@
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
 
-#include "iidxhook8/bio2.h"
+#include "bio2emu/emu.h"
+#include "iidxhook8/bi2a.h"
+
 #include "iidxhook8/cam.h"
 #include "iidxhook8/config-cam.h"
 #include "iidxhook8/config-io.h"
-#include "iidxhook8/setupapi.h"
 #include "iidxhook8/cam.h"
 
 #include "imports/avs.h"
@@ -44,7 +45,7 @@
 
 static const irp_handler_t iidxhook_handlers[] = {
     iidxhook_util_acio_dispatch_irp,
-    bio2_port_dispatch_irp,
+    bio2emu_port_dispatch_irp,
 };
 
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
@@ -75,6 +76,12 @@ static void iidxhook8_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_
 
 struct iidxhook8_config_io iidxhook8_config_io;
 
+static struct bio2emu_port bio2_emu = {
+    .port = "COM4",
+    .wport = L"COM4",
+    .dispatcher = bio2_emu_bi2a_dispatch_request,
+};
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     struct cconfig* config;
@@ -82,7 +89,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook8_config_cam config_cam;
 
-    // log_server_init is not required anymore
+    // log_server_init is required due to IO occuring in a non avs_thread
+    log_server_init();
 
     log_info("-------------------------------------------------------------");
     log_info("--------------- Begin iidxhook dll_entry_init ---------------");
@@ -141,8 +149,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     rs232_hook_limit_hooks();
 
     if (!iidxhook8_config_io.disable_bio2_emu) {
-        bio2_port_init(iidxhook8_config_io.disable_poll_limiter);
-        setupapi_hook_init();
+        bio2emu_init_start();
+
+        bio2_emu_bi2a_init(&bio2_emu, iidxhook8_config_io.disable_poll_limiter);
+
+        bio2emu_init_end();
     }
 
     if (!iidxhook8_config_io.disable_card_reader_emu) {
@@ -176,6 +187,8 @@ static bool my_dll_entry_main(void)
         log_misc("Shutting down IIDX IO backend");
         iidx_io_fini();
     }
+
+    log_server_fini();
 
     return result;
 }

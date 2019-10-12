@@ -14,6 +14,7 @@ deplibs_iidxhook8   := \
 libs_iidxhook8      := \
     iidxhook-util \
     acioemu \
+    bio2emu \
     iidxio \
     hook \
     hooklib \
@@ -23,9 +24,7 @@ libs_iidxhook8      := \
     
 src_iidxhook8       := \
     bi2a.c \
-    bio2.c \
     cam.c \
     config-cam.c \
     config-io.c \
     dllmain.c \
-    setupapi.c \

@@ -107,9 +107,12 @@ struct bio2_bi2a_state_in {
     uint8_t UNK3[7];
 };
 _Static_assert(sizeof(struct bio2_bi2a_state_in) == 48, "bio2_bi2a_state_in is the wrong size");
+_Static_assert(sizeof(struct bio2_bi2a_state) == 46, "bio2_bi2a_state_out is the wrong size");
 #pragma pack(pop)
 
-void bio2_emu_bi2a_init(struct ac_io_emu *in, bool disable_poll_limiter);
-void bio2_emu_bi2a_dispatch_request(const struct ac_io_message *req);
+struct bio2emu_port;
+
+void bio2_emu_bi2a_init(struct bio2emu_port *in, bool disable_poll_limiter);
+void bio2_emu_bi2a_dispatch_request(struct bio2emu_port *bio2port, const struct ac_io_message *req);
 
 #endif
