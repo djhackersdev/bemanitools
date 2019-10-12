@@ -42,7 +42,7 @@
 # 15:   Patch 8:    DanceDanceRevolution (2013)
 #                   beatmania IIDX 20 tricoro
 #                   pop'n music 21 Sunny Park
-#                   SOUND VOLTEX (all known versions)
+#                   SOUND VOLTEX (1-4)
 #					jubeat prop
 #
 # 16:   Patch 1:    beatmania IIDX 21 SPADA
@@ -53,6 +53,9 @@
 #	  "Patch" 7:    Steel Chronicle VicTroopers (not a Bemani, w/e)
 #
 # 17:   Patch 0:    beatmania IIDX 25 CANNON BALLERS
+#                   beatmania IIDX 26 Rootage
+#
+#       Patch 3:    SOUND VOLTEX VIVID WAVE
 #
 
 cflags          += \
@@ -339,7 +342,7 @@ $(zipdir)/iidx-21-to-24.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/iidx-25.zip: \
+$(zipdir)/iidx-25-to-26.zip: \
 		build/bin/avs2_1700-64/iidxhook8.dll \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/indep-64/config.exe \
@@ -490,7 +493,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-19.zip \
 		$(zipdir)/iidx-20.zip \
 		$(zipdir)/iidx-21-to-24.zip \
-		$(zipdir)/iidx-25.zip \
+		$(zipdir)/iidx-25-to-26.zip \
 		$(zipdir)/jb-01.zip \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \

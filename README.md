@@ -36,7 +36,8 @@ authentic gameplay experience, and easier support for a broader range of release
     * Beatmania IIDX 22 PENDUAL (iidx-21-to-24.zip)
     * Beatmania IIDX 23 copula (iidx-21-to-24.zip)
     * Beatmania IIDX 24 SINOBUZ (iidx-21-to-24.zip)
-    * Beatmania IIDX 25 CANNON BALLERS (iidx-25.zip)
+    * Beatmania IIDX 25 CANNON BALLERS (iidx-25-to-26.zip)
+    * Beatmania IIDX 26 Rootage (iidx-25-to-26.zip)
 * jubeat
     * jubeat (experimental/buggy) (jb-01.zip)
     * jubeat saucer (fulfill) (jb-05-to-07.zip)
