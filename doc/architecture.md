@@ -80,6 +80,9 @@ higher level features.
 Essentially, the main module file of each iidxhook implementation just glues the APIs of the modules it requires
 together. An additional configuration layer allows users to tweak some of the features.
 
+TODO go into some more detail about some differences in the hook modules, e.g. 18 to 19 look identical
+-> but different AVS versions
+
 #### iidxhook1 (9-12)
 * Ezusb C02 I/O emulation
     * Setupapi emulation
