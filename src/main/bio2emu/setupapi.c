@@ -18,6 +18,63 @@
 
 static struct array* bio2_assigned_ports = NULL;
 
+DEFINE_GUID(GUID_COM_BUS_ENUMERATOR,
+  0x4D36E978, 0xE325, 0x11CE, 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18);
+
+#define MAX_INSTANCES_HOOKED 16
+#define CUSTOM_DEVICE_INSTANCE 0x3113ca70
+#define CUSTOM_DEVICE_INSTANCE_MASK 0xfffffff0
+#define CUSTOM_DEVICE_INSTANCE_IDXMASK 0x0000000f
+
+static void* CUSTOM_DEVICE_HANDLE;
+
+static struct HKEY__ CUSTOM_REGISTRY_HANDLE[MAX_INSTANCES_HOOKED];
+
+// end result should be like BIO2(VIDEO)(COM4)
+static const char DEVICE_PROPERTY_VALUE[] = "BIO2(VIDEO)(";
+static const size_t DEVICE_PROPERTY_LENGTH = 12;
+
+static const char devpath[] = "USB\\VID_5730&PID_804C&MI_00\\000";
+static const size_t devpathsize = 32;
+
+
+// check if HKEY handle is one of ours
+static BOOL check_if_match(HKEY ptr, HKEY base) {
+    return (ptr >= &base[0]) && (ptr <= &base[MAX_INSTANCES_HOOKED - 1]);
+}
+
+// turn HKEY handle back into idx
+static size_t get_match_index(HKEY ptr, HKEY base) {
+    for (size_t i = 0; i < MAX_INSTANCES_HOOKED; ++i) {
+        if (ptr == &base[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// check if devinst is on of ours (can't use pointer since this is a DWORD)
+static BOOL check_instances_limit(DWORD devinst) {
+    if ((devinst & CUSTOM_DEVICE_INSTANCE_MASK) != CUSTOM_DEVICE_INSTANCE) {
+        return false;
+    }
+
+    size_t num = devinst & CUSTOM_DEVICE_INSTANCE_IDXMASK;
+    if (num >= MAX_INSTANCES_HOOKED) {
+        return false;
+    }
+
+    if (num >= bio2_assigned_ports->nitems) {
+        return false;
+    }
+
+    return true;
+}
+
+//
+// hooked functions
+//
+
 static BOOL my_SetupDiDestroyDeviceInfoList(
     HDEVINFO DeviceInfoSet
 );
@@ -177,42 +234,6 @@ static const struct hook_symbol bio2emu_Advapi32_syms[] = {
     },
 };
 
-#define MAX_INSTANCES_HOOKED 16
-#define CUSTOM_DEVICE_INSTANCE 0x3113ca70
-#define CUSTOM_DEVICE_INSTANCE_MASK 0xfffffff0
-#define CUSTOM_DEVICE_INSTANCE_IDXMASK 0x0000000f
-
-static void* CUSTOM_DEVICE_HANDLE;
-static struct HKEY__ CUSTOM_REGISTRY_HANDLE[MAX_INSTANCES_HOOKED];
-
-static BOOL check_if_match(HKEY ptr, HKEY base) {
-    return (ptr >= &base[0]) && (ptr <= &base[MAX_INSTANCES_HOOKED - 1]);
-}
-
-static size_t get_match_index(HKEY ptr, HKEY base) {
-    for (size_t i = 0; i < MAX_INSTANCES_HOOKED; ++i) {
-        if (ptr == &base[i]) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static BOOL check_instances_limit(DWORD devinst) {
-    if ((devinst & CUSTOM_DEVICE_INSTANCE_MASK) != CUSTOM_DEVICE_INSTANCE) {
-        return false;
-    }
-
-    size_t num = devinst & CUSTOM_DEVICE_INSTANCE_IDXMASK;
-    if (num >= MAX_INSTANCES_HOOKED) {
-        return false;
-    }
-    if (num >= bio2_assigned_ports->nitems) {
-        return false;
-    }
-    return true;
-}
-
 static BOOL my_SetupDiDestroyDeviceInfoList(
     HDEVINFO DeviceInfoSet
 ){
@@ -220,6 +241,7 @@ static BOOL my_SetupDiDestroyDeviceInfoList(
         log_info("Inside: %s", __FUNCTION__);
         return true;
     }
+
     return real_SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
@@ -255,9 +277,6 @@ static HKEY my_SetupDiOpenDevRegKey(
     }
     return real_SetupDiOpenDevRegKey(DeviceInfoSet, DeviceInfoData, Scope, HwProfile, KeyType, samDesired);
 }
-
-static const char DEVICE_PROPERTY_VALUE[] = "BIO2(VIDEO)(";
-static const size_t DEVICE_PROPERTY_LENGTH = 12;
 
 static BOOL my_SetupDiGetDeviceRegistryPropertyA(
     HDEVINFO         DeviceInfoSet,
@@ -304,9 +323,6 @@ static BOOL my_SetupDiGetDeviceInfoListDetailA(
     return real_SetupDiGetDeviceInfoListDetailA(DeviceInfoSet, DeviceInfoSetDetailData);
 }
 
-DEFINE_GUID(GUID_COM_BUS_ENUMERATOR,
-  0x4D36E978, 0xE325, 0x11CE, 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18);
-
 static HDEVINFO my_SetupDiGetClassDevsA(
     CONST GUID *ClassGuid,
     PCSTR     Enumerator,
@@ -346,9 +362,6 @@ static LSTATUS my_RegQueryValueExA(
     return real_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
 }
 
-
-static const char devpath[] = "USB\\VID_5730&PID_804C&MI_00\\000";
-static const size_t devpathsize = 32;
 static CONFIGRET my_CM_Get_Device_IDA(
     DEVINST dnDevInst,
     PSTR   Buffer,
