@@ -1,8 +1,10 @@
 #define LOG_MODULE "setupapi-hook"
 
 #include <windows.h>
-#include <setupapi.h>
 #include <initguid.h>
+
+#include <setupapi.h>
+#include <cfgmgr32.h>
 
 #include "hook/table.h"
 
@@ -13,8 +15,6 @@
 #include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
-
-#define MAX_INSTANCES_HOOKED 8
 
 static struct array* bio2_assigned_ports = NULL;
 
@@ -100,6 +100,20 @@ static HDEVINFO(*real_SetupDiGetClassDevsA)(
     DWORD      Flags
 );
 
+static CONFIGRET my_CM_Get_Device_IDA(
+    DEVINST dnDevInst,
+    PSTR   Buffer,
+    ULONG   BufferLen,
+    ULONG   ulFlags
+);
+
+static CONFIGRET(*real_CM_Get_Device_IDA)(
+    DEVINST dnDevInst,
+    PSTR   Buffer,
+    ULONG   BufferLen,
+    ULONG   ulFlags
+);
+
 static const struct hook_symbol bio2emu_setupapi_syms[] = {
     {
         .name   = "SetupDiDestroyDeviceInfoList",
@@ -131,6 +145,11 @@ static const struct hook_symbol bio2emu_setupapi_syms[] = {
         .patch  = my_SetupDiGetClassDevsA,
         .link   = (void **) &real_SetupDiGetClassDevsA
     },
+    {
+        .name   = "CM_Get_Device_IDA",
+        .patch  = my_CM_Get_Device_IDA,
+        .link   = (void **) &real_CM_Get_Device_IDA
+    },
 };
 
 static LSTATUS my_RegQueryValueExA(
@@ -158,6 +177,11 @@ static const struct hook_symbol bio2emu_Advapi32_syms[] = {
     },
 };
 
+#define MAX_INSTANCES_HOOKED 16
+#define CUSTOM_DEVICE_INSTANCE 0x3113ca70
+#define CUSTOM_DEVICE_INSTANCE_MASK 0xfffffff0
+#define CUSTOM_DEVICE_INSTANCE_IDXMASK 0x0000000f
+
 static void* CUSTOM_DEVICE_HANDLE;
 static struct HKEY__ CUSTOM_REGISTRY_HANDLE[MAX_INSTANCES_HOOKED];
 
@@ -172,6 +196,21 @@ static size_t get_match_index(HKEY ptr, HKEY base) {
         }
     }
     return -1;
+}
+
+static BOOL check_instances_limit(DWORD devinst) {
+    if ((devinst & CUSTOM_DEVICE_INSTANCE_MASK) != CUSTOM_DEVICE_INSTANCE) {
+        return false;
+    }
+
+    size_t num = devinst & CUSTOM_DEVICE_INSTANCE_IDXMASK;
+    if (num >= MAX_INSTANCES_HOOKED) {
+        return false;
+    }
+    if (num >= bio2_assigned_ports->nitems) {
+        return false;
+    }
+    return true;
 }
 
 static BOOL my_SetupDiDestroyDeviceInfoList(
@@ -191,8 +230,8 @@ static BOOL my_SetupDiEnumDeviceInfo(
 ){
     if (DeviceInfoSet == &CUSTOM_DEVICE_HANDLE){
         log_info("%s: Loaded idx %ld", __FUNCTION__, MemberIndex);
-        if (MemberIndex < MAX_INSTANCES_HOOKED) {
-            DeviceInfoData->DevInst = MemberIndex;
+        if (MemberIndex < bio2_assigned_ports->nitems) {
+            DeviceInfoData->DevInst = CUSTOM_DEVICE_INSTANCE | MemberIndex;
             return true;
         }
         return false;
@@ -209,9 +248,9 @@ static HKEY my_SetupDiOpenDevRegKey(
     REGSAM           samDesired
 ){
     if (DeviceInfoSet == &CUSTOM_DEVICE_HANDLE){
-        if (DeviceInfoData->DevInst < MAX_INSTANCES_HOOKED){
+        if (check_instances_limit(DeviceInfoData->DevInst)){
             log_info("%s: matched instance", __FUNCTION__);
-            return &CUSTOM_REGISTRY_HANDLE[DeviceInfoData->DevInst];
+            return &CUSTOM_REGISTRY_HANDLE[DeviceInfoData->DevInst & CUSTOM_DEVICE_INSTANCE_IDXMASK];
         }
     }
     return real_SetupDiOpenDevRegKey(DeviceInfoSet, DeviceInfoData, Scope, HwProfile, KeyType, samDesired);
@@ -230,8 +269,8 @@ static BOOL my_SetupDiGetDeviceRegistryPropertyA(
     PDWORD           RequiredSize
 ){
     if (DeviceInfoSet == &CUSTOM_DEVICE_HANDLE){
-        if (DeviceInfoData->DevInst< MAX_INSTANCES_HOOKED){
-            struct bio2emu_port* selected_port = *array_item(struct bio2emu_port*, bio2_assigned_ports, DeviceInfoData->DevInst);
+        if (check_instances_limit(DeviceInfoData->DevInst)){
+            struct bio2emu_port* selected_port = *array_item(struct bio2emu_port*, bio2_assigned_ports, DeviceInfoData->DevInst & CUSTOM_DEVICE_INSTANCE_IDXMASK);
             size_t portname_len = strlen(selected_port->port);
             size_t required_size = (DEVICE_PROPERTY_LENGTH + portname_len + 1 + 1); // + 1 for ')', + 1 for NULL
 
@@ -305,6 +344,28 @@ static LSTATUS my_RegQueryValueExA(
         }
     }
     return real_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
+}
+
+
+static const char devpath[] = "USB\\VID_5730&PID_804C&MI_00\\000";
+static const size_t devpathsize = 32;
+static CONFIGRET my_CM_Get_Device_IDA(
+    DEVINST dnDevInst,
+    PSTR   Buffer,
+    ULONG   BufferLen,
+    ULONG   ulFlags
+){
+    if (Buffer && BufferLen > devpathsize) {
+        if (check_instances_limit(dnDevInst)) {
+            log_info("%s: Injecting custom parent ID for BIO2", __FUNCTION__);
+            strcpy(Buffer, devpath);
+
+            Buffer[devpathsize - 1] = '\0' + (dnDevInst & CUSTOM_DEVICE_INSTANCE_IDXMASK);
+            log_info("%s: %s", __FUNCTION__, Buffer);
+            return CR_SUCCESS;
+        }
+    }
+    return real_CM_Get_Device_IDA(dnDevInst, Buffer, BufferLen, ulFlags);
 }
 
 void bio2emu_setupapi_hook_init(struct array* bio2_ports)
