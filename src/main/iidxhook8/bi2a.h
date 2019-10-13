@@ -106,8 +106,8 @@ struct bi2a_iidx_state_in {
     struct bi2a_iidx_light SPOTLIGHT2[4];
     uint8_t UNK3[7];
 };
-_Static_assert(sizeof(struct bi2a_iidx_state_in) == 48, "bio2_bi2a_state_in is the wrong size");
-_Static_assert(sizeof(struct bi2a_iidx_state_out) == 46, "bio2_bi2a_state_out is the wrong size");
+_Static_assert(sizeof(struct bi2a_iidx_state_in) == 48, "bi2a_iidx_state_in is the wrong size");
+_Static_assert(sizeof(struct bi2a_iidx_state_out) == 46, "bi2a_iidx_state_out is the wrong size");
 #pragma pack(pop)
 
 void bio2_emu_bi2a_init(struct bio2emu_port *in, bool disable_poll_limiter);

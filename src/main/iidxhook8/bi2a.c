@@ -198,7 +198,7 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
-    body = (struct bio2_bi2a_state *)&resp.cmd.raw;
+    body = (struct bi2a_iidx_state_out *)&resp.cmd.raw;
     memset(body, 0, sizeof(struct bi2a_iidx_state_out));
 
     // IIDX25 polls really really fast, this limits it to 1000Hz
