@@ -355,7 +355,9 @@ $(zipdir)/iidx-25-to-26.zip: \
 		build/bin/indep-64/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-25.bat \
+		dist/iidx/gamestart-26.bat \
 		dist/iidx/iidxhook-25.conf \
+		dist/iidx/iidxhook-26.conf \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
