@@ -26,12 +26,6 @@ integrated sound chip, you have to replace RtEffect.dll with a stubbed/patched
 version (RtEffect_patched.dll). Otherwise, the game might crash instantly when
 trying to start it.
 
-In order to use the gfx feature patches, e.g. window mode, monitor check,
-frame rate locking, framebuffer up/-downscaling etc. you have to use the
-d3d8to9 wrapper library (get it from the bemanitools-supplement package).
-Bemanitools removed the old d3d8 hooking module to provide native d3d8 hooks
-due to compatibility and maintainability reasons.
-
 Run the appropriate gamestart-XX.bat file as admin, where XX is either 
 09, 10, 11, 12.
 
@@ -59,6 +53,14 @@ to have a pre-ceeding "-p" for every parameter added.
 
 However, if a parameter is specifed in the configuration file and as a command
 line argument, the command line argument overrides the config file's value.
+
+# Use d3d8to9 wrapper
+
+In order to use the gfx feature patches, e.g. window mode, monitor check,
+frame rate locking, framebuffer up/-downscaling etc. you **must** use the
+d3d8to9 wrapper library (get it from the bemanitools-supplement package).
+Bemanitools removed the old d3d8 hooking module to provide native d3d8 hooks
+due to compatibility and maintainability reasons.
 
 # Eamuse network setup
 
@@ -123,6 +125,10 @@ IIDX occasionally fails to boot with a "USBIO (FM-DL TIMEOUT)" error. If this
 happens, run the game again. 
 
 # Troubleshooting and FAQ
+
+## Window mode or any other gfx related options do not work when changing them in the config file or using cmd args
+
+See [this](#Use-d3d8to9-wrapper) section.
 
 ## The game does not run "well" (frame drops, drifting offsync etc)
 This can be related to various issues:
