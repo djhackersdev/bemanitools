@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#include "security/rp-blowfish.h"
 #include "security/rp-blowfish-table.h"
+#include "security/rp-blowfish.h"
 
 #include "util/log.h"
 
@@ -11,15 +11,15 @@ static int security_rp_blowfish_enc_sub(int a1)
 
     result = a1;
 
-    if ( a1 & 7 ) {
+    if (a1 & 7) {
         result = a1 - (a1 & 7) + 8;
     }
 
     return result;
 }
 
-void security_rp_blowfish_init(struct blowfish* ctx, const uint8_t* key,
-        size_t key_length, uint32_t seed)
+void security_rp_blowfish_init(
+    struct blowfish *ctx, const uint8_t *key, size_t key_length, uint32_t seed)
 {
     log_assert(ctx);
     log_assert(key);
@@ -30,8 +30,8 @@ void security_rp_blowfish_init(struct blowfish* ctx, const uint8_t* key,
     blowfish_init(ctx, &key[seed], 14);
 }
 
-int security_rp_blowfish_enc(struct blowfish* ctx, const uint8_t* input,
-        uint8_t* output, int length)
+int security_rp_blowfish_enc(
+    struct blowfish *ctx, const uint8_t *input, uint8_t *output, int length)
 {
     int v4; // ebx@1
     int v5; // ebp@1
@@ -74,53 +74,52 @@ int security_rp_blowfish_enc(struct blowfish* ctx, const uint8_t* input,
             v10 = v4 - 7;
 
             if (v23) {
-
                 if ((unsigned int) v9 >= v10) {
-
-                    if ( result - v4 > 0 ) {
-                        memset((void *)(v6 + v4), 0, result - v4);
+                    if (result - v4 > 0) {
+                        memset((void *) (v6 + v4), 0, result - v4);
                     }
 
-                    blowfish_encrypt(ctx, (uint32_t*) v6, (uint32_t*) v6 + 4);
+                    blowfish_encrypt(ctx, (uint32_t *) v6, (uint32_t *) v6 + 4);
                     v6 += 8;
                 } else {
-                     blowfish_encrypt(ctx, (uint32_t *)v6, (uint32_t *)v6 + 1);
+                    blowfish_encrypt(ctx, (uint32_t *) v6, (uint32_t *) v6 + 1);
                     v6 += 8;
                 }
 
             } else {
-
                 if ((unsigned int) v9 >= v10) {
-                    v13 = (void*) v5;
+                    v13 = (void *) v5;
                     v14 = v4 - (int) v9;
                     v15 = 0;
-                    if ( v14 <= 0 )
+                    if (v14 <= 0)
                         goto LABEL_24;
                     v16 = v14;
                     v15 = v14;
 
                     do {
-                        *(uint8_t *)v13 = *(uint8_t *)v6;
+                        *(uint8_t *) v13 = *(uint8_t *) v6;
                         v13 = (char *) v13 + 1;
                         ++v6;
                         --v16;
-                    } while ( v16 );
+                    } while (v16);
 
-                    if ( v14 < 8 ) {
-LABEL_24:
-                        ((uint8_t*)v4)[0] = 8 - v15;
-                        ((uint8_t*)v4)[1] = 8 - v15;
+                    if (v14 < 8) {
+                    LABEL_24:
+                        ((uint8_t *) v4)[0] = 8 - v15;
+                        ((uint8_t *) v4)[1] = 8 - v15;
                         v17 = v4 << 16;
-                        ((uint16_t*)v17)[0] = v4;
-                        v18 = (unsigned int)(8 - v15) >> 2;
+                        ((uint16_t *) v17)[0] = v4;
+                        v18 = (unsigned int) (8 - v15) >> 2;
                         // poor man's version of memset32
-                        //memset32(v13, v17, v18);
-                        for (size_t i = 0; i < v18; i ++) {
-                            *(((uint32_t*)v13) + i) = v17;
+                        // memset32(v13, v17, v18);
+                        for (size_t i = 0; i < v18; i++) {
+                            *(((uint32_t *) v13) + i) = v17;
                         }
 
-                        memset((char *)v13 + 4 * v18, 8 - v15,
-                                (8 - (uint8_t)v15) & 3);
+                        memset(
+                            (char *) v13 + 4 * v18,
+                            8 - v15,
+                            (8 - (uint8_t) v15) & 3);
                     }
 
                     v4 = length;
@@ -129,25 +128,24 @@ LABEL_24:
                     v12 = 8;
 
                     do {
-                        *(uint8_t *)v11 = *(uint8_t *)(v6 - v5 + v11);
+                        *(uint8_t *) v11 = *(uint8_t *) (v6 - v5 + v11);
                         ++v11;
                         --v12;
-                    } while ( v12 );
-
+                    } while (v12);
                 }
 
-                blowfish_encrypt(ctx, (uint32_t*) v5, (uint32_t*) a2a);
+                blowfish_encrypt(ctx, (uint32_t *) v5, (uint32_t *) a2a);
                 v6 += 8;
                 v5 += 8;
                 a2a += 8;
             }
 
-            v19 = (int)(outputa + 8);
+            v19 = (int) (outputa + 8);
             outputa = (unsigned __int8 *) v19;
             v20 = v19 < (unsigned int) v22;
             result = v22;
 
-            if ( !v20 ) {
+            if (!v20) {
                 break;
             }
 

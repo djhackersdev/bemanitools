@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <commctrl.h>
+#include <windows.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,12 +21,15 @@
 #include "util/thread.h"
 #include "util/winres.h"
 
-HPROPSHEETPAGE analogs_ui_tab_create(HINSTANCE inst,
-        const struct schema *schema);
+HPROPSHEETPAGE
+analogs_ui_tab_create(HINSTANCE inst, const struct schema *schema);
 HPROPSHEETPAGE buttons_tab_create(HINSTANCE inst, const struct schema *schema);
 HPROPSHEETPAGE lights_tab_create(HINSTANCE inst, const struct schema *schema);
-HPROPSHEETPAGE eam_ui_tab_create(HINSTANCE inst, const struct schema *schema,
-        const struct eam_io_config_api *eam_io_config_api);
+HPROPSHEETPAGE
+eam_ui_tab_create(
+    HINSTANCE inst,
+    const struct schema *schema,
+    const struct eam_io_config_api *eam_io_config_api);
 
 static void my_fatal(const char *module, const char *fmt, ...)
 {
@@ -90,12 +93,12 @@ int main(int argc, char **argv)
         }
     }
 
-    input_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-            log_impl_fatal);
+    input_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
     input_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
 
-    eam_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-            log_impl_fatal);
+    eam_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
     eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
     eam_io_config_api = eam_io_get_config_api();
 
@@ -104,13 +107,13 @@ int main(int argc, char **argv)
 
         max_light = -1;
 
-        for (i = 0 ; i < schema->nlights ; i++) {
+        for (i = 0; i < schema->nlights; i++) {
             if (max_light < schema->lights[i].bit) {
                 max_light = schema->lights[i].bit;
             }
         }
 
-        mapper_set_nlights((uint8_t) (max_light + 1));
+        mapper_set_nlights((uint8_t)(max_light + 1));
         mapper_set_nanalogs((uint8_t) schema->nanalogs);
     }
 
@@ -155,4 +158,3 @@ int main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 }
-

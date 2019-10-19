@@ -1,8 +1,8 @@
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -38,9 +38,9 @@ void iidxhook_util_acio_init(bool legacy_mode)
 
     ac_io_emu_init(&iidxhook_util_acio_emu, L"COM1");
 
-    for (i = 0 ; i < lengthof(iidxhook_util_acio_emu_icca) ; i++) {
-        ac_io_emu_icca_init(&iidxhook_util_acio_emu_icca[i],
-            &iidxhook_util_acio_emu, i);
+    for (i = 0; i < lengthof(iidxhook_util_acio_emu_icca); i++) {
+        ac_io_emu_icca_init(
+            &iidxhook_util_acio_emu_icca[i], &iidxhook_util_acio_emu, i);
     }
 
     rs232_hook_add_fd(iidxhook_util_acio_emu.fd);
@@ -51,7 +51,8 @@ void iidxhook_util_acio_fini(void)
     ac_io_emu_fini(&iidxhook_util_acio_emu);
 }
 
-HRESULT iidxhook_util_acio_dispatch_irp(struct irp *irp)
+HRESULT
+iidxhook_util_acio_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -72,33 +73,33 @@ HRESULT iidxhook_util_acio_dispatch_irp(struct irp *irp)
         msg = ac_io_emu_request_peek(&iidxhook_util_acio_emu);
 
         switch (msg->addr) {
-        case 0:
-            ac_io_emu_cmd_assign_addrs(&iidxhook_util_acio_emu, msg, 2);
+            case 0:
+                ac_io_emu_cmd_assign_addrs(&iidxhook_util_acio_emu, msg, 2);
 
-            break;
+                break;
 
-        case 1:
-            ac_io_emu_icca_dispatch_request(&iidxhook_util_acio_emu_icca[0],
-                msg);
+            case 1:
+                ac_io_emu_icca_dispatch_request(
+                    &iidxhook_util_acio_emu_icca[0], msg);
 
-            break;
+                break;
 
-        case 2:
-            ac_io_emu_icca_dispatch_request(&iidxhook_util_acio_emu_icca[1],
-                msg);
+            case 2:
+                ac_io_emu_icca_dispatch_request(
+                    &iidxhook_util_acio_emu_icca[1], msg);
 
-            break;
+                break;
 
-        case AC_IO_BROADCAST:
-            log_warning("Broadcast(?) message on IIDX ACIO bus?");
+            case AC_IO_BROADCAST:
+                log_warning("Broadcast(?) message on IIDX ACIO bus?");
 
-            break;
+                break;
 
-        default:
-            log_warning("ACIO message on unhandled bus address: %d",
-                    msg->addr);
+            default:
+                log_warning(
+                    "ACIO message on unhandled bus address: %d", msg->addr);
 
-            break;
+                break;
         }
 
         ac_io_emu_request_pop(&iidxhook_util_acio_emu);

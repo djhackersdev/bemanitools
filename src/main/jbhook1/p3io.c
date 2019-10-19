@@ -10,14 +10,14 @@
 #include "p3ioemu/emu.h"
 #include "p3ioemu/uart.h"
 
-#include "security/rp3.h"
 #include "security/rp-sign-key.h"
+#include "security/rp3.h"
 
 #include "util/log.h"
 
 static HRESULT jbhook1_p3io_read_jamma(void *ctx, uint32_t *state);
-static HRESULT jbhook1_p3io_get_roundplug(void *ctx, uint8_t plug_id,
-        uint8_t* rom, uint8_t* eeprom);
+static HRESULT jbhook1_p3io_get_roundplug(
+    void *ctx, uint8_t plug_id, uint8_t *rom, uint8_t *eeprom);
 
 /*
     0:0 b13
@@ -90,8 +90,10 @@ static const struct p3io_ops p3io_ddr_ops = {
     .get_roundplug = jbhook1_p3io_get_roundplug,
 };
 
-void jbhook1_p3io_init(const struct security_mcode* mcode,
-        const struct security_id* pcbid, const struct security_id* eamid)
+void jbhook1_p3io_init(
+    const struct security_mcode *mcode,
+    const struct security_id *pcbid,
+    const struct security_id *eamid)
 {
     memcpy(&jbhook1_p3io_mcode, mcode, sizeof(struct security_mcode));
     memcpy(&jbhook1_p3io_pcbid, pcbid, sizeof(struct security_id));
@@ -138,8 +140,8 @@ static HRESULT jbhook1_p3io_read_jamma(void *ctx, uint32_t *state)
     return S_OK;
 }
 
-static HRESULT jbhook1_p3io_get_roundplug(void *ctx, uint8_t plug_id,
-        uint8_t* rom, uint8_t* eeprom)
+static HRESULT jbhook1_p3io_get_roundplug(
+    void *ctx, uint8_t plug_id, uint8_t *rom, uint8_t *eeprom)
 {
     struct security_rp3_eeprom eeprom_out;
 
@@ -147,14 +149,20 @@ static HRESULT jbhook1_p3io_get_roundplug(void *ctx, uint8_t plug_id,
         /* black */
         memcpy(rom, jbhook1_p3io_pcbid.id, sizeof(jbhook1_p3io_pcbid.id));
         security_rp3_generate_signed_eeprom_data(
-            SECURITY_RP_UTIL_RP_TYPE_BLACK, &security_rp_sign_key_black_gfdmv4,
-            &jbhook1_p3io_mcode, &jbhook1_p3io_pcbid, &eeprom_out);
+            SECURITY_RP_UTIL_RP_TYPE_BLACK,
+            &security_rp_sign_key_black_gfdmv4,
+            &jbhook1_p3io_mcode,
+            &jbhook1_p3io_pcbid,
+            &eeprom_out);
     } else {
         /* white */
         memcpy(rom, jbhook1_p3io_eamid.id, sizeof(jbhook1_p3io_eamid.id));
         security_rp3_generate_signed_eeprom_data(
-            SECURITY_RP_UTIL_RP_TYPE_WHITE, &security_rp_sign_key_white_eamuse, 
-            &security_mcode_eamuse, &jbhook1_p3io_eamid, &eeprom_out);
+            SECURITY_RP_UTIL_RP_TYPE_WHITE,
+            &security_rp_sign_key_white_eamuse,
+            &security_mcode_eamuse,
+            &jbhook1_p3io_eamid,
+            &eeprom_out);
     }
 
     memcpy(eeprom, &eeprom_out, sizeof(struct security_rp3_eeprom));

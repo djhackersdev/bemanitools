@@ -50,8 +50,8 @@ void usages_init(HINSTANCE inst)
 
         nchars = strlen(line);
 
-        if (nchars == 0 || line[0] == '#'
-                || strspn(line, " \t\r\n") == nchars) {
+        if (nchars == 0 || line[0] == '#' ||
+            strspn(line, " \t\r\n") == nchars) {
             continue;
         }
 
@@ -59,8 +59,9 @@ void usages_init(HINSTANCE inst)
 
         if (!isspace(line[0])) {
             if (!usages_begin_page(line, &tmp_page)) {
-                log_fatal("IDR_USAGES:%u: Invalid usage page",
-                        (unsigned int) line_no);
+                log_fatal(
+                    "IDR_USAGES:%u: Invalid usage page",
+                    (unsigned int) line_no);
 
                 break;
             }
@@ -69,15 +70,16 @@ void usages_init(HINSTANCE inst)
             memcpy(cur_page, &tmp_page, sizeof(tmp_page));
         } else {
             if (cur_page == NULL) {
-                log_fatal("IDR_USAGES:%u: Usage before first page",
-                        (unsigned int) line_no);
+                log_fatal(
+                    "IDR_USAGES:%u: Usage before first page",
+                    (unsigned int) line_no);
 
                 break;
             }
 
             if (!usages_read_usage(line, cur_page)) {
-                log_fatal("IDR_USAGES:%u: Invalid usage",
-                        (unsigned int) line_no);
+                log_fatal(
+                    "IDR_USAGES:%u: Invalid usage", (unsigned int) line_no);
 
                 break;
             }
@@ -134,16 +136,16 @@ void usages_get(char *chars, size_t nchars, uint32_t usage_id)
     size_t j;
 
     hi = ((usage_id >> 16) & 0xFFFF);
-    lo = ((usage_id >>  0) & 0xFFFF);
+    lo = ((usage_id >> 0) & 0xFFFF);
 
-    for (i = 0 ; i < usages.nitems ; i++) {
+    for (i = 0; i < usages.nitems; i++) {
         page = array_item(struct usage_page, &usages, i);
 
         if (page->id != hi) {
             continue;
         }
 
-        for (j = 0 ; j < page->usages.nitems ; j++) {
+        for (j = 0; j < page->usages.nitems; j++) {
             usage = array_item(struct usage, &page->usages, j);
 
             if (usage->id == lo) {
@@ -168,10 +170,9 @@ void usages_fini(void)
 {
     size_t i;
 
-    for (i = 0 ; i < usages.nitems ; i++) {
+    for (i = 0; i < usages.nitems; i++) {
         array_fini(&array_item(struct usage_page, &usages, i)->usages);
     }
 
     array_fini(&usages);
 }
-

@@ -62,8 +62,11 @@ enum extio_light_bit {
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void ddr_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void ddr_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your DDR IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -73,8 +76,10 @@ void ddr_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool ddr_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool ddr_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 uint32_t ddr_io_read_pad(void);
 void ddr_io_set_lights_extio(uint32_t extio_lights);

@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <string.h>
@@ -12,8 +12,8 @@
 
 #include "hook/iohook.h"
 
-#include "util/log.h"
 #include "util/iobuf.h"
+#include "util/log.h"
 #include "util/str.h"
 
 #define USBMEM_BUF_SIZE 128
@@ -44,7 +44,8 @@ void usbmem_fini(void)
     usbmem_fd = NULL;
 }
 
-HRESULT usbmem_dispatch_irp(struct irp *irp)
+HRESULT
+usbmem_dispatch_irp(struct irp *irp)
 {
     log_assert(irp != NULL);
 
@@ -53,12 +54,18 @@ HRESULT usbmem_dispatch_irp(struct irp *irp)
     }
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return usbmem_open(irp);
-    case IRP_OP_CLOSE:  return usbmem_close(irp);
-    case IRP_OP_READ:   return usbmem_read(irp);
-    case IRP_OP_WRITE:  return usbmem_write(irp);
-    case IRP_OP_IOCTL:  return usbmem_ioctl(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return usbmem_open(irp);
+        case IRP_OP_CLOSE:
+            return usbmem_close(irp);
+        case IRP_OP_READ:
+            return usbmem_read(irp);
+        case IRP_OP_WRITE:
+            return usbmem_write(irp);
+        case IRP_OP_IOCTL:
+            return usbmem_ioctl(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -101,18 +108,17 @@ static HRESULT usbmem_write(struct irp *irp)
 
     if (strlen(request) > 0) {
         if (str_eq(request, "sver")) {
-            str_cpy(usbmem_response,
-                    sizeof(usbmem_response),
-                    "done GQHDXJAA DJHACKRS");
+            str_cpy(
+                usbmem_response,
+                sizeof(usbmem_response),
+                "done GQHDXJAA DJHACKRS");
         } else if (
-                str_eq(request, "on_a") ||
-                str_eq(request, "on_b") ||
-                str_eq(request, "offa") ||
-                str_eq(request, "offb") ) {
+            str_eq(request, "on_a") || str_eq(request, "on_b") ||
+            str_eq(request, "offa") || str_eq(request, "offb")) {
             str_cpy(usbmem_response, sizeof(usbmem_response), "done");
         } else if (
-                strncmp(request, "lma ", 4) == 0 ||
-                strncmp(request, "lmb ", 4) == 0) {
+            strncmp(request, "lma ", 4) == 0 ||
+            strncmp(request, "lmb ", 4) == 0) {
             str_cpy(usbmem_response, sizeof(usbmem_response), "done");
         } else {
             str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
@@ -160,31 +166,31 @@ static HRESULT usbmem_ioctl(struct irp *irp)
     log_assert(irp != NULL);
 
     switch (irp->ioctl) {
-    case IOCTL_SERIAL_GET_COMMSTATUS:
-        if (irp->read.bytes == NULL) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
+        case IOCTL_SERIAL_GET_COMMSTATUS:
+            if (irp->read.bytes == NULL) {
+                log_warning(
+                    "IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
 
-            return E_INVALIDARG;
-        }
+                return E_INVALIDARG;
+            }
 
-        if (irp->read.nbytes < sizeof(*status)) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
+            if (irp->read.nbytes < sizeof(*status)) {
+                log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
 
-            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        }
+                return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+            }
 
-        status = (SERIAL_STATUS *) irp->read.bytes;
-        status->Errors = 0;
-        status->AmountInInQueue = usbmem_pending ? 1 : 0;
+            status = (SERIAL_STATUS *) irp->read.bytes;
+            status->Errors = 0;
+            status->AmountInInQueue = usbmem_pending ? 1 : 0;
 
-        irp->read.pos = sizeof(*status);
+            irp->read.pos = sizeof(*status);
 
-        break;
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     return S_OK;
 }
-

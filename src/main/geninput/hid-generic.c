@@ -6,14 +6,14 @@
 #include <string.h>
 #include <wchar.h>
 
-#include <windows.h>
 #include <hidsdi.h>
+#include <windows.h>
 
-#include "geninput/hid.h"
-#include "geninput/hid-generic.h"
 #include "geninput/hid-generic-strings.h"
+#include "geninput/hid-generic.h"
 #include "geninput/hid-meta-in.h"
 #include "geninput/hid-meta-out.h"
+#include "geninput/hid.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -44,44 +44,48 @@ struct hid_generic {
     bool out_faulty;
 };
 
-static bool hid_generic_get_device_usage(const struct hid *hid,
-        uint32_t *usage);
-static bool hid_generic_get_name(const struct hid *hid, wchar_t *chars,
-        size_t *nchars);
-static bool hid_generic_get_controls(const struct hid *hid,
-        struct hid_control *controls, size_t *ncontrols);
-static bool hid_generic_get_lights(const struct hid *hid,
-        struct hid_light *lights, size_t *nlights);
-static bool hid_generic_get_value(struct hid *hid, size_t control_no,
-        int32_t *out_value);
-static bool hid_generic_set_light(struct hid *hid, size_t light_no,
-        uint32_t intensity);
-static bool hid_generic_handle_event(struct hid_fd *super, OVERLAPPED *ovl,
-        size_t nbytes);
+static bool
+hid_generic_get_device_usage(const struct hid *hid, uint32_t *usage);
+static bool
+hid_generic_get_name(const struct hid *hid, wchar_t *chars, size_t *nchars);
+static bool hid_generic_get_controls(
+    const struct hid *hid, struct hid_control *controls, size_t *ncontrols);
+static bool hid_generic_get_lights(
+    const struct hid *hid, struct hid_light *lights, size_t *nlights);
+static bool
+hid_generic_get_value(struct hid *hid, size_t control_no, int32_t *out_value);
+static bool
+hid_generic_set_light(struct hid *hid, size_t light_no, uint32_t intensity);
+static bool
+hid_generic_handle_event(struct hid_fd *super, OVERLAPPED *ovl, size_t nbytes);
 static void hid_generic_close(struct hid *hid);
 
-static struct hid_fd_vtbl hid_generic_vtbl = {{
-    /* .close               = */ hid_generic_close,
-    /* .get_device_usage    = */ hid_generic_get_device_usage,
-    /* .get_name            = */ hid_generic_get_name,
-    /* .get_controls        = */ hid_generic_get_controls,
-    /* .get_lights          = */ hid_generic_get_lights,
-    /* .get_value           = */ hid_generic_get_value,
-    /* .set_light           = */ hid_generic_set_light },
-    /* .handle_event        = */ hid_generic_handle_event
-};
+static struct hid_fd_vtbl hid_generic_vtbl = {
+    {/* .close               = */ hid_generic_close,
+     /* .get_device_usage    = */ hid_generic_get_device_usage,
+     /* .get_name            = */ hid_generic_get_name,
+     /* .get_controls        = */ hid_generic_get_controls,
+     /* .get_lights          = */ hid_generic_get_lights,
+     /* .get_value           = */ hid_generic_get_value,
+     /* .set_light           = */ hid_generic_set_light},
+    /* .handle_event        = */ hid_generic_handle_event};
 
-bool hid_generic_open(struct hid_fd **out, const char *dev_node, HANDLE iocp,
-        uintptr_t iocp_ctx)
+bool hid_generic_open(
+    struct hid_fd **out, const char *dev_node, HANDLE iocp, uintptr_t iocp_ctx)
 {
     struct hid_generic *hg;
     uint32_t tlc_usage;
 
     hg = xmalloc(sizeof(*hg));
 
-    hg->fd = CreateFile(dev_node, GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+    hg->fd = CreateFile(
+        dev_node,
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED,
+        NULL);
 
     if (hg->fd == INVALID_HANDLE_VALUE) {
         /* Probably a keyboard that's locked by the OS */
@@ -117,12 +121,13 @@ bool hid_generic_open(struct hid_fd **out, const char *dev_node, HANDLE iocp,
     log_misc("Initializing generic HID on dev node %s:", dev_node);
     log_misc("... Product: %s", hg->strings.str_prod);
     log_misc("... Manufacturer: %s", hg->strings.str_manf);
-    log_misc("... Device usage: %08x",
-            hid_meta_in_get_tlc_usage(&hg->meta_in));
-    log_misc("... Number of controls: %u",
-            (unsigned int) hid_meta_in_get_ncontrols(&hg->meta_in));
-    log_misc("... Number of \"lights\": %u",
-            (unsigned int) hid_meta_out_get_nlights(&hg->meta_out));
+    log_misc("... Device usage: %08x", hid_meta_in_get_tlc_usage(&hg->meta_in));
+    log_misc(
+        "... Number of controls: %u",
+        (unsigned int) hid_meta_in_get_ncontrols(&hg->meta_in));
+    log_misc(
+        "... Number of \"lights\": %u",
+        (unsigned int) hid_meta_out_get_nlights(&hg->meta_out));
 
     /* Start up input double-buffer chain by reading a report.
        We bind to the IO completion port here. */
@@ -134,11 +139,12 @@ bool hid_generic_open(struct hid_fd **out, const char *dev_node, HANDLE iocp,
 
     memset(&hg->in_ovl, 0, sizeof(hg->in_ovl));
 
-    if (!ReadFile(hg->fd, hg->in_buf, hg->in_nbytes, NULL,
-            &hg->in_ovl)) {
+    if (!ReadFile(hg->fd, hg->in_buf, hg->in_nbytes, NULL, &hg->in_ovl)) {
         if (GetLastError() != ERROR_IO_PENDING) {
-            log_warning("Initial ReadFile failed: %08x: %s",
-                    (unsigned int) GetLastError(), dev_node);
+            log_warning(
+                "Initial ReadFile failed: %08x: %s",
+                (unsigned int) GetLastError(),
+                dev_node);
 
             goto read_fail;
         }
@@ -189,8 +195,7 @@ open_fail:
     return false;
 }
 
-static bool hid_generic_get_device_usage(const struct hid *hid,
-        uint32_t *usage)
+static bool hid_generic_get_device_usage(const struct hid *hid, uint32_t *usage)
 {
     const struct hid_generic *hg = containerof(hid, struct hid_generic, super);
 
@@ -199,8 +204,8 @@ static bool hid_generic_get_device_usage(const struct hid *hid,
     return true;
 }
 
-static bool hid_generic_get_name(const struct hid *hid, wchar_t *chars,
-        size_t *nchars)
+static bool
+hid_generic_get_name(const struct hid *hid, wchar_t *chars, size_t *nchars)
 {
     const struct hid_generic *hg = containerof(hid, struct hid_generic, super);
     size_t len;
@@ -222,8 +227,8 @@ static bool hid_generic_get_name(const struct hid *hid, wchar_t *chars,
     }
 }
 
-static bool hid_generic_get_controls(const struct hid *hid,
-        struct hid_control *controls, size_t *ncontrols)
+static bool hid_generic_get_controls(
+    const struct hid *hid, struct hid_control *controls, size_t *ncontrols)
 {
     const struct hid_generic *hg = containerof(hid, struct hid_generic, super);
 
@@ -251,11 +256,11 @@ static bool hid_generic_get_controls(const struct hid *hid,
     }
 }
 
-static bool hid_generic_get_lights(const struct hid *hid,
-        struct hid_light *lights, size_t *nlights)
+static bool hid_generic_get_lights(
+    const struct hid *hid, struct hid_light *lights, size_t *nlights)
 {
-    const struct hid_generic *hg = containerof(hid, const struct hid_generic,
-            super);
+    const struct hid_generic *hg =
+        containerof(hid, const struct hid_generic, super);
 
     const struct hid_light *meta_lights;
     size_t meta_nlights;
@@ -279,16 +284,16 @@ static bool hid_generic_get_lights(const struct hid *hid,
     }
 }
 
-static bool hid_generic_get_value(struct hid *hid, size_t control_no,
-       int32_t *out_value)
+static bool
+hid_generic_get_value(struct hid *hid, size_t control_no, int32_t *out_value)
 {
     struct hid_generic *hg = containerof(hid, struct hid_generic, super);
 
     return hid_meta_in_get_value(&hg->meta_in, control_no, out_value);
 }
 
-static bool hid_generic_set_light(struct hid *hid, size_t light_no,
-        uint32_t intensity)
+static bool
+hid_generic_set_light(struct hid *hid, size_t light_no, uint32_t intensity)
 {
     struct hid_generic *hg = containerof(hid, struct hid_generic, super);
 
@@ -306,11 +311,13 @@ static bool hid_generic_set_light(struct hid *hid, size_t light_no,
         log_misc("Starting light output to %s", hg->dev_node);
         hid_meta_out_get_next_report(&hg->meta_out, hg->out_buf);
 
-        if (!WriteFile(hg->fd, hg->out_buf, hg->out_nbytes, NULL,
-                &hg->out_ovl)) {
+        if (!WriteFile(
+                hg->fd, hg->out_buf, hg->out_nbytes, NULL, &hg->out_ovl)) {
             if (GetLastError() != ERROR_IO_PENDING) {
-                log_warning("Initial WriteFile failed: %08x: %s",
-                        (unsigned int) GetLastError(), hg->dev_node);
+                log_warning(
+                    "Initial WriteFile failed: %08x: %s",
+                    (unsigned int) GetLastError(),
+                    hg->dev_node);
                 hg->out_faulty = true;
 
                 return false;
@@ -323,8 +330,8 @@ static bool hid_generic_set_light(struct hid *hid, size_t light_no,
     return hid_meta_out_set_light(&hg->meta_out, light_no, intensity);
 }
 
-static bool hid_generic_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
-        size_t nbytes)
+static bool
+hid_generic_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl, size_t nbytes)
 {
     struct hid_generic *hg = containerof(hid_fd, struct hid_generic, super);
 
@@ -334,11 +341,14 @@ static bool hid_generic_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
         hid_meta_out_get_next_report(&hg->meta_out, hg->out_buf);
         memset(&hg->out_ovl, 0, sizeof(hg->out_ovl));
 
-        if (!WriteFile(hg->fd, hg->out_buf, hg->out_nbytes, NULL,
-                &hg->out_ovl) && GetLastError() != ERROR_IO_PENDING) {
-            log_warning("Write error %08x from \"%s\" device on dev node %s",
-                    (unsigned int) GetLastError(), hg->strings.str_prod,
-                    hg->dev_node);
+        if (!WriteFile(
+                hg->fd, hg->out_buf, hg->out_nbytes, NULL, &hg->out_ovl) &&
+            GetLastError() != ERROR_IO_PENDING) {
+            log_warning(
+                "Write error %08x from \"%s\" device on dev node %s",
+                (unsigned int) GetLastError(),
+                hg->strings.str_prod,
+                hg->dev_node);
 
             return false;
         }
@@ -351,8 +361,11 @@ static bool hid_generic_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
            with a pointer to a fresh buffer we can use for subsequent I/O */
 
         if (!hid_meta_in_dispatch(&hg->meta_in, &hg->in_buf, nbytes)) {
-            log_warning("Failed to process input report from \"%s\" device"
-                    " on dev node %s", hg->strings.str_prod, hg->dev_node);
+            log_warning(
+                "Failed to process input report from \"%s\" device"
+                " on dev node %s",
+                hg->strings.str_prod,
+                hg->dev_node);
 
             return false;
         }
@@ -371,11 +384,13 @@ static bool hid_generic_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
 
         memset(&hg->in_ovl, 0, sizeof(hg->in_ovl));
 
-        if (!ReadFile(hg->fd, hg->in_buf, hg->in_nbytes, NULL,
-                &hg->in_ovl) && GetLastError() != ERROR_IO_PENDING) {
-            log_warning("Read error %08x from \"%s\" device on dev node %s",
-                    (unsigned int) GetLastError(), hg->strings.str_prod,
-                    hg->dev_node);
+        if (!ReadFile(hg->fd, hg->in_buf, hg->in_nbytes, NULL, &hg->in_ovl) &&
+            GetLastError() != ERROR_IO_PENDING) {
+            log_warning(
+                "Read error %08x from \"%s\" device on dev node %s",
+                (unsigned int) GetLastError(),
+                hg->strings.str_prod,
+                hg->dev_node);
 
             return false;
         }
@@ -405,4 +420,3 @@ static void hid_generic_close(struct hid *hid)
 
     free(hid);
 }
-

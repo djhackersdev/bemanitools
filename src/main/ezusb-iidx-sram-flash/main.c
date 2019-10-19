@@ -3,23 +3,24 @@
 
 #include <windows.h>
 
-#include "ezusb/ezusb.h"
 #include "ezusb-iidx/sram.h"
+#include "ezusb/ezusb.h"
 
 #include "util/fs.h"
 #include "util/log.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     HANDLE handle;
-    void* buffer;
+    void *buffer;
     size_t size;
     bool res;
 
     if (argc < 3) {
         printf("ezusb-iidx-sram-flash for EZUSB hardware, e.g. IIDX C02 IO, "
-            "build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
-            "Usage: %s [ezusb dev path] [sram bin]\n", argv[0]);
+               "build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
+                                                                            "Usage: %s [ezusb dev path] [sram bin]\n",
+               argv[0]);
         return -1;
     }
 

@@ -23,12 +23,12 @@ struct security_rp3_eeprom {
 
 /**
  * Generate signed eeprom data from non encrypted and unobfuscated data required
- * to pass security checks on games using black (game specific) and white 
+ * to pass security checks on games using black (game specific) and white
  * (eamuse) roundplugs.
- * 
+ *
  * Used on the following games:
  * - jubeat
- * 
+ *
  * @param type Type of plug to sign eeprom data for (black or white).
  * @param sign_key The key to use for generating the signiture.
  *        This key can be extracted from the executables of the games and might
@@ -39,12 +39,13 @@ struct security_rp3_eeprom {
  * @param plug_id The id stored on the plug. This data is normally stored in the
  *                ROM area of the black dongle is is often refered to as the
  *                "PCBID" or "EAMID" when stored on the white dongle.
- * @param out Pointer to the eeprom data struct for the resulting data.  
+ * @param out Pointer to the eeprom data struct for the resulting data.
  */
 void security_rp3_generate_signed_eeprom_data(
-        enum security_rp_util_rp_type type,
-        const struct security_rp_sign_key* sign_key, 
-        const struct security_mcode* plug_mcode, 
-        const struct security_id* plug_id, struct security_rp3_eeprom* out);
+    enum security_rp_util_rp_type type,
+    const struct security_rp_sign_key *sign_key,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp3_eeprom *out);
 
 #endif

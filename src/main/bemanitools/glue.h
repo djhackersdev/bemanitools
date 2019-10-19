@@ -7,7 +7,7 @@
 
 #ifdef __GNUC__
 /* Bemanitools is compiled with GCC (MinGW, specifically) as of version 5 */
-#define LOG_CHECK_FMT __attribute__(( format(printf, 2, 3) ))
+#define LOG_CHECK_FMT __attribute__((format(printf, 2, 3)))
 #else
 /* Compile it out for MSVC plebs */
 #define LOG_CHECK_FMT
@@ -28,7 +28,7 @@
    proprietary extensions), so don't use any overly exotic formats. */
 
 typedef void (*log_formatter_t)(const char *module, const char *fmt, ...)
-        LOG_CHECK_FMT;
+    LOG_CHECK_FMT;
 
 /* An API for spawning threads. This API is defined by libavs, although
    Bemanitools itself may supply compatible implementations of these functions
@@ -39,8 +39,8 @@ typedef void (*log_formatter_t)(const char *module, const char *fmt, ...)
    this restriction will cause the process to crash. This is a limitation of
    libavs itself, not Bemanitools. */
 
-typedef int (*thread_create_t)(int (*proc)(void *), void *ctx,
-        uint32_t stack_sz, unsigned int priority);
+typedef int (*thread_create_t)(
+    int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority);
 typedef void (*thread_join_t)(int thread_id, int *result);
 typedef void (*thread_destroy_t)(int thread_id);
 

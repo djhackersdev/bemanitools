@@ -9,7 +9,7 @@
 
 #include "geninput/input-config.h"
 
-bool bind_adv(HINSTANCE inst, HWND hwnd, struct mapped_action *ma,
-        bool was_valid);
+bool bind_adv(
+    HINSTANCE inst, HWND hwnd, struct mapped_action *ma, bool was_valid);
 
 #endif

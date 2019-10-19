@@ -1,8 +1,8 @@
 #define LOG_MODULE "d3d9-hook"
 
-#include <windows.h>
 #include <d3d9.h>
 #include <d3dx9core.h>
+#include <windows.h>
 
 #include <math.h>
 #include <stdbool.h>
@@ -33,10 +33,19 @@ struct d3d9_vertex {
 
 /* ------------------------------------------------------------------------- */
 
-typedef HRESULT WINAPI (*func_D3DXCreateFontA)(struct IDirect3DDevice9 *device,
-        INT height, UINT width, UINT weight, UINT miplevels, BOOL italic,
-        DWORD charset, DWORD precision, DWORD quality, DWORD pitchandfamily,
-        const char *facename, struct ID3DXFont **font);
+typedef HRESULT WINAPI (*func_D3DXCreateFontA)(
+    struct IDirect3DDevice9 *device,
+    INT height,
+    UINT width,
+    UINT weight,
+    UINT miplevels,
+    BOOL italic,
+    DWORD charset,
+    DWORD precision,
+    DWORD quality,
+    DWORD pitchandfamily,
+    const char *facename,
+    struct ID3DXFont **font);
 
 /* ------------------------------------------------------------------------- */
 
@@ -48,22 +57,23 @@ static struct {
     uint16_t original_back_buffer_width;
     uint16_t original_back_buffer_height;
 
-    IDirect3DTexture9* rt_texture;
-    IDirect3DSurface9* rt_surface;
-    IDirect3DSurface9* rt_orig_surface;
+    IDirect3DTexture9 *rt_texture;
+    IDirect3DSurface9 *rt_surface;
+    IDirect3DSurface9 *rt_orig_surface;
 
     D3DTEXTUREFILTERTYPE filter;
 } iidxhook_util_d3d9_back_buffer_scaling;
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------
+ */
 
 static bool iidxhook_util_d3d9_float_equal(float a, float b, float eps)
 {
     return fabs(a - b) < eps;
 }
 
-static void iidxhook_util_d3d9_calc_win_size_with_framed(HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, 
-        LPWINDOWPOS wp)
+static void iidxhook_util_d3d9_calc_win_size_with_framed(
+    HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, LPWINDOWPOS wp)
 {
     /* taken from dxwnd */
     RECT rect;
@@ -102,35 +112,47 @@ static void iidxhook_util_d3d9_calc_win_size_with_framed(HWND hwnd, DWORD x, DWO
     wp->cy = rect.bottom - rect.top;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------
+ */
 
-static void iidxhook_util_d3d9_patch_gpu_vid_pid(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_patch_gpu_vid_pid(struct hook_d3d9_irp *irp)
 {
     char pci_id[32];
 
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_ENUM_DISPLAY_DEVICES);
 
-    if (iidxhook_util_d3d9_config.pci_vid > 0 && iidxhook_util_d3d9_config.pci_pid > 0) {
-        str_format(pci_id, sizeof(pci_id), "PCI\\VEN_%04X&DEV_%04X", iidxhook_util_d3d9_config.pci_vid, 
+    if (iidxhook_util_d3d9_config.pci_vid > 0 &&
+        iidxhook_util_d3d9_config.pci_pid > 0) {
+            
+        str_format(
+            pci_id,
+            sizeof(pci_id),
+            "PCI\\VEN_%04X&DEV_%04X",
+            iidxhook_util_d3d9_config.pci_vid,
             iidxhook_util_d3d9_config.pci_pid);
 
         /* Apparently Konami didn't read the "Not Used" message in the MSDN
         docs for DISPLAY_DEVICE */
-        log_misc("Replacing device ID %s with %s", irp->args.enum_display_devices.info->DeviceID, pci_id);
+        log_misc(
+            "Replacing device ID %s with %s",
+            irp->args.enum_display_devices.info->DeviceID,
+            pci_id);
 
-        str_cpy(irp->args.enum_display_devices.info->DeviceID, 
-                sizeof(irp->args.enum_display_devices.info->DeviceID), 
-                pci_id);
+        str_cpy(
+            irp->args.enum_display_devices.info->DeviceID,
+            sizeof(irp->args.enum_display_devices.info->DeviceID),
+            pci_id);
     }
 }
 
-static void iidxhook_util_d3d9_patch_window(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_patch_window(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (iidxhook_util_d3d9_config.windowed && iidxhook_util_d3d9_config.framed) {
+    if (iidxhook_util_d3d9_config.windowed &&
+        iidxhook_util_d3d9_config.framed) {
         /* use a different style */
         irp->args.create_window_ex.style |= WS_OVERLAPPEDWINDOW;
 
@@ -138,24 +160,30 @@ static void iidxhook_util_d3d9_patch_window(struct hook_d3d9_irp* irp)
         ShowCursor(TRUE);
     }
 
-    if (iidxhook_util_d3d9_config.override_window_width > 0 && iidxhook_util_d3d9_config.override_window_height) {
-        log_misc("Overriding window size from %dx%d with %dx%d", 
-            irp->args.create_window_ex.width, 
-            irp->args.create_window_ex.height, 
+    if (iidxhook_util_d3d9_config.override_window_width > 0 &&
+        iidxhook_util_d3d9_config.override_window_height) {
+        log_misc(
+            "Overriding window size from %dx%d with %dx%d",
+            irp->args.create_window_ex.width,
+            irp->args.create_window_ex.height,
             iidxhook_util_d3d9_config.override_window_width,
             iidxhook_util_d3d9_config.override_window_height);
 
-        irp->args.create_window_ex.width = iidxhook_util_d3d9_config.override_window_width;
-        irp->args.create_window_ex.height = iidxhook_util_d3d9_config.override_window_height;
+        irp->args.create_window_ex.width =
+            iidxhook_util_d3d9_config.override_window_width;
+        irp->args.create_window_ex.height =
+            iidxhook_util_d3d9_config.override_window_height;
     }
 }
 
-static void iidxhook_util_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (iidxhook_util_d3d9_config.windowed && iidxhook_util_d3d9_config.framed) {
+    if (iidxhook_util_d3d9_config.windowed &&
+        iidxhook_util_d3d9_config.framed) {
         /* we have to adjust the window size, because the window needs to be a
            slightly bigger than the rendering resolution (window caption and
            stuff is included in the window size) */
@@ -168,8 +196,9 @@ static void iidxhook_util_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp* irp
             irp->args.create_window_ex.width,
             irp->args.create_window_ex.height,
             &wp);
-            
-        SetWindowPos(irp->args.create_window_ex.result, 0, wp.x, wp.y, wp.cx, wp.cy, 0);
+
+        SetWindowPos(
+            irp->args.create_window_ex.result, 0, wp.x, wp.y, wp.cx, wp.cy, 0);
 
         irp->args.create_window_ex.x = wp.x;
         irp->args.create_window_ex.y = wp.y;
@@ -178,47 +207,58 @@ static void iidxhook_util_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp* irp
     }
 }
 
-static void iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
 
-    log_misc("CreateDevice parameters: adapter %d, type %d, hwnd %p, flags %lX, pdev %p",
-            irp->args.ctx_create_device.adapter, 
-            irp->args.ctx_create_device.type,
-            irp->args.ctx_create_device.hwnd,
-            irp->args.ctx_create_device.flags,
-            irp->args.ctx_create_device.pdev);
+    log_misc(
+        "CreateDevice parameters: adapter %d, type %d, hwnd %p, flags %lX, "
+        "pdev %p",
+        irp->args.ctx_create_device.adapter,
+        irp->args.ctx_create_device.type,
+        irp->args.ctx_create_device.hwnd,
+        irp->args.ctx_create_device.flags,
+        irp->args.ctx_create_device.pdev);
 
-    log_misc("D3D9 presenter parameters: BackBufferWidth %d, BackBufferHeight %d, BackBufferFormat %d, "
-        "BackBufferCount %d, MultiSampleType %d, SwapEffect %d, hDeviceWindow %p, Windowed %d, EnableAutoDepthStencil "
-        "%d, AutoDepthStencilFormat %d, Flags %lX, FullScreen_RefreshRateInHz %d",
-            irp->args.ctx_create_device.pp->BackBufferWidth,
-            irp->args.ctx_create_device.pp->BackBufferHeight,
-            irp->args.ctx_create_device.pp->BackBufferFormat,
-            irp->args.ctx_create_device.pp->BackBufferCount,
-            irp->args.ctx_create_device.pp->MultiSampleType,
-            irp->args.ctx_create_device.pp->SwapEffect,
-            irp->args.ctx_create_device.pp->hDeviceWindow,
-            irp->args.ctx_create_device.pp->Windowed,
-            irp->args.ctx_create_device.pp->EnableAutoDepthStencil,
-            irp->args.ctx_create_device.pp->AutoDepthStencilFormat,
-            irp->args.ctx_create_device.pp->Flags,
-            irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz);
+    log_misc(
+        "D3D9 presenter parameters: BackBufferWidth %d, BackBufferHeight "
+        "%d, BackBufferFormat %d, "
+        "BackBufferCount %d, MultiSampleType %d, SwapEffect %d, "
+        "hDeviceWindow %p, Windowed %d, "
+        "EnableAutoDepthStencil "
+        "%d, AutoDepthStencilFormat %d, Flags %lX, "
+        "FullScreen_RefreshRateInHz %d",
+        irp->args.ctx_create_device.pp->BackBufferWidth,
+        irp->args.ctx_create_device.pp->BackBufferHeight,
+        irp->args.ctx_create_device.pp->BackBufferFormat,
+        irp->args.ctx_create_device.pp->BackBufferCount,
+        irp->args.ctx_create_device.pp->MultiSampleType,
+        irp->args.ctx_create_device.pp->SwapEffect,
+        irp->args.ctx_create_device.pp->hDeviceWindow,
+        irp->args.ctx_create_device.pp->Windowed,
+        irp->args.ctx_create_device.pp->EnableAutoDepthStencil,
+        irp->args.ctx_create_device.pp->AutoDepthStencilFormat,
+        irp->args.ctx_create_device.pp->Flags,
+        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz);
 }
 
-static void iidxhook_util_d3d9_fix_iidx_bug_software_processing(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_fix_iidx_bug_software_processing(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
 
     /* Fix a long-standing bug in IIDX */
-    if (irp->args.ctx_create_device.flags & D3DCREATE_SOFTWARE_VERTEXPROCESSING) {
+    if (irp->args.ctx_create_device.flags &
+        D3DCREATE_SOFTWARE_VERTEXPROCESSING) {
         irp->args.ctx_create_device.flags &= ~D3DCREATE_PUREDEVICE;
     }
 }
 
-static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(
+    struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
@@ -229,46 +269,62 @@ static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(struct hook_d
     }
 }
 
-static void iidxhook_util_d3d9_fix_back_buffer_format(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_fix_back_buffer_format(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
 
     /* Same fix as on D3D8, orz...
-       If we don't do this, some games one certain platforms (e.g. iidx 14/15 on Windows 10).
-       CreateDevice fails with an "invalid call" on either fullscreen or windowed or even both. 
-       Also, further reports about textures with green glowing borders are gone as well when applying this */
+       If we don't do this, some games one certain platforms (e.g. iidx 14/15 on
+       Windows 10). CreateDevice fails with an "invalid call" on either
+       fullscreen or windowed or even both.
+       Also, further reports about textures with green glowing borders are gone
+       as well when applying this */
     D3DDISPLAYMODE mode;
     IDirect3D9_GetAdapterDisplayMode(
-        irp->args.ctx_create_device.self, 
-        irp->args.ctx_create_device.adapter, 
+        irp->args.ctx_create_device.self,
+        irp->args.ctx_create_device.adapter,
         &mode);
 
     irp->args.ctx_create_device.pp->BackBufferFormat = mode.Format;
 }
 
-static ID3DXFont* iidxhook_util_d3d9_load_and_create_font(IDirect3DDevice9* dev)
+static ID3DXFont *iidxhook_util_d3d9_load_and_create_font(IDirect3DDevice9 *dev)
 {
     HMODULE d3d9_24;
     HRESULT hr;
-    ID3DXFont* font;
-    
+    ID3DXFont *font;
+
     d3d9_24 = GetModuleHandleA("d3dx9_24.dll");
 
     if (d3d9_24 == NULL) {
-        log_warning("Failed to load d3dx9_24.dll to create a font for displaying framerate on monitor check.");
+        log_warning(
+            "Failed to load d3dx9_24.dll to create a font for displaying "
+            "framerate on monitor check.");
         return NULL;
     }
 
-    func_D3DXCreateFontA d3dxCreateFontA =(func_D3DXCreateFontA) GetProcAddress(d3d9_24, "D3DXCreateFontA");
+    func_D3DXCreateFontA d3dxCreateFontA =
+        (func_D3DXCreateFontA) GetProcAddress(d3d9_24, "D3DXCreateFontA");
 
     if (d3dxCreateFontA == NULL) {
         log_warning("Failed to find function D3DXCreateFontA");
         return NULL;
     }
 
-    hr = d3dxCreateFontA(dev, 22, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
-        FF_DONTCARE, "Arial", &font);
+    hr = d3dxCreateFontA(
+        dev,
+        22,
+        0,
+        FW_NORMAL,
+        1,
+        false,
+        DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,
+        ANTIALIASED_QUALITY,
+        FF_DONTCARE,
+        "Arial",
+        &font);
 
     if (hr != S_OK) {
         log_warning("Failed to load font for monitor check: %lX", hr);
@@ -278,7 +334,7 @@ static ID3DXFont* iidxhook_util_d3d9_load_and_create_font(IDirect3DDevice9* dev)
     return font;
 }
 
-static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp *irp)
 {
     const uint32_t max_iterations = 60 * 30;
     const uint32_t skip_frames = 60 * 1;
@@ -289,7 +345,7 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
     uint64_t start;
 
     char text_buffer[256];
-    ID3DXFont* font;
+    ID3DXFont *font;
     RECT font_rect;
 
     log_assert(irp);
@@ -303,10 +359,13 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
         result = 0;
         iterations = 0;
 
-        font = iidxhook_util_d3d9_load_and_create_font(*irp->args.ctx_create_device.pdev);
+        font = iidxhook_util_d3d9_load_and_create_font(
+            *irp->args.ctx_create_device.pdev);
 
         if (font == NULL) {
-            log_info("Monitor check without on-screen text showing current refresh rate.");
+            log_info(
+                "Monitor check without on-screen text showing current "
+                "refresh rate.");
         } else {
             SetRect(&font_rect, 20, 20, 640, 480);
         }
@@ -318,8 +377,8 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
                     "Monitor check...\n"
                     "Elapsed iterations: %d/%d\n"
                     "Refresh rate: %f",
-                    iterations + 1, 
-                    max_iterations, 
+                    iterations + 1,
+                    max_iterations,
                     result);
             }
 
@@ -328,16 +387,30 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
 
             IDirect3DDevice9_BeginScene(*irp->args.ctx_create_device.pdev);
 
-            IDirect3DDevice9_Clear(*irp->args.ctx_create_device.pdev, 0, NULL, D3DCLEAR_TARGET, 
-                D3DCOLOR_XRGB(0xFF, 0xFF, 0xFF), 0.0f, 0);
+            IDirect3DDevice9_Clear(
+                *irp->args.ctx_create_device.pdev,
+                0,
+                NULL,
+                D3DCLEAR_TARGET,
+                D3DCOLOR_XRGB(0xFF, 0xFF, 0xFF),
+                0.0f,
+                0);
 
             if (font) {
-                ID3DXFont_DrawTextA(font, NULL, text_buffer, -1, &font_rect, DT_LEFT, D3DCOLOR_XRGB(0xFF, 0xFF, 0xFF));
+                ID3DXFont_DrawTextA(
+                    font,
+                    NULL,
+                    text_buffer,
+                    -1,
+                    &font_rect,
+                    DT_LEFT,
+                    D3DCOLOR_XRGB(0xFF, 0xFF, 0xFF));
             }
 
             IDirect3DDevice9_EndScene(*irp->args.ctx_create_device.pdev);
 
-            IDirect3DDevice9_Present(*irp->args.ctx_create_device.pdev, NULL, NULL, NULL, NULL);
+            IDirect3DDevice9_Present(
+                *irp->args.ctx_create_device.pdev, NULL, NULL, NULL, NULL);
 
             /* Skip the first inaccurate values */
             if (iterations > skip_frames) {
@@ -348,15 +421,20 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
             }
         }
 
-        log_info("Monitor check done (total iterations %d), refesh rate: %f hz",
-            iterations, result);
-        
+        log_info(
+            "Monitor check done (total iterations %d), refesh rate: %f hz",
+            iterations,
+            result);
+
         /* Sanity check to ensure people notice that their current refresh rate
            is way off. */
         if (result < 55 || result > 65) {
-            log_warning("Monitor check result (%f hz) is not even near the "
-                "intended refresh rate of 60 hz. Fix your setup to ensure a " 
-                "constant and as close to as possible 60 hz refresh rate.", result);
+            log_warning(
+                "Monitor check result (%f hz) is not even near the "
+                "intended refresh rate of 60 hz. Fix your setup to ensure "
+                "a "
+                "constant and as close to as possible 60 hz refresh rate.",
+                result);
         }
 
         /* Leave results of monitor check on screen for a moment */
@@ -370,7 +448,7 @@ static void iidxhook_util_d3d9_execute_monitor_check(struct hook_d3d9_irp* irp)
 
 static void iidxhook_util_d3d9_log_result_create_device(HRESULT hr)
 {
-    char* error;
+    char *error;
 
     if (hr != S_OK) {
         switch (hr) {
@@ -399,32 +477,33 @@ static void iidxhook_util_d3d9_log_result_create_device(HRESULT hr)
     }
 }
 
-static void iidxhook_util_d3d9_nvidia_fix_iidx14_to_19(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_nvidia_fix_iidx14_to_19(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_CREATE_TEXTURE);
 
     /* Fix non ATI cards not working on Gold (and DJT?). There is a check that
         creates textures when starting the game. This check fails which results
-        in a message box being shown mentioning something about an aep-lib error.
-        Seems like a combination of parameters is not supported by
-        non ATI cards and throws an error
-        (Fix taken from old Gold cracks by ahnada and tau)
+        in a message box being shown mentioning something about an aep-lib
+       error. Seems like a combination of parameters is not supported by non ATI
+       cards and throws an error (Fix taken from old Gold cracks by ahnada and
+       tau)
     */
 
-    if (iidxhook_util_d3d9_config.iidx14_to_19_nvidia_fix && 
-            irp->args.dev_create_texture.width == 256 &&
-            irp->args.dev_create_texture.height == 256 &&
-            irp->args.dev_create_texture.levels == 1 &&
-            irp->args.dev_create_texture.usage == D3DUSAGE_RENDERTARGET &&
-            irp->args.dev_create_texture.format == D3DFMT_A1R5G5B5 &&
-            irp->args.dev_create_texture.pool == D3DPOOL_DEFAULT &&
-            irp->args.dev_create_texture.shared_handle == NULL) {
+    if (iidxhook_util_d3d9_config.iidx14_to_19_nvidia_fix &&
+        irp->args.dev_create_texture.width == 256 &&
+        irp->args.dev_create_texture.height == 256 &&
+        irp->args.dev_create_texture.levels == 1 &&
+        irp->args.dev_create_texture.usage == D3DUSAGE_RENDERTARGET &&
+        irp->args.dev_create_texture.format == D3DFMT_A1R5G5B5 &&
+        irp->args.dev_create_texture.pool == D3DPOOL_DEFAULT &&
+        irp->args.dev_create_texture.shared_handle == NULL) {
         irp->args.dev_create_texture.format = D3DFMT_A8R8G8B8;
     }
 }
 
-static void iidxhook_util_d3d9_framerate_limiter(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_framerate_limiter(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_PRESENT);
@@ -433,14 +512,18 @@ static void iidxhook_util_d3d9_framerate_limiter(struct hook_d3d9_irp* irp)
         if (iidxhook_util_d3d9_present_current_time == 0) {
             iidxhook_util_d3d9_present_current_time = time_get_counter();
         } else {
-            uint64_t frame_time = 1000000 / iidxhook_util_d3d9_config.framerate_limit;
+            uint64_t frame_time =
+                1000000 / iidxhook_util_d3d9_config.framerate_limit;
 
-            uint64_t dt = time_get_elapsed_us(time_get_counter() - iidxhook_util_d3d9_present_current_time);
+            uint64_t dt = time_get_elapsed_us(
+                time_get_counter() - iidxhook_util_d3d9_present_current_time);
 
             while (dt < frame_time) {
                 /* waste some cpu time by polling
                    because we can't sleep for X us */
-                dt = time_get_elapsed_us(time_get_counter() - iidxhook_util_d3d9_present_current_time);
+                dt = time_get_elapsed_us(
+                    time_get_counter() -
+                    iidxhook_util_d3d9_present_current_time);
             }
 
             iidxhook_util_d3d9_present_current_time = time_get_counter();
@@ -448,7 +531,8 @@ static void iidxhook_util_d3d9_framerate_limiter(struct hook_d3d9_irp* irp)
     }
 }
 
-static void iidxhook_util_d3d9_iidx12_fix_song_select_bg(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_iidx12_fix_song_select_bg(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_SET_RENDER_STATE);
@@ -460,7 +544,8 @@ static void iidxhook_util_d3d9_iidx12_fix_song_select_bg(struct hook_d3d9_irp* i
     }
 }
 
-static void iidxhook_util_d3d9_iidx13_fix_song_select_bg(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_iidx13_fix_song_select_bg(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_SET_RENDER_STATE);
@@ -472,18 +557,21 @@ static void iidxhook_util_d3d9_iidx13_fix_song_select_bg(struct hook_d3d9_irp* i
     }
 }
 
-static void iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP);
 
     /* same code taken from the d3d8 module. but, this just fixes the quad
        seam issue as there are no reports of streched bg videos */
-    if (iidxhook_util_d3d9_config.iidx11_to_17_fix_uvs_bg_videos && 
-            irp->args.dev_draw_primitive_up.primitive_type == D3DPT_TRIANGLEFAN && 
-            irp->args.dev_draw_primitive_up.primitive_count == 2 &&
-            irp->args.dev_draw_primitive_up.stride == 28) {
-        struct d3d9_vertex* vertices = (struct d3d9_vertex*) irp->args.dev_draw_primitive_up.data;
+    if (iidxhook_util_d3d9_config.iidx11_to_17_fix_uvs_bg_videos &&
+        irp->args.dev_draw_primitive_up.primitive_type == D3DPT_TRIANGLEFAN &&
+        irp->args.dev_draw_primitive_up.primitive_count == 2 &&
+        irp->args.dev_draw_primitive_up.stride == 28) {
+
+        struct d3d9_vertex *vertices =
+            (struct d3d9_vertex *) irp->args.dev_draw_primitive_up.data;
 
         /*
         log_info("Video Tex: %f/%f %f/%f %f/%f %f/%f",
@@ -494,14 +582,14 @@ static void iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_i
         */
 
         /* Fix full screen background videos (e.g. DistorteD intro sequence) */
-        if (    vertices[0].x >= 0.0f && vertices[0].x < 1.0f &&
-                vertices[0].y >= 0.0f && vertices[0].y < 1.0f &&
-                vertices[1].x > 639.0f && vertices[1].x < 641.0f &&
-                vertices[1].y >= 0.0f && vertices[1].y < 1.0f &&
-                vertices[2].x > 639.0f && vertices[2].x < 641.0f &&
-                vertices[2].y > 479.0f && vertices[2].y < 481.0f &&
-                vertices[3].x >= 0.0f && vertices[3].x < 1.0f &&
-                vertices[3].y > 479.0f && vertices[3].y < 481.0f) {
+        if (vertices[0].x >= 0.0f && vertices[0].x < 1.0f &&
+            vertices[0].y >= 0.0f && vertices[0].y < 1.0f &&
+            vertices[1].x > 639.0f && vertices[1].x < 641.0f &&
+            vertices[1].y >= 0.0f && vertices[1].y < 1.0f &&
+            vertices[2].x > 639.0f && vertices[2].x < 641.0f &&
+            vertices[2].y > 479.0f && vertices[2].y < 481.0f &&
+            vertices[3].x >= 0.0f && vertices[3].x < 1.0f &&
+            vertices[3].y > 479.0f && vertices[3].y < 481.0f) {
             /* fix UVs
                1.0f / 640 or 480 fixes the diagonal seam connecting the two
                triangles which is visible on some GPUs (why? idk)
@@ -516,56 +604,58 @@ static void iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_i
             vertices[3].tv = 0.0f + 1.0f / 480;
         } else
 
-        /* another identifier, because there are other textures with 512x512 size
-           make sure we got the bg video only to not mess up anything else */
-        /* different versions have different themes and position the bg video
-           on slightly different positions (good job...) */
-        if (    /* single */
+            /* another identifier, because there are other textures with
+               512x512 size make sure we got the bg video only to not mess
+               up anything else */
+            /* different versions have different themes and position the bg
+               video on slightly different positions (good job...) */
+            if (/* single */
                 ((vertices[0].x >= 164.0f && vertices[0].x <= 168.0f &&
-                iidxhook_util_d3d9_float_equal(vertices[0].y, 0.0f, 0.1f)) &&
-                (vertices[1].x >= 472.0f && vertices[1].x <= 476.0f &&
-                iidxhook_util_d3d9_float_equal(vertices[1].y, 0.0f, 0.1f)) &&
-                (vertices[2].x >= 472.0f && vertices[2].x <= 476.0f &&
-                iidxhook_util_d3d9_float_equal(vertices[2].y, 416.0f, 0.1f)) &&
-                (vertices[3].x >= 164.0f && vertices[3].x <= 168.0f &&
-                iidxhook_util_d3d9_float_equal(vertices[3].y, 416.0f, 0.1f))) ||
+                  iidxhook_util_d3d9_float_equal(vertices[0].y, 0.0f, 0.1f)) &&
+                 (vertices[1].x >= 472.0f && vertices[1].x <= 476.0f &&
+                  iidxhook_util_d3d9_float_equal(vertices[1].y, 0.0f, 0.1f)) &&
+                 (vertices[2].x >= 472.0f && vertices[2].x <= 476.0f &&
+                  iidxhook_util_d3d9_float_equal(
+                      vertices[2].y, 416.0f, 0.1f)) &&
+                 (vertices[3].x >= 164.0f && vertices[3].x <= 168.0f &&
+                  iidxhook_util_d3d9_float_equal(
+                      vertices[3].y, 416.0f, 0.1f))) ||
                 /* double top left */
                 ((iidxhook_util_d3d9_float_equal(vertices[0].x, 6.0f, 0.1f) &&
-                vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
-                vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1f) &&
-                vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
-                vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
+                  vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
+                  vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1f) &&
+                  vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
+                  vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
                 /* double bottom left */
                 ((iidxhook_util_d3d9_float_equal(vertices[0].x, 6.0f, 0.1f) &&
-                vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
-                vertices[1].y >= 216.0f && vertices[1].y <= 220.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1) &&
-                vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
-                (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
-                vertices[3].y >= 404.0f && vertices[3].y <= 408.0f)) ||
+                  vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
+                  vertices[1].y >= 216.0f && vertices[1].y <= 220.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1) &&
+                  vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
+                 (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
+                  vertices[3].y >= 404.0f && vertices[3].y <= 408.0f)) ||
                 /* double top right */
                 ((vertices[0].x >= 493.0f && vertices[0].x <= 494.0f &&
-                vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
-                (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
-                vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
-                (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
-                vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
-                (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
-                vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
+                  vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
+                 (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
+                  vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
+                 (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
+                  vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
+                 (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
+                  vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
                 /* double bottom right */
                 ((vertices[0].x >= 493.0f && vertices[0].x <= 494.0f &&
-                vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
-                (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
-                vertices[1].y >= 216.0f  && vertices[1].y <= 220.0f) &&
-                (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
-                vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
-                (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
-                vertices[3].y >= 404.0f && vertices[3].y <= 408.0f)))
-        {
+                  vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
+                 (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
+                  vertices[1].y >= 216.0f && vertices[1].y <= 220.0f) &&
+                 (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
+                  vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
+                 (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
+                  vertices[3].y >= 404.0f && vertices[3].y <= 408.0f))) {
             /* fix UVs
                1.0f / 512 fixes the diagonal seam connecting the two triangles
                which is visible on some GPUs (why? idk)
@@ -582,32 +672,39 @@ static void iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_i
     }
 }
 
-static void iidxhook_uti_d3d9_fix_iidx9_to_13_viewport_size(struct hook_d3d9_irp* irp)
+static void
+iidxhook_uti_d3d9_fix_iidx9_to_13_viewport_size(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_GET_CLIENT_RECT);
 
-    /* IIDX 9-13 (at least) use this call to get the size of rectangle for setting the viewport size... */
+    /* IIDX 9-13 (at least) use this call to get the size of rectangle for
+     * setting the viewport size... */
 
-    /* Always use the original requested back buffer size. If scaling is active, using the scaled
-       values leads to (3D) scenes getting render to a viewport with incorrect sized. */
+    /* Always use the original requested back buffer size. If scaling is active,
+       using the scaled
+       values leads to (3D) scenes getting render to a viewport with incorrect
+       sized. */
     irp->args.get_client_rect.rect->left = 0;
     irp->args.get_client_rect.rect->top = 0;
-    irp->args.get_client_rect.rect->right = iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width;
-    irp->args.get_client_rect.rect->bottom = iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height;    
+    irp->args.get_client_rect.rect->right =
+        iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width;
+    irp->args.get_client_rect.rect->bottom =
+        iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height;
 }
 
-static void iidxhook_util_d3d9_setup_back_buffer_scaling_pre(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_setup_back_buffer_scaling_pre(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
 
     /* Store these so we can apply scaling further down */
-    iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width = 
+    iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width =
         irp->args.ctx_create_device.pp->BackBufferWidth;
-    iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height = 
+    iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height =
         irp->args.ctx_create_device.pp->BackBufferHeight;
-    
+
     switch (iidxhook_util_d3d9_config.scale_back_buffer_filter) {
         case IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE:
             iidxhook_util_d3d9_back_buffer_scaling.filter = D3DTEXF_NONE;
@@ -622,40 +719,47 @@ static void iidxhook_util_d3d9_setup_back_buffer_scaling_pre(struct hook_d3d9_ir
             break;
 
         default:
-            log_fatal("Unhandled case, illegal state: %d", iidxhook_util_d3d9_config.scale_back_buffer_filter);
+            log_fatal(
+                "Unhandled case, illegal state: %d",
+                iidxhook_util_d3d9_config.scale_back_buffer_filter);
             break;
     }
 
-    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 && 
-            iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
-        log_misc("Scale back buffer from %dx%d -> %dx%d", 
+    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 &&
+        iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+
+        log_misc(
+            "Scale back buffer from %dx%d -> %dx%d",
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width,
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height,
             iidxhook_util_d3d9_config.scale_back_buffer_width,
             iidxhook_util_d3d9_config.scale_back_buffer_height);
-      
-        irp->args.ctx_create_device.pp->BackBufferWidth = 
+
+        irp->args.ctx_create_device.pp->BackBufferWidth =
             iidxhook_util_d3d9_config.scale_back_buffer_width;
-        irp->args.ctx_create_device.pp->BackBufferHeight = 
+        irp->args.ctx_create_device.pp->BackBufferHeight =
             iidxhook_util_d3d9_config.scale_back_buffer_height;
     }
 }
 
-static void iidxhook_util_d3d9_setup_back_buffer_scaling_post(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_setup_back_buffer_scaling_post(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
 
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
 
-    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 && 
-            iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 &&
+        iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
 
-        log_misc("Creating intermediate render target texture: %dx%d",
+        log_misc(
+            "Creating intermediate render target texture: %dx%d",
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width,
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height);
 
-        /* This is our new render target. Let the game render to this in its native res instead of the back buffer */
+        /* This is our new render target. Let the game render to this in its
+         * native res instead of the back buffer */
         hr = IDirect3DDevice9_CreateTexture(
             *irp->args.ctx_create_device.pdev,
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width,
@@ -677,41 +781,42 @@ static void iidxhook_util_d3d9_setup_back_buffer_scaling_post(struct hook_d3d9_i
             &iidxhook_util_d3d9_back_buffer_scaling.rt_surface);
 
         if (hr != S_OK) {
-            log_fatal("Getting surface of render target texture failed: %lX", hr);
+            log_fatal(
+                "Getting surface of render target texture failed: %lX", hr);
         }
 
         /* Save surface of original render target */
         hr = IDirect3DDevice9_GetRenderTarget(
-            *irp->args.ctx_create_device.pdev, 
-            0, 
+            *irp->args.ctx_create_device.pdev,
+            0,
             &iidxhook_util_d3d9_back_buffer_scaling.rt_orig_surface);
 
         if (hr != S_OK) {
             log_fatal("Getting original render target failed: %lX", hr);
         }
 
-        /* Avoid returning our scaled values because the application might use them, e.g. calculate
-        sprite positions. */
-        irp->args.ctx_create_device.pp->BackBufferWidth = 
+        /* Avoid returning our scaled values because the application might use
+        them, e.g. calculate sprite positions. */
+        irp->args.ctx_create_device.pp->BackBufferWidth =
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width;
-        irp->args.ctx_create_device.pp->BackBufferHeight = 
+        irp->args.ctx_create_device.pp->BackBufferHeight =
             iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height;
     }
 }
 
-static void iidxhook_util_d3d9_set_intermediate_rt(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_set_intermediate_rt(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
 
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_BEGIN_SCENE);
 
-    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 && 
-            iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 &&
+        iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
         /* Set our intermediate render texture as render target */
         hr = IDirect3DDevice9_SetRenderTarget(
-            irp->args.dev_begin_scene.self, 
-            0, 
+            irp->args.dev_begin_scene.self,
+            0,
             iidxhook_util_d3d9_back_buffer_scaling.rt_surface);
 
         if (hr != S_OK) {
@@ -720,19 +825,19 @@ static void iidxhook_util_d3d9_set_intermediate_rt(struct hook_d3d9_irp* irp)
     }
 }
 
-static void iidxhook_util_d3d9_set_back_buffer_rt(struct hook_d3d9_irp* irp)
+static void iidxhook_util_d3d9_set_back_buffer_rt(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
 
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_PRESENT);
 
-    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 && 
-            iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 &&
+        iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
         /* Set our original surface/back buffer as rt */
         hr = IDirect3DDevice9_SetRenderTarget(
-            irp->args.dev_present.self, 
-            0, 
+            irp->args.dev_present.self,
+            0,
             iidxhook_util_d3d9_back_buffer_scaling.rt_orig_surface);
 
         if (hr != S_OK) {
@@ -741,7 +846,8 @@ static void iidxhook_util_d3d9_set_back_buffer_rt(struct hook_d3d9_irp* irp)
     }
 }
 
-static void iidxhook_util_d3d9_scale_render_target_to_back_buffer(struct hook_d3d9_irp* irp)
+static void
+iidxhook_util_d3d9_scale_render_target_to_back_buffer(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
     RECT src_rect;
@@ -749,12 +855,15 @@ static void iidxhook_util_d3d9_scale_render_target_to_back_buffer(struct hook_d3
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_PRESENT);
 
-    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 && 
-            iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+    if (iidxhook_util_d3d9_config.scale_back_buffer_width > 0 &&
+        iidxhook_util_d3d9_config.scale_back_buffer_height > 0) {
+
         src_rect.left = 0;
         src_rect.top = 0;
-        src_rect.right = iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width;
-        src_rect.bottom = iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height;
+        src_rect.right =
+            iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_width;
+        src_rect.bottom =
+            iidxhook_util_d3d9_back_buffer_scaling.original_back_buffer_height;
 
         hr = IDirect3DDevice9_StretchRect(
             irp->args.dev_present.self,
@@ -765,14 +874,19 @@ static void iidxhook_util_d3d9_scale_render_target_to_back_buffer(struct hook_d3
             iidxhook_util_d3d9_back_buffer_scaling.filter);
 
         if (hr != S_OK) {
-            log_fatal("Scaling intermediate render target to back buffer failed: %lX", hr);
+            log_fatal(
+                "Scaling intermediate render target to back buffer failed: "
+                "%lX",
+                hr);
         }
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------
+ */
 
-static void iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config* config)
+static void
+iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
 {
     log_misc(
         "iidxhook_util_d3d9_config\n"
@@ -808,31 +922,41 @@ static void iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config
         config->scale_back_buffer_filter);
 }
 
-static void iidxhook_util_d3d9_validate_config(const struct iidxhook_util_d3d9_config* config)
+static void iidxhook_util_d3d9_validate_config(
+    const struct iidxhook_util_d3d9_config *config)
 {
     if (!config->windowed && config->framed) {
         log_warning("Option framed does not have an effect without windowed");
     }
 
     if (config->override_window_width == -1) {
-        log_fatal("Invalid value for override_window_width: %d", config->override_window_width);
+        log_fatal(
+            "Invalid value for override_window_width: %d",
+            config->override_window_width);
     }
 
     if (config->override_window_height == -1) {
-        log_fatal("Invalid value for override_window_height: %d", config->override_window_height);
+        log_fatal(
+            "Invalid value for override_window_height: %d",
+            config->override_window_height);
     }
 
-    if (!config->windowed && 
-            (config->override_window_width > 0 || config->override_window_height > 0)) {
-        log_warning("Overriding window size does not have an effect without windowed");
+    if (!config->windowed &&
+        (config->override_window_width > 0 ||
+         config->override_window_height > 0)) {
+        log_warning(
+            "Overriding window size does not have an effect without "
+            "windowed");
     }
 
     if (config->framerate_limit < 0.0f) {
-        log_fatal("Invalid value for framerate_limit: %f", config->framerate_limit);
+        log_fatal(
+            "Invalid value for framerate_limit: %f", config->framerate_limit);
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------
+ */
 
 void iidxhook_util_d3d9_hook_init(void)
 {
@@ -841,7 +965,7 @@ void iidxhook_util_d3d9_hook_init(void)
     log_info("Initialized");
 }
 
-void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config* config)
+void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config *config)
 {
     config->windowed = false;
     config->framed = false;
@@ -857,20 +981,26 @@ void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config* config)
     config->iidx14_to_19_nvidia_fix = false;
     config->scale_back_buffer_width = 0;
     config->scale_back_buffer_height = 0;
-    config->scale_back_buffer_filter = IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
+    config->scale_back_buffer_filter =
+        IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
 }
 
-void iidxhook_util_d3d9_configure(const struct iidxhook_util_d3d9_config* config)
+void iidxhook_util_d3d9_configure(
+    const struct iidxhook_util_d3d9_config *config)
 {
     log_assert(config);
 
     iidxhook_util_d3d9_log_config(config);
     iidxhook_util_d3d9_validate_config(config);
 
-    memcpy(&iidxhook_util_d3d9_config, config, sizeof(struct iidxhook_util_d3d9_config));
+    memcpy(
+        &iidxhook_util_d3d9_config,
+        config,
+        sizeof(struct iidxhook_util_d3d9_config));
 }
 
-HRESULT iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp* irp)
+HRESULT
+iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
 
@@ -912,7 +1042,7 @@ HRESULT iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp* irp)
             iidxhook_util_d3d9_fix_create_device_apply_window_mode(irp);
             iidxhook_util_d3d9_fix_back_buffer_format(irp);
             iidxhook_util_d3d9_setup_back_buffer_scaling_pre(irp);
-        
+
             hr = hook_d3d9_irp_invoke_next(irp);
 
             if (hr == S_OK) {

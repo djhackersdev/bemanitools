@@ -9,15 +9,21 @@
 
 static HANDLE aciodrv_port_fd;
 
-bool aciodrv_port_open(const char* port, int baud)
+bool aciodrv_port_open(const char *port, int baud)
 {
     COMMTIMEOUTS ct;
     DCB dcb;
 
     log_info("Opening ACIO on %s at %d baud", port, baud);
 
-    aciodrv_port_fd = CreateFile(port, GENERIC_READ | GENERIC_WRITE, 0, NULL,
-        OPEN_EXISTING, FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL, NULL);
+    aciodrv_port_fd = CreateFile(
+        port,
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL,
+        NULL);
 
     if (aciodrv_port_fd == INVALID_HANDLE_VALUE) {
         log_warning("Failed to open %s", port);
@@ -37,9 +43,9 @@ bool aciodrv_port_open(const char* port, int baud)
         goto fail;
     }
 
-    if (!PurgeComm(aciodrv_port_fd,
-        PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR)) {
-
+    if (!PurgeComm(
+            aciodrv_port_fd,
+            PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR)) {
         log_warning("PurgeComm failed");
 
         goto fail;
@@ -143,7 +149,7 @@ int aciodrv_port_write(const void *bytes, int nbytes)
         log_warning("WriteFile failed: err = %lu", GetLastError());
 
         return -1;
-       }
+    }
 
     return nwrit;
 }
@@ -154,4 +160,3 @@ void aciodrv_port_close(void)
         CloseHandle(aciodrv_port_fd);
     }
 }
-

@@ -22,7 +22,7 @@ uint64_t time_get_counter(void)
     LARGE_INTEGER time;
 
     log_assert(QueryPerformanceCounter(&time) == TRUE);
-    
+
     return (uint64_t) time.QuadPart;
 }
 

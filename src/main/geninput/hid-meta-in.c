@@ -1,7 +1,7 @@
 #define LOG_MODULE "hid-generic"
 
-#include <windows.h>
 #include <hidsdi.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,13 +14,13 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-static bool hid_meta_in_init_caps(struct hid_meta_in *meta,
-        PHIDP_PREPARSED_DATA ppd);
+static bool
+hid_meta_in_init_caps(struct hid_meta_in *meta, PHIDP_PREPARSED_DATA ppd);
 static void hid_meta_in_init_arrays(struct hid_meta_in *meta);
 static void hid_meta_in_init_buttons(struct hid_meta_in *meta);
 static void hid_meta_in_init_values(struct hid_meta_in *meta);
-static struct hid_report_in *hid_meta_in_lookup_report(
-        struct hid_meta_in *meta, uint8_t report_id);
+static struct hid_report_in *
+hid_meta_in_lookup_report(struct hid_meta_in *meta, uint8_t report_id);
 static void hid_meta_in_fini_arrays(struct hid_meta_in *meta);
 static void hid_meta_in_fini_caps(struct hid_meta_in *meta);
 
@@ -37,8 +37,8 @@ bool hid_meta_in_init(struct hid_meta_in *meta, PHIDP_PREPARSED_DATA ppd)
     return true;
 }
 
-static bool hid_meta_in_init_caps(struct hid_meta_in *meta,
-        PHIDP_PREPARSED_DATA ppd)
+static bool
+hid_meta_in_init_caps(struct hid_meta_in *meta, PHIDP_PREPARSED_DATA ppd)
 {
     uint16_t len;
     NTSTATUS status;
@@ -57,7 +57,8 @@ static bool hid_meta_in_init_caps(struct hid_meta_in *meta,
     meta->caps_btn = xmalloc(sizeof(*meta->caps_btn) * len);
 
     if (len > 0) {
-        status = HidP_GetButtonCaps(HidP_Input, meta->caps_btn, &len,meta->ppd);
+        status =
+            HidP_GetButtonCaps(HidP_Input, meta->caps_btn, &len, meta->ppd);
 
         if (status != HIDP_STATUS_SUCCESS) {
             log_warning("Error getting button caps");
@@ -118,7 +119,7 @@ static void hid_meta_in_init_arrays(struct hid_meta_in *meta)
 
     /* Count up buttons, globally and per-report */
 
-    for (i = 0 ; i < meta->caps_tlc.NumberInputButtonCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberInputButtonCaps; i++) {
         bc = &meta->caps_btn[i];
 
         if (bc->IsRange) {
@@ -139,7 +140,7 @@ static void hid_meta_in_init_arrays(struct hid_meta_in *meta)
 
     /* Count up values, note all reports that have values */
 
-    for (i = 0 ; i < meta->caps_tlc.NumberInputValueCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberInputValueCaps; i++) {
         vc = &meta->caps_val[i];
 
         if (vc->IsRange) {
@@ -159,7 +160,7 @@ static void hid_meta_in_init_arrays(struct hid_meta_in *meta)
 
     /* Count up total number of reports and initialize them */
 
-    for (i = 0 ; i < 0x100 ; i++) {
+    for (i = 0; i < 0x100; i++) {
         if (report_btns[i] || report_presence[i]) {
             meta->nreports++;
         }
@@ -168,21 +169,25 @@ static void hid_meta_in_init_arrays(struct hid_meta_in *meta)
     j = 0;
     meta->reports = xmalloc(sizeof(*meta->reports) * meta->nreports);
 
-    for (i = 0 ; i < 0x100 ; i++) {
+    for (i = 0; i < 0x100; i++) {
         if (report_btns[i] || report_presence[i]) {
             report_buf = xmalloc(meta->caps_tlc.InputReportByteLength);
 
-            hid_report_in_init(&meta->reports[j++], (uint8_t) i,
-                    report_btns[i], report_buf,
-                    meta->caps_tlc.InputReportByteLength, meta->ppd);
+            hid_report_in_init(
+                &meta->reports[j++],
+                (uint8_t) i,
+                report_btns[i],
+                report_buf,
+                meta->caps_tlc.InputReportByteLength,
+                meta->ppd);
         }
     }
 
     /* Init control arrays */
 
     meta->controls = xmalloc(sizeof(*meta->controls) * meta->ncontrols);
-    meta->priv_controls = xmalloc(sizeof(*meta->priv_controls)
-            * meta->ncontrols);
+    meta->priv_controls =
+        xmalloc(sizeof(*meta->priv_controls) * meta->ncontrols);
 
     /* Clean up our scratch space */
 
@@ -201,11 +206,11 @@ static void hid_meta_in_init_buttons(struct hid_meta_in *meta)
 
     pos = 0;
 
-    for (i = 0 ; i < meta->caps_tlc.NumberInputButtonCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberInputButtonCaps; i++) {
         bc = &meta->caps_btn[i];
 
         if (bc->IsRange) {
-            for (j = 0 ; j <= bc->Range.UsageMax - bc->Range.UsageMin ; j++) {
+            for (j = 0; j <= bc->Range.UsageMax - bc->Range.UsageMin; j++) {
                 priv = &meta->priv_controls[pos];
 
                 priv->report = hid_meta_in_lookup_report(meta, bc->ReportID);
@@ -249,11 +254,11 @@ static void hid_meta_in_init_values(struct hid_meta_in *meta)
 
     pos = meta->nbuttons;
 
-    for (i = 0 ; i < meta->caps_tlc.NumberInputValueCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberInputValueCaps; i++) {
         vc = &meta->caps_val[i];
 
         if (vc->IsRange) {
-            for (j = 0 ; j <= vc->Range.UsageMax - vc->Range.UsageMin ; j++) {
+            for (j = 0; j <= vc->Range.UsageMax - vc->Range.UsageMin; j++) {
                 priv = &meta->priv_controls[pos];
 
                 priv->report = hid_meta_in_lookup_report(meta, vc->ReportID);
@@ -276,7 +281,7 @@ static void hid_meta_in_init_values(struct hid_meta_in *meta)
 
                 pos++;
             }
-         } else {
+        } else {
             priv = &meta->priv_controls[pos];
 
             priv->report = hid_meta_in_lookup_report(meta, vc->ReportID);
@@ -302,12 +307,12 @@ static void hid_meta_in_init_values(struct hid_meta_in *meta)
     }
 }
 
-static struct hid_report_in *hid_meta_in_lookup_report(
-        struct hid_meta_in *meta, uint8_t report_id)
+static struct hid_report_in *
+hid_meta_in_lookup_report(struct hid_meta_in *meta, uint8_t report_id)
 {
     unsigned int i;
 
-    for (i = 0 ; i < meta->nreports ; i++) {
+    for (i = 0; i < meta->nreports; i++) {
         if (meta->reports[i].id == report_id) {
             return &meta->reports[i];
         }
@@ -316,8 +321,8 @@ static struct hid_report_in *hid_meta_in_lookup_report(
     return NULL;
 }
 
-bool hid_meta_in_dispatch(struct hid_meta_in *meta, uint8_t **bytes,
-        size_t nbytes)
+bool hid_meta_in_dispatch(
+    struct hid_meta_in *meta, uint8_t **bytes, size_t nbytes)
 {
     struct hid_report_in *r;
     uint8_t report_id;
@@ -344,8 +349,8 @@ size_t hid_meta_in_get_buffer_size(const struct hid_meta_in *meta)
     return meta->caps_tlc.InputReportByteLength;
 }
 
-const struct hid_control *hid_meta_in_get_controls(
-        const struct hid_meta_in *meta)
+const struct hid_control *
+hid_meta_in_get_controls(const struct hid_meta_in *meta)
 {
     return meta->controls;
 }
@@ -360,8 +365,8 @@ uint32_t hid_meta_in_get_tlc_usage(const struct hid_meta_in *meta)
     return (meta->caps_tlc.UsagePage << 16) | meta->caps_tlc.Usage;
 }
 
-bool hid_meta_in_get_value(struct hid_meta_in *meta,
-        size_t control_no, int32_t *value)
+bool hid_meta_in_get_value(
+    struct hid_meta_in *meta, size_t control_no, int32_t *value)
 {
     struct hid_control_in *priv;
     uint32_t usage;
@@ -374,11 +379,11 @@ bool hid_meta_in_get_value(struct hid_meta_in *meta,
     usage = meta->controls[control_no].usage;
 
     if (control_no < meta->nbuttons) {
-        return hid_report_in_get_bit(priv->report, meta->ppd,
-                priv->collection_id, usage, value);
+        return hid_report_in_get_bit(
+            priv->report, meta->ppd, priv->collection_id, usage, value);
     } else {
-        return hid_report_in_get_value(priv->report, meta->ppd,
-                priv->collection_id, usage, value);
+        return hid_report_in_get_value(
+            priv->report, meta->ppd, priv->collection_id, usage, value);
     }
 }
 
@@ -395,7 +400,7 @@ static void hid_meta_in_fini_arrays(struct hid_meta_in *meta)
     free(meta->priv_controls);
     free(meta->controls);
 
-    for (i = 0 ; i < meta->nreports ; i++) {
+    for (i = 0; i < meta->nreports; i++) {
         hid_report_in_fini(&meta->reports[i]);
     }
 
@@ -407,4 +412,3 @@ static void hid_meta_in_fini_caps(struct hid_meta_in *meta)
     free(meta->caps_val);
     free(meta->caps_btn);
 }
-

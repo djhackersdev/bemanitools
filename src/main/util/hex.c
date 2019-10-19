@@ -31,9 +31,9 @@ bool hex_decode(void *ptr, size_t nbytes, const char *chars, size_t nchars)
     log_assert(nchars <= 2 * nbytes);
     log_assert(nchars % 2 == 0);
 
-    for (i = 0 ; i < nchars / 2; i++) {
-        if (    !hex_decode_nibble(chars[2 * i + 0], &hi) ||
-                !hex_decode_nibble(chars[2 * i + 1], &lo)) {
+    for (i = 0; i < nchars / 2; i++) {
+        if (!hex_decode_nibble(chars[2 * i + 0], &hi) ||
+            !hex_decode_nibble(chars[2 * i + 1], &lo)) {
             return false;
         }
 
@@ -43,8 +43,12 @@ bool hex_decode(void *ptr, size_t nbytes, const char *chars, size_t nchars)
     return true;
 }
 
-static void hex_encode(const void *ptr, size_t nbytes, char *chars,
-        size_t nchars, const char *digits)
+static void hex_encode(
+    const void *ptr,
+    size_t nbytes,
+    char *chars,
+    size_t nchars,
+    const char *digits)
 {
     const uint8_t *bytes = ptr;
 
@@ -52,7 +56,7 @@ static void hex_encode(const void *ptr, size_t nbytes, char *chars,
 
     log_assert(nchars >= 2 * nbytes + 1);
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         chars[i * 2 + 0] = digits[bytes[i] >> 4];
         chars[i * 2 + 1] = digits[bytes[i] & 15];
     }
@@ -69,4 +73,3 @@ void hex_encode_uc(const void *bytes, size_t nbytes, char *chars, size_t nchars)
 {
     hex_encode(bytes, nbytes, chars, nchars, "0123456789ABCDEF");
 }
-

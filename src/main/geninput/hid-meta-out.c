@@ -1,7 +1,7 @@
 #define LOG_MODULE "hid-generic"
 
-#include <windows.h>
 #include <hidsdi.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -15,16 +15,17 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-static bool hid_meta_out_init_caps(struct hid_meta_out *meta,
-        PHIDP_PREPARSED_DATA ppd);
+static bool
+hid_meta_out_init_caps(struct hid_meta_out *meta, PHIDP_PREPARSED_DATA ppd);
 static bool hid_meta_out_init_arrays(struct hid_meta_out *meta);
 static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd);
-static struct hid_report_out *hid_meta_out_lookup_report(
-        struct hid_meta_out *meta, uint8_t report_id);
+static struct hid_report_out *
+hid_meta_out_lookup_report(struct hid_meta_out *meta, uint8_t report_id);
 static void hid_meta_out_fini_arrays(struct hid_meta_out *meta);
 static void hid_meta_out_fini_caps(struct hid_meta_out *meta);
 
-bool hid_meta_out_init(struct hid_meta_out *meta, PHIDP_PREPARSED_DATA ppd, HANDLE fd)
+bool hid_meta_out_init(
+    struct hid_meta_out *meta, PHIDP_PREPARSED_DATA ppd, HANDLE fd)
 {
     if (!hid_meta_out_init_caps(meta, ppd)) {
         goto caps_fail;
@@ -47,8 +48,8 @@ caps_fail:
     return false;
 }
 
-static bool hid_meta_out_init_caps(struct hid_meta_out *meta,
-        PHIDP_PREPARSED_DATA ppd)
+static bool
+hid_meta_out_init_caps(struct hid_meta_out *meta, PHIDP_PREPARSED_DATA ppd)
 {
     uint16_t len;
     NTSTATUS status;
@@ -67,8 +68,8 @@ static bool hid_meta_out_init_caps(struct hid_meta_out *meta,
     meta->caps_btn = xmalloc(sizeof(*meta->caps_btn) * len);
 
     if (len > 0) {
-        status = HidP_GetButtonCaps(HidP_Output, meta->caps_btn, &len,
-                meta->ppd);
+        status =
+            HidP_GetButtonCaps(HidP_Output, meta->caps_btn, &len, meta->ppd);
 
         if (status != HIDP_STATUS_SUCCESS) {
             log_warning("Error getting button caps");
@@ -81,8 +82,8 @@ static bool hid_meta_out_init_caps(struct hid_meta_out *meta,
     meta->caps_val = xmalloc(sizeof(*meta->caps_val) * len);
 
     if (len > 0) {
-        status = HidP_GetValueCaps(HidP_Output, meta->caps_val, &len,
-                meta->ppd);
+        status =
+            HidP_GetValueCaps(HidP_Output, meta->caps_val, &len, meta->ppd);
 
         if (status != HIDP_STATUS_SUCCESS) {
             log_warning("Error getting value caps");
@@ -127,7 +128,7 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
 
     /* Count up buttons, globally and per-report */
 
-    for (i = 0 ; i < meta->caps_tlc.NumberOutputButtonCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberOutputButtonCaps; i++) {
         bc = &meta->caps_btn[i];
 
         if (bc->IsRange) {
@@ -142,7 +143,7 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
         report_presence[bc->ReportID] = true;
     }
 
-    for (i = 0 ; i < meta->caps_tlc.NumberOutputValueCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberOutputValueCaps; i++) {
         vc = &meta->caps_val[i];
 
         if (vc->IsRange) {
@@ -156,10 +157,10 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
 
     /* Count up total number of reports and initialize them */
 
-    nreports = 0;           /* Allocated */
-    meta->nreports = 0;     /* Initialized so far (see unwind below) */
+    nreports = 0; /* Allocated */
+    meta->nreports = 0; /* Initialized so far (see unwind below) */
 
-    for (i = 0 ; i < 0x100 ; i++) {
+    for (i = 0; i < 0x100; i++) {
         if (report_presence[i]) {
             nreports++;
         }
@@ -167,13 +168,16 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
 
     meta->reports = xmalloc(sizeof(*meta->reports) * nreports);
 
-    for (i = 0 ; i < 0x100 ; i++) {
+    for (i = 0; i < 0x100; i++) {
         if (report_presence[i]) {
             nbytes = meta->caps_tlc.OutputReportByteLength;
             bytes = xmalloc(meta->caps_tlc.OutputReportByteLength);
 
-            if (!hid_report_out_init(&meta->reports[meta->nreports],
-                    meta->ppd, (uint8_t) i, nbytes)) {
+            if (!hid_report_out_init(
+                    &meta->reports[meta->nreports],
+                    meta->ppd,
+                    (uint8_t) i,
+                    nbytes)) {
                 goto r_init_fail;
             }
 
@@ -193,7 +197,7 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
 r_init_fail:
     free(bytes);
 
-    for (i = meta->nreports ; i > 0 ; i--) {
+    for (i = meta->nreports; i > 0; i--) {
         hid_report_out_fini(&meta->reports[i - 1]);
     }
 
@@ -215,11 +219,11 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
 
     pos = 0;
 
-    for (i = 0 ; i < meta->caps_tlc.NumberOutputButtonCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberOutputButtonCaps; i++) {
         bc = &meta->caps_btn[i];
 
         if (bc->IsRange) {
-            for (j = 0 ; j <= bc->Range.UsageMax - bc->Range.UsageMin ; j++) {
+            for (j = 0; j <= bc->Range.UsageMax - bc->Range.UsageMin; j++) {
                 priv = &meta->priv_lights[pos];
 
                 priv->report = hid_meta_out_lookup_report(meta, bc->ReportID);
@@ -233,10 +237,19 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
                 light->value_max = 1;
 
                 // Devices may specify their own strings for lights
-                if(bc->IsStringRange && bc->Range.StringMin != 0) {
-                    HidD_GetIndexedString(fd, bc->Range.StringMin + j, light->name, sizeof(light->name));
-                } else if(!bc->IsStringRange && bc->NotRange.StringIndex != 0) {
-                    HidD_GetIndexedString(fd, bc->NotRange.StringIndex, light->name, sizeof(light->name));
+                if (bc->IsStringRange && bc->Range.StringMin != 0) {
+                    HidD_GetIndexedString(
+                        fd,
+                        bc->Range.StringMin + j,
+                        light->name,
+                        sizeof(light->name));
+                } else if (
+                    !bc->IsStringRange && bc->NotRange.StringIndex != 0) {
+                    HidD_GetIndexedString(
+                        fd,
+                        bc->NotRange.StringIndex,
+                        light->name,
+                        sizeof(light->name));
                 }
 
                 pos++;
@@ -254,19 +267,23 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
             light->value_min = 0;
             light->value_max = 1;
 
-            if(!bc->IsStringRange && bc->NotRange.StringIndex != 0) {
-                HidD_GetIndexedString(fd, bc->NotRange.StringIndex, light->name, sizeof(light->name));
+            if (!bc->IsStringRange && bc->NotRange.StringIndex != 0) {
+                HidD_GetIndexedString(
+                    fd,
+                    bc->NotRange.StringIndex,
+                    light->name,
+                    sizeof(light->name));
             }
 
             pos++;
         }
     }
 
-    for (i = 0 ; i < meta->caps_tlc.NumberOutputValueCaps ; i++) {
+    for (i = 0; i < meta->caps_tlc.NumberOutputValueCaps; i++) {
         vc = &meta->caps_val[i];
 
         if (vc->IsRange) {
-            for (j = 0 ; j <= vc->Range.UsageMax - vc->Range.UsageMin ; j++) {
+            for (j = 0; j <= vc->Range.UsageMax - vc->Range.UsageMin; j++) {
                 priv = &meta->priv_lights[pos];
 
                 priv->report = hid_meta_out_lookup_report(meta, vc->ReportID);
@@ -280,10 +297,19 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
                 light->value_max = vc->LogicalMax;
 
                 // Devices may specify their own strings for lights
-                if(vc->IsStringRange && vc->Range.StringMin != 0) {
-                    HidD_GetIndexedString(fd, vc->Range.StringMin + j, light->name, sizeof(light->name));
-                } else if(!vc->IsStringRange && vc->NotRange.StringIndex != 0) {
-                    HidD_GetIndexedString(fd, vc->NotRange.StringIndex, light->name, sizeof(light->name));
+                if (vc->IsStringRange && vc->Range.StringMin != 0) {
+                    HidD_GetIndexedString(
+                        fd,
+                        vc->Range.StringMin + j,
+                        light->name,
+                        sizeof(light->name));
+                } else if (
+                    !vc->IsStringRange && vc->NotRange.StringIndex != 0) {
+                    HidD_GetIndexedString(
+                        fd,
+                        vc->NotRange.StringIndex,
+                        light->name,
+                        sizeof(light->name));
                 }
 
                 pos++;
@@ -301,8 +327,12 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
             light->value_min = vc->LogicalMin;
             light->value_max = vc->LogicalMax;
 
-            if(!vc->IsStringRange && vc->NotRange.StringIndex != 0) {
-                HidD_GetIndexedString(fd, vc->NotRange.StringIndex, light->name, sizeof(light->name));
+            if (!vc->IsStringRange && vc->NotRange.StringIndex != 0) {
+                HidD_GetIndexedString(
+                    fd,
+                    vc->NotRange.StringIndex,
+                    light->name,
+                    sizeof(light->name));
             }
 
             pos++;
@@ -310,12 +340,12 @@ static void hid_meta_out_init_lights(struct hid_meta_out *meta, HANDLE fd)
     }
 }
 
-static struct hid_report_out *hid_meta_out_lookup_report(
-        struct hid_meta_out *meta, uint8_t report_id)
+static struct hid_report_out *
+hid_meta_out_lookup_report(struct hid_meta_out *meta, uint8_t report_id)
 {
     unsigned int i;
 
-    for (i = 0 ; i < meta->nreports ; i++) {
+    for (i = 0; i < meta->nreports; i++) {
         if (meta->reports[i].id == report_id) {
             return &meta->reports[i];
         }
@@ -329,8 +359,7 @@ size_t hid_meta_out_get_buffer_size(const struct hid_meta_out *meta)
     return meta->caps_tlc.OutputReportByteLength;
 }
 
-const struct hid_light *hid_meta_out_get_lights(
-        const struct hid_meta_out *meta)
+const struct hid_light *hid_meta_out_get_lights(const struct hid_meta_out *meta)
 {
     return meta->lights;
 }
@@ -340,8 +369,8 @@ size_t hid_meta_out_get_nlights(const struct hid_meta_out *meta)
     return meta->nlights;
 }
 
-bool hid_meta_out_set_light(struct hid_meta_out *meta,
-        size_t light_no, uint32_t intensity)
+bool hid_meta_out_set_light(
+    struct hid_meta_out *meta, size_t light_no, uint32_t intensity)
 {
     struct hid_out_light *priv;
     uint32_t usage;
@@ -354,11 +383,15 @@ bool hid_meta_out_set_light(struct hid_meta_out *meta,
     usage = meta->lights[light_no].usage;
 
     if (light_no < meta->nbuttons) {
-        return hid_report_out_set_bit(priv->report, meta->ppd,
-                priv->collection_id, usage, intensity != 0);
+        return hid_report_out_set_bit(
+            priv->report,
+            meta->ppd,
+            priv->collection_id,
+            usage,
+            intensity != 0);
     } else {
-        return hid_report_out_set_value(priv->report, meta->ppd,
-                priv->collection_id, usage, intensity);
+        return hid_report_out_set_value(
+            priv->report, meta->ppd, priv->collection_id, usage, intensity);
     }
 }
 
@@ -387,7 +420,7 @@ static void hid_meta_out_fini_arrays(struct hid_meta_out *meta)
     free(meta->priv_lights);
     free(meta->lights);
 
-    for (i = 0 ; i < meta->nreports ; i++) {
+    for (i = 0; i < meta->nreports; i++) {
         hid_report_out_fini(&meta->reports[i]);
     }
 
@@ -399,4 +432,3 @@ static void hid_meta_out_fini_caps(struct hid_meta_out *meta)
     free(meta->caps_btn);
     free(meta->caps_val);
 }
-

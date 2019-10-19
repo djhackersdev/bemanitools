@@ -5,10 +5,11 @@
 
 static void test_to_str()
 {
-    check_str_eq(security_id_to_str(&security_id_default, false), 
+    check_str_eq(
+        security_id_to_str(&security_id_default, false),
         "0101020304050607086F");
-    check_str_eq(security_id_to_str(&security_id_default, true), 
-        "0102030405060708");
+    check_str_eq(
+        security_id_to_str(&security_id_default, true), "0102030405060708");
 }
 
 static void test_parse_valid()

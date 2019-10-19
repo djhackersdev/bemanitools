@@ -13,7 +13,6 @@ static const PEB *peb_get(void)
 #else
     return (const PEB *) __readfsdword(0x30);
 #endif
-
 }
 
 const peb_dll_t *peb_dll_get_first(void)
@@ -42,7 +41,8 @@ const peb_dll_t *peb_dll_get_next(const peb_dll_t *dll)
     return containerof(node, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
 }
 
-HMODULE peb_dll_get_base(const peb_dll_t *dll)
+HMODULE
+peb_dll_get_base(const peb_dll_t *dll)
 {
     return dll->DllBase;
 }
@@ -55,7 +55,7 @@ char *peb_dll_dup_name(const peb_dll_t *dll)
 
     wstr = &dll->FullDllName;
 
-    for (i = wstr->Length / 2 - 1 ; i > 0 ; i--) {
+    for (i = wstr->Length / 2 - 1; i > 0; i--) {
         if (wstr->Buffer[i] == L'\\') {
             wstr_narrow(&wstr->Buffer[i + 1], &name);
 
@@ -65,4 +65,3 @@ char *peb_dll_dup_name(const peb_dll_t *dll)
 
     return NULL;
 }
-

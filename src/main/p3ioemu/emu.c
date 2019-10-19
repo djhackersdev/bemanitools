@@ -2,9 +2,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <windows.h>
 
 #include "hook/iohook.h"
@@ -35,44 +35,35 @@ static HRESULT p3io_emu_handle_write(struct irp *irp);
 static HRESULT p3io_cmd_dispatch(const union p3io_req_any *req);
 
 static void p3io_cmd_get_version(
-        const struct p3io_hdr *req,
-        struct p3io_resp_version *resp);
+    const struct p3io_hdr *req, struct p3io_resp_version *resp);
 
-static void p3io_cmd_set_watchdog(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp);
+static void
+p3io_cmd_set_watchdog(const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp);
 
 static void p3io_cmd_set_outputs(
-        const struct p3io_req_set_outputs *req,
-        struct p3io_resp_u8 *resp);
+    const struct p3io_req_set_outputs *req, struct p3io_resp_u8 *resp);
 
 static void p3io_cmd_read_plug(
-        const struct p3io_req_read_plug *req,
-        struct p3io_resp_read_plug *resp);
+    const struct p3io_req_read_plug *req, struct p3io_resp_read_plug *resp);
 
 static void p3io_cmd_get_cab_type_or_dipsw(
-        const struct p3io_req_get_cab_type_or_dipsw *req,
-        struct p3io_resp_get_cab_type_or_dipsw *resp);
+    const struct p3io_req_get_cab_type_or_dipsw *req,
+    struct p3io_resp_get_cab_type_or_dipsw *resp);
 
 static void p3io_cmd_get_video_freq(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp);
+    const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp);
 
-static void p3io_cmd_set_mode(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp);
+static void
+p3io_cmd_set_mode(const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp);
 
 static void p3io_cmd_get_coinstock(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_coin_stock *resp);
+    const struct p3io_req_u8 *req, struct p3io_resp_coin_stock *resp);
 
 static void p3io_cmd_set_coin_counter(
-        const struct p3io_req_set_coin_counter *req,
-        struct p3io_resp_u8 *resp);
+    const struct p3io_req_set_coin_counter *req, struct p3io_resp_u8 *resp);
 
-static void p3io_cmd_unknown(
-        const union p3io_req_any *req,
-        struct p3io_resp_u8 *resp);
+static void
+p3io_cmd_unknown(const union p3io_req_any *req, struct p3io_resp_u8 *resp);
 
 void p3io_emu_init(const struct p3io_ops *ops, void *ctx)
 {
@@ -103,7 +94,8 @@ void p3io_emu_fini(void)
     }
 }
 
-HRESULT p3io_emu_dispatch_irp(struct irp *irp)
+HRESULT
+p3io_emu_dispatch_irp(struct irp *irp)
 {
     log_assert(irp != NULL);
 
@@ -112,12 +104,18 @@ HRESULT p3io_emu_dispatch_irp(struct irp *irp)
     }
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return p3io_emu_handle_open(irp);
-    case IRP_OP_CLOSE:  return p3io_emu_handle_close(irp);
-    case IRP_OP_READ:   return p3io_emu_handle_read(irp);
-    case IRP_OP_WRITE:  return p3io_emu_handle_write(irp);
-    case IRP_OP_IOCTL:  return p3io_emu_handle_ioctl(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return p3io_emu_handle_open(irp);
+        case IRP_OP_CLOSE:
+            return p3io_emu_handle_close(irp);
+        case IRP_OP_READ:
+            return p3io_emu_handle_read(irp);
+        case IRP_OP_WRITE:
+            return p3io_emu_handle_write(irp);
+        case IRP_OP_IOCTL:
+            return p3io_emu_handle_ioctl(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -222,71 +220,71 @@ static HRESULT p3io_cmd_dispatch(const union p3io_req_any *req)
     cmd = p3io_req_cmd(req);
 
     switch (cmd) {
-    case P3IO_CMD_GET_VERSION:
-        p3io_cmd_get_version(&req->hdr, &resp.version);
+        case P3IO_CMD_GET_VERSION:
+            p3io_cmd_get_version(&req->hdr, &resp.version);
 
-        break;
+            break;
 
-    case P3IO_CMD_SET_WATCHDOG:
-        p3io_cmd_set_watchdog(&req->u8, &resp.u8);
+        case P3IO_CMD_SET_WATCHDOG:
+            p3io_cmd_set_watchdog(&req->u8, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_SET_OUTPUTS:
-        p3io_cmd_set_outputs(&req->set_outputs, &resp.u8);
+        case P3IO_CMD_SET_OUTPUTS:
+            p3io_cmd_set_outputs(&req->set_outputs, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_READ_PLUG:
-        p3io_cmd_read_plug(&req->read_plug, &resp.read_plug);
+        case P3IO_CMD_READ_PLUG:
+            p3io_cmd_read_plug(&req->read_plug, &resp.read_plug);
 
-        break;
+            break;
 
-    case P3IO_CMD_GET_CAB_TYPE_OR_DIPSW:
-        p3io_cmd_get_cab_type_or_dipsw(&req->cab_type_or_dipsw, 
-            &resp.cab_type_or_dipsw);
+        case P3IO_CMD_GET_CAB_TYPE_OR_DIPSW:
+            p3io_cmd_get_cab_type_or_dipsw(
+                &req->cab_type_or_dipsw, &resp.cab_type_or_dipsw);
 
-        break;
+            break;
 
-    case P3IO_CMD_GET_VIDEO_FREQ:
-        p3io_cmd_get_video_freq(&req->u8, &resp.u8);
+        case P3IO_CMD_GET_VIDEO_FREQ:
+            p3io_cmd_get_video_freq(&req->u8, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_SET_MODE:
-        p3io_cmd_set_mode(&req->u8, &resp.u8);
+        case P3IO_CMD_SET_MODE:
+            p3io_cmd_set_mode(&req->u8, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_GET_COINSTOCK:
-        p3io_cmd_get_coinstock(&req->u8, &resp.coin_stock);
+        case P3IO_CMD_GET_COINSTOCK:
+            p3io_cmd_get_coinstock(&req->u8, &resp.coin_stock);
 
-        break;
+            break;
 
-    case P3IO_CMD_SET_COINCOUNTER:
-        p3io_cmd_set_coin_counter(&req->set_coin_counter, &resp.u8);
+        case P3IO_CMD_SET_COINCOUNTER:
+            p3io_cmd_set_coin_counter(&req->set_coin_counter, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_RS232_OPEN_CLOSE:
-        p3io_uart_cmd_open_close(&req->rs232_open_close, &resp.u8);
+        case P3IO_CMD_RS232_OPEN_CLOSE:
+            p3io_uart_cmd_open_close(&req->rs232_open_close, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_RS232_READ:
-        p3io_uart_cmd_read(&req->rs232_read, &resp.rs232_read);
+        case P3IO_CMD_RS232_READ:
+            p3io_uart_cmd_read(&req->rs232_read, &resp.rs232_read);
 
-        break;
+            break;
 
-    case P3IO_CMD_RS232_WRITE:
-        p3io_uart_cmd_write(&req->rs232_write, &resp.rs232_write);
+        case P3IO_CMD_RS232_WRITE:
+            p3io_uart_cmd_write(&req->rs232_write, &resp.rs232_write);
 
-        break;
+            break;
 
-    default:
-        p3io_cmd_unknown(req, &resp.u8);
+        default:
+            p3io_cmd_unknown(req, &resp.u8);
 
-        break;
+            break;
     }
 
     p3io_frame_encode(&p3io_emu_resp, &resp, resp.hdr.nbytes + 1);
@@ -294,9 +292,8 @@ static HRESULT p3io_cmd_dispatch(const union p3io_req_any *req)
     return S_OK;
 }
 
-static void p3io_cmd_get_version(
-        const struct p3io_hdr *req,
-        struct p3io_resp_version *resp)
+static void
+p3io_cmd_get_version(const struct p3io_hdr *req, struct p3io_resp_version *resp)
 {
     log_misc("%s", __func__);
 
@@ -311,9 +308,8 @@ static void p3io_cmd_get_version(
     resp->patch = 3;
 }
 
-static void p3io_cmd_set_watchdog(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp)
+static void
+p3io_cmd_set_watchdog(const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp)
 {
     log_misc("%s(%02x)", __func__, req->u8);
 
@@ -323,8 +319,7 @@ static void p3io_cmd_set_watchdog(
 }
 
 static void p3io_cmd_set_outputs(
-        const struct p3io_req_set_outputs *req,
-        struct p3io_resp_u8 *resp)
+    const struct p3io_req_set_outputs *req, struct p3io_resp_u8 *resp)
 {
     uint32_t outputs;
     HRESULT hr;
@@ -342,8 +337,7 @@ static void p3io_cmd_set_outputs(
 }
 
 static void p3io_cmd_read_plug(
-        const struct p3io_req_read_plug *req,
-        struct p3io_resp_read_plug *resp)
+    const struct p3io_req_read_plug *req, struct p3io_resp_read_plug *resp)
 {
     HRESULT hr;
 
@@ -358,7 +352,7 @@ static void p3io_cmd_read_plug(
      * 0x12: black plug eeprom read
      * 0x00: white plug rom read
      * 0x02: white plug eeprom read
-     * 
+     *
      * The structure of the buffer is the same for all flags set and the game
      * just grabs whatever it currently needs from the buffer. i.e. if we
      * send everything on every read (rom + eeprom) always, the game doesn't
@@ -366,9 +360,9 @@ static void p3io_cmd_read_plug(
      */
 
     if (req->flags & 0x10) {
-        if (p3io_ops->get_roundplug) { 
-            hr = p3io_ops->get_roundplug(p3io_ops_ctx, 0, resp->rom,
-                resp->eeprom);
+        if (p3io_ops->get_roundplug) {
+            hr = p3io_ops->get_roundplug(
+                p3io_ops_ctx, 0, resp->rom, resp->eeprom);
         } else {
             log_warning("Reading black roundplug but no function available");
             memset(resp->rom, 0, 8);
@@ -376,9 +370,9 @@ static void p3io_cmd_read_plug(
             hr = S_OK;
         }
     } else {
-       if (p3io_ops->get_roundplug) {
-            hr = p3io_ops->get_roundplug(p3io_ops_ctx, 1, resp->rom,
-                resp->eeprom);
+        if (p3io_ops->get_roundplug) {
+            hr = p3io_ops->get_roundplug(
+                p3io_ops_ctx, 1, resp->rom, resp->eeprom);
         } else {
             log_warning("Reading white roundplug but no function available");
             memset(resp->rom, 0, 8);
@@ -387,19 +381,32 @@ static void p3io_cmd_read_plug(
         }
     }
 
-    log_misc("Reading %s roundplug, success 0x%lX, rom %02X%02X%02X%02X%02X%02X"
+    log_misc(
+        "Reading %s roundplug, success 0x%lX, rom %02X%02X%02X%02X%02X%02X"
         "%02X%02X, eeprom sig %X%X%X%X%X%X",
-        req->flags & 0x10 ? "black" : "white", hr, resp->rom[0], resp->rom[1],
-        resp->rom[2], resp->rom[3], resp->rom[4], resp->rom[5], resp->rom[6],
-        resp->rom[7], resp->eeprom[0], resp->eeprom[1], resp->eeprom[2],
-        resp->eeprom[3], resp->eeprom[4], resp->eeprom[5]);  
+        req->flags & 0x10 ? "black" : "white",
+        hr,
+        resp->rom[0],
+        resp->rom[1],
+        resp->rom[2],
+        resp->rom[3],
+        resp->rom[4],
+        resp->rom[5],
+        resp->rom[6],
+        resp->rom[7],
+        resp->eeprom[0],
+        resp->eeprom[1],
+        resp->eeprom[2],
+        resp->eeprom[3],
+        resp->eeprom[4],
+        resp->eeprom[5]);
 
     resp->status = FAILED(hr);
 }
 
 static void p3io_cmd_get_cab_type_or_dipsw(
-        const struct p3io_req_get_cab_type_or_dipsw *req,
-        struct p3io_resp_get_cab_type_or_dipsw *resp)
+    const struct p3io_req_get_cab_type_or_dipsw *req,
+    struct p3io_resp_get_cab_type_or_dipsw *resp)
 {
     HRESULT hr;
     uint8_t dipsw;
@@ -448,15 +455,14 @@ static void p3io_cmd_get_cab_type_or_dipsw(
             resp->status = 0;
         }
     } else {
-        log_warning("Unknown value for cab type or dipsw: %d", 
-            req->cab_type_or_dipsw);
+        log_warning(
+            "Unknown value for cab type or dipsw: %d", req->cab_type_or_dipsw);
         resp->status = 0;
     }
 }
 
 static void p3io_cmd_get_video_freq(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp)
+    const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp)
 {
     HRESULT hr;
     enum p3io_video_freq freq;
@@ -472,23 +478,23 @@ static void p3io_cmd_get_video_freq(
 
     if (hr == S_OK) {
         switch (freq) {
-        case P3IO_VIDEO_FREQ_15KHZ:
-            log_misc("%s: Returning 15 kHz", __func__);
-            resp->status = 0;
-            resp->u8 = 0x00;
+            case P3IO_VIDEO_FREQ_15KHZ:
+                log_misc("%s: Returning 15 kHz", __func__);
+                resp->status = 0;
+                resp->u8 = 0x00;
 
-            break;
+                break;
 
-        case P3IO_VIDEO_FREQ_31KHZ:
-            log_misc("%s: Returning 31 kHz", __func__);
-            resp->status = 0;
-            resp->u8 = 0x80;
+            case P3IO_VIDEO_FREQ_31KHZ:
+                log_misc("%s: Returning 31 kHz", __func__);
+                resp->status = 0;
+                resp->u8 = 0x80;
 
-            break;
+                break;
 
-        default:
-            log_assert(false);
-            break;
+            default:
+                log_assert(false);
+                break;
         }
     } else {
         log_misc("%s: Returning error! (hr=%x)", __func__, (int) hr);
@@ -497,9 +503,8 @@ static void p3io_cmd_get_video_freq(
     }
 }
 
-static void p3io_cmd_set_mode(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_u8 *resp)
+static void
+p3io_cmd_set_mode(const struct p3io_req_u8 *req, struct p3io_resp_u8 *resp)
 {
     log_misc("%s(%02x)", __func__, req->u8);
 
@@ -509,8 +514,7 @@ static void p3io_cmd_set_mode(
 }
 
 static void p3io_cmd_get_coinstock(
-        const struct p3io_req_u8 *req,
-        struct p3io_resp_coin_stock *resp)
+    const struct p3io_req_u8 *req, struct p3io_resp_coin_stock *resp)
 {
     uint16_t slots[2];
     HRESULT hr;
@@ -531,20 +535,18 @@ static void p3io_cmd_get_coinstock(
 }
 
 static void p3io_cmd_set_coin_counter(
-        const struct p3io_req_set_coin_counter *req,
-        struct p3io_resp_u8 *resp)
+    const struct p3io_req_set_coin_counter *req, struct p3io_resp_u8 *resp)
 {
-    log_misc("%s(%02x %02x)", __func__, req->coin_counter[0],
-    req->coin_counter[1]);
+    log_misc(
+        "%s(%02x %02x)", __func__, req->coin_counter[0], req->coin_counter[1]);
 
     p3io_resp_init(&resp->hdr, sizeof(*resp), &req->hdr);
     resp->status = 0;
     resp->u8 = 0;
 }
 
-static void p3io_cmd_unknown(
-        const union p3io_req_any *req,
-        struct p3io_resp_u8 *resp)
+static void
+p3io_cmd_unknown(const union p3io_req_any *req, struct p3io_resp_u8 *resp)
 {
     log_warning("Unsupported P3IO command: %02x", p3io_req_cmd(req));
 

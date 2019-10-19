@@ -8,11 +8,11 @@
 
 #include "util/log.h"
 
-typedef BOOL (WINAPI *dll_main_t)(HMODULE, uint32_t, void *);
+typedef BOOL(WINAPI *dll_main_t)(HMODULE, uint32_t, void *);
 
 static const IMAGE_NT_HEADERS *pe_get_nt_header(HMODULE pe);
-static uint32_t pe_get_virtual_size(const IMAGE_SECTION_HEADER *sh,
-        int nsections);
+static uint32_t
+pe_get_virtual_size(const IMAGE_SECTION_HEADER *sh, int nsections);
 static void *pe_offset(void *ptr, size_t off);
 static const void *pe_offsetc(const void *ptr, size_t off);
 
@@ -42,8 +42,8 @@ static const void *pe_offsetc(const void *ptr, size_t off)
     return base + off;
 }
 
-static uint32_t pe_get_virtual_size(const IMAGE_SECTION_HEADER *sh,
-        int nsections)
+static uint32_t
+pe_get_virtual_size(const IMAGE_SECTION_HEADER *sh, int nsections)
 {
     uint32_t sec_end;
     uint32_t size;
@@ -51,7 +51,7 @@ static uint32_t pe_get_virtual_size(const IMAGE_SECTION_HEADER *sh,
 
     size = 0;
 
-    for (i = 0 ; i < nsections ; i++) {
+    for (i = 0; i < nsections; i++) {
         sec_end = sh[i].VirtualAddress + sh[i].Misc.VirtualSize;
 
         if (size < sec_end) {
@@ -79,8 +79,10 @@ const pe_iid_t *pe_iid_get_first(HMODULE pe)
     const IMAGE_IMPORT_DESCRIPTOR *iid;
 
     nth = pe_get_nt_header(pe);
-    iid = pe_offsetc(pe, nth->OptionalHeader
-            .DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    iid = pe_offsetc(
+        pe,
+        nth->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+            .VirtualAddress);
 
     if (iid == NULL || iid->Name == 0) {
         return NULL;
@@ -107,8 +109,8 @@ const pe_iid_t *pe_iid_get_next(HMODULE pe, const pe_iid_t *iid)
     }
 }
 
-bool pe_iid_get_iat_entry(HMODULE pe, const pe_iid_t *iid, size_t n,
-        struct pe_iat_entry *entry)
+bool pe_iid_get_iat_entry(
+    HMODULE pe, const pe_iid_t *iid, size_t n, struct pe_iat_entry *entry)
 {
     const IMAGE_IMPORT_BY_NAME *import;
     uintptr_t *import_rvas;
@@ -148,12 +150,14 @@ void pe_patch_pointer(void **ppointer, void *new_value)
 {
     DWORD old_protect;
 
-    VirtualProtect(ppointer, sizeof(void*), PAGE_EXECUTE_READWRITE, &old_protect);
+    VirtualProtect(
+        ppointer, sizeof(void *), PAGE_EXECUTE_READWRITE, &old_protect);
     *ppointer = new_value;
-    VirtualProtect(ppointer, sizeof(void*), old_protect, &old_protect);
+    VirtualProtect(ppointer, sizeof(void *), old_protect, &old_protect);
 }
 
-HMODULE pe_explode(const uint8_t *bytes, uint32_t nbytes)
+HMODULE
+pe_explode(const uint8_t *bytes, uint32_t nbytes)
 {
     HMODULE base;
     const IMAGE_DOS_HEADER *dh;
@@ -168,47 +172,58 @@ HMODULE pe_explode(const uint8_t *bytes, uint32_t nbytes)
     sh = pe_offsetc(bytes, dh->e_lfanew + sizeof(*nth));
 
     virtual_size = pe_get_virtual_size(sh, nth->FileHeader.NumberOfSections);
-    base = (HMODULE) VirtualAlloc((void *) nth->OptionalHeader.ImageBase,
-            virtual_size, MEM_RESERVE, PAGE_NOACCESS);
+    base = (HMODULE) VirtualAlloc(
+        (void *) nth->OptionalHeader.ImageBase,
+        virtual_size,
+        MEM_RESERVE,
+        PAGE_NOACCESS);
 
     if (base == NULL) {
         /* Try again, allowing any base address */
-        base = (HMODULE) VirtualAlloc(NULL, virtual_size, MEM_RESERVE,
-                PAGE_NOACCESS);
+        base = (HMODULE) VirtualAlloc(
+            NULL, virtual_size, MEM_RESERVE, PAGE_NOACCESS);
 
         if (base == NULL) {
             /* Aargh */
-            log_fatal("Failed to VirtualAlloc %#x bytes of address space",
-                    virtual_size);
+            log_fatal(
+                "Failed to VirtualAlloc %#x bytes of address space",
+                virtual_size);
         }
     }
 
-    log_misc("Exploding PE, base %p actual %p",
-            (void *) nth->OptionalHeader.ImageBase,
-            base);
+    log_misc(
+        "Exploding PE, base %p actual %p",
+        (void *) nth->OptionalHeader.ImageBase,
+        base);
 
     /* Commit header region */
-    VirtualAlloc((void *) base, nth->OptionalHeader.SizeOfHeaders, MEM_COMMIT,
-            PAGE_READWRITE);
+    VirtualAlloc(
+        (void *) base,
+        nth->OptionalHeader.SizeOfHeaders,
+        MEM_COMMIT,
+        PAGE_READWRITE);
 
     memcpy(base, dh, sizeof(*dh));
     memcpy(pe_offset(base, dh->e_lfanew), nth, sizeof(*nth));
-    memcpy(pe_offset(base, dh->e_lfanew + sizeof(*nth)), sh,
-            sizeof(*sh) * nth->FileHeader.NumberOfSections);
+    memcpy(
+        pe_offset(base, dh->e_lfanew + sizeof(*nth)),
+        sh,
+        sizeof(*sh) * nth->FileHeader.NumberOfSections);
 
-    for (i = 0 ; i < nth->FileHeader.NumberOfSections ; i++) {
-        vflags = sh[i].Characteristics & 0x20000000
-                ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+    for (i = 0; i < nth->FileHeader.NumberOfSections; i++) {
+        vflags = sh[i].Characteristics & 0x20000000 ? PAGE_EXECUTE_READWRITE :
+                                                      PAGE_READWRITE;
 
         VirtualAlloc(
-                pe_offset(base, sh[i].VirtualAddress),
-                sh[i].Misc.VirtualSize,
-                MEM_COMMIT,
-                vflags);
+            pe_offset(base, sh[i].VirtualAddress),
+            sh[i].Misc.VirtualSize,
+            MEM_COMMIT,
+            vflags);
 
-        memcpy( pe_offset(base, sh[i].VirtualAddress),
-                pe_offsetc(bytes, sh[i].PointerToRawData),
-                sh[i].SizeOfRawData);
+        memcpy(
+            pe_offset(base, sh[i].VirtualAddress),
+            pe_offsetc(bytes, sh[i].PointerToRawData),
+            sh[i].SizeOfRawData);
     }
 
     return base;
@@ -227,16 +242,15 @@ void pe_relocate(HMODULE pe)
     delta_va = (intptr_t) pe - nth->OptionalHeader.ImageBase;
     dde = nth->OptionalHeader.DataDirectory + IMAGE_DIRECTORY_ENTRY_BASERELOC;
 
-    for (chunk = pe_offsetc(pe, dde->VirtualAddress)
-            ; (void *) chunk < pe_offsetc(pe, dde->VirtualAddress + dde->Size)
-            ; chunk = pe_offsetc(chunk, chunk->SizeOfBlock)) {
-        for (reloc = (uint16_t *) (chunk + 1)
-                ; (void *) reloc < pe_offsetc(chunk, chunk->SizeOfBlock)
-                ; reloc++) {
+    for (chunk = pe_offsetc(pe, dde->VirtualAddress);
+         (void *) chunk < pe_offsetc(pe, dde->VirtualAddress + dde->Size);
+         chunk = pe_offsetc(chunk, chunk->SizeOfBlock)) {
+        for (reloc = (uint16_t *) (chunk + 1);
+             (void *) reloc < pe_offsetc(chunk, chunk->SizeOfBlock);
+             reloc++) {
             if (*reloc >> 12 == IMAGE_REL_BASED_HIGHLOW) {
-                addr_ptr = pe_offset(
-                        pe,
-                        chunk->VirtualAddress + (*reloc & 0x0FFF));
+                addr_ptr =
+                    pe_offset(pe, chunk->VirtualAddress + (*reloc & 0x0FFF));
                 *addr_ptr += delta_va;
             }
         }
@@ -252,16 +266,18 @@ void *pe_get_export(HMODULE pe, const char *name, uint16_t ord)
     DWORD i;
 
     nth = pe_get_nt_header(pe);
-    ied = pe_offsetc(pe, nth->OptionalHeader
-            .DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+    ied = pe_offsetc(
+        pe,
+        nth->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]
+            .VirtualAddress);
 
     name_rvas = pe_offsetc(pe, ied->AddressOfNames);
     target_rvas = pe_offsetc(pe, ied->AddressOfFunctions);
 
     if (name != NULL) {
-        for (i = 0 ; i < ied->NumberOfNames ; i++) {
-            if (name_rvas[i] != 0
-                    && strcmp(pe_offsetc(pe, name_rvas[i]), name) == 0) {
+        for (i = 0; i < ied->NumberOfNames; i++) {
+            if (name_rvas[i] != 0 &&
+                strcmp(pe_offsetc(pe, name_rvas[i]), name) == 0) {
                 return pe_offset(pe, target_rvas[i]);
             }
         }

@@ -8,17 +8,22 @@
 #include "util/hex.h"
 #include "util/log.h"
 
-static bool patch_memory_check_data(uint32_t base_address, uint32_t address,
-        uint8_t* data_expected, size_t len)
+static bool patch_memory_check_data(
+    uint32_t base_address, uint32_t address, uint8_t *data_expected, size_t len)
 {
-    uint8_t* dest = (uint8_t*) (base_address + address);
+    uint8_t *dest = (uint8_t *) (base_address + address);
     bool success = true;
 
     for (size_t i = 0; i < len; i++) {
         if (dest[i] != data_expected[i]) {
-            log_warning("Memcheck error: base %X + address %X + offset %d: "
-                "expected %X, found %X", base_address, address, i,
-                data_expected[i], dest[i]);
+            log_warning(
+                "Memcheck error: base %X + address %X + offset %d: "
+                "expected %X, found %X",
+                base_address,
+                address,
+                i,
+                data_expected[i],
+                dest[i]);
             success = false;
         }
     }
@@ -26,25 +31,34 @@ static bool patch_memory_check_data(uint32_t base_address, uint32_t address,
     return success;
 }
 
-static bool patch_memory_data(uint32_t base_address, uint32_t address,
-        uint8_t* data, size_t len)
+static bool patch_memory_data(
+    uint32_t base_address, uint32_t address, uint8_t *data, size_t len)
 {
     DWORD old_protect;
 
     uint32_t dest = base_address + address;
 
-    if (!VirtualProtect((void*) dest, sizeof(uint8_t) * len,
-            PAGE_EXECUTE_READWRITE, &old_protect)) {
-        log_warning("VirtualProtect %X (%d) failed: %d", dest, len,
+    if (!VirtualProtect(
+            (void *) dest,
+            sizeof(uint8_t) * len,
+            PAGE_EXECUTE_READWRITE,
+            &old_protect)) {
+        log_warning(
+            "VirtualProtect %X (%d) failed: %d",
+            dest,
+            len,
             (int) GetLastError());
         return false;
     }
 
-    memcpy((void*) (base_address + address), data, len);
+    memcpy((void *) (base_address + address), data, len);
 
-    if (!VirtualProtect((void*) dest, sizeof(uint8_t) * len, old_protect,
-            &old_protect)) {
-        log_warning("VirtualProtect (2) %X (%d) failed: %d", dest, len,
+    if (!VirtualProtect(
+            (void *) dest, sizeof(uint8_t) * len, old_protect, &old_protect)) {
+        log_warning(
+            "VirtualProtect (2) %X (%d) failed: %d",
+            dest,
+            len,
             (int) GetLastError());
         return false;
     }
@@ -52,21 +66,21 @@ static bool patch_memory_data(uint32_t base_address, uint32_t address,
     return true;
 }
 
-static bool patch_memory_apply(char* script)
+static bool patch_memory_apply(char *script)
 {
-    char* pos_lines;
-    char* ctx_lines;
+    char *pos_lines;
+    char *ctx_lines;
     uint32_t line_cnt;
 
-    char* pos_line;
-    char* ctx_line;
+    char *pos_line;
+    char *ctx_line;
     uint32_t line_tokens;
 
-    char* module;
-    char* address_str = NULL;
-    char* data_str = NULL;
+    char *module;
+    char *address_str = NULL;
+    char *data_str = NULL;
     size_t data_str_len;
-    char* data_expected_str = NULL;
+    char *data_expected_str = NULL;
     size_t data_expected_str_len;
 
     uint32_t address;
@@ -119,7 +133,10 @@ static bool patch_memory_apply(char* script)
             }
 
             if (line_tokens != 3 && line_tokens != 4) {
-                log_warning("[%d] Invalid number of elements in line '%s' skipping", line_cnt, pos_lines);
+                log_warning(
+                    "[%d] Invalid number of elements in line '%s' skipping",
+                    line_cnt,
+                    pos_lines);
                 goto error_next_line;
             }
 
@@ -129,7 +146,8 @@ static bool patch_memory_apply(char* script)
                 hmodule = GetModuleHandleA(module);
 
                 if (hmodule == NULL) {
-                    log_warning("[%d] Could not find module %s", line_cnt, module);
+                    log_warning(
+                        "[%d] Could not find module %s", line_cnt, module);
                     goto error_next_line;
                 }
 
@@ -147,8 +165,11 @@ static bool patch_memory_apply(char* script)
             data_len = data_str_len;
 
             if (data_len % 2 != 0) {
-                log_warning("[%d] Data length %d mod 2 != 0: %s", line_cnt,
-                    data_len, data_str);
+                log_warning(
+                    "[%d] Data length %d mod 2 != 0: %s",
+                    line_cnt,
+                    data_len,
+                    data_str);
                 goto error_next_line;
             }
 
@@ -159,8 +180,11 @@ static bool patch_memory_apply(char* script)
                 data_expected_len = data_expected_str_len;
 
                 if (data_expected_len % 2 != 0) {
-                    log_warning("[%d] Data expected length %d mod 2 != 0: %s",
-                        line_cnt, data_len, data_str);
+                    log_warning(
+                        "[%d] Data expected length %d mod 2 != 0: %s",
+                        line_cnt,
+                        data_len,
+                        data_str);
                     goto error_next_line;
                 }
             } else {
@@ -170,24 +194,33 @@ static bool patch_memory_apply(char* script)
             data_expected_len /= 2;
 
             if (!hex_decode(data, sizeof(data), data_str, data_str_len)) {
-                log_warning("[%d] Decoding data (item 3) failed: %s", line_cnt,
+                log_warning(
+                    "[%d] Decoding data (item 3) failed: %s",
+                    line_cnt,
                     data_str);
                 goto error_next_line;
             }
 
             if (line_tokens == 4) {
-                if (!hex_decode(data_expected, sizeof(data_expected),
-                        data_expected_str, data_expected_str_len)) {
+                if (!hex_decode(
+                        data_expected,
+                        sizeof(data_expected),
+                        data_expected_str,
+                        data_expected_str_len)) {
                     log_warning(
                         "[%d] Decoding expected data (item 4) failed: %s",
-                        line_cnt, data_expected_str);
+                        line_cnt,
+                        data_expected_str);
                     goto error_next_line;
                 }
             }
 
             if (data_expected_len) {
-                if (!patch_memory_check_data(address_base, address,
-                        data_expected, data_expected_len)) {
+                if (!patch_memory_check_data(
+                        address_base,
+                        address,
+                        data_expected,
+                        data_expected_len)) {
                     log_warning("[%d] Memcheck failed, skipping", line_cnt);
                     goto error_next_line;
                 }
@@ -201,12 +234,12 @@ static bool patch_memory_apply(char* script)
             log_info("[%d] Patch ok", line_cnt);
         }
 
-    goto next_line;
+        goto next_line;
 
-error_next_line:
-    error = true;
+    error_next_line:
+        error = true;
 
-next_line:
+    next_line:
         pos_lines = strtok_r(NULL, "\n", &ctx_lines);
         line_cnt++;
     }
@@ -214,16 +247,17 @@ next_line:
     return !error;
 }
 
-static void patch_memory_from_file(const char* filepath)
+static void patch_memory_from_file(const char *filepath)
 {
-    char* buffer;
+    char *buffer;
     size_t len;
 
-    if (!file_load(filepath, (void**) &buffer, &len, true)) {
+    if (!file_load(filepath, (void **) &buffer, &len, true)) {
         log_fatal("Load script file %s failed", filepath);
     } else {
         if (!patch_memory_apply(buffer)) {
-            log_fatal("Applying one or multiple patches failed, see log output "
+            log_fatal(
+                "Applying one or multiple patches failed, see log output "
                 "for details");
         }
     }
@@ -235,9 +269,9 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         int argc;
-        char** argv;
-        char* filepath;
-        FILE* logfile;
+        char **argv;
+        char *filepath;
+        FILE *logfile;
         bool patched;
 
         patched = false;
@@ -261,10 +295,13 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         }
 
         if (!patched) {
-            log_info("No files specified for patching. Add the parameter "
-                "--mempatch <filepath> to your application arguments. This can "
+            log_info(
+                "No files specified for patching. Add the parameter "
+                "--mempatch <filepath> to your application arguments. This "
+                "can "
                 "be specified multiple times, e.g. --mempatch file1.mph "
-                "--mempatch file2.mph. The patches are executed in the order "
+                "--mempatch file2.mph. The patches are executed in the "
+                "order "
                 "they are specified.");
         } else {
             log_info("Patching done");

@@ -17,11 +17,14 @@ static uint8_t ezusb_iidx_emu_node_eeprom_mem[EZUSB_PAGESIZE * EEPROM_NPAGES];
 void ezusb_iidx_emu_node_eeprom_init(void)
 {
     ezusb_iidx_emu_node_eeprom_read_page_pos = 0;
-    memset(ezusb_iidx_emu_node_eeprom_mem, 0xFF, sizeof(ezusb_iidx_emu_node_eeprom_mem));
+    memset(
+        ezusb_iidx_emu_node_eeprom_mem,
+        0xFF,
+        sizeof(ezusb_iidx_emu_node_eeprom_mem));
 }
 
-uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v1(uint8_t cmd_id, uint8_t cmd_data,
-        uint8_t cmd_data2)
+uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v1(
+    uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
         case EZUSB_IIDX_EEPROM_CMD_READ:
@@ -39,8 +42,8 @@ uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v1(uint8_t cmd_id, uint8_t cmd_da
     }
 }
 
-uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v2(uint8_t cmd_id, uint8_t cmd_data,
-        uint8_t cmd_data2)
+uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v2(
+    uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
         case EZUSB_IIDX_EEPROM_CMD_READ:
@@ -58,9 +61,11 @@ uint8_t ezusb_iidx_emu_node_eeprom_process_cmd_v2(uint8_t cmd_id, uint8_t cmd_da
     }
 }
 
-bool ezusb_iidx_emu_node_eeprom_read_packet(struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_eeprom_read_packet(
+    struct ezusb_iidx_msg_bulk_packet *pkg)
 {
-    log_misc("Reading EEPROM page 0x%02X", ezusb_iidx_emu_node_eeprom_read_page_pos);
+    log_misc(
+        "Reading EEPROM page 0x%02X", ezusb_iidx_emu_node_eeprom_read_page_pos);
 
     if (ezusb_iidx_emu_node_eeprom_read_page_pos >= EEPROM_NPAGES) {
         log_warning("Reading EEPROM ezusb_iidx_emu_node_eeprom_mem overrun");
@@ -71,14 +76,18 @@ bool ezusb_iidx_emu_node_eeprom_read_packet(struct ezusb_iidx_msg_bulk_packet* p
     pkg->node = 0x22;
     pkg->page = ezusb_iidx_emu_node_eeprom_read_page_pos;
     memset(pkg->payload, 0, EZUSB_PAGESIZE);
-    memcpy(pkg->payload, ezusb_iidx_emu_node_eeprom_mem +
-        ezusb_iidx_emu_node_eeprom_read_page_pos * EZUSB_PAGESIZE, EZUSB_PAGESIZE);
+    memcpy(
+        pkg->payload,
+        ezusb_iidx_emu_node_eeprom_mem +
+            ezusb_iidx_emu_node_eeprom_read_page_pos * EZUSB_PAGESIZE,
+        EZUSB_PAGESIZE);
 
     ezusb_iidx_emu_node_eeprom_read_page_pos++;
     return true;
 }
 
-bool ezusb_iidx_emu_node_eeprom_write_packet(const struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_eeprom_write_packet(
+    const struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     log_misc("Writing EEPROM page 0x%02X", pkg->page);
 
@@ -87,18 +96,22 @@ bool ezusb_iidx_emu_node_eeprom_write_packet(const struct ezusb_iidx_msg_bulk_pa
         return false;
     }
 
-    memcpy(ezusb_iidx_emu_node_eeprom_mem + pkg->page *
-        EZUSB_PAGESIZE, pkg->payload, EZUSB_PAGESIZE);
+    memcpy(
+        ezusb_iidx_emu_node_eeprom_mem + pkg->page * EZUSB_PAGESIZE,
+        pkg->payload,
+        EZUSB_PAGESIZE);
     return true;
 }
 
 /* ------------------------------------------------------------------------- */
 
-size_t ezusb_iidx_emu_node_eeprom_write_memory(const uint8_t* buffer, size_t offset,
-        size_t length)
+size_t ezusb_iidx_emu_node_eeprom_write_memory(
+    const uint8_t *buffer, size_t offset, size_t length)
 {
     if (offset + length > sizeof(ezusb_iidx_emu_node_eeprom_mem)) {
-        log_warning("Writing eeprom ezusb_iidx_emu_node_eeprom_mem overrun, truncated");
+        log_warning(
+            "Writing eeprom ezusb_iidx_emu_node_eeprom_mem overrun, "
+            "truncated");
         length = sizeof(ezusb_iidx_emu_node_eeprom_mem) - offset;
     }
 

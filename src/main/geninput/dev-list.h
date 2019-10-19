@@ -1,8 +1,8 @@
 #ifndef GENINPUT_DEV_LIST_H
 #define GENINPUT_DEV_LIST_H
 
-#include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <wchar.h>

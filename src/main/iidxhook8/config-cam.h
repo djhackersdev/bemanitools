@@ -11,9 +11,9 @@ struct iidxhook8_config_cam {
     char device_id2[MAX_PATH];
 };
 
-void iidxhook8_config_cam_init(struct cconfig* config);
+void iidxhook8_config_cam_init(struct cconfig *config);
 
-void iidxhook8_config_cam_get(struct iidxhook8_config_cam* config_cam, 
-        struct cconfig* config);
+void iidxhook8_config_cam_get(
+    struct iidxhook8_config_cam *config_cam, struct cconfig *config);
 
 #endif

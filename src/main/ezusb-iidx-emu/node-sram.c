@@ -2,9 +2,9 @@
 
 #include <string.h>
 
-#include "ezusb-iidx/sram-cmd.h"
 #include "ezusb-iidx-emu/conf.h"
 #include "ezusb-iidx-emu/node-sram.h"
+#include "ezusb-iidx/sram-cmd.h"
 
 #include "util/fs.h"
 #include "util/log.h"
@@ -15,8 +15,8 @@ static uint8_t ezusb_iidx_emu_node_sram_buf[EZUSB_PAGESIZE * SRAM_NPAGES];
 static enum ezusb_iidx_sram_command ezusb_iidx_emu_node_sram_last_cmd;
 static int ezusb_iidx_emu_node_sram_read_page;
 
-uint8_t ezusb_iidx_emu_node_sram_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
-        uint8_t cmd_data2)
+uint8_t ezusb_iidx_emu_node_sram_process_cmd(
+    uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     ezusb_iidx_emu_node_sram_last_cmd = cmd_id;
 
@@ -35,7 +35,9 @@ uint8_t ezusb_iidx_emu_node_sram_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
             log_misc("EZUSB_IIDX_SRAM_CMD_DONE");
 
 #ifdef EZUSB_IIDX_EMU_NODE_SRAM_DUMP
-            file_save("sram.bin", ezusb_iidx_emu_node_sram_buf,
+            file_save(
+                "sram.bin",
+                ezusb_iidx_emu_node_sram_buf,
                 EZUSB_PAGESIZE * SRAM_NPAGES);
 
             log_info("Dumped sram data to sram.bin");
@@ -51,10 +53,10 @@ uint8_t ezusb_iidx_emu_node_sram_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
     return 0;
 }
 
-bool ezusb_iidx_emu_node_sram_read_packet(struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_sram_read_packet(
+    struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     if (ezusb_iidx_emu_node_sram_last_cmd == EZUSB_IIDX_SRAM_CMD_READ) {
-
         if (ezusb_iidx_emu_node_sram_read_page >= SRAM_NPAGES) {
             log_warning("SRAM read overrun");
 
@@ -66,22 +68,27 @@ bool ezusb_iidx_emu_node_sram_read_packet(struct ezusb_iidx_msg_bulk_packet* pkg
         /* Gold to Sirius must have this set to get accepted */
         pkg->node = 0x40;
         pkg->page = (uint8_t) ezusb_iidx_emu_node_sram_read_page;
-        memcpy( pkg->payload,
-                ezusb_iidx_emu_node_sram_buf + ezusb_iidx_emu_node_sram_read_page *
-                EZUSB_PAGESIZE, EZUSB_PAGESIZE);
+        memcpy(
+            pkg->payload,
+            ezusb_iidx_emu_node_sram_buf +
+                ezusb_iidx_emu_node_sram_read_page * EZUSB_PAGESIZE,
+            EZUSB_PAGESIZE);
         ezusb_iidx_emu_node_sram_read_page++;
 
         return true;
 
     } else {
-        log_warning("Unexpected SRAM read: ezusb_iidx_emu_node_sram_last_cmd = %02x",
-                ezusb_iidx_emu_node_sram_last_cmd);
+        log_warning(
+            "Unexpected SRAM read: ezusb_iidx_emu_node_sram_last_cmd = "
+            "%02x",
+            ezusb_iidx_emu_node_sram_last_cmd);
 
         return false;
     }
 }
 
-bool ezusb_iidx_emu_node_sram_write_packet(const struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_sram_write_packet(
+    const struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     if (pkg->page >= SRAM_NPAGES) {
         log_warning("SRAM write overrun");
@@ -90,8 +97,10 @@ bool ezusb_iidx_emu_node_sram_write_packet(const struct ezusb_iidx_msg_bulk_pack
     }
 
     log_misc("Writing SRAM page %02x", pkg->page);
-    memcpy(ezusb_iidx_emu_node_sram_buf + pkg->page * EZUSB_PAGESIZE, pkg->payload,
-            EZUSB_PAGESIZE);
+    memcpy(
+        ezusb_iidx_emu_node_sram_buf + pkg->page * EZUSB_PAGESIZE,
+        pkg->payload,
+        EZUSB_PAGESIZE);
 
     return true;
 }

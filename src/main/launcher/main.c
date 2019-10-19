@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "imports/avs.h"
 #include "imports/avs-ea3.h"
+#include "imports/avs.h"
 
 #include "launcher/avs-context.h"
 #include "launcher/ea3-config.h"
@@ -15,11 +15,11 @@
 #include "launcher/property.h"
 #include "launcher/stubs.h"
 
+#include "util/codepage.h"
 #include "util/defs.h"
 #include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
-#include "util/codepage.h"
 
 /* Gratuitous API changes orz */
 static AVS_LOG_WRITER(log_callback, chars, nchars, ctx)
@@ -46,23 +46,23 @@ static AVS_LOG_WRITER(log_callback, chars, nchars, ctx)
     }
 
     utf16 = xmalloc(sizeof(*utf16) * utf16_len);
-    result = MultiByteToWideChar(CP_SHIFT_JIS, 0, chars, nchars, utf16,
-            utf16_len);
+    result =
+        MultiByteToWideChar(CP_SHIFT_JIS, 0, chars, nchars, utf16, utf16_len);
 
     if (result == 0) {
         abort();
     }
 
-    utf8_len = WideCharToMultiByte(CP_UTF8, 0, utf16, utf16_len, NULL, 0,
-            NULL, NULL);
+    utf8_len =
+        WideCharToMultiByte(CP_UTF8, 0, utf16, utf16_len, NULL, 0, NULL, NULL);
 
     if (utf8_len == 0) {
         abort();
     }
 
     utf8 = xmalloc(utf8_len + 2);
-    result = WideCharToMultiByte(CP_UTF8, 0, utf16, utf16_len, utf8, utf8_len,
-            NULL, NULL);
+    result = WideCharToMultiByte(
+        CP_UTF8, 0, utf16, utf16_len, utf8, utf8_len, NULL, NULL);
 
     if (result == 0) {
         abort();
@@ -123,17 +123,18 @@ int main(int argc, const char **argv)
         return EXIT_FAILURE;
     }
 
-    /* If enabled, wait for a remote debugger to attach. Spawning launcher 
-       with a debugger crashes it for some reason (e.g. on jubeat08). However, 
+    /* If enabled, wait for a remote debugger to attach. Spawning launcher
+       with a debugger crashes it for some reason (e.g. on jubeat08). However,
        starting the launcher separately and attaching a remote debugger works */
 
     if (options.remote_debugger) {
         log_info("Waiting until debugger attaches to remote process...");
-        
+
         while (true) {
             BOOL res = FALSE;
             if (!CheckRemoteDebuggerPresent(GetCurrentProcess(), &res)) {
-                log_fatal("CheckRemoteDebuggerPresent failed: %08x",
+                log_fatal(
+                    "CheckRemoteDebuggerPresent failed: %08x",
                     (unsigned int) GetLastError());
             }
 
@@ -149,8 +150,14 @@ int main(int argc, const char **argv)
     /* Start up AVS */
 
     if (options.logfile != NULL) {
-        logfile = CreateFileA(options.logfile, GENERIC_WRITE, FILE_SHARE_READ,
-                NULL, CREATE_ALWAYS, 0, NULL);
+        logfile = CreateFileA(
+            options.logfile,
+            GENERIC_WRITE,
+            FILE_SHARE_READ,
+            NULL,
+            CREATE_ALWAYS,
+            0,
+            NULL);
     } else {
         logfile = INVALID_HANDLE_VALUE;
     }
@@ -162,14 +169,17 @@ int main(int argc, const char **argv)
         log_fatal("%s: /config missing", options.avs_config_path);
     }
 
-    avs_context_init(avs_config_root,
-            options.avs_heap_size, options.std_heap_size,
-            log_callback, logfile);
+    avs_context_init(
+        avs_config_root,
+        options.avs_heap_size,
+        options.std_heap_size,
+        log_callback,
+        logfile);
 
     boot_property_free(avs_config);
 
-    log_to_external(log_body_misc, log_body_info, log_body_warning,
-            log_body_fatal);
+    log_to_external(
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     /* Load game DLL */
 
@@ -177,14 +187,21 @@ int main(int argc, const char **argv)
 
     /* Load hook DLLs */
 
-    for (i = 0 ; i < options.hook_dlls.nitems ; i++) {
+    for (i = 0; i < options.hook_dlls.nitems; i++) {
         hook_dll = *array_item(char *, &options.hook_dlls, i);
 
         if (LoadLibraryA(hook_dll) == NULL) {
-             LPSTR buffer;
+            LPSTR buffer;
 
-            FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buffer, 0, NULL);
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPSTR) &buffer,
+                0,
+                NULL);
 
             log_fatal("%s: Failed to load hook DLL: %s", hook_dll, buffer);
 
@@ -208,8 +225,8 @@ int main(int argc, const char **argv)
     ea3_ident_init(&ea3);
 
     if (!ea3_ident_from_property(&ea3, ea3_config)) {
-        log_fatal("%s: Error reading IDs from config file",
-                options.ea3_config_path);
+        log_fatal(
+            "%s: Error reading IDs from config file", options.ea3_config_path);
     }
 
     if (options.softid != NULL) {
@@ -273,4 +290,3 @@ int main(int argc, const char **argv)
 
     return EXIT_SUCCESS;
 }
-

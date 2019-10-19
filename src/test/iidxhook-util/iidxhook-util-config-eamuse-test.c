@@ -8,7 +8,7 @@
 
 static void test_config_eamuse_defaults()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_util_config_eamuse config_eamuse;
 
     config = cconfig_init();
@@ -20,15 +20,17 @@ static void test_config_eamuse_defaults()
 
     check_str_eq(config_eamuse.card_type, "C02");
     check_str_eq(net_addr_to_str(&config_eamuse.server), "localhost:80");
-    check_str_eq(security_id_to_str(&config_eamuse.pcbid, false), 
+    check_str_eq(
+        security_id_to_str(&config_eamuse.pcbid, false),
         "0101020304050607086F");
-    check_str_eq(security_id_to_str(&config_eamuse.eamid, false), 
+    check_str_eq(
+        security_id_to_str(&config_eamuse.eamid, false),
         "0101020304050607086F");
 }
 
 static void test_config_eamuse()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_util_config_eamuse config_eamuse;
 
     config = cconfig_init();
@@ -45,17 +47,19 @@ static void test_config_eamuse()
     cconfig_finit(config);
 
     check_str_eq(config_eamuse.card_type, "D01");
-    check_str_eq(net_addr_to_str(&config_eamuse.server),
-        "http://myServer.com/legacy");
-    check_str_eq(security_id_to_str(&config_eamuse.pcbid, false), 
+    check_str_eq(
+        net_addr_to_str(&config_eamuse.server), "http://myServer.com/legacy");
+    check_str_eq(
+        security_id_to_str(&config_eamuse.pcbid, false),
         "0101020304050607086F");
-    check_str_eq(security_id_to_str(&config_eamuse.eamid, false), 
+    check_str_eq(
+        security_id_to_str(&config_eamuse.eamid, false),
         "0101020304050607086F");
 }
 
 static void test_config_eamuse_invalid_values()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_util_config_eamuse config_eamuse;
 
     config = cconfig_init();
@@ -73,9 +77,11 @@ static void test_config_eamuse_invalid_values()
 
     check_str_eq(config_eamuse.card_type, "C02");
     check_str_eq(net_addr_to_str(&config_eamuse.server), "asdf");
-    check_str_eq(security_id_to_str(&config_eamuse.pcbid, false), 
+    check_str_eq(
+        security_id_to_str(&config_eamuse.pcbid, false),
         "00000000000000000000");
-    check_str_eq(security_id_to_str(&config_eamuse.eamid, false), 
+    check_str_eq(
+        security_id_to_str(&config_eamuse.eamid, false),
         "00000000000000000000");
 }
 

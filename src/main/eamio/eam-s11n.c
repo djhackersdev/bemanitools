@@ -38,7 +38,7 @@ struct eam *eam_impl_config_load(FILE *f)
 
     hid_mgr_lock();
 
-    for (unit_no = 0 ; unit_no < EAM_UNIT_COUNT ; unit_no++) {
+    for (unit_no = 0; unit_no < EAM_UNIT_COUNT; unit_no++) {
         if (!read_u8(f, &has_card_path)) {
             goto late_fail;
         }
@@ -100,7 +100,7 @@ void eam_impl_config_save(struct eam *eam, FILE *f)
     write_u8(f, &alt_10k);
     write_u8(f, &nunits);
 
-    for (unit_no = 0 ; unit_no < EAM_UNIT_COUNT ; unit_no++) {
+    for (unit_no = 0; unit_no < EAM_UNIT_COUNT; unit_no++) {
         card_path = eam_impl_get_card_path(eam, unit_no);
         hid = eam_impl_get_keypad_device(eam, unit_no);
 
@@ -119,4 +119,3 @@ void eam_impl_config_save(struct eam *eam, FILE *f)
         }
     }
 }
-

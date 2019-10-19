@@ -25,6 +25,9 @@ bool aciodrv_kfca_init(uint8_t node_id);
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_kfca_poll(uint8_t node_id, const struct ac_io_kfca_poll_out* pout, struct ac_io_kfca_poll_in* pin);
+bool aciodrv_kfca_poll(
+    uint8_t node_id,
+    const struct ac_io_kfca_poll_out *pout,
+    struct ac_io_kfca_poll_in *pin);
 
 #endif

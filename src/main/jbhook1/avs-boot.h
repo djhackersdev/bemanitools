@@ -11,9 +11,9 @@ void jbhook1_avs_boot_init();
 
 /**
  * Set the target eamuse server address.
- * 
+ *
  * @param server_addr Address to target eamuse server.
  */
-void jbhook1_avs_boot_set_eamuse_addr(const struct net_addr* server_addr);
+void jbhook1_avs_boot_set_eamuse_addr(const struct net_addr *server_addr);
 
 #endif

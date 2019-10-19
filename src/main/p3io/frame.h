@@ -7,13 +7,8 @@
 
 #include "util/iobuf.h"
 
-HRESULT p3io_frame_encode(
-        struct iobuf *dest,
-        const void *bytes,
-        size_t nbytes);
+HRESULT p3io_frame_encode(struct iobuf *dest, const void *bytes, size_t nbytes);
 
-HRESULT p3io_frame_decode(
-        struct iobuf *dest,
-        struct const_iobuf *src);
+HRESULT p3io_frame_decode(struct iobuf *dest, struct const_iobuf *src);
 
 #endif

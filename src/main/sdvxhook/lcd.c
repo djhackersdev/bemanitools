@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <string.h>
@@ -41,7 +41,8 @@ void lcd_fini(void)
     lcd_fd = NULL;
 }
 
-HRESULT lcd_dispatch_irp(struct irp *irp)
+HRESULT
+lcd_dispatch_irp(struct irp *irp)
 {
     log_assert(irp != NULL);
 
@@ -50,12 +51,18 @@ HRESULT lcd_dispatch_irp(struct irp *irp)
     }
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return lcd_open(irp);
-    case IRP_OP_CLOSE:  return lcd_close(irp);
-    case IRP_OP_READ:   return S_OK;
-    case IRP_OP_WRITE:  return lcd_write(irp);
-    case IRP_OP_IOCTL:  return S_OK;
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return lcd_open(irp);
+        case IRP_OP_CLOSE:
+            return lcd_close(irp);
+        case IRP_OP_READ:
+            return S_OK;
+        case IRP_OP_WRITE:
+            return lcd_write(irp);
+        case IRP_OP_IOCTL:
+            return S_OK;
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -102,4 +109,3 @@ static HRESULT lcd_write(struct irp *irp)
 
     return S_OK;
 }
-

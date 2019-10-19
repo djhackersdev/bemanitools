@@ -6,15 +6,25 @@
 #include "util/crypto.h"
 #include "util/log.h"
 
-static uint8_t security_rp3_signature_scramble_table[] = {
-    0x0C, 0x02, 0x0F, 0x01,
-    0x07, 0x09, 0x04, 0x0A,
-    0x00, 0x0E, 0x03, 0x0D,
-    0x0B, 0x05, 0x08, 0x06
-};
+static uint8_t security_rp3_signature_scramble_table[] = {0x0C,
+                                                          0x02,
+                                                          0x0F,
+                                                          0x01,
+                                                          0x07,
+                                                          0x09,
+                                                          0x04,
+                                                          0x0A,
+                                                          0x00,
+                                                          0x0E,
+                                                          0x03,
+                                                          0x0D,
+                                                          0x0B,
+                                                          0x05,
+                                                          0x08,
+                                                          0x06};
 
-static void security_rp3_create_signature(const uint8_t *plug_id, 
-        const uint8_t *sign_key_packed, uint8_t *out)
+static void security_rp3_create_signature(
+    const uint8_t *plug_id, const uint8_t *sign_key_packed, uint8_t *out)
 {
     uint8_t data[14];
     uint8_t md5[16];
@@ -40,10 +50,11 @@ static void security_rp3_create_signature(const uint8_t *plug_id,
 }
 
 void security_rp3_generate_signed_eeprom_data(
-        enum security_rp_util_rp_type type,
-        const struct security_rp_sign_key* sign_key, 
-        const struct security_mcode* plug_mcode, 
-        const struct security_id* plug_id, struct security_rp3_eeprom* out)
+    enum security_rp_util_rp_type type,
+    const struct security_rp_sign_key *sign_key,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp3_eeprom *out)
 {
     uint8_t sign_key_tmp[8];
     uint8_t sign_key_packed[6];
@@ -57,8 +68,8 @@ void security_rp3_generate_signed_eeprom_data(
     memcpy(sign_key_tmp, sign_key, sizeof(sign_key_tmp));
 
     if (type == SECURITY_RP_UTIL_RP_TYPE_BLACK) {
-        for (int i = 0 ; i < sizeof(sign_key_tmp); i++) {
-            sign_key_tmp[i] ^= ((const uint8_t*) plug_mcode)[i];
+        for (int i = 0; i < sizeof(sign_key_tmp); i++) {
+            sign_key_tmp[i] ^= ((const uint8_t *) plug_mcode)[i];
         }
     }
 
@@ -68,11 +79,11 @@ void security_rp3_generate_signed_eeprom_data(
         plug_id_reversed[i] = plug_id->id[7 - i];
     }
 
-    security_util_8_to_6_encode((const uint8_t*) plug_mcode,
-        out->packed_payload);
-    memset(out->zeros, 0, sizeof(out->zeros));  
+    security_util_8_to_6_encode(
+        (const uint8_t *) plug_mcode, out->packed_payload);
+    memset(out->zeros, 0, sizeof(out->zeros));
 
-    security_rp3_create_signature(plug_id_reversed, sign_key_packed,
-        out->signature);
+    security_rp3_create_signature(
+        plug_id_reversed, sign_key_packed, out->signature);
     out->crc = crc8((uint8_t *) out, sizeof(*out) - 1, 0);
 }

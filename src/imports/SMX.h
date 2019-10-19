@@ -25,27 +25,33 @@ enum SensorTestMode;
 enum SMXUpdateCallbackReason;
 struct SMXSensorTestModeData;
 
-// All functions are nonblocking.  Getters will return the most recent state.  Setters will
-// return immediately and do their work in the background.  No functions return errors, and
-// setting data on a pad which isn't connected will have no effect.
+// All functions are nonblocking.  Getters will return the most recent state.
+// Setters will return immediately and do their work in the background.  No
+// functions return errors, and setting data on a pad which isn't connected will
+// have no effect.
 
 // Initialize, and start searching for devices.
 //
-// UpdateCallback will be called when something happens: connection or disconnection, inputs
-// changed, configuration updated, test data updated, etc.  It doesn't specify what's changed,
-// and the user should check all state that it's interested in.
+// UpdateCallback will be called when something happens: connection or
+// disconnection, inputs changed, configuration updated, test data updated, etc.
+// It doesn't specify what's changed, and the user should check all state that
+// it's interested in.
 //
-// This is called asynchronously from a helper thread, so the receiver must be thread-safe.
-typedef void SMXUpdateCallback(int pad, enum SMXUpdateCallbackReason reason, void *pUser);
-SMX_EXTERN_C SMX_API void SMX_Start(SMXUpdateCallback UpdateCallback, void *pUser);
+// This is called asynchronously from a helper thread, so the receiver must be
+// thread-safe.
+typedef void
+SMXUpdateCallback(int pad, enum SMXUpdateCallbackReason reason, void *pUser);
+SMX_EXTERN_C SMX_API void
+SMX_Start(SMXUpdateCallback UpdateCallback, void *pUser);
 
-// Shut down and disconnect from all devices.  This will wait for any user callbacks to complete,
-// and no user callbacks will be called after this returns.  This must not be called from within
-// the update callback.
+// Shut down and disconnect from all devices.  This will wait for any user
+// callbacks to complete, and no user callbacks will be called after this
+// returns.  This must not be called from within the update callback.
 SMX_EXTERN_C SMX_API void SMX_Stop();
 
-// Set a function to receive diagnostic logs.  By default, logs are written to stdout.
-// This can be called before SMX_Start, so it affects any logs sent during initialization.
+// Set a function to receive diagnostic logs.  By default, logs are written to
+// stdout. This can be called before SMX_Start, so it affects any logs sent
+// during initialization.
 typedef void SMXLogCallback(const char *log);
 SMX_EXTERN_C SMX_API void SMX_SetLogCallback(SMXLogCallback callback);
 
@@ -55,8 +61,9 @@ SMX_EXTERN_C SMX_API void SMX_GetInfo(int pad, struct SMXInfo *info);
 // Get a mask of the currently pressed panels.
 SMX_EXTERN_C SMX_API uint16_t SMX_GetInputState(int pad);
 
-// Update the lights.  Both pads are always updated together.  lightsData is a list of 8-bit RGB
-// colors, one for each LED.  Each panel has lights in the following order:
+// Update the lights.  Both pads are always updated together.  lightsData is a
+// list of 8-bit RGB colors, one for each LED.  Each panel has lights in the
+// following order:
 //
 // 0123
 // 4567
@@ -69,61 +76,70 @@ SMX_EXTERN_C SMX_API uint16_t SMX_GetInputState(int pad);
 // 345 CDE
 // 678 F01
 //
-// With 18 panels, 16 LEDs per panel and 3 bytes per LED, each light update has 864 bytes of data.
+// With 18 panels, 16 LEDs per panel and 3 bytes per LED, each light update has
+// 864 bytes of data.
 //
-// Lights will update at up to 30 FPS.  If lights data is sent more quickly, a best effort will be
-// made to send the most recent lights data available, but the panels won't update more quickly.
+// Lights will update at up to 30 FPS.  If lights data is sent more quickly, a
+// best effort will be made to send the most recent lights data available, but
+// the panels won't update more quickly.
 //
-// The panels will return to automatic lighting if no lights are received for a while, so applications
-// controlling lights should send light updates continually, even if the lights aren't changing.
+// The panels will return to automatic lighting if no lights are received for a
+// while, so applications controlling lights should send light updates
+// continually, even if the lights aren't changing.
 SMX_EXTERN_C SMX_API void SMX_SetLights(const char lightsData[864]);
 
-// By default, the panels light automatically when stepped on.  If a lights command is sent by
-// the application, this stops happening to allow the application to fully control lighting.
-// If no lights update is received for a few seconds, automatic lighting is reenabled by the
-// panels.
+// By default, the panels light automatically when stepped on.  If a lights
+// command is sent by the application, this stops happening to allow the
+// application to fully control lighting. If no lights update is received for a
+// few seconds, automatic lighting is reenabled by the panels.
 //
-// SMX_ReenableAutoLights can be called to immediately reenable auto-lighting, without waiting
-// for the timeout period to elapse.  Games don't need to call this, since the panels will return
-// to auto-lighting mode automatically after a brief period of no updates.
+// SMX_ReenableAutoLights can be called to immediately reenable auto-lighting,
+// without waiting for the timeout period to elapse.  Games don't need to call
+// this, since the panels will return to auto-lighting mode automatically after
+// a brief period of no updates.
 SMX_EXTERN_C SMX_API void SMX_ReenableAutoLights();
 
 // Get the current controller's configuration.
 //
-// Return true if a configuration is available.  If false is returned, no panel is connected
-// and no data will be set.
+// Return true if a configuration is available.  If false is returned, no panel
+// is connected and no data will be set.
 SMX_EXTERN_C SMX_API bool SMX_GetConfig(int pad, struct SMXConfig *config);
 
-// Update the current controller's configuration.  This doesn't block, and the new configuration will
-// be sent in the background.  SMX_GetConfig will return the new configuration as soon as this call
-// returns, without waiting for it to actually be sent to the controller.
-SMX_EXTERN_C SMX_API void SMX_SetConfig(int pad, const struct SMXConfig *config);
+// Update the current controller's configuration.  This doesn't block, and the
+// new configuration will be sent in the background.  SMX_GetConfig will return
+// the new configuration as soon as this call returns, without waiting for it to
+// actually be sent to the controller.
+SMX_EXTERN_C SMX_API void
+SMX_SetConfig(int pad, const struct SMXConfig *config);
 
 // Reset a pad to its original configuration.
 SMX_EXTERN_C SMX_API void SMX_FactoryReset(int pad);
 
-// Request an immediate panel recalibration.  This is normally not necessary, but can be helpful
-// for diagnostics.
+// Request an immediate panel recalibration.  This is normally not necessary,
+// but can be helpful for diagnostics.
 SMX_EXTERN_C SMX_API void SMX_ForceRecalibration(int pad);
 
-// Set a panel test mode and request test data.  This is used by the configuration tool.
+// Set a panel test mode and request test data.  This is used by the
+// configuration tool.
 SMX_EXTERN_C SMX_API void SMX_SetTestMode(int pad, enum SensorTestMode mode);
-SMX_EXTERN_C SMX_API bool SMX_GetTestData(int pad, struct SMXSensorTestModeData *data);
+SMX_EXTERN_C SMX_API bool
+SMX_GetTestData(int pad, struct SMXSensorTestModeData *data);
 
-// Return the build version of the DLL, which is based on the git tag at build time.  This
-// is only intended for diagnostic logging, and it's also the version we show in SMXConfig.
+// Return the build version of the DLL, which is based on the git tag at build
+// time.  This is only intended for diagnostic logging, and it's also the
+// version we show in SMXConfig.
 SMX_EXTERN_C SMX_API const char *SMX_Version();
 
-// General info about a connected controller.  This can be retrieved with SMX_GetInfo.
-struct SMXInfo
-{
-    // True if we're fully connected to this controller.  If this is false, the other
-    // fields won't be set.
+// General info about a connected controller.  This can be retrieved with
+// SMX_GetInfo.
+struct SMXInfo {
+    // True if we're fully connected to this controller.  If this is false, the
+    // other fields won't be set.
     bool m_bConnected;
 
-    // This device's serial number.  This can be used to distinguish devices from each
-    // other if more than one is connected.  This is a null-terminated string instead
-    // of a C++ string for C# marshalling.
+    // This device's serial number.  This can be used to distinguish devices
+    // from each other if more than one is connected.  This is a null-terminated
+    // string instead of a C++ string for C# marshalling.
     char m_Serial[33];
 
     // This device's firmware version.
@@ -131,22 +147,24 @@ struct SMXInfo
 };
 
 enum SMXUpdateCallbackReason {
-    // This is called when a generic state change happens: connection or disconnection, inputs changed,
-    // test data updated, etc.  It doesn't specify what's changed.  We simply check the whole state.
+    // This is called when a generic state change happens: connection or
+    // disconnection, inputs changed,
+    // test data updated, etc.  It doesn't specify what's changed.  We simply
+    // check the whole state.
     SMXUpdateCallback_Updated,
 
-    // This is called when SMX_FactoryReset completes, indicating that SMX_GetConfig will now return
+    // This is called when SMX_FactoryReset completes, indicating that
+    // SMX_GetConfig will now return
     // the reset configuration.
     SMXUpdateCallback_FactoryResetCommandComplete
 };
 
-// The configuration for a connected controller.  This can be retrieved with SMX_GetConfig
-// and modified with SMX_SetConfig.
+// The configuration for a connected controller.  This can be retrieved with
+// SMX_GetConfig and modified with SMX_SetConfig.
 //
-// The order and packing of this struct corresponds to the configuration packet sent to
-// the master controller, so it must not be changed.
-struct SMXConfig
-{
+// The order and packing of this struct corresponds to the configuration packet
+// sent to the master controller, so it must not be changed.
+struct SMXConfig {
 #if 0
     // These fields are unused and must be left at their existing values.
     uint8_t unused1 = 0xFF, unused2 = 0xFF;
@@ -228,9 +246,10 @@ struct SMXConfig
     uint8_t panelThreshold8Low, panelThreshold8High;
 #endif
 };
-//static_assert(sizeof(SMXConfig) == 84, "Expected 84 bytes");
+// static_assert(sizeof(SMXConfig) == 84, "Expected 84 bytes");
 
-// The values (except for Off) correspond with the protocol and must not be changed.
+// The values (except for Off) correspond with the protocol and must not be
+// changed.
 enum SensorTestMode {
     SensorTestMode_Off = 0,
     // Return the raw, uncalibrated value of each sensor.
@@ -246,10 +265,11 @@ enum SensorTestMode {
     SensorTestMode_Tare = '3',
 };
 
-// Data for the current SensorTestMode.  The interpretation of sensorLevel depends on the mode.
-struct SMXSensorTestModeData
-{
-    // If false, sensorLevel[n][*] is zero because we didn't receive a response from that panel.
+// Data for the current SensorTestMode.  The interpretation of sensorLevel
+// depends on the mode.
+struct SMXSensorTestModeData {
+    // If false, sensorLevel[n][*] is zero because we didn't receive a response
+    // from that panel.
     bool bHaveDataFromPanel[9];
 
     int16_t sensorLevel[9][4];

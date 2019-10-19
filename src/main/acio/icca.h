@@ -5,13 +5,13 @@
 
 enum ac_io_icca_cmd {
     /* Yet unknown command encountered first on jubeat (1) */
-    AC_IO_ICCA_CMD_UNKN_0120        = 0x0120,
+    AC_IO_ICCA_CMD_UNKN_0120 = 0x0120,
     AC_IO_ICCA_CMD_QUEUE_LOOP_START = 0x0130,
-    AC_IO_ICCA_CMD_ENGAGE           = 0x0131,
-    AC_IO_ICCA_CMD_POLL             = 0x0134,
-    AC_IO_ICCA_CMD_SET_SLOT_STATE   = 0x0135,
-    AC_IO_ICCA_CMD_BEGIN_KEYPAD     = 0x013A,
-    AC_IO_ICCA_CMD_POLL_FELICA      = 0x0161,
+    AC_IO_ICCA_CMD_ENGAGE = 0x0131,
+    AC_IO_ICCA_CMD_POLL = 0x0134,
+    AC_IO_ICCA_CMD_SET_SLOT_STATE = 0x0135,
+    AC_IO_ICCA_CMD_BEGIN_KEYPAD = 0x013A,
+    AC_IO_ICCA_CMD_POLL_FELICA = 0x0161,
 };
 
 enum ac_io_icca_slot_state {

@@ -27,7 +27,7 @@ void options_init(struct options *options)
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
-    for (int i = 1 ; i < argc ; i++) {
+    for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
                 case 'A':
@@ -80,7 +80,8 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->avs_heap_size = (size_t)strtol(argv[++i],NULL,0);
+                    options->avs_heap_size =
+                        (size_t) strtol(argv[++i], NULL, 0);
 
                     if (options->avs_heap_size == 0) {
                         return false;
@@ -94,7 +95,8 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->std_heap_size = (size_t)strtol(argv[++i],NULL,0);
+                    options->std_heap_size =
+                        (size_t) strtol(argv[++i], NULL, 0);
 
                     if (options->std_heap_size == 0) {
                         return false;
@@ -108,7 +110,8 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    *array_append(const char *,&options->hook_dlls)=argv[++i];
+                    *array_append(const char *, &options->hook_dlls) =
+                        argv[++i];
 
                     break;
 
@@ -145,29 +148,35 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
 void options_print_usage(void)
 {
-    fprintf(stderr,
-"Usage: launcher.exe [launcher options...] <app.dll> [hooks options...] \n"
-"\n"
-"       The following options can be specified before the app DLL path:\n"
-"\n"
-"       -A [filename]   App configuration file (default: prop/app-config.xml)\n"
-"       -V [filename]   AVS configuration file (default: prop/avs-config.xml)\n"
-"       -E [filename]   ea3 configuration file (default: prop/ea3-config.xml)\n"
-"       -H [bytes]      AVS heap size (default: 16777216)\n"
+    fprintf(
+        stderr,
+        "Usage: launcher.exe [launcher options...] <app.dll> [hooks "
+        "options...] \n"
+        "\n"
+        "       The following options can be specified before the app DLL "
+        "path:\n"
+        "\n"
+        "       -A [filename]   App configuration file (default: "
+        "prop/app-config.xml)\n"
+        "       -V [filename]   AVS configuration file (default: "
+        "prop/avs-config.xml)\n"
+        "       -E [filename]   ea3 configuration file (default: "
+        "prop/ea3-config.xml)\n"
+        "       -H [bytes]      AVS heap size (default: 16777216)\n"
 #ifdef AVS_HAS_STD_HEAP
-"       -T [bytes]      'std' heap size (default 16777216)\n"
+        "       -T [bytes]      'std' heap size (default 16777216)\n"
 #endif
-"       -P [pcbid]      Specify PCBID (default: use ea3 config)\n"
-"       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
-"       -K [filename]   Load hook DLL (can be specified multiple times)\n"
-"       -Y [filename]   Log to a file in addition to the console\n"
-"       -D              Halt the launcher before bootstrapping AVS until a"
-" remote debugger is attached\n"
-    );
+        "       -P [pcbid]      Specify PCBID (default: use ea3 config)\n"
+        "       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
+        "       -K [filename]   Load hook DLL (can be specified multiple "
+        "times)\n"
+        "       -Y [filename]   Log to a file in addition to the console\n"
+        "       -D              Halt the launcher before bootstrapping AVS "
+        "until a"
+        " remote debugger is attached\n");
 }
 
 void options_fini(struct options *options)
 {
     array_fini(&options->hook_dlls);
 }
-

@@ -16,17 +16,17 @@ static dll_entry_init_t next_dll_entry_init;
 static dll_entry_main_t next_dll_entry_main;
 static void *(STDCALL *next_GetProcAddress)(HMODULE mod, const char *sym);
 
-static void * STDCALL my_GetProcAddress(HMODULE mod, const char *sym);
+static void *STDCALL my_GetProcAddress(HMODULE mod, const char *sym);
 
 static const struct hook_symbol mod_hooks[] = {
     {
-        .name   = "GetProcAddress",
-        .patch  = my_GetProcAddress,
-        .link   = (void **) &next_GetProcAddress,
+        .name = "GetProcAddress",
+        .patch = my_GetProcAddress,
+        .link = (void **) &next_GetProcAddress,
     },
 };
 
-static void * STDCALL my_GetProcAddress(HMODULE mod, const char *sym)
+static void *STDCALL my_GetProcAddress(HMODULE mod, const char *sym)
 {
     void *next;
 
@@ -76,4 +76,3 @@ bool app_hook_invoke_main(void)
 {
     return next_dll_entry_main();
 }
-

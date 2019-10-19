@@ -5,6 +5,6 @@
 #include <stdint.h>
 #include <windows.h>
 
-bool ezusb_iidx_sram_init(HANDLE handle, const void* buffer, uint16_t size);
+bool ezusb_iidx_sram_init(HANDLE handle, const void *buffer, uint16_t size);
 
 #endif

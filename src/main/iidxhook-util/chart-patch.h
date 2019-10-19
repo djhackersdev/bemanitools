@@ -15,7 +15,7 @@
  * the charts in-memory to modify their timestamps and making the game run
  * on-sync on non-stock setups with different display refresh rates than
  * 59.94 or 60.04 (depending on game version).
- * 
+ *
  * @param orig_timebase The original refresh rate (timebase value) of the game.
  *        Use one of the defined macros.
  */
@@ -30,8 +30,8 @@ void iidxhook_util_chart_patch_fini(void);
  * Set the target refresh rate of the display. Determine this value either
  * by using the d3d8 or d3d9 monitor check of bemanitools or get it from another
  * source (e.g. one of the newer games in-built monitor checks).
- * 
- * @param hz Refresh rate of the display. Ensure your display provides a 
+ *
+ * @param hz Refresh rate of the display. Ensure your display provides a
  *        constant value.
  */
 void iidxhook_util_chart_patch_set_refresh_rate(double hz);

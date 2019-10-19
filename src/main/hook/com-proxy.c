@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <unknwn.h>
+#include <windows.h>
 
 #include <stdlib.h>
 
@@ -10,52 +10,78 @@
 
 #ifdef _WIN64
 
-    /***** 64-BIT TRAMPOLINE *****/
+/***** 64-BIT TRAMPOLINE *****/
 
 #define SLOT_OFFSET 0x0A
 static const uint8_t com_proxy_tramp[] = {
     /* mov rcx, [rcx+8]         ; Replace this with this->real */
-    0x48, 0x8B, 0x49, 0x08,
+    0x48,
+    0x8B,
+    0x49,
+    0x08,
 
     /* mov rax, [rcx]           ; Get real->vtbl */
-    0x48, 0x8B, 0x01,
+    0x48,
+    0x8B,
+    0x01,
 
     /* mov rax, [rax+XX]        ; Get vtbl->slot_XX */
-    0x48, 0x8B, 0x80, -1, -1, -1, -1,
+    0x48,
+    0x8B,
+    0x80,
+    -1,
+    -1,
+    -1,
+    -1,
 
     /* jmp rax                  ; Continue to slot_XX */
-    0xFF, 0xE0,
+    0xFF,
+    0xE0,
 };
 
 #else
 
-    /***** 32-BIT TRAMPOLINE *****/
+/***** 32-BIT TRAMPOLINE *****/
 
 #define SLOT_OFFSET 0x0F
 static const uint8_t com_proxy_tramp[] = {
     /* mov eax, [esp+4]         ; Get this */
-    0x8B, 0x44, 0x24, 0x04,
+    0x8B,
+    0x44,
+    0x24,
+    0x04,
 
     /* mov eax, [eax+4]         ; Get this->real */
-    0x8B, 0x40, 0x04,
+    0x8B,
+    0x40,
+    0x04,
 
     /* mov [esp+4], eax         ; Replace this with this->real on stack */
-    0x89, 0x44, 0x24, 0x04,
+    0x89,
+    0x44,
+    0x24,
+    0x04,
 
     /* mov ecx, [eax]           ; Get real->vtbl */
-    0x8B, 0x08,
+    0x8B,
+    0x08,
 
     /* mov ecx, [ecx+XX]        ; Get vtbl->slot_XX */
-    0x8B, 0x89, -1, -1, -1, -1,
+    0x8B,
+    0x89,
+    -1,
+    -1,
+    -1,
+    -1,
 
     /* jmp ecx                  ; Continue to slot_XX */
-    0xFF, 0xE1
-};
+    0xFF,
+    0xE1};
 
 #endif
 
-static HRESULT STDCALL com_proxy_query_interface(IUnknown *ptr, REFIID iid,
-    void **iface)
+static HRESULT STDCALL
+com_proxy_query_interface(IUnknown *ptr, REFIID iid, void **iface)
 {
     struct com_proxy *self = (struct com_proxy *) ptr;
     IUnknown *obj = self->real; /* Not necessarily the real IUnknown* */
@@ -117,8 +143,11 @@ struct com_proxy *com_proxy_wrap(void *iface, size_t vtbl_size)
     self = xmalloc(sizeof(*self));
     self->vptr = xmalloc(vtbl_size);
     self->real = iface;
-    self->tramps = VirtualAlloc(NULL, sizeof(com_proxy_tramp) * nslots,
-            MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    self->tramps = VirtualAlloc(
+        NULL,
+        sizeof(com_proxy_tramp) * nslots,
+        MEM_RESERVE | MEM_COMMIT,
+        PAGE_EXECUTE_READWRITE);
 
     /* Set up proxied IUnknown impl */
     vtbl = self->vptr;
@@ -127,7 +156,7 @@ struct com_proxy *com_proxy_wrap(void *iface, size_t vtbl_size)
     vtbl[2] = com_proxy_release;
 
     /* Populate trampoline code for remaining vtbl entries */
-    for (i = 3 /* Skip IUnknown */ ; i < nslots ; i++) {
+    for (i = 3 /* Skip IUnknown */; i < nslots; i++) {
         cur_tramp = self->tramps + i * sizeof(com_proxy_tramp);
 
         /* Copy template */
@@ -142,4 +171,3 @@ struct com_proxy *com_proxy_wrap(void *iface, size_t vtbl_size)
 
     return self;
 }
-

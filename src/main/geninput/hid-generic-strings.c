@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <hidsdi.h>
+#include <windows.h>
 
 #include <stdlib.h>
 
@@ -46,4 +46,3 @@ void hid_generic_strings_fini(struct hid_generic_strings *strings)
     free(strings->str_prod);
     free(strings->wstr_prod);
 }
-

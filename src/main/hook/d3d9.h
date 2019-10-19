@@ -3,10 +3,11 @@
 
 /**
  * This module hooks the d3d9 API and abstracts it using IRPs (like iohook).
- * It allows hiding the COM stuff which is required to be handled when interacting with d3d9.
- * Furthermore, this module supports chaining of multiple handlers and more flexible and structured
- * dispatching on the available operations (more can be added when required, obviously).
- * 
+ * It allows hiding the COM stuff which is required to be handled when
+ * interacting with d3d9. Furthermore, this module supports chaining of multiple
+ * handlers and more flexible and structured dispatching on the available
+ * operations (more can be added when required, obviously).
+ *
  * @author icex2
  */
 
@@ -48,16 +49,16 @@ struct hook_d3d9_irp {
         struct {
             UINT sdk_ver;
             // Return value of call
-            IDirect3D9* ctx;
+            IDirect3D9 *ctx;
         } ctx_create;
 
         /**
          * Params of EnumDisplayDevicesA.
          */
         struct {
-            const char* dev_name;
+            const char *dev_name;
             DWORD dev_num;
-            DISPLAY_DEVICEA* info;
+            DISPLAY_DEVICEA *info;
             DWORD flags;
         } enum_display_devices;
 
@@ -92,60 +93,60 @@ struct hook_d3d9_irp {
          * Params of IDirect3D9_CreateDevice.
          */
         struct {
-            IDirect3D9* self;
+            IDirect3D9 *self;
             UINT adapter;
             D3DDEVTYPE type;
             HWND hwnd;
             DWORD flags;
-            D3DPRESENT_PARAMETERS* pp;
-            IDirect3DDevice9** pdev;
+            D3DPRESENT_PARAMETERS *pp;
+            IDirect3DDevice9 **pdev;
         } ctx_create_device;
 
         /**
          * Params of IDirect3DDevice9_CreateTexture.
          */
         struct {
-            IDirect3DDevice9* self;
+            IDirect3DDevice9 *self;
             UINT width;
             UINT height;
             UINT levels;
             DWORD usage;
             D3DFORMAT format;
             D3DPOOL pool;
-            IDirect3DTexture9** texture;
-            HANDLE* shared_handle;
+            IDirect3DTexture9 **texture;
+            HANDLE *shared_handle;
         } dev_create_texture;
 
         /**
          * Params of IDirect3DDevice9_BeginScene.
          */
         struct {
-            IDirect3DDevice9* self;
+            IDirect3DDevice9 *self;
         } dev_begin_scene;
 
         /**
          * Params of IDirect3DDevice9_EndScene.
          */
         struct {
-            IDirect3DDevice9* self;
+            IDirect3DDevice9 *self;
         } dev_end_scene;
 
         /**
          * Params of IDirect3DDevice9_Present.
          */
         struct {
-            IDirect3DDevice9* self;
-            CONST RECT* source_rect;
-            CONST RECT* dest_rect;
+            IDirect3DDevice9 *self;
+            CONST RECT *source_rect;
+            CONST RECT *dest_rect;
             HWND dest_window_override;
-            CONST RGNDATA* dirty_region;
+            CONST RGNDATA *dirty_region;
         } dev_present;
 
         /**
          * Params of IDirect3DDevice9_SetRenderState.
          */
         struct {
-            IDirect3DDevice9* self;
+            IDirect3DDevice9 *self;
             D3DRENDERSTATETYPE state;
             DWORD value;
         } dev_set_render_state;
@@ -154,9 +155,9 @@ struct hook_d3d9_irp {
          * Params of IDirect3DDevice9_DrawPrimitiveUP.
          */
         struct {
-            IDirect3DDevice9* self;
+            IDirect3DDevice9 *self;
             D3DPRIMITIVETYPE primitive_type;
-            UINT primitive_count; 
+            UINT primitive_count;
             const void *data;
             UINT stride;
         } dev_draw_primitive_up;
@@ -168,25 +169,28 @@ struct hook_d3d9_irp {
 /**
  * D3D9 IRP handler function typedef.
  */
-typedef HRESULT (*hook_d3d9_irp_handler_t)(struct hook_d3d9_irp* irp);
+typedef HRESULT (*hook_d3d9_irp_handler_t)(struct hook_d3d9_irp *irp);
 
 /**
  * Initialize the d3d9 hook module.
- * 
- * @param handlers The handlers to install which will be called once one of the hooked functions is called.
- * @param nhandlers Number of handlers to install (length of provided array above).
+ *
+ * @param handlers The handlers to install which will be called once one of the
+ * hooked functions is called.
+ * @param nhandlers Number of handlers to install (length of provided array
+ * above).
  */
 void hook_d3d9_init(const hook_d3d9_irp_handler_t *handlers, size_t nhandlers);
 
 /**
  * Main invoke next function.
- * 
- * Call this from your handlers if you are done handling and to pass on the IRP to the further installed IRP handlers.
- * At the end of the chain, calls the real function.
- * 
+ *
+ * Call this from your handlers if you are done handling and to pass on the IRP
+ * to the further installed IRP handlers. At the end of the chain, calls the
+ * real function.
+ *
  * @param irp Pointer to a valid IRP.
  * @return S_OK on success, error otherwise (depending on the irp op).
  */
-HRESULT hook_d3d9_irp_invoke_next(struct hook_d3d9_irp* irp);
+HRESULT hook_d3d9_irp_invoke_next(struct hook_d3d9_irp *irp);
 
 #endif

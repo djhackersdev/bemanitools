@@ -20,49 +20,49 @@ struct ddr_bittrans {
 };
 
 static const struct ddr_bittrans input_map[] = {
-    { 0x00000001, 1 << DDR_SERVICE },
-    { 0x00000002, 1 << DDR_TEST },
-    { 0x00100000, 1 << DDR_P1_MENU_LEFT },
-    { 0x00400000, 1 << DDR_P1_MENU_RIGHT },
-    { 0x00000100, 1 << DDR_P1_START },
-    { 0x00200000, 1 << DDR_P2_MENU_LEFT },
-    { 0x00800000, 1 << DDR_P2_MENU_RIGHT },
-    { 0x00000200, 1 << DDR_P2_START },
-    { 0x00004000, 1 << DDR_P1_LEFT },
-    { 0x00010000, 1 << DDR_P1_RIGHT },
-    { 0x00000400, 1 << DDR_P1_UP },
-    { 0x00001000, 1 << DDR_P1_DOWN },
-    { 0x00008000, 1 << DDR_P2_LEFT },
-    { 0x00020000, 1 << DDR_P2_RIGHT },
-    { 0x00000800, 1 << DDR_P2_UP },
-    { 0x00002000, 1 << DDR_P2_DOWN },
+    {0x00000001, 1 << DDR_SERVICE},
+    {0x00000002, 1 << DDR_TEST},
+    {0x00100000, 1 << DDR_P1_MENU_LEFT},
+    {0x00400000, 1 << DDR_P1_MENU_RIGHT},
+    {0x00000100, 1 << DDR_P1_START},
+    {0x00200000, 1 << DDR_P2_MENU_LEFT},
+    {0x00800000, 1 << DDR_P2_MENU_RIGHT},
+    {0x00000200, 1 << DDR_P2_START},
+    {0x00004000, 1 << DDR_P1_LEFT},
+    {0x00010000, 1 << DDR_P1_RIGHT},
+    {0x00000400, 1 << DDR_P1_UP},
+    {0x00001000, 1 << DDR_P1_DOWN},
+    {0x00008000, 1 << DDR_P2_LEFT},
+    {0x00020000, 1 << DDR_P2_RIGHT},
+    {0x00000800, 1 << DDR_P2_UP},
+    {0x00002000, 1 << DDR_P2_DOWN},
 
     /* Nonstandard */
-    { 0x01000000, 1 << DDR_P1_MENU_UP },
-    { 0x04000000, 1 << DDR_P1_MENU_DOWN },
-    { 0x02000000, 1 << DDR_P2_MENU_UP },
-    { 0x08000000, 1 << DDR_P2_MENU_DOWN },
+    {0x01000000, 1 << DDR_P1_MENU_UP},
+    {0x04000000, 1 << DDR_P1_MENU_DOWN},
+    {0x02000000, 1 << DDR_P2_MENU_UP},
+    {0x08000000, 1 << DDR_P2_MENU_DOWN},
 };
 
 static const struct ddr_bittrans extio_light_map[] = {
-    { 0x00000100, 1 << LIGHT_P1_UP },
-    { 0x00000200, 1 << LIGHT_P1_DOWN },
-    { 0x00000400, 1 << LIGHT_P1_LEFT },
-    { 0x00000800, 1 << LIGHT_P1_RIGHT },
-    { 0x00010000, 1 << LIGHT_P2_UP },
-    { 0x00020000, 1 << LIGHT_P2_DOWN },
-    { 0x00040000, 1 << LIGHT_P2_LEFT },
-    { 0x00080000, 1 << LIGHT_P2_RIGHT },
-    { 0x01000000, 1 << LIGHT_NEONS },
+    {0x00000100, 1 << LIGHT_P1_UP},
+    {0x00000200, 1 << LIGHT_P1_DOWN},
+    {0x00000400, 1 << LIGHT_P1_LEFT},
+    {0x00000800, 1 << LIGHT_P1_RIGHT},
+    {0x00010000, 1 << LIGHT_P2_UP},
+    {0x00020000, 1 << LIGHT_P2_DOWN},
+    {0x00040000, 1 << LIGHT_P2_LEFT},
+    {0x00080000, 1 << LIGHT_P2_RIGHT},
+    {0x01000000, 1 << LIGHT_NEONS},
 };
 
 static const struct ddr_bittrans p3io_light_map[] = {
-    { 0x00000004, 1 << LIGHT_P1_MENU },
-    { 0x00000008, 1 << LIGHT_P2_MENU },
-    { 0x00000010, 1 << LIGHT_P2_LOWER_LAMP },
-    { 0x00000020, 1 << LIGHT_P2_UPPER_LAMP },
-    { 0x00000040, 1 << LIGHT_P1_LOWER_LAMP },
-    { 0x00000080, 1 << LIGHT_P1_UPPER_LAMP },
+    {0x00000004, 1 << LIGHT_P1_MENU},
+    {0x00000008, 1 << LIGHT_P2_MENU},
+    {0x00000010, 1 << LIGHT_P2_LOWER_LAMP},
+    {0x00000020, 1 << LIGHT_P2_UPPER_LAMP},
+    {0x00000040, 1 << LIGHT_P1_LOWER_LAMP},
+    {0x00000080, 1 << LIGHT_P1_UPPER_LAMP},
 };
 
 static bool initted;
@@ -80,7 +80,7 @@ static int ddr_io_get_lag_param(void)
 
     args_recover(&argc, &argv);
 
-    for (i = 1 ; i < argc ; i++) {
+    for (i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             continue;
         }
@@ -101,8 +101,9 @@ static int ddr_io_get_lag_param(void)
 
     if (result < 0) {
         /* snark snark */
-        log_warning("This PCB is incapable of seeing into the future. "
-                "Defaulting to 0 injected lag samples");
+        log_warning(
+            "This PCB is incapable of seeing into the future. "
+            "Defaulting to 0 injected lag samples");
 
         result = 0;
     }
@@ -111,18 +112,18 @@ static int ddr_io_get_lag_param(void)
 }
 
 void ddr_io_set_loggers(
-        log_formatter_t misc,
-        log_formatter_t info,
-        log_formatter_t warning,
-        log_formatter_t fatal)
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     log_to_external(misc, info, warning, fatal);
 }
 
 bool ddr_io_init(
-        thread_create_t thread_create,
-        thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     bool ok;
 
@@ -153,7 +154,7 @@ uint32_t ddr_io_read_pad(void)
     mm_update(&out, &in);
     pad = 0;
 
-    for (i = 0 ; i < lengthof(input_map) ; i++) {
+    for (i = 0; i < lengthof(input_map); i++) {
         if (in.jamma & input_map[i].mm) {
             pad |= input_map[i].p3io;
         }
@@ -173,7 +174,7 @@ void ddr_io_set_lights_extio(uint32_t extio_lights)
     clr = 0;
     set = 0;
 
-    for (i = 0 ; i < lengthof(extio_light_map) ; i++) {
+    for (i = 0; i < lengthof(extio_light_map); i++) {
         if (extio_lights & extio_light_map[i].p3io /* misnomer but w/e */) {
             set |= extio_light_map[i].mm;
         } else {
@@ -194,7 +195,7 @@ void ddr_io_set_lights_p3io(uint32_t p3io_lights)
     clr = 0;
     set = 0;
 
-    for (i = 0 ; i < lengthof(p3io_light_map) ; i++) {
+    for (i = 0; i < lengthof(p3io_light_map); i++) {
         if (p3io_lights & p3io_light_map[i].p3io) {
             set |= p3io_light_map[i].mm;
         } else {
@@ -214,4 +215,3 @@ void ddr_io_fini(void)
         initted = false;
     }
 }
-

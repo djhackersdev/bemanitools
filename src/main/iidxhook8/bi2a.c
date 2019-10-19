@@ -6,23 +6,28 @@
 #include <windows.h> /* for _BitScanForward */
 
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "acioemu/emu.h"
 
 #include "bemanitools/iidxio.h"
 
 static int get_default_slider_valid(size_t idx);
-static void bio2_emu_bi2a_cmd_send_version(struct ac_io_emu *emu, const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_message *req);
-static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status);
+static void bio2_emu_bi2a_cmd_send_version(
+    struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_state(
+    struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_empty(
+    struct ac_io_emu *emu, const struct ac_io_message *req);
+static void bio2_emu_bi2a_send_status(
+    struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status);
 
 static int default_sliders[5];
 static bool poll_delay;
 
-int get_default_slider_valid(size_t idx) {
+int get_default_slider_valid(size_t idx)
+{
     if (default_sliders[idx] >= 0 && default_sliders[idx] <= 15) {
         return 1;
     } else {
@@ -30,7 +35,8 @@ int get_default_slider_valid(size_t idx) {
     }
 }
 
-void bio2_emu_bi2a_init(struct bio2emu_port *bio2_emu, bool disable_poll_limiter)
+void bio2_emu_bi2a_init(
+    struct bio2emu_port *bio2_emu, bool disable_poll_limiter)
 {
     bio2emu_port_init(bio2_emu);
 
@@ -43,15 +49,22 @@ void bio2_emu_bi2a_init(struct bio2emu_port *bio2_emu, bool disable_poll_limiter
         default_sliders[i] = -1;
     }
 
-    FILE* f = fopen("vefx.txt", "r");
+    FILE *f = fopen("vefx.txt", "r");
     if (f) {
-        fscanf(f, "%d %d %d %d %d", &default_sliders[0], &default_sliders[1], &default_sliders[2], &default_sliders[3], &default_sliders[4]);
+        fscanf(
+            f,
+            "%d %d %d %d %d",
+            &default_sliders[0],
+            &default_sliders[1],
+            &default_sliders[2],
+            &default_sliders[3],
+            &default_sliders[4]);
         fclose(f);
     }
-
 }
 
-void bio2_emu_bi2a_dispatch_request(struct bio2emu_port *bio2port, const struct ac_io_message *req)
+void bio2_emu_bi2a_dispatch_request(
+    struct bio2emu_port *bio2port, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
 
@@ -85,12 +98,16 @@ void bio2_emu_bi2a_dispatch_request(struct bio2emu_port *bio2port, const struct 
             break;
 
         default:
-            log_warning("Unknown BIO2 message %04x on BI2A node, addr=%d", cmd_code, req->addr);
+            log_warning(
+                "Unknown BIO2 message %04x on BI2A node, addr=%d",
+                cmd_code,
+                req->addr);
             break;
     }
 }
 
-static void bio2_emu_bi2a_cmd_send_version(struct ac_io_emu *emu, const struct ac_io_message *req)
+static void bio2_emu_bi2a_cmd_send_version(
+    struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -103,15 +120,18 @@ static void bio2_emu_bi2a_cmd_send_version(struct ac_io_emu *emu, const struct a
     resp.cmd.version.major = 0x04;
     resp.cmd.version.minor = 0x00;
     resp.cmd.version.revision = 0x04;
-    memcpy(resp.cmd.version.product_code, "BI2A",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "BI2A",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
     ac_io_emu_response_push(emu, &resp, 0);
 }
 
-static void bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_message *req)
+static void
+bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -123,7 +143,8 @@ static void bio2_emu_bi2a_send_empty(struct ac_io_emu *emu, const struct ac_io_m
     ac_io_emu_response_push(emu, &resp, 0);
 }
 
-static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status)
+static void bio2_emu_bi2a_send_status(
+    struct ac_io_emu *emu, const struct ac_io_message *req, uint8_t status)
 {
     struct ac_io_message resp;
 
@@ -136,8 +157,8 @@ static void bio2_emu_bi2a_send_status(struct ac_io_emu *emu, const struct ac_io_
     ac_io_emu_response_push(emu, &resp, 0);
 }
 
-
-static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
+static void
+bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
     struct bi2a_iidx_state_out *body;
@@ -157,7 +178,7 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
     resp.cmd.code = req->cmd.code;
     resp.cmd.seq_no = req->cmd.seq_no;
     resp.cmd.nbytes = sizeof(struct bi2a_iidx_state_out);
-    req_bi2a = (struct bi2a_iidx_state_in*)req->cmd.raw;
+    req_bi2a = (struct bi2a_iidx_state_in *) req->cmd.raw;
 
     packed_lights.panel_lights = 0;
     for (size_t i = 0; i < 4; ++i) {
@@ -193,12 +214,12 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
-    if (!iidx_io_ep3_write_16seg((const char*) req_bi2a->SEG16)) {
+    if (!iidx_io_ep3_write_16seg((const char *) req_bi2a->SEG16)) {
         log_warning("BIO2: iidx_io_ep3_write_16seg error");
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
-    body = (struct bi2a_iidx_state_out *)&resp.cmd.raw;
+    body = (struct bi2a_iidx_state_out *) &resp.cmd.raw;
     memset(body, 0, sizeof(struct bi2a_iidx_state_out));
 
     // IIDX25 polls really really fast, this limits it to 1000Hz
@@ -214,11 +235,21 @@ static void bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_m
     body->TURNTABLE1 = iidx_io_ep2_get_turntable(0);
     body->TURNTABLE2 = iidx_io_ep2_get_turntable(1);
 
-    body->SLIDER1.s_val = get_default_slider_valid(0) ? default_sliders[0] : iidx_io_ep2_get_slider(0);
-    body->SLIDER2.s_val = get_default_slider_valid(1) ? default_sliders[1] : iidx_io_ep2_get_slider(1);
-    body->SLIDER3.s_val = get_default_slider_valid(2) ? default_sliders[2] : iidx_io_ep2_get_slider(2);
-    body->SLIDER4.s_val = get_default_slider_valid(3) ? default_sliders[3] : iidx_io_ep2_get_slider(3);
-    body->SLIDER5.s_val = get_default_slider_valid(4) ? default_sliders[4] : iidx_io_ep2_get_slider(4);
+    body->SLIDER1.s_val = get_default_slider_valid(0) ?
+        default_sliders[0] :
+        iidx_io_ep2_get_slider(0);
+    body->SLIDER2.s_val = get_default_slider_valid(1) ?
+        default_sliders[1] :
+        iidx_io_ep2_get_slider(1);
+    body->SLIDER3.s_val = get_default_slider_valid(2) ?
+        default_sliders[2] :
+        iidx_io_ep2_get_slider(2);
+    body->SLIDER4.s_val = get_default_slider_valid(3) ?
+        default_sliders[3] :
+        iidx_io_ep2_get_slider(3);
+    body->SLIDER5.s_val = get_default_slider_valid(4) ?
+        default_sliders[4] :
+        iidx_io_ep2_get_slider(4);
 
     input_keys = iidx_io_ep2_get_keys();
     input_sys = iidx_io_ep2_get_sys();

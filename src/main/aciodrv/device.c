@@ -43,17 +43,17 @@ static bool aciodrv_device_init(void)
 }
 
 #ifdef AC_IO_MSG_LOG
-static void aciodrv_device_log_buffer(const char* msg, const uint8_t* buffer,
-    int length)
+static void
+aciodrv_device_log_buffer(const char *msg, const uint8_t *buffer, int length)
 {
     char str[4096];
 
-    hex_encode_uc((const void*) buffer, length, str, sizeof(str));
+    hex_encode_uc((const void *) buffer, length, str, sizeof(str));
     log_misc("%s, length %d: %s", msg, length, str);
 }
 #endif
 
-static bool aciodrv_device_send(const uint8_t* buffer, int length)
+static bool aciodrv_device_send(const uint8_t *buffer, int length)
 {
     uint8_t send_buf[512];
     int send_buf_pos = 0;
@@ -102,7 +102,7 @@ static bool aciodrv_device_send(const uint8_t* buffer, int length)
     return true;
 }
 
-static int aciodrv_device_receive(uint8_t* buffer, int size)
+static int aciodrv_device_receive(uint8_t *buffer, int size)
 {
     uint8_t recv_buf[512];
     int recv_size = 0;
@@ -142,8 +142,7 @@ static int aciodrv_device_receive(uint8_t* buffer, int size)
 
             /* check for escape byte. these don't count towards the
                size we expect! */
-            if (recv_buf[recv_size] == AC_IO_ESCAPE)
-            {
+            if (recv_buf[recv_size] == AC_IO_ESCAPE) {
                 /* next byte is our real data
                    overwrite escape byte */
                 do {
@@ -162,7 +161,7 @@ static int aciodrv_device_receive(uint8_t* buffer, int size)
         }
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Recv (1)", recv_buf, recv_size);
+        aciodrv_device_log_buffer("Recv (1)", recv_buf, recv_size);
 #endif
 
         /* recv_size - 1: omit checksum for checksum calc */
@@ -174,12 +173,14 @@ static int aciodrv_device_receive(uint8_t* buffer, int size)
         result_size = recv_size - 1;
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Recv (2)", buffer, result_size);
+        aciodrv_device_log_buffer("Recv (2)", buffer, result_size);
 #endif
 
         if (checksum != recv_buf[recv_size - 1]) {
-            log_warning("Invalid message checksum: %02X != %02X",
-                checksum, recv_buf[recv_size - 1]);
+            log_warning(
+                "Invalid message checksum: %02X != %02X",
+                checksum,
+                recv_buf[recv_size - 1]);
             return -1;
         }
 
@@ -198,7 +199,8 @@ static uint8_t aciodrv_device_enum_nodes(void)
     msg.cmd.nbytes = 1;
     msg.cmd.count = 0;
 
-    if (!aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Enumerating nodes failed");
         return 0;
     }
@@ -216,13 +218,16 @@ static bool aciodrv_device_get_version(uint8_t node_id, char product[4])
     msg.cmd.code = ac_io_u16(AC_IO_CMD_GET_VERSION);
     msg.cmd.nbytes = 0;
 
-    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
-            sizeof(struct ac_io_version))) {
+    if (!aciodrv_send_and_recv(
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) +
+                sizeof(struct ac_io_version))) {
         log_warning("Get version of node %d failed", node_id);
         return false;
     }
 
-    log_info("Node %d: type %d, flag %d, version %d.%d.%d, product %c%c%c%c, "
+    log_info(
+        "Node %d: type %d, flag %d, version %d.%d.%d, product %c%c%c%c, "
         "build date: %s %s",
         node_id,
         msg.cmd.version.type,
@@ -250,7 +255,8 @@ static bool aciodrv_device_start_node(uint8_t node_id)
     msg.cmd.code = ac_io_u16(AC_IO_CMD_START_UP);
     msg.cmd.nbytes = 0;
 
-    if (!aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Starting node %d failed", node_id);
         return false;
     }
@@ -259,7 +265,7 @@ static bool aciodrv_device_start_node(uint8_t node_id)
     return true;
 }
 
-bool aciodrv_device_open(const char* port, int baud)
+bool aciodrv_device_open(const char *port, int baud)
 {
     if (!aciodrv_port_open(port, baud)) {
         return false;
@@ -275,7 +281,8 @@ bool aciodrv_device_open(const char* port, int baud)
     }
 
     for (uint8_t i = 0; i < aciodrv_device_node_count; i++) {
-        if (!aciodrv_device_get_version(i + 1, aviodrv_device_node_products[i])) {
+        if (!aciodrv_device_get_version(
+                i + 1, aviodrv_device_node_products[i])) {
             return false;
         }
     }
@@ -304,25 +311,27 @@ bool aciodrv_device_get_node_product_ident(uint8_t node_id, char product[4])
     return true;
 }
 
-bool aciodrv_send_and_recv(struct ac_io_message* msg, int resp_size)
+bool aciodrv_send_and_recv(struct ac_io_message *msg, int resp_size)
 {
     msg->cmd.seq_no = aciodrv_device_msg_counter++;
 
-    if (aciodrv_device_send((uint8_t*) msg,
+    if (aciodrv_device_send(
+            (uint8_t *) msg,
             offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes) <= 0) {
         return false;
     }
 
     uint16_t req_code = msg->cmd.code;
 
-    if (aciodrv_device_receive((uint8_t*) msg,
-            resp_size) <= 0) {
+    if (aciodrv_device_receive((uint8_t *) msg, resp_size) <= 0) {
         return false;
     }
 
     if (req_code != msg->cmd.code) {
-        log_warning("Received invalid response %04X for request %04X",
-            msg->cmd.code, req_code);
+        log_warning(
+            "Received invalid response %04X for request %04X",
+            msg->cmd.code,
+            req_code);
         return false;
     }
 

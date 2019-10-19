@@ -13,7 +13,7 @@
 
 #include <inttypes.h>
 
-static bool net_parse_url(const char* str, struct net_addr* addr)
+static bool net_parse_url(const char *str, struct net_addr *addr)
 {
     char host[NET_MAX_URL_HOSTNAME_LEN + 1];
     char path[NET_MAX_URL_PATH_LEN + 1];
@@ -38,8 +38,8 @@ static bool net_parse_url(const char* str, struct net_addr* addr)
 
     /* Try url with IPV4 address */
 
-    if (sscanf(str, "%d.%d.%d.%d", &ipv4[0], &ipv4[1], &ipv4[2],
-            &ipv4[3]) == 4) {
+    if (sscanf(str, "%d.%d.%d.%d", &ipv4[0], &ipv4[1], &ipv4[2], &ipv4[3]) ==
+        4) {
         addr->url.type = NET_ADDR_TYPE_IPV4;
         addr->url.ipv4.addr = (ipv4[0] & 0xFF) | ((ipv4[1] & 0xFF) << 8) |
             ((ipv4[2] & 0xFF) << 16) | ((ipv4[3] & 0xFF) << 24);
@@ -48,8 +48,15 @@ static bool net_parse_url(const char* str, struct net_addr* addr)
 
         /* Port and trailing path are optional, check with and without */
 
-        toks = sscanf(str, "%d.%d.%d.%d:%d/%s", &ipv4[0], &ipv4[1],
-            &ipv4[2], &ipv4[3], &port, path);
+        toks = sscanf(
+            str,
+            "%d.%d.%d.%d:%d/%s",
+            &ipv4[0],
+            &ipv4[1],
+            &ipv4[2],
+            &ipv4[3],
+            &port,
+            path);
 
         if (toks > 4) {
             if (toks >= 5) {
@@ -61,8 +68,14 @@ static bool net_parse_url(const char* str, struct net_addr* addr)
             }
         } else {
             /* No port, but may have trailing path */
-            toks = sscanf(str, "%d.%d.%d.%d/%s", &ipv4[0], &ipv4[1],
-                &ipv4[2], &ipv4[3], path);
+            toks = sscanf(
+                str,
+                "%d.%d.%d.%d/%s",
+                &ipv4[0],
+                &ipv4[1],
+                &ipv4[2],
+                &ipv4[3],
+                path);
 
             if (toks > 4) {
                 strcpy(addr->url.path, path);
@@ -93,7 +106,6 @@ static bool net_parse_url(const char* str, struct net_addr* addr)
             toks = sscanf(str, "%[^/]/%s", host, path);
             strcpy(addr->url.hostname.host, host);
 
-
             if (toks > 1) {
                 strcpy(addr->url.path, path);
             }
@@ -103,7 +115,7 @@ static bool net_parse_url(const char* str, struct net_addr* addr)
     return true;
 }
 
-static bool net_parse_ipv4_or_hostname(const char* str, struct net_addr* addr)
+static bool net_parse_ipv4_or_hostname(const char *str, struct net_addr *addr)
 {
     char host[NET_MAX_URL_HOSTNAME_LEN + 1];
     uint32_t ipv4[4];
@@ -112,15 +124,15 @@ static bool net_parse_ipv4_or_hostname(const char* str, struct net_addr* addr)
 
     memset(host, 0, sizeof(host));
 
-    toks = sscanf(str, "%d.%d.%d.%d:%d", &ipv4[0], &ipv4[1], &ipv4[2], &ipv4[3],
-        &port);
+    toks = sscanf(
+        str, "%d.%d.%d.%d:%d", &ipv4[0], &ipv4[1], &ipv4[2], &ipv4[3], &port);
 
     if (toks >= 4) {
         addr->type = NET_ADDR_TYPE_IPV4;
         addr->ipv4.addr = (ipv4[0] & 0xFF) | ((ipv4[1] & 0xFF) << 8) |
             ((ipv4[2] & 0xFF) << 16) | ((ipv4[3] & 0xFF) << 24);
         addr->ipv4.port = NET_INVALID_PORT;
-        
+
         if (toks == 5) {
             addr->ipv4.port = port;
         }
@@ -146,37 +158,61 @@ static bool net_parse_ipv4_or_hostname(const char* str, struct net_addr* addr)
     return true;
 }
 
-static char* net_ipv4_to_str(const struct net_addr_ipv4* addr)
+static char *net_ipv4_to_str(const struct net_addr_ipv4 *addr)
 {
     size_t len;
-    uint8_t* addr_ipv4;
-    char* str;
+    uint8_t *addr_ipv4;
+    char *str;
 
-    addr_ipv4 = (uint8_t*) &addr->addr;
+    addr_ipv4 = (uint8_t *) &addr->addr;
 
     if (addr->port != NET_INVALID_PORT) {
-        len = snprintf(NULL, 0, "%d.%d.%d.%d:%d", addr_ipv4[0],
-            addr_ipv4[1], addr_ipv4[2], addr_ipv4[3], addr->port);
+        len = snprintf(
+            NULL,
+            0,
+            "%d.%d.%d.%d:%d",
+            addr_ipv4[0],
+            addr_ipv4[1],
+            addr_ipv4[2],
+            addr_ipv4[3],
+            addr->port);
         str = xmalloc(len + 1);
 
-        sprintf(str, "%d.%d.%d.%d:%d", addr_ipv4[0],
-            addr_ipv4[1], addr_ipv4[2], addr_ipv4[3], addr->port);
+        sprintf(
+            str,
+            "%d.%d.%d.%d:%d",
+            addr_ipv4[0],
+            addr_ipv4[1],
+            addr_ipv4[2],
+            addr_ipv4[3],
+            addr->port);
     } else {
-        len = snprintf(NULL, 0, "%d.%d.%d.%d", addr_ipv4[0], addr_ipv4[1],
-            addr_ipv4[2], addr_ipv4[3]);
+        len = snprintf(
+            NULL,
+            0,
+            "%d.%d.%d.%d",
+            addr_ipv4[0],
+            addr_ipv4[1],
+            addr_ipv4[2],
+            addr_ipv4[3]);
         str = xmalloc(len + 1);
 
-        sprintf(str, "%d.%d.%d.%d", addr_ipv4[0], addr_ipv4[1],
-            addr_ipv4[2], addr_ipv4[3]);
+        sprintf(
+            str,
+            "%d.%d.%d.%d",
+            addr_ipv4[0],
+            addr_ipv4[1],
+            addr_ipv4[2],
+            addr_ipv4[3]);
     }
 
     return str;
 }
 
-static char* net_hostname_to_str(const struct net_addr_hostname* addr)
+static char *net_hostname_to_str(const struct net_addr_hostname *addr)
 {
     size_t len;
-    char* str;
+    char *str;
 
     if (addr->port != NET_INVALID_PORT) {
         len = snprintf(NULL, 0, "%s:%d", addr->host, addr->port);
@@ -190,12 +226,12 @@ static char* net_hostname_to_str(const struct net_addr_hostname* addr)
     return str;
 }
 
-static char* net_url_to_str(const struct net_addr_url* addr)
+static char *net_url_to_str(const struct net_addr_url *addr)
 {
     size_t len;
     size_t str_len;
-    char* tmp;
-    char* str;
+    char *tmp;
+    char *str;
 
     switch (addr->type) {
         case NET_ADDR_TYPE_IPV4:
@@ -216,23 +252,34 @@ static char* net_url_to_str(const struct net_addr_url* addr)
 
     str_len = strlen(addr->path);
 
-    len = snprintf(NULL, 0, "http%s://%s%s%s", addr->is_https ? "s" : "",
-        tmp, str_len > 0 ? "/" : "", str_len > 0 ? addr->path : "");
+    len = snprintf(
+        NULL,
+        0,
+        "http%s://%s%s%s",
+        addr->is_https ? "s" : "",
+        tmp,
+        str_len > 0 ? "/" : "",
+        str_len > 0 ? addr->path : "");
     str = xmalloc(len + 1);
 
-    sprintf(str, "http%s://%s%s%s", addr->is_https ? "s" : "",
-        tmp, str_len > 0 ? "/" : "", str_len > 0 ? addr->path : "");
+    sprintf(
+        str,
+        "http%s://%s%s%s",
+        addr->is_https ? "s" : "",
+        tmp,
+        str_len > 0 ? "/" : "",
+        str_len > 0 ? addr->path : "");
 
     free(tmp);
-    
+
     return str;
 }
 
-static bool net_resolve_hostname_str(const char* host, uint32_t* ipv4)
+static bool net_resolve_hostname_str(const char *host, uint32_t *ipv4)
 {
     struct WSAData data;
     struct addrinfo hints;
-    struct addrinfo* res;
+    struct addrinfo *res;
     int err;
 
     log_assert(host);
@@ -245,7 +292,7 @@ static bool net_resolve_hostname_str(const char* host, uint32_t* ipv4)
 
     /* Using gethostbyname seems to crash on certain setups...use
         getaddrinfo (which is not deprecated) */
-    WSAStartup(MAKEWORD(2,0), &data);
+    WSAStartup(MAKEWORD(2, 0), &data);
 
     err = getaddrinfo(host, NULL, &hints, &res);
 
@@ -254,17 +301,17 @@ static bool net_resolve_hostname_str(const char* host, uint32_t* ipv4)
         return false;
     }
 
-    *ipv4 = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.S_un.S_addr;
+    *ipv4 = ((struct sockaddr_in *) (res->ai_addr))->sin_addr.S_un.S_addr;
 
     freeaddrinfo(res);
-    
+
     WSACleanup();
 
     return true;
 }
 
-static bool net_resolve_hostname_ipv4(const struct net_addr_ipv4* addr,
-        struct net_addr_ipv4* res_addr)
+static bool net_resolve_hostname_ipv4(
+    const struct net_addr_ipv4 *addr, struct net_addr_ipv4 *res_addr)
 {
     res_addr->addr = addr->addr;
     res_addr->port = addr->port;
@@ -272,15 +319,15 @@ static bool net_resolve_hostname_ipv4(const struct net_addr_ipv4* addr,
     return true;
 }
 
-static bool net_resolve_hostname_host(const struct net_addr_hostname* addr,
-        struct net_addr_ipv4* res_addr)
+static bool net_resolve_hostname_host(
+    const struct net_addr_hostname *addr, struct net_addr_ipv4 *res_addr)
 {
     res_addr->port = addr->port;
     return net_resolve_hostname_str(addr->host, &res_addr->addr);
 }
 
-static bool net_resolve_hostname_url(const struct net_addr_url* addr,
-        struct net_addr_ipv4* res_addr)
+static bool net_resolve_hostname_url(
+    const struct net_addr_url *addr, struct net_addr_ipv4 *res_addr)
 {
     switch (addr->type) {
         case NET_ADDR_TYPE_IPV4:
@@ -298,7 +345,7 @@ static bool net_resolve_hostname_url(const struct net_addr_url* addr,
     }
 }
 
-bool net_str_parse(const char* str, struct net_addr* addr)
+bool net_str_parse(const char *str, struct net_addr *addr)
 {
     log_assert(str);
     log_assert(addr);
@@ -310,7 +357,7 @@ bool net_str_parse(const char* str, struct net_addr* addr)
     }
 }
 
-char* net_addr_to_str(const struct net_addr* addr)
+char *net_addr_to_str(const struct net_addr *addr)
 {
     log_assert(addr);
 
@@ -331,13 +378,13 @@ char* net_addr_to_str(const struct net_addr* addr)
     }
 }
 
-bool net_resolve_hostname(const char* hostname, struct net_addr_ipv4* res_addr)
+bool net_resolve_hostname(const char *hostname, struct net_addr_ipv4 *res_addr)
 {
     return net_resolve_hostname_str(hostname, &res_addr->addr);
 }
 
-bool net_resolve_hostname_net_addr(const struct net_addr* addr,
-        struct net_addr_ipv4* res_addr)
+bool net_resolve_hostname_net_addr(
+    const struct net_addr *addr, struct net_addr_ipv4 *res_addr)
 {
     switch (addr->type) {
         case NET_ADDR_TYPE_IPV4:
@@ -356,11 +403,11 @@ bool net_resolve_hostname_net_addr(const struct net_addr* addr,
     }
 }
 
-bool net_check_remote_connection(const struct net_addr* addr,
-        uint32_t timeout_ms)
+bool net_check_remote_connection(
+    const struct net_addr *addr, uint32_t timeout_ms)
 {
     struct net_addr_ipv4 target;
-    
+
     if (!net_resolve_hostname_net_addr(addr, &target)) {
         return false;
     }
@@ -368,8 +415,8 @@ bool net_check_remote_connection(const struct net_addr* addr,
     return net_check_remote_connection_ipv4(&target, timeout_ms);
 }
 
-bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
-        uint32_t timeout_ms)
+bool net_check_remote_connection_ipv4(
+    const struct net_addr_ipv4 *addr, uint32_t timeout_ms)
 {
     struct WSAData data;
     SOCKET s;
@@ -381,7 +428,7 @@ bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
     bool success;
     struct sockaddr_in sockaddr;
 
-    WSAStartup(MAKEWORD(2,0), &data);
+    WSAStartup(MAKEWORD(2, 0), &data);
 
     err = 0;
     success = true;
@@ -406,8 +453,8 @@ bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
     sockaddr.sin_addr.s_addr = addr->addr;
     sockaddr.sin_port = htons(addr->port);
 
-    if (connect(s, (struct sockaddr*) &sockaddr, sizeof(sockaddr)) ==
-            SOCKET_ERROR) {
+    if (connect(s, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) ==
+        SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {
             /* connection failed */;
             success = false;
@@ -418,7 +465,7 @@ bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
             FD_SET(s, &set_e);
 
             timeout.tv_sec = timeout_ms / 1000;
-            timeout.tv_usec = (timeout_ms % 1000) * 1000; 
+            timeout.tv_usec = (timeout_ms % 1000) * 1000;
 
             err = select(0, NULL, &set_w, &set_e, &timeout);
 
@@ -435,7 +482,7 @@ bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
     } else {
         success = false;
     }
-    
+
     closesocket(s);
     WSACleanup();
 

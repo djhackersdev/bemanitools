@@ -16,9 +16,9 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-static FILE* log_file = NULL;
+static FILE *log_file = NULL;
 
-static bool inject_dll(PROCESS_INFORMATION pi, const char* arg_dll);
+static bool inject_dll(PROCESS_INFORMATION pi, const char *arg_dll);
 static bool debug(HANDLE process, uint32_t pid);
 static bool debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi);
 static bool debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi);
@@ -49,8 +49,11 @@ int main(int argc, char **argv)
         log_file = fopen(options.log_file, "w+");
 
         if (!log_file) {
-            fprintf(stderr, "Opening log file %s failed: %s\n", 
-                options.log_file, strerror(errno));
+            fprintf(
+                stderr,
+                "Opening log file %s failed: %s\n",
+                options.log_file,
+                strerror(errno));
             goto log_file_open_fail;
         }
 
@@ -83,29 +86,41 @@ int main(int argc, char **argv)
     }
 
     for (int i = 0; i < hooks; i++) {
-        dll_path_length = SearchPath(NULL, argv[i + 1], NULL, MAX_PATH,
-            dll_path, NULL);
+        dll_path_length =
+            SearchPath(NULL, argv[i + 1], NULL, MAX_PATH, dll_path, NULL);
 
         if (dll_path_length == 0) {
-            fprintf(stderr, "Hook DLL not found: %08x\n",
-                    (unsigned int) GetLastError());
+            fprintf(
+                stderr,
+                "Hook DLL not found: %08x\n",
+                (unsigned int) GetLastError());
 
             goto search_fail;
         }
     }
-
 
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
 
     cmd_line = args_join(argc - exec_arg_pos, argv + exec_arg_pos);
 
-    ok = CreateProcess(argv[exec_arg_pos], cmd_line, NULL, NULL, FALSE,
-        CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    ok = CreateProcess(
+        argv[exec_arg_pos],
+        cmd_line,
+        NULL,
+        NULL,
+        FALSE,
+        CREATE_SUSPENDED,
+        NULL,
+        NULL,
+        &si,
+        &pi);
 
     if (!ok) {
-        fprintf(stderr, "Failed to launch hooked EXE: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "Failed to launch hooked EXE: %08x\n",
+            (unsigned int) GetLastError());
 
         goto start_fail;
     }
@@ -125,8 +140,10 @@ int main(int argc, char **argv)
         debug_ok = DebugActiveProcess(pi.dwProcessId);
 
         if (!debug_ok) {
-            fprintf(stderr, "DebugActiveProcess failed: %08x\n",
-                    (unsigned int) GetLastError());
+            fprintf(
+                stderr,
+                "DebugActiveProcess failed: %08x\n",
+                (unsigned int) GetLastError());
         } else {
             printf("Debug active process\n");
         }
@@ -139,7 +156,9 @@ int main(int argc, char **argv)
             BOOL res = FALSE;
 
             if (!CheckRemoteDebuggerPresent(pi.hProcess, &res)) {
-                fprintf(stderr, "CheckRemoteDebuggerPresent failed: %08x\n",
+                fprintf(
+                    stderr,
+                    "CheckRemoteDebuggerPresent failed: %08x\n",
                     (unsigned int) GetLastError());
             }
 
@@ -155,8 +174,10 @@ int main(int argc, char **argv)
     printf("Resuming remote process...\n");
 
     if (ResumeThread(pi.hThread) == -1) {
-        fprintf(stderr, "Error restarting hooked process: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "Error restarting hooked process: %08x\n",
+            (unsigned int) GetLastError());
 
         goto restart_fail;
     }
@@ -198,7 +219,7 @@ usage_fail:
     return EXIT_FAILURE;
 }
 
-static bool inject_dll(PROCESS_INFORMATION pi, const char* arg_dll)
+static bool inject_dll(PROCESS_INFORMATION pi, const char *arg_dll)
 {
     char dll_path[MAX_PATH];
     DWORD dll_path_length;
@@ -208,37 +229,52 @@ static bool inject_dll(PROCESS_INFORMATION pi, const char* arg_dll)
 
     printf("Injecting: %s\n", arg_dll);
 
-    dll_path_length = SearchPath(NULL, arg_dll, NULL, MAX_PATH, dll_path,
-        NULL);
+    dll_path_length = SearchPath(NULL, arg_dll, NULL, MAX_PATH, dll_path, NULL);
 
     dll_path_length++;
 
-    remote_addr = VirtualAllocEx(pi.hProcess, NULL, dll_path_length,
-            MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    remote_addr = VirtualAllocEx(
+        pi.hProcess,
+        NULL,
+        dll_path_length,
+        MEM_RESERVE | MEM_COMMIT,
+        PAGE_READWRITE);
 
     if (!remote_addr) {
-        fprintf(stderr, "VirtualAllocEx failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "VirtualAllocEx failed: %08x\n",
+            (unsigned int) GetLastError());
 
         goto alloc_fail;
     }
 
-    ok = WriteProcessMemory(pi.hProcess, remote_addr, dll_path,
-            dll_path_length, NULL);
+    ok = WriteProcessMemory(
+        pi.hProcess, remote_addr, dll_path, dll_path_length, NULL);
 
     if (!ok) {
-        fprintf(stderr, "WriteProcessMemory failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "WriteProcessMemory failed: %08x\n",
+            (unsigned int) GetLastError());
 
         goto write_fail;
     }
 
-    remote_thread = CreateRemoteThread(pi.hProcess, NULL, 0,
-            (LPTHREAD_START_ROUTINE) LoadLibrary, remote_addr, 0, NULL);
+    remote_thread = CreateRemoteThread(
+        pi.hProcess,
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE) LoadLibrary,
+        remote_addr,
+        0,
+        NULL);
 
     if (remote_thread == NULL) {
-        fprintf(stderr, "CreateRemoteThread failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "CreateRemoteThread failed: %08x\n",
+            (unsigned int) GetLastError());
 
         goto inject_fail;
     }
@@ -250,8 +286,10 @@ static bool inject_dll(PROCESS_INFORMATION pi, const char* arg_dll)
     remote_addr = NULL;
 
     if (!ok) {
-        fprintf(stderr, "VirtualFreeEx failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "VirtualFreeEx failed: %08x\n",
+            (unsigned int) GetLastError());
     }
 
     return true;
@@ -275,8 +313,10 @@ static bool debug(HANDLE process, uint32_t pid)
         ok = WaitForDebugEvent(&de, INFINITE);
 
         if (!ok) {
-            fprintf(stderr, "WaitForDebugEvent failed: %08x\n",
-                    (unsigned int) GetLastError());
+            fprintf(
+                stderr,
+                "WaitForDebugEvent failed: %08x\n",
+                (unsigned int) GetLastError());
 
             return false;
         }
@@ -316,23 +356,25 @@ static bool debug(HANDLE process, uint32_t pid)
         }
 
         if (de.dwDebugEventCode == OUTPUT_DEBUG_STRING_EVENT) {
-            ok = ContinueDebugEvent(de.dwProcessId, de.dwThreadId,
-                    DBG_CONTINUE);
+            ok =
+                ContinueDebugEvent(de.dwProcessId, de.dwThreadId, DBG_CONTINUE);
         } else {
-            ok = ContinueDebugEvent(de.dwProcessId, de.dwThreadId,
-                    DBG_EXCEPTION_NOT_HANDLED);
+            ok = ContinueDebugEvent(
+                de.dwProcessId, de.dwThreadId, DBG_EXCEPTION_NOT_HANDLED);
         }
 
         if (!ok) {
-            fprintf(stderr, "ContinueDebugEvent failed: %08x\n",
-                    (unsigned int) GetLastError());
+            fprintf(
+                stderr,
+                "ContinueDebugEvent failed: %08x\n",
+                (unsigned int) GetLastError());
 
             return false;
         }
     }
 }
 
-static char console_get_color(char* str)
+static char console_get_color(char *str)
 {
     /* Add some color to make spotting warnings/errors easier.
         Based on debug output level identifier. */
@@ -371,15 +413,15 @@ static bool debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     nbytes = odsi->nDebugStringLength * sizeof(wchar_t);
     wstr = xmalloc(nbytes);
 
-    ok = ReadProcessMemory(process, odsi->lpDebugStringData, wstr, nbytes,
-            NULL);
+    ok =
+        ReadProcessMemory(process, odsi->lpDebugStringData, wstr, nbytes, NULL);
 
     if (ok) {
         if (wstr_narrow(wstr, &str)) {
             str[odsi->nDebugStringLength - 1] = '\0';
 
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 
-                console_get_color(str));
+            SetConsoleTextAttribute(
+                GetStdHandle(STD_OUTPUT_HANDLE), console_get_color(str));
             printf("%s", str);
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 
@@ -392,8 +434,10 @@ static bool debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
             fprintf(stderr, "OutputDebugStringW: UTF-16 conversion failed\n");
         }
     } else {
-        fprintf(stderr, "ReadProcessMemory failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "ReadProcessMemory failed: %08x\n",
+            (unsigned int) GetLastError());
 
         return false;
     }
@@ -410,14 +454,14 @@ static bool debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
 
     str = xmalloc(odsi->nDebugStringLength);
 
-    ok = ReadProcessMemory(process, odsi->lpDebugStringData, str,
-            odsi->nDebugStringLength, NULL);
+    ok = ReadProcessMemory(
+        process, odsi->lpDebugStringData, str, odsi->nDebugStringLength, NULL);
 
     if (ok) {
         str[odsi->nDebugStringLength - 1] = '\0';
 
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 
-            console_get_color(str));
+        SetConsoleTextAttribute(
+            GetStdHandle(STD_OUTPUT_HANDLE), console_get_color(str));
         printf("%s", str);
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 
@@ -425,12 +469,13 @@ static bool debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
             fprintf(log_file, "%s", str);
         }
     } else {
-        fprintf(stderr, "ReadProcessMemory failed: %08x\n",
-                (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "ReadProcessMemory failed: %08x\n",
+            (unsigned int) GetLastError());
     }
 
     free(str);
 
     return (bool) ok;
 }
-

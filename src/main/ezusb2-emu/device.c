@@ -1,8 +1,8 @@
 #define LOG_MODULE "ezusb2-emu-device"
 
-#include <windows.h>
 #include <setupapi.h>
 #include <usb100.h>
+#include <windows.h>
 
 #include <string.h>
 
@@ -46,14 +46,10 @@ static HRESULT ezusb_open(struct irp *irp);
 static HRESULT ezusb_ioctl(struct irp *irp);
 
 static HRESULT ezusb_ioctl_ep0(
-        SINGLE_TRANSFER *usb_req,
-        struct const_iobuf *write,
-        struct iobuf *read);
+    SINGLE_TRANSFER *usb_req, struct const_iobuf *write, struct iobuf *read);
 
 static HRESULT ezusb_ioctl_epX(
-        SINGLE_TRANSFER *usb_req,
-        struct const_iobuf *write,
-        struct iobuf *read);
+    SINGLE_TRANSFER *usb_req, struct const_iobuf *write, struct iobuf *read);
 
 static HRESULT ezusb_get_device_descriptor(struct iobuf *read);
 static HRESULT ezusb_get_string_descriptor(struct iobuf *read);
@@ -61,10 +57,10 @@ static HRESULT ezusb_reset(struct const_iobuf *write);
 static HRESULT ezusb_upload_fw(uint16_t offset, struct const_iobuf *write);
 
 static HANDLE ezusb_fd;
-static struct ezusb_firmware* ezusb_emu_firmware;
-static struct ezusb_emu_msg_hook* ezusb_emu_dev_fx2_msg_hook;
+static struct ezusb_firmware *ezusb_emu_firmware;
+static struct ezusb_emu_msg_hook *ezusb_emu_dev_fx2_msg_hook;
 
-void ezusb2_emu_device_hook_init(struct ezusb_emu_msg_hook* msg_hook)
+void ezusb2_emu_device_hook_init(struct ezusb_emu_msg_hook *msg_hook)
 {
     log_assert(ezusb_fd == NULL);
 
@@ -85,7 +81,8 @@ void ezusb2_emu_device_hook_fini(void)
  * WIN32 I/O AND IOHOOK LAYER
  */
 
-HRESULT ezusb2_emu_device_dispatch_irp(struct irp *irp)
+HRESULT
+ezusb2_emu_device_dispatch_irp(struct irp *irp)
 {
     if (irp->op != IRP_OP_OPEN && irp->fd != ezusb_fd) {
         return irp_invoke_next(irp);
@@ -96,10 +93,14 @@ HRESULT ezusb2_emu_device_dispatch_irp(struct irp *irp)
        CloseHandle calls and don't even log them). */
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return ezusb_open(irp);
-    case IRP_OP_CLOSE:  return S_OK;
-    case IRP_OP_IOCTL:  return ezusb_ioctl(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return ezusb_open(irp);
+        case IRP_OP_CLOSE:
+            return S_OK;
+        case IRP_OP_IOCTL:
+            return ezusb_ioctl(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -154,21 +155,21 @@ static HRESULT ezusb_ioctl(struct irp *irp)
     usb_req = (SINGLE_TRANSFER *) irp->write.bytes;
 
     switch (irp->ioctl) {
-    case IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER:
-        hr = ezusb_ioctl_ep0(usb_req, &write, &read);
+        case IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER:
+            hr = ezusb_ioctl_ep0(usb_req, &write, &read);
 
-        break;
+            break;
 
-    case IOCTL_ADAPT_SEND_NON_EP0_TRANSFER:
-        hr = ezusb_ioctl_epX(usb_req, &write, &read);
+        case IOCTL_ADAPT_SEND_NON_EP0_TRANSFER:
+            hr = ezusb_ioctl_epX(usb_req, &write, &read);
 
-        break;
+            break;
 
-    default:
-        log_warning("Unknown ioctl %08x", irp->ioctl);
-        hr = E_INVALIDARG;
+        default:
+            log_warning("Unknown ioctl %08x", irp->ioctl);
+            hr = E_INVALIDARG;
 
-        break;
+            break;
     }
 
     if (FAILED(hr)) {
@@ -190,9 +191,7 @@ static HRESULT ezusb_ioctl(struct irp *irp)
  */
 
 static HRESULT ezusb_ioctl_ep0(
-        SINGLE_TRANSFER *usb_req,
-        struct const_iobuf *write,
-        struct iobuf *read)
+    SINGLE_TRANSFER *usb_req, struct const_iobuf *write, struct iobuf *read)
 {
     log_assert(usb_req != NULL);
     log_assert(write != NULL);
@@ -203,28 +202,28 @@ static HRESULT ezusb_ioctl_ep0(
        0x40: Host -> Device Request, Class, Recipient Device
     */
 
-    if (    usb_req->SetupPacket.bmRequest == 0x80 &&
-            usb_req->SetupPacket.bRequest == 0x06) {
+    if (usb_req->SetupPacket.bmRequest == 0x80 &&
+        usb_req->SetupPacket.bRequest == 0x06) {
         switch (usb_req->SetupPacket.wValue) {
-        /* Get usb device descriptor */
-        case 0x0100:
-            /* return data with USB_DEVICE_DESCRIPTOR struct */
-            return ezusb_get_device_descriptor(read);
+            /* Get usb device descriptor */
+            case 0x0100:
+                /* return data with USB_DEVICE_DESCRIPTOR struct */
+                return ezusb_get_device_descriptor(read);
 
-        /* get usb string descriptor */
-        case 0x0301:
-            return ezusb_get_string_descriptor(read);
+            /* get usb string descriptor */
+            case 0x0301:
+                return ezusb_get_string_descriptor(read);
 
-        default:
-            log_warning(
+            default:
+                log_warning(
                     "Unsupported standard req (dev->host) value: %04X",
                     usb_req->SetupPacket.wValue);
 
-            return E_INVALIDARG;
+                return E_INVALIDARG;
         }
     } else if (
-            usb_req->SetupPacket.bmRequest == 0x40 &&
-            usb_req->SetupPacket.bRequest == 0xA0) {
+        usb_req->SetupPacket.bmRequest == 0x40 &&
+        usb_req->SetupPacket.bRequest == 0xA0) {
         if (usb_req->SetupPacket.wValue == 0xE600) {
             /* reset */
             return ezusb_reset(write);
@@ -234,18 +233,16 @@ static HRESULT ezusb_ioctl_ep0(
         }
     } else {
         log_warning(
-                "Invalid standard req_type and/or request: %02X %02X",
-                usb_req->SetupPacket.bmRequest,
-                usb_req->SetupPacket.bRequest);
+            "Invalid standard req_type and/or request: %02X %02X",
+            usb_req->SetupPacket.bmRequest,
+            usb_req->SetupPacket.bRequest);
 
         return E_INVALIDARG;
     }
 }
 
 static HRESULT ezusb_ioctl_epX(
-        SINGLE_TRANSFER *usb_req,
-        struct const_iobuf *write,
-        struct iobuf *read)
+    SINGLE_TRANSFER *usb_req, struct const_iobuf *write, struct iobuf *read)
 {
     log_assert(usb_req != NULL);
     log_assert(write != NULL);
@@ -253,22 +250,22 @@ static HRESULT ezusb_ioctl_epX(
 
     /* No reason to follow a standard, right? */
     switch (usb_req->ucEndpointAddress) {
-    case PIPE_INT_OUT:
-        return ezusb_emu_dev_fx2_msg_hook->interrupt_write(write);
+        case PIPE_INT_OUT:
+            return ezusb_emu_dev_fx2_msg_hook->interrupt_write(write);
 
-    case PIPE_BULK_OUT:
-        return ezusb_emu_dev_fx2_msg_hook->bulk_write(write);
+        case PIPE_BULK_OUT:
+            return ezusb_emu_dev_fx2_msg_hook->bulk_write(write);
 
-    case PIPE_INT_IN:
-        return ezusb_emu_dev_fx2_msg_hook->interrupt_read(read);
+        case PIPE_INT_IN:
+            return ezusb_emu_dev_fx2_msg_hook->interrupt_read(read);
 
-    case PIPE_BULK_IN:
-        return ezusb_emu_dev_fx2_msg_hook->bulk_read(read);
+        case PIPE_BULK_IN:
+            return ezusb_emu_dev_fx2_msg_hook->bulk_read(read);
 
-    default:
-        log_warning("Unhandled endpoint %02X", usb_req->ucEndpointAddress);
+        default:
+            log_warning("Unhandled endpoint %02X", usb_req->ucEndpointAddress);
 
-        return E_INVALIDARG;
+            return E_INVALIDARG;
     }
 }
 
@@ -291,9 +288,9 @@ static HRESULT ezusb_get_device_descriptor(struct iobuf *read)
     desc->idProduct = ezusb2_emu_desc_device.pid;
 
     log_misc(
-            "get_device_descriptor: vid %02x, pid %02x",
-            desc->idVendor,
-            desc->idProduct);
+        "get_device_descriptor: vid %02x, pid %02x",
+        desc->idVendor,
+        desc->idProduct);
 
     read->pos = sizeof(*desc);
 
@@ -330,34 +327,34 @@ static HRESULT ezusb_reset(struct const_iobuf *write)
     log_assert(write != NULL);
 
     switch (write->bytes[0]) {
-    case 0x01:
-        log_misc("reset hold, starting fw download...");
-        ezusb_emu_firmware = ezusb_firmware_alloc();
+        case 0x01:
+            log_misc("reset hold, starting fw download...");
+            ezusb_emu_firmware = ezusb_firmware_alloc();
 
-        return S_OK;
+            return S_OK;
 
-    case 0x00:
-        log_misc("reset release, finished fw download");
+        case 0x00:
+            log_misc("reset release, finished fw download");
 
-        ezusb_emu_firmware->crc = ezusb_firmware_crc(ezusb_emu_firmware);
+            ezusb_emu_firmware->crc = ezusb_firmware_crc(ezusb_emu_firmware);
 
 #ifdef EZUSB_EMU_FW_DUMP
-        if (!ezusb_firmware_save("ezusb_fx2.bin", ezusb_emu_firmware)) {
-            log_fatal("Saving dumped firmware failed");
-        } else {
-            log_misc("firmware dumped do ezusb_fx2.bin file");
-        }
+            if (!ezusb_firmware_save("ezusb_fx2.bin", ezusb_emu_firmware)) {
+                log_fatal("Saving dumped firmware failed");
+            } else {
+                log_misc("firmware dumped do ezusb_fx2.bin file");
+            }
 
-        free(ezusb_emu_firmware);
-        ezusb_emu_firmware = NULL;
+            free(ezusb_emu_firmware);
+            ezusb_emu_firmware = NULL;
 #endif
 
-        return S_OK;
+            return S_OK;
 
-    default:
-        log_warning("Unknown reset cmd: %02X", write->bytes[0]);
+        default:
+            log_warning("Unknown reset cmd: %02X", write->bytes[0]);
 
-        return E_FAIL;
+            return E_FAIL;
     }
 }
 
@@ -365,10 +362,10 @@ static HRESULT ezusb_upload_fw(uint16_t offset, struct const_iobuf *write)
 {
     log_misc("upload_fw, offset %04X, nbytes %04X", offset, write->nbytes);
 
-    ezusb_firmware_add_segment(ezusb_emu_firmware, 
-        ezusb_firmware_segment_alloc(offset, write->nbytes, 
-        (void*) write->bytes));
+    ezusb_firmware_add_segment(
+        ezusb_emu_firmware,
+        ezusb_firmware_segment_alloc(
+            offset, write->nbytes, (void *) write->bytes));
 
     return S_OK;
 }
-

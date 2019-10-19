@@ -1,6 +1,6 @@
-#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <windows.h>
@@ -13,10 +13,10 @@
 /**
  * Tool to test your implementations of eamio.
  */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    eam_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-        log_impl_fatal);
+    eam_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
     if (!eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
         printf("Initializing eamio failed\n");
@@ -43,7 +43,6 @@ int main(int argc, char** argv)
         }
 
         for (uint8_t node = 0; node < 2; ++node) {
-
             if (!eam_io_poll(node)) {
                 printf("ERROR: Polling node %d failed", node);
                 return -2;
@@ -55,35 +54,41 @@ int main(int argc, char** argv)
             uint8_t sensors = eam_io_get_sensor_state(node);
 
             printf(
-            "Press escape to quit\n"
-    	    "Reader %d\n"
-            "------------------\n"
-            " |7: %d|8: %d|9: %d|\n"
-            " |4: %d|5: %d|6: %d|\n"
-            " |1: %d|2: %d|3: %d|\n"
-            " |0: %d|O: %d|_: %d|\n"
-            "------------------\n"
-            "|front: %d back: %d|\n"
-            "------------------\n"
-            "|%02X%02X%02X%02X%02X%02X%02X%02X|\n"
-            "------------------\n",
-            node,
-            (keypad & (1 << EAM_IO_KEYPAD_7)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_8)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_9)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_4)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_5)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_6)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_1)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_2)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_3)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_0)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_00)) > 0,
-            (keypad & (1 << EAM_IO_KEYPAD_DECIMAL)) > 0,
-            (sensors & (1 << EAM_IO_SENSOR_FRONT)) > 0,
-            (sensors & (1 << EAM_IO_SENSOR_BACK)) > 0,
-            card[node][0], card[node][1], card[node][2], card[node][3],
-            card[node][4], card[node][5], card[node][6], card[node][7]);
+                "Press escape to quit\n"
+                "Reader %d\n"
+                "------------------\n"
+                " |7: %d|8: %d|9: %d|\n"
+                " |4: %d|5: %d|6: %d|\n"
+                " |1: %d|2: %d|3: %d|\n"
+                " |0: %d|O: %d|_: %d|\n"
+                "------------------\n"
+                "|front: %d back: %d|\n"
+                "------------------\n"
+                "|%02X%02X%02X%02X%02X%02X%02X%02X|\n"
+                "------------------\n",
+                node,
+                (keypad & (1 << EAM_IO_KEYPAD_7)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_8)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_9)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_4)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_5)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_6)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_1)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_2)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_3)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_0)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_00)) > 0,
+                (keypad & (1 << EAM_IO_KEYPAD_DECIMAL)) > 0,
+                (sensors & (1 << EAM_IO_SENSOR_FRONT)) > 0,
+                (sensors & (1 << EAM_IO_SENSOR_BACK)) > 0,
+                card[node][0],
+                card[node][1],
+                card[node][2],
+                card[node][3],
+                card[node][4],
+                card[node][5],
+                card[node][6],
+                card[node][7]);
 
             if (sensors & (1 << EAM_IO_SENSOR_BACK)) {
                 eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_CLOSE);

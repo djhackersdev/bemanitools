@@ -1,8 +1,8 @@
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -40,7 +40,8 @@ void ac_io_bus_fini(void)
     ac_io_emu_fini(&ac_io_emu);
 }
 
-HRESULT ac_io_bus_dispatch_irp(struct irp *irp)
+HRESULT
+ac_io_bus_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -82,8 +83,8 @@ HRESULT ac_io_bus_dispatch_irp(struct irp *irp)
                 break;
 
             default:
-                log_warning("ACIO message on unhandled bus address: %d",
-                        msg->addr);
+                log_warning(
+                    "ACIO message on unhandled bus address: %d", msg->addr);
 
                 break;
         }

@@ -9,14 +9,16 @@
 #include "util/cmdline.h"
 #include "util/log.h"
 
-bool cconfig_hook_config_init(struct cconfig* config, const char* usage_header, 
-        enum cconfig_cmd_usage_out cmd_usage_out)
+bool cconfig_hook_config_init(
+    struct cconfig *config,
+    const char *usage_header,
+    enum cconfig_cmd_usage_out cmd_usage_out)
 {
     bool success;
     int argc;
     char **argv;
     enum cconfig_conf_error conf_error;
-    char* config_path;
+    char *config_path;
 
     success = true;
 
@@ -33,36 +35,39 @@ bool cconfig_hook_config_init(struct cconfig* config, const char* usage_header,
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "--config")) {
             if (i + 1 >= argc) {
-                log_fatal("--config parameter not followed by a config file "
+                log_fatal(
+                    "--config parameter not followed by a config file "
                     "path param");
                 goto failure;
-            } 
+            }
 
             config_path = argv[i + 1];
 
             break;
         }
     }
-    
+
     if (config_path) {
         log_misc("Loading config file: %s", config_path);
         conf_error = cconfig_conf_load_from_file(config, config_path, false);
 
         if (conf_error == CCONFIG_CONF_ERROR_NO_SUCH_FILE) {
             /* Create default config */
-            if (cconfig_conf_save_to_file(config, config_path) != 
-                    CCONFIG_CONF_SUCCESS) {
-                log_fatal("Creating default config file '%s' failed", 
-                    config_path);
+            if (cconfig_conf_save_to_file(config, config_path) !=
+                CCONFIG_CONF_SUCCESS) {
+                log_fatal(
+                    "Creating default config file '%s' failed", config_path);
                 goto failure;
             } else {
-                log_info("Default configuration '%s' created. Restart "
-                    "application", config_path);
+                log_info(
+                    "Default configuration '%s' created. Restart "
+                    "application",
+                    config_path);
                 goto failure;
             }
         } else if (conf_error != CCONFIG_CONF_SUCCESS) {
-            log_fatal("Error loading config file '%s': %d", config_path, 
-                conf_error);
+            log_fatal(
+                "Error loading config file '%s': %d", config_path, conf_error);
             goto failure;
         }
 

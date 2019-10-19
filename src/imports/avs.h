@@ -74,45 +74,44 @@ struct property_psmap {
     intptr_t xdefault;
 };
 
-#define PSMAP_BEGIN(name) \
-        struct property_psmap name[] = {
-
+#define PSMAP_BEGIN(name) struct property_psmap name[] = {
 #define PSMAP_REQUIRED(type, xstruct, field, path) \
-        {  \
-            type, \
-            0, \
-            offsetof(xstruct, field),  \
-            sizeof( ((xstruct *) 0)->field ), \
-            path, \
-            0, \
-        }, \
+    {                                              \
+        type,                                      \
+        0,                                         \
+        offsetof(xstruct, field),                  \
+        sizeof(((xstruct *) 0)->field),            \
+        path,                                      \
+        0,                                         \
+    },
 
 #define PSMAP_OPTIONAL(type, xstruct, field, path, xdefault) \
-        {  \
-            type, \
-            PSMAP_FLAG_HAVE_DEFAULT, \
-            offsetof(xstruct, field), \
-            sizeof( ((xstruct *) 0)->field ), \
-            path, \
-            (intptr_t) xdefault, \
-        }, \
+    {                                                        \
+        type,                                                \
+        PSMAP_FLAG_HAVE_DEFAULT,                             \
+        offsetof(xstruct, field),                            \
+        sizeof(((xstruct *) 0)->field),                      \
+        path,                                                \
+        (intptr_t) xdefault,                                 \
+    },
 
-#define PSMAP_END \
-        { 0xFF, 0, 0, 0, NULL, 0 } \
-        };
+#define PSMAP_END              \
+    {                          \
+        0xFF, 0, 0, 0, NULL, 0 \
+    }                          \
+    }                          \
+    ;
 
 #if AVS_VERSION >= 1500
-#   define AVS_LOG_WRITER(name, chars, nchars, ctx) \
-            void name(const char * chars , uint32_t nchars , void * ctx )
+#define AVS_LOG_WRITER(name, chars, nchars, ctx) \
+    void name(const char *chars, uint32_t nchars, void *ctx)
 
-    typedef void (*avs_log_writer_t)(const char *chars, uint32_t nchars,
-            void *ctx);
+typedef void (*avs_log_writer_t)(const char *chars, uint32_t nchars, void *ctx);
 #else
-#   define AVS_LOG_WRITER(name, chars, nchars, ctx) \
-            void name(void * ctx , const char * chars , uint32_t nchars )
+#define AVS_LOG_WRITER(name, chars, nchars, ctx) \
+    void name(void *ctx, const char *chars, uint32_t nchars)
 
-    typedef void (*avs_log_writer_t)(void *ctx, const char *chars,
-            uint32_t nchars);
+typedef void (*avs_log_writer_t)(void *ctx, const char *chars, uint32_t nchars);
 #endif
 
 typedef int (*avs_reader_t)(uint32_t context, void *bytes, size_t nbytes);
@@ -120,22 +119,38 @@ typedef int (*avs_reader_t)(uint32_t context, void *bytes, size_t nbytes);
 #if AVS_VERSION >= 1600
 /* "avs" and "std" heaps have been unified */
 typedef void (*avs_boot_t)(
-        struct property_node *config, void *com_heap, size_t sz_com_heap,
-        void *reserved, avs_log_writer_t log_writer, void *log_context);
+    struct property_node *config,
+    void *com_heap,
+    size_t sz_com_heap,
+    void *reserved,
+    avs_log_writer_t log_writer,
+    void *log_context);
 
 void avs_boot(
-        struct property_node *config, void *com_heap, size_t sz_com_heap,
-        void *reserved, avs_log_writer_t log_writer, void *log_context);
+    struct property_node *config,
+    void *com_heap,
+    size_t sz_com_heap,
+    void *reserved,
+    avs_log_writer_t log_writer,
+    void *log_context);
 #else
 typedef void (*avs_boot_t)(
-        struct property_node *config, void *std_heap, size_t sz_std_heap,
-        void *avs_heap, size_t sz_avs_heap, avs_log_writer_t log_writer,
-        void* log_context);
+    struct property_node *config,
+    void *std_heap,
+    size_t sz_std_heap,
+    void *avs_heap,
+    size_t sz_avs_heap,
+    avs_log_writer_t log_writer,
+    void *log_context);
 
 void avs_boot(
-        struct property_node *config, void *std_heap, size_t sz_std_heap,
-        void *avs_heap, size_t sz_avs_heap, avs_log_writer_t log_writer,
-        void *log_context);
+    struct property_node *config,
+    void *std_heap,
+    size_t sz_std_heap,
+    void *avs_heap,
+    size_t sz_avs_heap,
+    avs_log_writer_t log_writer,
+    void *log_context);
 #endif
 
 void avs_shutdown(void);
@@ -149,54 +164,68 @@ void log_change_level(int level);
 
 int avs_net_ctrl(int ioctl, void *bytes, uint32_t nbytes);
 
-int avs_thread_create(int (*proc)(void *), void *ctx, uint32_t sz_stack,
-        unsigned int priority);
+int avs_thread_create(
+    int (*proc)(void *), void *ctx, uint32_t sz_stack, unsigned int priority);
 void avs_thread_destroy(int thread_id);
 void avs_thread_exit(int result);
 void avs_thread_join(int thread_id, int *result);
 
 uint32_t property_read_query_memsize(
-        avs_reader_t reader, uint32_t context, int unk0, int unk1);
-struct property *property_create(
-        int flags, void *buffer, uint32_t buffer_size);
+    avs_reader_t reader, uint32_t context, int unk0, int unk1);
+struct property *property_create(int flags, void *buffer, uint32_t buffer_size);
 struct property_node *property_search(
-        struct property *prop, struct property_node *root, const char *path);
+    struct property *prop, struct property_node *root, const char *path);
 int property_insert_read(
-        struct property *prop, struct property_node *root, avs_reader_t reader,
-        uint32_t context);
+    struct property *prop,
+    struct property_node *root,
+    avs_reader_t reader,
+    uint32_t context);
 int property_mem_write(struct property *prop, void *bytes, int nbytes);
 void *property_desc_to_buffer(struct property *prop);
 void property_file_write(struct property *prop, const char *path);
 int property_set_flag(struct property *prop, int flags, int mask);
 void property_destroy(struct property *prop);
 
-int property_psmap_import(struct property *prop, struct property_node *root,
-        void *dest, const struct property_psmap *psmap);
-int property_psmap_export(struct property *prop, struct property_node *root,
-        const void *src, const struct property_psmap *psmap);
+int property_psmap_import(
+    struct property *prop,
+    struct property_node *root,
+    void *dest,
+    const struct property_psmap *psmap);
+int property_psmap_export(
+    struct property *prop,
+    struct property_node *root,
+    const void *src,
+    const struct property_psmap *psmap);
 
 struct property_node *property_node_clone(
-        struct property *new_parent, int unk0,
-        struct property_node *src, bool deep);
+    struct property *new_parent,
+    int unk0,
+    struct property_node *src,
+    bool deep);
 struct property_node *property_node_create(
-        struct property *prop, struct property_node *parent, int type,
-        const char *key, ...);
-void property_node_name(
-        struct property_node *node, char *chars, int nchars);
+    struct property *prop,
+    struct property_node *parent,
+    int type,
+    const char *key,
+    ...);
+void property_node_name(struct property_node *node, char *chars, int nchars);
 const char *property_node_refdata(struct property_node *node);
-int property_node_refer(struct property *prop,
-        struct property_node *node, const char *name,
-        enum property_type type, void *bytes, uint32_t nbytes);
+int property_node_refer(
+    struct property *prop,
+    struct property_node *node,
+    const char *name,
+    enum property_type type,
+    void *bytes,
+    uint32_t nbytes);
 void property_node_remove(struct property_node *node);
-enum property_type property_node_type(
-        struct property_node *node);
+enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
-        struct property_node *node, enum property_node_traversal direction);
-void property_node_datasize(struct property_node* node);
+    struct property_node *node, enum property_node_traversal direction);
+void property_node_datasize(struct property_node *node);
 
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
 
-void *avs_fs_mount (char* mountpoint, char* fsroot, void* fstype, int flags);
+void *avs_fs_mount(char *mountpoint, char *fsroot, void *fstype, int flags);
 
 #endif

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "geninput/mapper.h"
 #include "geninput/mapper-s11n.h"
+#include "geninput/mapper.h"
 
 #include "util/fs.h"
 #include "util/mem.h"
@@ -21,9 +21,9 @@ struct mapper *mapper_impl_config_load(FILE *f)
 
     m = mapper_impl_create();
 
-    if (    !mapper_impl_config_load_actions(m, f) ||
-            !mapper_impl_config_load_analogs(m, f) ||
-            !mapper_impl_config_load_lights(m, f)) {
+    if (!mapper_impl_config_load_actions(m, f) ||
+        !mapper_impl_config_load_analogs(m, f) ||
+        !mapper_impl_config_load_lights(m, f)) {
         mapper_impl_destroy(m);
         m = NULL;
     }
@@ -47,7 +47,7 @@ static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f)
         return false;
     }
 
-    for (i = 0 ; i < count ; i++) {
+    for (i = 0; i < count; i++) {
         memset(&ma, 0, sizeof(ma));
 
         if (!read_str(f, &dev_node)) {
@@ -57,12 +57,9 @@ static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f)
         ma.hid = hid_mgr_get_named_stub(dev_node);
         free(dev_node);
 
-        if (    !read_u32(f, &ma.control_no) ||
-                !read_u32(f, &ma.value_min) ||
-                !read_u32(f, &ma.value_max) ||
-                !read_u8(f, &action) ||
-                !read_u8(f, &page) ||
-                !read_u8(f, &bit)) {
+        if (!read_u32(f, &ma.control_no) || !read_u32(f, &ma.value_min) ||
+            !read_u32(f, &ma.value_max) || !read_u8(f, &action) ||
+            !read_u8(f, &page) || !read_u8(f, &bit)) {
             return false;
         }
 
@@ -86,7 +83,7 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
 
     mapper_impl_set_nanalogs(m, nanalogs);
 
-    for (i = 0 ; i < nanalogs ; i++) {
+    for (i = 0; i < nanalogs; i++) {
         memset(&ma, 0, sizeof(ma));
 
         if (!read_str(f, &dev_node)) {
@@ -133,7 +130,7 @@ static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f)
         return false;
     }
 
-    for (i = 0 ; i < count ; i++) {
+    for (i = 0; i < count; i++) {
         memset(&ml, 0, sizeof(ml));
 
         if (!read_str(f, &dev_node)) {
@@ -181,9 +178,8 @@ static void mapper_impl_config_save_actions(struct mapper *m, FILE *f)
 
     count = 0;
 
-    for (pos = mapper_impl_iterate_actions(m)
-            ; action_iter_is_valid(pos)
-            ; action_iter_next(pos)) {
+    for (pos = mapper_impl_iterate_actions(m); action_iter_is_valid(pos);
+         action_iter_next(pos)) {
         count++;
     }
 
@@ -192,9 +188,8 @@ static void mapper_impl_config_save_actions(struct mapper *m, FILE *f)
 
     /* Write out bindings */
 
-    for (pos = mapper_impl_iterate_actions(m)
-            ; action_iter_is_valid(pos)
-            ; action_iter_next(pos)) {
+    for (pos = mapper_impl_iterate_actions(m); action_iter_is_valid(pos);
+         action_iter_next(pos)) {
         action_iter_get_mapping(pos, &ma);
         action = action_iter_get_action(pos);
         page = action_iter_get_page(pos);
@@ -222,7 +217,7 @@ static void mapper_impl_config_save_analogs(struct mapper *m, FILE *f)
     nanalogs = mapper_impl_get_nanalogs(m);
     write_u8(f, &nanalogs);
 
-    for (i = 0 ; i < nanalogs ; i++) {
+    for (i = 0; i < nanalogs; i++) {
         mapper_impl_get_analog_map(m, i, &ma);
 
         if (ma.hid == NULL) {
@@ -250,18 +245,16 @@ static void mapper_impl_config_save_lights(struct mapper *m, FILE *f)
 
     count = 0;
 
-    for (pos = mapper_impl_iterate_lights(m)
-            ; light_iter_is_valid(pos)
-            ; light_iter_next(pos)) {
+    for (pos = mapper_impl_iterate_lights(m); light_iter_is_valid(pos);
+         light_iter_next(pos)) {
         count++;
     }
 
     write_u32(f, &count);
     light_iter_free(pos);
 
-    for (pos = mapper_impl_iterate_lights(m)
-            ; light_iter_is_valid(pos)
-            ; light_iter_next(pos)) {
+    for (pos = mapper_impl_iterate_lights(m); light_iter_is_valid(pos);
+         light_iter_next(pos)) {
         light_iter_get_mapping(pos, &ml);
         game_light = light_iter_get_game_light(pos);
 
@@ -272,4 +265,3 @@ static void mapper_impl_config_save_lights(struct mapper *m, FILE *f)
 
     light_iter_free(pos);
 }
-

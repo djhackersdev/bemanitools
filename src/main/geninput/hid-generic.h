@@ -8,7 +8,7 @@
 
 #include "geninput/hid.h"
 
-bool hid_generic_open(struct hid_fd **hid, const char *dev_node,
-        HANDLE iocp, uintptr_t iocp_ctx);
+bool hid_generic_open(
+    struct hid_fd **hid, const char *dev_node, HANDLE iocp, uintptr_t iocp_ctx);
 
 #endif

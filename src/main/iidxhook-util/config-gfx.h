@@ -20,9 +20,9 @@ struct iidxhook_config_gfx {
     enum iidxhook_util_d3d9_back_buffer_scale_filter scale_back_buffer_filter;
 };
 
-void iidxhook_config_gfx_init(struct cconfig* config);
+void iidxhook_config_gfx_init(struct cconfig *config);
 
-void iidxhook_config_gfx_get(struct iidxhook_config_gfx* config_gfx, 
-        struct cconfig* config);
+void iidxhook_config_gfx_get(
+    struct iidxhook_config_gfx *config_gfx, struct cconfig *config);
 
 #endif

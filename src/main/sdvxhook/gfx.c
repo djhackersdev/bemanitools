@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <d3d9.h>
+#include <windows.h>
 
 #include <stdbool.h>
 
@@ -12,22 +12,25 @@
 #include "util/defs.h"
 #include "util/log.h"
 
-static LRESULT CALLBACK my_WndProc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static LRESULT CALLBACK
+my_WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static HRESULT STDCALL my_CreateDevice(
-        IDirect3D9 *self, UINT adapter, D3DDEVTYPE type, HWND hwnd, DWORD flags,
-        D3DPRESENT_PARAMETERS *pp, IDirect3DDevice9 **pdev);
+    IDirect3D9 *self,
+    UINT adapter,
+    D3DDEVTYPE type,
+    HWND hwnd,
+    DWORD flags,
+    D3DPRESENT_PARAMETERS *pp,
+    IDirect3DDevice9 **pdev);
 static IDirect3D9 *STDCALL my_Direct3DCreate9(UINT sdk_ver);
 
 static WNDPROC real_WndProc;
-static IDirect3D9 * (STDCALL *real_Direct3DCreate9)(UINT sdk_ver);
+static IDirect3D9 *(STDCALL *real_Direct3DCreate9)(UINT sdk_ver);
 
 static const struct hook_symbol gfx_hooks[] = {
-    {
-        .name   = "Direct3DCreate9",
-        .patch  = my_Direct3DCreate9,
-        .link   = (void **) &real_Direct3DCreate9
-    },
+    {.name = "Direct3DCreate9",
+     .patch = my_Direct3DCreate9,
+     .link = (void **) &real_Direct3DCreate9},
 };
 
 static bool gfx_confined;
@@ -64,8 +67,8 @@ static LRESULT gfx_unconfine(HWND hwnd)
     return TRUE;
 }
 
-static LRESULT CALLBACK my_WndProc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static LRESULT CALLBACK
+my_WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_SETFOCUS:
@@ -80,8 +83,13 @@ static LRESULT CALLBACK my_WndProc(HWND hwnd, UINT msg, WPARAM wparam,
 }
 
 static HRESULT STDCALL my_CreateDevice(
-        IDirect3D9 *self, UINT adapter, D3DDEVTYPE type, HWND hwnd, DWORD flags,
-        D3DPRESENT_PARAMETERS *pp, IDirect3DDevice9 **pdev)
+    IDirect3D9 *self,
+    UINT adapter,
+    D3DDEVTYPE type,
+    HWND hwnd,
+    DWORD flags,
+    D3DPRESENT_PARAMETERS *pp,
+    IDirect3DDevice9 **pdev)
 {
     IDirect3D9 *real = COM_PROXY_UNWRAP(self);
     HRESULT hr;
@@ -136,4 +144,3 @@ void gfx_set_windowed(void)
 {
     gfx_windowed = true;
 }
-

@@ -1,12 +1,12 @@
 #define LOG_MODULE "ezusb-iidx-emu-node-wdt"
 
-#include "ezusb-iidx/wdt-cmd.h"
 #include "ezusb-iidx-emu/node-wdt.h"
+#include "ezusb-iidx/wdt-cmd.h"
 
 #include "util/log.h"
 
-uint8_t ezusb_iidx_emu_node_wdt_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
-        uint8_t cmd_data2)
+uint8_t ezusb_iidx_emu_node_wdt_process_cmd(
+    uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
         case EZUSB_IIDX_WDT_CMD_INIT:
@@ -19,12 +19,13 @@ uint8_t ezusb_iidx_emu_node_wdt_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
     }
 }
 
-bool ezusb_iidx_emu_node_wdt_read_packet(struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_wdt_read_packet(struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     return true;
 }
 
-bool ezusb_iidx_emu_node_wdt_write_packet(const struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_wdt_write_packet(
+    const struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     return true;
 }

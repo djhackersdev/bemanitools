@@ -10,12 +10,9 @@ struct ac_io_emu_hdxs {
     // TODO ops vtbl
 };
 
-void ac_io_emu_hdxs_init(
-        struct ac_io_emu_hdxs *hdxs,
-        struct ac_io_emu *emu);
+void ac_io_emu_hdxs_init(struct ac_io_emu_hdxs *hdxs, struct ac_io_emu *emu);
 
 void ac_io_emu_hdxs_dispatch_request(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req);
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req);
 
 #endif

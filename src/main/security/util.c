@@ -5,7 +5,7 @@ void security_util_8_to_6_encode(const uint8_t *in, uint8_t *out)
     uint8_t tmp[8];
     int i;
 
-    for (i = 0 ; i < 8 ; i++) {
+    for (i = 0; i < 8; i++) {
         tmp[i] = (in[i] - 0x20) & 0x3F;
     }
 
@@ -32,7 +32,7 @@ void security_util_6_to_8_decode(const uint8_t *in, uint8_t *out)
     out[6] = ((in[4] >> 4) & 0x0F) | ((in[5] << 4) & 0x30);
     out[7] = ((in[5] >> 2) & 0x3F);
 
-    for (i = 0 ; i < 8 ; i++) {
+    for (i = 0; i < 8; i++) {
         out[i] += 0x20;
     }
 }

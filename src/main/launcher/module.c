@@ -18,8 +18,15 @@ void module_context_init(struct module_context *module, const char *path)
     if (module->dll == NULL) {
         LPSTR buffer;
 
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buffer, 0, NULL);
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            GetLastError(),
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPSTR) &buffer,
+            0,
+            NULL);
 
         log_fatal("%s: Failed to load game DLL: %s", path, buffer);
 
@@ -29,8 +36,10 @@ void module_context_init(struct module_context *module, const char *path)
     module->path = str_dup(path);
 }
 
-bool module_context_invoke_init(const struct module_context *module,
-        char *sidcode, struct property_node *app_config)
+bool module_context_invoke_init(
+    const struct module_context *module,
+    char *sidcode,
+    struct property_node *app_config)
 {
     dll_entry_init_t init;
 
@@ -42,8 +51,7 @@ bool module_context_invoke_init(const struct module_context *module,
 
     if (init == NULL) {
         log_fatal(
-                "%s: dll_entry_init not found. Is this a game DLL?",
-                module->path);
+            "%s: dll_entry_init not found. Is this a game DLL?", module->path);
     }
 
     return init(sidcode, app_config);
@@ -60,8 +68,7 @@ bool module_context_invoke_main(const struct module_context *module)
 
     if (main_ == NULL) {
         log_fatal(
-                "%s: dll_entry_main not found. Is this a game DLL?",
-                module->path);
+            "%s: dll_entry_main not found. Is this a game DLL?", module->path);
     }
 
     return main_();
@@ -79,4 +86,3 @@ void module_context_fini(struct module_context *module)
         FreeLibrary(module->dll);
     }
 }
-

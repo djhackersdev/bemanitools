@@ -39,7 +39,7 @@ struct hid_stub *hid_mgr_get_named_stub(const char *dev_node)
 {
     struct hid_stub *pos;
 
-    for (pos = hid_stubs ; pos != NULL ; pos = pos->next) {
+    for (pos = hid_stubs; pos != NULL; pos = pos->next) {
         if (_stricmp(pos->dev_node, dev_node) == 0) {
             return pos;
         }
@@ -71,7 +71,7 @@ void hid_mgr_fini(void)
     struct hid_stub *next;
     struct hid_stub *pos;
 
-    for (pos = hid_stubs ; pos != NULL ; pos = next) {
+    for (pos = hid_stubs; pos != NULL; pos = next) {
         next = pos->next;
 
         if (pos->hid != NULL) {
@@ -124,30 +124,28 @@ bool hid_stub_get_device_usage(struct hid_stub *stub, uint32_t *usage)
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_get_device_usage(stub->hid, usage));
+    return hid_stub_check(stub, hid_get_device_usage(stub->hid, usage));
 }
 
-bool hid_stub_get_controls(struct hid_stub *stub, struct hid_control *controls,
-        size_t *ncontrols)
+bool hid_stub_get_controls(
+    struct hid_stub *stub, struct hid_control *controls, size_t *ncontrols)
 {
     if (stub->hid == NULL) {
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_get_controls(stub->hid, controls, ncontrols));
+    return hid_stub_check(
+        stub, hid_get_controls(stub->hid, controls, ncontrols));
 }
 
-bool hid_stub_get_lights(struct hid_stub *stub, struct hid_light *lights,
-        size_t *nlights)
+bool hid_stub_get_lights(
+    struct hid_stub *stub, struct hid_light *lights, size_t *nlights)
 {
     if (stub->hid == NULL) {
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_get_lights(stub->hid, lights, nlights));
+    return hid_stub_check(stub, hid_get_lights(stub->hid, lights, nlights));
 }
 
 const char *hid_stub_get_dev_node(struct hid_stub *stub)
@@ -161,40 +159,38 @@ bool hid_stub_get_name(struct hid_stub *stub, wchar_t *chars, size_t *nchars)
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_get_name(stub->hid, chars, nchars));
+    return hid_stub_check(stub, hid_get_name(stub->hid, chars, nchars));
 }
 
-bool hid_stub_get_value(struct hid_stub *stub, size_t control_no,
-        int32_t *out_value)
+bool hid_stub_get_value(
+    struct hid_stub *stub, size_t control_no, int32_t *out_value)
 {
     if (stub->hid == NULL) {
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_get_value(stub->hid, control_no, out_value));
+    return hid_stub_check(
+        stub, hid_get_value(stub->hid, control_no, out_value));
 }
 
-bool hid_stub_set_light(struct hid_stub *stub, size_t light_no,
-        uint32_t intensity)
+bool hid_stub_set_light(
+    struct hid_stub *stub, size_t light_no, uint32_t intensity)
 {
     if (stub->hid == NULL) {
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_set_light(stub->hid, light_no, intensity));
+    return hid_stub_check(stub, hid_set_light(stub->hid, light_no, intensity));
 }
 
-bool hid_stub_handle_completion(struct hid_stub *stub, OVERLAPPED *ovl,
-        size_t nbytes)
+bool hid_stub_handle_completion(
+    struct hid_stub *stub, OVERLAPPED *ovl, size_t nbytes)
 {
     if (stub->hid == NULL) {
         return false;
     }
 
-    return hid_stub_check(stub,
-            hid_fd_handle_completion((struct hid_fd *) stub->hid, ovl, nbytes));
+    return hid_stub_check(
+        stub,
+        hid_fd_handle_completion((struct hid_fd *) stub->hid, ovl, nbytes));
 }
-

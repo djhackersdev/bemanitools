@@ -1,9 +1,9 @@
-#include <windows.h>
-#include <shlobj.h>
 #include <initguid.h>
+#include <shlobj.h>
+#include <windows.h>
 
-#include <setupapi.h>
 #include <hidsdi.h>
+#include <setupapi.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,8 +16,19 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-DEFINE_GUID(hid_guid, 0x4D1E55B2L, 0xF16F, 0x11CF, 0x88, 0xCB, 0x00, \
-        0x11, 0x11, 0x00, 0x00, 0x30);
+DEFINE_GUID(
+    hid_guid,
+    0x4D1E55B2L,
+    0xF16F,
+    0x11CF,
+    0x88,
+    0xCB,
+    0x00,
+    0x11,
+    0x11,
+    0x00,
+    0x00,
+    0x30);
 
 static HANDLE mm_fd;
 
@@ -32,8 +43,8 @@ static OVERLAPPED mm_out_ovl;
 static bool mm_out_pending;
 
 static HANDLE mm_open_device(void);
-static HANDLE mm_try_device(HDEVINFO dev_info,
-        SP_DEVICE_INTERFACE_DATA *iface_data);
+static HANDLE
+mm_try_device(HDEVINFO dev_info, SP_DEVICE_INTERFACE_DATA *iface_data);
 
 static HANDLE mm_open_device(void)
 {
@@ -44,32 +55,25 @@ static HANDLE mm_open_device(void)
     BOOL ok;
 
     dev_info = SetupDiGetClassDevsW(
-            &hid_guid,
-            NULL,
-            NULL,
-            DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+        &hid_guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
     if (dev_info == NULL) {
         log_fatal("SetupDiGetClassDevs failed");
     }
 
-    for (i = 0, cur_fd = NULL ; cur_fd == NULL ; i++) {
+    for (i = 0, cur_fd = NULL; cur_fd == NULL; i++) {
         iface_data.cbSize = sizeof(iface_data);
 
         ok = SetupDiEnumDeviceInterfaces(
-                dev_info,
-                NULL,
-                &hid_guid,
-                i,
-                &iface_data);
+            dev_info, NULL, &hid_guid, i, &iface_data);
 
         if (!ok) {
             if (GetLastError() == ERROR_NO_MORE_ITEMS) {
                 break;
             } else {
                 log_fatal(
-                        "SetupDiEnumDeviceInterfaces failed: %#x",
-                        (int) GetLastError());
+                    "SetupDiEnumDeviceInterfaces failed: %#x",
+                    (int) GetLastError());
             }
         }
 
@@ -81,8 +85,8 @@ static HANDLE mm_open_device(void)
     return cur_fd;
 }
 
-static HANDLE mm_try_device(HDEVINFO dev_info,
-        SP_DEVICE_INTERFACE_DATA *iface_data)
+static HANDLE
+mm_try_device(HDEVINFO dev_info, SP_DEVICE_INTERFACE_DATA *iface_data)
 {
     SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail;
     HIDD_ATTRIBUTES hid_attrs;
@@ -91,44 +95,34 @@ static HANDLE mm_try_device(HDEVINFO dev_info,
     BOOL ok;
 
     ok = SetupDiGetDeviceInterfaceDetailW(
-            dev_info,
-            iface_data,
-            NULL,
-            0,
-            &detail_size,
-            NULL);
+        dev_info, iface_data, NULL, 0, &detail_size, NULL);
 
     if (!ok && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
         log_fatal(
-                "SetupDiGetDeviceInterfaceDetail sizing failed: %#x",
-                (int) GetLastError());
+            "SetupDiGetDeviceInterfaceDetail sizing failed: %#x",
+            (int) GetLastError());
     }
 
     detail = xmalloc(detail_size);
     detail->cbSize = sizeof(*detail);
 
     ok = SetupDiGetDeviceInterfaceDetailW(
-            dev_info,
-            iface_data,
-            detail,
-            detail_size,
-            NULL,
-            NULL);
+        dev_info, iface_data, detail, detail_size, NULL, NULL);
 
     if (!ok) {
         log_fatal(
-                "SetupDiGetDeviceInterfaceDetail failed: %#x",
-                (int) GetLastError());
+            "SetupDiGetDeviceInterfaceDetail failed: %#x",
+            (int) GetLastError());
     }
 
     cur_fd = CreateFileW(
-            detail->DevicePath,
-            GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_EXISTING,
-            FILE_FLAG_OVERLAPPED,
-            NULL);
+        detail->DevicePath,
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED,
+        NULL);
 
     free(detail);
 
@@ -142,8 +136,8 @@ static HANDLE mm_try_device(HDEVINFO dev_info,
         log_fatal("HidD_GetAttributes failed");
     }
 
-    if (    hid_attrs.VendorID != MM_VENDOR_ID ||
-            hid_attrs.ProductID != MM_PRODUCT_ID) {
+    if (hid_attrs.VendorID != MM_VENDOR_ID ||
+        hid_attrs.ProductID != MM_PRODUCT_ID) {
         goto id_fail;
     }
 
@@ -190,8 +184,12 @@ bool mm_init(uint32_t in_buf_count)
 
     do {
         mm_in_buf_pos = (mm_in_buf_pos + 1) % mm_in_buf_count;
-    } while (ReadFile(mm_fd, &mm_in_bufs[mm_in_buf_pos], sizeof(*mm_in_bufs),
-            NULL, &mm_in_ovl));
+    } while (ReadFile(
+        mm_fd,
+        &mm_in_bufs[mm_in_buf_pos],
+        sizeof(*mm_in_bufs),
+        NULL,
+        &mm_in_ovl));
 
     if (GetLastError() != ERROR_IO_PENDING) {
         log_fatal("USB IN failed: %#x", (int) GetLastError());
@@ -218,8 +216,8 @@ void mm_update(const struct mm_output *out, struct mm_input *in)
         } else {
             if (GetLastError() != ERROR_IO_INCOMPLETE) {
                 log_fatal(
-                        "GetOverlappedResult[OUT] failed: %#x",
-                        (int) GetLastError());
+                    "GetOverlappedResult[OUT] failed: %#x",
+                    (int) GetLastError());
             }
         }
     }
@@ -232,8 +230,8 @@ void mm_update(const struct mm_output *out, struct mm_input *in)
     if (!mm_out_pending) {
         memcpy(&mm_out_buf, out, sizeof(*out));
 
-        if (!WriteFile(mm_fd, &mm_out_buf, sizeof(mm_out_buf), NULL,
-                &mm_out_ovl)) {
+        if (!WriteFile(
+                mm_fd, &mm_out_buf, sizeof(mm_out_buf), NULL, &mm_out_ovl)) {
             if (GetLastError() != ERROR_IO_PENDING) {
                 log_fatal("USB OUT failed: %#x", (int) GetLastError());
             }
@@ -252,8 +250,12 @@ void mm_update(const struct mm_output *out, struct mm_input *in)
 
     do {
         mm_in_buf_pos = (mm_in_buf_pos + 1) % mm_in_buf_count;
-    } while (ReadFile(mm_fd, &mm_in_bufs[mm_in_buf_pos], sizeof(*mm_in_bufs),
-            NULL, &mm_in_ovl));
+    } while (ReadFile(
+        mm_fd,
+        &mm_in_bufs[mm_in_buf_pos],
+        sizeof(*mm_in_bufs),
+        NULL,
+        &mm_in_ovl));
 
     /* (did we actually block or was there an IO error?) */
 
@@ -272,4 +274,3 @@ void mm_fini(void)
 
     log_info("Closed MiniMaid");
 }
-

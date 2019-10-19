@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
 
 #include "ezusb/ezusb.h"
 
@@ -27,9 +27,16 @@
 
 #define EP0_EZUSB_RAM_CPU_RESET_ADDR 0xE600
 
-static int ezusb2_ctrl_transfer(HANDLE handle, uint32_t ioctl_code, 
-        uint8_t endpoint, uint8_t req_type, uint8_t req, uint16_t value, 
-        uint16_t index, void* buf, uint32_t buf_len)
+static int ezusb2_ctrl_transfer(
+    HANDLE handle,
+    uint32_t ioctl_code,
+    uint8_t endpoint,
+    uint8_t req_type,
+    uint8_t req,
+    uint16_t value,
+    uint16_t index,
+    void *buf,
+    uint32_t buf_len)
 {
     int xmit_buf_size = sizeof(SINGLE_TRANSFER) + buf_len;
     char xmit_buf[xmit_buf_size];
@@ -57,8 +64,15 @@ static int ezusb2_ctrl_transfer(HANDLE handle, uint32_t ioctl_code,
         memcpy(xmit_buf + sizeof(SINGLE_TRANSFER), buf, buf_len);
     }
 
-    if (!DeviceIoControl(handle, ioctl_code, xmit_buf, xmit_buf_size, xmit_buf, 
-            xmit_buf_size, &ret_len, NULL)) {
+    if (!DeviceIoControl(
+            handle,
+            ioctl_code,
+            xmit_buf,
+            xmit_buf_size,
+            xmit_buf,
+            xmit_buf_size,
+            &ret_len,
+            NULL)) {
         return -1;
     }
 
@@ -69,23 +83,51 @@ static int ezusb2_ctrl_transfer(HANDLE handle, uint32_t ioctl_code,
     return ret_len - sizeof(SINGLE_TRANSFER);
 }
 
-static int ezusb2_ep0_transfer(HANDLE handle, uint8_t req_type, uint8_t req, 
-        uint16_t value, uint16_t index, void* buf, uint32_t buf_len)
+static int ezusb2_ep0_transfer(
+    HANDLE handle,
+    uint8_t req_type,
+    uint8_t req,
+    uint16_t value,
+    uint16_t index,
+    void *buf,
+    uint32_t buf_len)
 {
-    return ezusb2_ctrl_transfer(handle, IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, 
-        REQ_CODE_EP0, req_type, req, value, index, buf, buf_len);
+    return ezusb2_ctrl_transfer(
+        handle,
+        IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER,
+        REQ_CODE_EP0,
+        req_type,
+        req,
+        value,
+        index,
+        buf,
+        buf_len);
 }
 
 /* Any other endpoint than 0 */
-static int ezusb2_epx_transfer(HANDLE handle, uint8_t endpoint, 
-        uint8_t req_type, uint8_t req, uint16_t value, uint16_t index, 
-        void* buf, uint32_t buf_len)
+static int ezusb2_epx_transfer(
+    HANDLE handle,
+    uint8_t endpoint,
+    uint8_t req_type,
+    uint8_t req,
+    uint16_t value,
+    uint16_t index,
+    void *buf,
+    uint32_t buf_len)
 {
-    return ezusb2_ctrl_transfer(handle, IOCTL_ADAPT_SEND_NON_EP0_TRANSFER, 
-        endpoint, req_type, req, value, index, buf, buf_len);
+    return ezusb2_ctrl_transfer(
+        handle,
+        IOCTL_ADAPT_SEND_NON_EP0_TRANSFER,
+        endpoint,
+        req_type,
+        req,
+        value,
+        index,
+        buf,
+        buf_len);
 }
 
-static char* ezusb2_get_device_name(HANDLE handle)
+static char *ezusb2_get_device_name(HANDLE handle)
 {
     const int len = 256;
     char buf[len];
@@ -93,24 +135,37 @@ static char* ezusb2_get_device_name(HANDLE handle)
 
     memset(&buf, 0, len);
 
-    if (!DeviceIoControl(handle, IOCTL_ADAPT_GET_FRIENDLY_NAME, &buf, len, &buf, 
-            len, &received, NULL)) {
+    if (!DeviceIoControl(
+            handle,
+            IOCTL_ADAPT_GET_FRIENDLY_NAME,
+            &buf,
+            len,
+            &buf,
+            len,
+            &received,
+            NULL)) {
         return NULL;
     }
 
-    return str_dup((const char*) &buf);
+    return str_dup((const char *) &buf);
 }
 
-static bool ezusb2_get_device_descriptor(HANDLE handle, 
-        USB_DEVICE_DESCRIPTOR* desc)
+static bool
+ezusb2_get_device_descriptor(HANDLE handle, USB_DEVICE_DESCRIPTOR *desc)
 {
     int res;
 
     memset(desc, 0, sizeof(USB_DEVICE_DESCRIPTOR));
 
     /* 0: not used */
-    res = ezusb2_ep0_transfer(handle, REQ_TYPE_DEV_TO_HOST, EP0_GET_DESCRIPTOR, 
-        EP0_DESCRIPTOR_TYPE_DEVICE, 0, desc, sizeof(USB_DEVICE_DESCRIPTOR));
+    res = ezusb2_ep0_transfer(
+        handle,
+        REQ_TYPE_DEV_TO_HOST,
+        EP0_GET_DESCRIPTOR,
+        EP0_DESCRIPTOR_TYPE_DEVICE,
+        0,
+        desc,
+        sizeof(USB_DEVICE_DESCRIPTOR));
 
     if (res != sizeof(USB_DEVICE_DESCRIPTOR)) {
         return false;
@@ -119,11 +174,17 @@ static bool ezusb2_get_device_descriptor(HANDLE handle,
     return true;
 }
 
-static bool ezusb2_write_ram(HANDLE handle, const void* buffer, 
-        uint16_t ram_offset, uint32_t size)
+static bool ezusb2_write_ram(
+    HANDLE handle, const void *buffer, uint16_t ram_offset, uint32_t size)
 {
-    return ezusb2_ep0_transfer(handle, REQ_TYPE_HOST_TO_DEV, EP0_EZUSB_WRITE_RAM, 
-        ram_offset, 0, (void*) buffer, size) == size;
+    return ezusb2_ep0_transfer(
+               handle,
+               REQ_TYPE_HOST_TO_DEV,
+               EP0_EZUSB_WRITE_RAM,
+               ram_offset,
+               0,
+               (void *) buffer,
+               size) == size;
 }
 
 static bool ezusb2_reset(HANDLE handle, bool hold)
@@ -133,32 +194,32 @@ static bool ezusb2_reset(HANDLE handle, bool hold)
     /* Write CPU state */
     flag = hold ? 1 : 0;
 
-    return ezusb2_write_ram(handle, &flag, EP0_EZUSB_RAM_CPU_RESET_ADDR, 
-        sizeof(uint8_t));
+    return ezusb2_write_ram(
+        handle, &flag, EP0_EZUSB_RAM_CPU_RESET_ADDR, sizeof(uint8_t));
 }
 
-char* ezusb2_find(const GUID* guid)
+char *ezusb2_find(const GUID *guid)
 {
     HDEVINFO info;
     SP_DEVICE_INTERFACE_DATA iface;
     BOOL result;
     ULONG required_len;
-	PSP_DEVICE_INTERFACE_DETAIL_DATA detail;
-	ULONG length;
-    char* res;
+    PSP_DEVICE_INTERFACE_DETAIL_DATA detail;
+    ULONG length;
+    char *res;
 
     log_assert(guid);
 
     result = FALSE;
     required_len = 0;
-	detail = NULL;
+    detail = NULL;
 
-    info = SetupDiGetClassDevs(guid, NULL, NULL, 
-        DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    info = SetupDiGetClassDevs(
+        guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
     if (info == INVALID_HANDLE_VALUE) {
-		return NULL;
-	}
+        return NULL;
+    }
 
     /* Enum devices that support the GUID, get first only */
     memset(&iface, 0, sizeof(iface));
@@ -175,17 +236,17 @@ char* ezusb2_find(const GUID* guid)
        know how much memory to allocate to get this information, so
        we will ask by passing in a null buffer and location to
        receive the size of the buffer needed. */
-    result = SetupDiGetDeviceInterfaceDetail(info, &iface, NULL, 0, 
-        &required_len, NULL);
+    result = SetupDiGetDeviceInterfaceDetail(
+        info, &iface, NULL, 0, &required_len, NULL);
 
     if (!required_len) {
         return NULL;
     }
 
-    /* Okay, we got a size back, so let's allocate memory 
+    /* Okay, we got a size back, so let's allocate memory
        for the interface detail information we want. */
-    detail = (PSP_DEVICE_INTERFACE_DETAIL_DATA) LocalAlloc(LMEM_FIXED,
-        required_len);
+    detail =
+        (PSP_DEVICE_INTERFACE_DETAIL_DATA) LocalAlloc(LMEM_FIXED, required_len);
 
     if (detail == NULL) {
         SetupDiDestroyDeviceInfoList(info);
@@ -195,8 +256,8 @@ char* ezusb2_find(const GUID* guid)
     detail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
     length = required_len;
 
-    result = SetupDiGetDeviceInterfaceDetail(info, &iface, detail, 
-        length, &required_len, NULL);
+    result = SetupDiGetDeviceInterfaceDetail(
+        info, &iface, detail, length, &required_len, NULL);
 
     if (!result) {
         SetupDiDestroyDeviceInfoList(info);
@@ -204,7 +265,7 @@ char* ezusb2_find(const GUID* guid)
         return NULL;
     }
 
-    res = str_dup((const char*) &detail->DevicePath);
+    res = str_dup((const char *) &detail->DevicePath);
     LocalFree(detail);
 
     SetupDiDestroyDeviceInfoList(info);
@@ -212,17 +273,24 @@ char* ezusb2_find(const GUID* guid)
     return res;
 }
 
-HANDLE ezusb2_open(const char* device_path)
+HANDLE
+ezusb2_open(const char *device_path)
 {
     log_assert(device_path);
 
-    return CreateFileA(device_path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, 
-        OPEN_EXISTING, 0, NULL);
+    return CreateFileA(
+        device_path,
+        GENERIC_WRITE,
+        FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL);
 }
 
-bool ezusb2_get_ident(HANDLE handle, struct ezusb_ident* ident)
+bool ezusb2_get_ident(HANDLE handle, struct ezusb_ident *ident)
 {
-    char* name;
+    char *name;
     USB_DEVICE_DESCRIPTOR desc;
 
     log_assert(handle != INVALID_HANDLE_VALUE);
@@ -250,7 +318,7 @@ bool ezusb2_get_ident(HANDLE handle, struct ezusb_ident* ident)
     return true;
 }
 
-bool ezusb2_download_firmware(HANDLE handle, struct ezusb_firmware* fw)
+bool ezusb2_download_firmware(HANDLE handle, struct ezusb_firmware *fw)
 {
     log_assert(handle != INVALID_HANDLE_VALUE);
     log_assert(handle);
@@ -263,8 +331,11 @@ bool ezusb2_download_firmware(HANDLE handle, struct ezusb_firmware* fw)
     for (uint16_t i = 0; i < fw->segment_count; i++) {
         /* Important: Writing the full binary does NOT work on the FX2 device
            compared to the legacy ezusb device */
-        if (!ezusb2_write_ram(handle, fw->segments[i]->data, 
-                fw->segments[i]->offset, fw->segments[i]->size)) {
+        if (!ezusb2_write_ram(
+                handle,
+                fw->segments[i]->data,
+                fw->segments[i]->offset,
+                fw->segments[i]->size)) {
             return false;
         }
     }
@@ -276,8 +347,8 @@ bool ezusb2_download_firmware(HANDLE handle, struct ezusb_firmware* fw)
     return true;
 }
 
-bool ezusb2_endpoint_transfer(HANDLE handle, uint8_t endpoint, void* data, 
-        uint32_t size)
+bool ezusb2_endpoint_transfer(
+    HANDLE handle, uint8_t endpoint, void *data, uint32_t size)
 {
     if (endpoint == 0) {
         return false;

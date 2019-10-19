@@ -57,10 +57,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     }
 
     log_to_external(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

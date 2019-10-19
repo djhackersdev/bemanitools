@@ -15,20 +15,20 @@
    return from eam_io_get_keypad_state(). */
 
 enum eam_io_keypad_scan_code {
-    EAM_IO_KEYPAD_0        = 0,
-    EAM_IO_KEYPAD_1        = 1,
-    EAM_IO_KEYPAD_4        = 2,
-    EAM_IO_KEYPAD_7        = 3,
-    EAM_IO_KEYPAD_00       = 4,
-    EAM_IO_KEYPAD_2        = 5,
-    EAM_IO_KEYPAD_5        = 6,
-    EAM_IO_KEYPAD_8        = 7,
-    EAM_IO_KEYPAD_DECIMAL  = 8,
-    EAM_IO_KEYPAD_3        = 9,
-    EAM_IO_KEYPAD_6        = 10,
-    EAM_IO_KEYPAD_9        = 11,
+    EAM_IO_KEYPAD_0 = 0,
+    EAM_IO_KEYPAD_1 = 1,
+    EAM_IO_KEYPAD_4 = 2,
+    EAM_IO_KEYPAD_7 = 3,
+    EAM_IO_KEYPAD_00 = 4,
+    EAM_IO_KEYPAD_2 = 5,
+    EAM_IO_KEYPAD_5 = 6,
+    EAM_IO_KEYPAD_8 = 7,
+    EAM_IO_KEYPAD_DECIMAL = 8,
+    EAM_IO_KEYPAD_3 = 9,
+    EAM_IO_KEYPAD_6 = 10,
+    EAM_IO_KEYPAD_9 = 11,
 
-    EAM_IO_KEYPAD_COUNT    = 12, /* Not an actual scan code */
+    EAM_IO_KEYPAD_COUNT = 12, /* Not an actual scan code */
 };
 
 /* Emulating the sensors of a slotted card reader. The reader has one
@@ -70,8 +70,11 @@ struct eam_io_config_api;
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void eam_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void eam_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your card reader emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -81,8 +84,10 @@ void eam_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool eam_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool eam_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your card reader emulation DLL. */
 

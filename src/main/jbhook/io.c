@@ -18,16 +18,19 @@ struct jbhook_io_p4io_outputs {
     uint32_t outputs;
 };
 
-static void jbhook_io_jamma2_read(void* resp, uint32_t nbytes);
-static uint32_t jbhook_command_handle(uint8_t cmd, const void* payload,
-        uint32_t payload_len, void* resp, uint32_t resp_max_len);
+static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes);
+static uint32_t jbhook_command_handle(
+    uint8_t cmd,
+    const void *payload,
+    uint32_t payload_len,
+    void *resp,
+    uint32_t resp_max_len);
 
 static const struct p4ioemu_device_msg_hook jbhook_io_msg = {
     .jamma2_read = jbhook_io_jamma2_read,
     .command_handle = jbhook_command_handle,
     .roundplug_read_id = NULL,
-    .roundplug_read_mem = NULL
-};
+    .roundplug_read_mem = NULL};
 
 /*
     0:0 ???
@@ -90,9 +93,9 @@ static const uint32_t jbhook_io_sys_button_mappings[] = {
     (1 << 25),
 };
 
-static void jbhook_io_jamma2_read(void* resp, uint32_t nbytes)
+static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
 {
-    uint32_t* inputs = (uint32_t*) resp;
+    uint32_t *inputs = (uint32_t *) resp;
     uint16_t panels;
     uint8_t buttons;
 
@@ -120,16 +123,19 @@ static void jbhook_io_jamma2_read(void* resp, uint32_t nbytes)
     }
 }
 
-static uint32_t jbhook_command_handle(uint8_t cmd, const void* payload,
-        uint32_t payload_len, void* resp, uint32_t resp_max_len)
+static uint32_t jbhook_command_handle(
+    uint8_t cmd,
+    const void *payload,
+    uint32_t payload_len,
+    void *resp,
+    uint32_t resp_max_len)
 {
     switch (cmd) {
-        case JUHOOK_IO_P4IO_CMD_OUTPUTS:
-        {
+        case JUHOOK_IO_P4IO_CMD_OUTPUTS: {
             // const struct jbhook_io_p4io_outputs* req =
             //     (const struct jbhook_io_p4io_outputs*) payload;
 
-            //log_misc("JUHOOK_IO_P4IO_CMD_OUTPUTS: 0x%X", req->outputs);
+            // log_misc("JUHOOK_IO_P4IO_CMD_OUTPUTS: 0x%X", req->outputs);
 
             /* coin blocker: off 0x20, on 0x00 */
 
@@ -143,7 +149,7 @@ static uint32_t jbhook_command_handle(uint8_t cmd, const void* payload,
     }
 }
 
-const struct p4ioemu_device_msg_hook* jbhook_io_init(void)
+const struct p4ioemu_device_msg_hook *jbhook_io_init(void)
 {
     return &jbhook_io_msg;
 }

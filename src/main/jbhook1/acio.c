@@ -1,8 +1,8 @@
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -42,7 +42,8 @@ void ac_io_port_fini(void)
     ac_io_emu_fini(&ac_io_emu);
 }
 
-HRESULT ac_io_port_dispatch_irp(struct irp *irp)
+HRESULT
+ac_io_port_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -63,31 +64,31 @@ HRESULT ac_io_port_dispatch_irp(struct irp *irp)
         msg = ac_io_emu_request_peek(&ac_io_emu);
 
         switch (msg->addr) {
-        case 0:
-            ac_io_emu_cmd_assign_addrs(&ac_io_emu, msg, 2);
+            case 0:
+                ac_io_emu_cmd_assign_addrs(&ac_io_emu, msg, 2);
 
-            break;
+                break;
 
-        case 1:
-            ac_io_emu_icca_dispatch_request(&ac_io_emu_icca, msg);
+            case 1:
+                ac_io_emu_icca_dispatch_request(&ac_io_emu_icca, msg);
 
-            break;
+                break;
 
-        case 2:
-            ac_io_emu_h44b_dispatch_request(&ac_io_emu_h44b, msg);
+            case 2:
+                ac_io_emu_h44b_dispatch_request(&ac_io_emu_h44b, msg);
 
-            break;
+                break;
 
-        case AC_IO_BROADCAST:
-            log_warning("Broadcast(?) message on jubeat ACIO bus?");
+            case AC_IO_BROADCAST:
+                log_warning("Broadcast(?) message on jubeat ACIO bus?");
 
-            break;
+                break;
 
-        default:
-            log_warning("ACIO message on unhandled bus address: %d",
-                    msg->addr);
+            default:
+                log_warning(
+                    "ACIO message on unhandled bus address: %d", msg->addr);
 
-            break;
+                break;
         }
 
         ac_io_emu_request_pop(&ac_io_emu);

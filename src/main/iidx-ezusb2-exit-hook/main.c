@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <usb100.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -15,25 +15,33 @@
 #define IOCTL_VEND_USB_REQ 0x220024
 
 static BOOL STDCALL my_DeviceIoControl(
-        HANDLE fd, uint32_t code, void *in_bytes, uint32_t in_nbytes,
-        void *out_bytes, uint32_t out_nbytes, uint32_t *out_returned,
-        OVERLAPPED *ovl);
+    HANDLE fd,
+    uint32_t code,
+    void *in_bytes,
+    uint32_t in_nbytes,
+    void *out_bytes,
+    uint32_t out_nbytes,
+    uint32_t *out_returned,
+    OVERLAPPED *ovl);
 
-static BOOL (STDCALL *real_DeviceIoControl)(
-        HANDLE fd, uint32_t code, void *in_bytes, uint32_t in_nbytes,
-        void *out_bytes, uint32_t out_nbytes, uint32_t *out_returned,
-        OVERLAPPED *ovl);
+static BOOL(STDCALL *real_DeviceIoControl)(
+    HANDLE fd,
+    uint32_t code,
+    void *in_bytes,
+    uint32_t in_nbytes,
+    void *out_bytes,
+    uint32_t out_nbytes,
+    uint32_t *out_returned,
+    OVERLAPPED *ovl);
 
 static struct hook_symbol exit_hook_syms[] = {
-    {
-        .name       = "DeviceIoControl",
-        .patch      = my_DeviceIoControl,
-        .link       = (void *) &real_DeviceIoControl
-    },
+    {.name = "DeviceIoControl",
+     .patch = my_DeviceIoControl,
+     .link = (void *) &real_DeviceIoControl},
 };
 
-static bool interrupt_write(HANDLE handle,
-        const struct ezusb2_iidx_msg_interrupt_write_packet* packet)
+static bool interrupt_write(
+    HANDLE handle, const struct ezusb2_iidx_msg_interrupt_write_packet *packet)
 {
     SINGLE_TRANSFER usb_req;
     uint32_t outpkt;
@@ -42,9 +50,14 @@ static bool interrupt_write(HANDLE handle,
     usb_req.SetupPacket.bmRequest = 0x01;
 
     return real_DeviceIoControl(
-        handle, IOCTL_VEND_USB_REQ, &usb_req,
-        sizeof(usb_req), (void*) packet,
-        sizeof(struct ezusb2_iidx_msg_interrupt_write_packet), &outpkt, NULL);
+        handle,
+        IOCTL_VEND_USB_REQ,
+        &usb_req,
+        sizeof(usb_req),
+        (void *) packet,
+        sizeof(struct ezusb2_iidx_msg_interrupt_write_packet),
+        &outpkt,
+        NULL);
 }
 
 static void turn_off_lights(HANDLE fd)
@@ -65,24 +78,36 @@ static void turn_off_lights(HANDLE fd)
 }
 
 static BOOL STDCALL my_DeviceIoControl(
-        HANDLE fd, uint32_t code, void *in_bytes, uint32_t in_nbytes,
-        void *out_bytes, uint32_t out_nbytes, uint32_t *out_returned,
-        OVERLAPPED *ovl)
+    HANDLE fd,
+    uint32_t code,
+    void *in_bytes,
+    uint32_t in_nbytes,
+    void *out_bytes,
+    uint32_t out_nbytes,
+    uint32_t *out_returned,
+    OVERLAPPED *ovl)
 {
     BOOL result;
 
     /* Call real first to get the input data */
-    result = real_DeviceIoControl(fd, code, in_bytes, in_nbytes, out_bytes,
-        out_nbytes, out_returned, ovl);
+    result = real_DeviceIoControl(
+        fd,
+        code,
+        in_bytes,
+        in_nbytes,
+        out_bytes,
+        out_nbytes,
+        out_returned,
+        ovl);
 
     if (code == IOCTL_VEND_USB_REQ) {
         PSINGLE_TRANSFER usb_req = in_bytes;
 
         /* Interrupt in endpoint */
         if (usb_req->SetupPacket.bmRequest == 0x81) {
-            struct ezusb2_iidx_msg_interrupt_read_packet* msg_resp =
-                (struct ezusb2_iidx_msg_interrupt_read_packet*)
-                (out_bytes  + sizeof(SINGLE_TRANSFER));
+            struct ezusb2_iidx_msg_interrupt_read_packet *msg_resp =
+                (struct ezusb2_iidx_msg_interrupt_read_packet
+                     *) (out_bytes + sizeof(SINGLE_TRANSFER));
 
             uint32_t pad = ~msg_resp->inverted_pad;
 
@@ -97,7 +122,9 @@ static BOOL STDCALL my_DeviceIoControl(
                 /* Don't use ExitProcess. This might result in deadlocks
                    on newer games which rely more on multi threading */
                 HANDLE hnd;
-                hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE,
+                hnd = OpenProcess(
+                    SYNCHRONIZE | PROCESS_TERMINATE,
+                    TRUE,
                     GetCurrentProcessId());
                 TerminateProcess(hnd, 0);
             }
@@ -111,10 +138,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         hook_table_apply(
-                NULL,
-                "kernel32.dll",
-                exit_hook_syms,
-                lengthof(exit_hook_syms));
+            NULL, "kernel32.dll", exit_hook_syms, lengthof(exit_hook_syms));
     }
 
     return TRUE;

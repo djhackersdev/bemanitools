@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
 
 #include "ezusb/ezusb.h"
 #include "ezusb/ezusbsys2.h"
@@ -36,39 +36,54 @@ static bool ezusb_reset(HANDLE handle, bool hold)
         req.index = 0x0000;
     }
 
-    if (!DeviceIoControl(handle, IOCTL_Ezusb_VENDOR_REQUEST, &req,
-            sizeof(req), &req, sizeof(req), &outpkt, NULL)) {
+    if (!DeviceIoControl(
+            handle,
+            IOCTL_Ezusb_VENDOR_REQUEST,
+            &req,
+            sizeof(req),
+            &req,
+            sizeof(req),
+            &outpkt,
+            NULL)) {
         return false;
     }
 
     return true;
 }
 
-static bool ezusb_write_firmware(HANDLE handle, const void* buffer, 
-        uint16_t ram_offset, uint32_t size)
+static bool ezusb_write_firmware(
+    HANDLE handle, const void *buffer, uint16_t ram_offset, uint32_t size)
 {
     ANCHOR_DOWNLOAD_CONTROL req;
     DWORD outpkt;
 
     req.Offset = ram_offset;
 
-    if (!DeviceIoControl(handle, IOCTL_EZUSB_ANCHOR_DOWNLOAD, &req,
-            sizeof(req), (void*) buffer, size, &outpkt, NULL)) {
+    if (!DeviceIoControl(
+            handle,
+            IOCTL_EZUSB_ANCHOR_DOWNLOAD,
+            &req,
+            sizeof(req),
+            (void *) buffer,
+            size,
+            &outpkt,
+            NULL)) {
         return false;
     }
 
     return true;
 }
 
-HANDLE ezusb_open(const char* path)
+HANDLE
+ezusb_open(const char *path)
 {
     log_assert(path);
 
-    return CreateFileA(path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, 
-        OPEN_EXISTING, 0, NULL);
+    return CreateFileA(
+        path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 }
 
-bool ezusb_get_ident(HANDLE handle, struct ezusb_ident* ident)
+bool ezusb_get_ident(HANDLE handle, struct ezusb_ident *ident)
 {
     USB_DEVICE_DESCRIPTOR desc;
     DWORD outpkt;
@@ -77,8 +92,15 @@ bool ezusb_get_ident(HANDLE handle, struct ezusb_ident* ident)
     log_assert(handle != INVALID_HANDLE_VALUE);
     log_assert(ident);
 
-    if (!DeviceIoControl(handle, IOCTL_Ezusb_GET_DEVICE_DESCRIPTOR, &desc,
-            sizeof(desc), &desc, sizeof(desc), &outpkt, NULL)) {
+    if (!DeviceIoControl(
+            handle,
+            IOCTL_Ezusb_GET_DEVICE_DESCRIPTOR,
+            &desc,
+            sizeof(desc),
+            &desc,
+            sizeof(desc),
+            &outpkt,
+            NULL)) {
         return false;
     }
 
@@ -89,7 +111,7 @@ bool ezusb_get_ident(HANDLE handle, struct ezusb_ident* ident)
     return true;
 }
 
-bool ezusb_download_firmware(HANDLE handle, struct ezusb_firmware* fw)
+bool ezusb_download_firmware(HANDLE handle, struct ezusb_firmware *fw)
 {
     log_assert(handle);
     log_assert(handle != INVALID_HANDLE_VALUE);
@@ -100,8 +122,11 @@ bool ezusb_download_firmware(HANDLE handle, struct ezusb_firmware* fw)
     }
 
     for (uint16_t i = 0; i < fw->segment_count; i++) {
-        if (!ezusb_write_firmware(handle, fw->segments[i]->data, 
-                fw->segments[i]->offset, fw->segments[i]->size)) {
+        if (!ezusb_write_firmware(
+                handle,
+                fw->segments[i]->data,
+                fw->segments[i]->offset,
+                fw->segments[i]->size)) {
             return false;
         }
     }

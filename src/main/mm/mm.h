@@ -4,8 +4,8 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
-#define MM_VENDOR_ID        0xBEEF
-#define MM_PRODUCT_ID       0x5730
+#define MM_VENDOR_ID 0xBEEF
+#define MM_PRODUCT_ID 0x5730
 
 #pragma pack(push, 1)
 

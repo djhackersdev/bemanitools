@@ -8,21 +8,17 @@
 #include "util/log.h"
 
 static void ac_io_emu_hdxs_cmd_send_version(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req);
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req);
 
 static void ac_io_emu_hdxs_send_empty(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req);
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req);
 
 static void ac_io_emu_hdxs_send_status(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req,
-        uint8_t status);
+    struct ac_io_emu_hdxs *hdxs,
+    const struct ac_io_message *req,
+    uint8_t status);
 
-void ac_io_emu_hdxs_init(
-        struct ac_io_emu_hdxs *hdxs,
-        struct ac_io_emu *emu)
+void ac_io_emu_hdxs_init(struct ac_io_emu_hdxs *hdxs, struct ac_io_emu *emu)
 {
     log_assert(hdxs != NULL);
     log_assert(emu != NULL);
@@ -31,8 +27,7 @@ void ac_io_emu_hdxs_init(
 }
 
 void ac_io_emu_hdxs_dispatch_request(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req)
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
 
@@ -42,46 +37,45 @@ void ac_io_emu_hdxs_dispatch_request(
     cmd_code = ac_io_u16(req->cmd.code);
 
     switch (cmd_code) {
-    case AC_IO_CMD_GET_VERSION:
-        log_misc("AC_IO_CMD_GET_VERSION(%d)", req->addr);
-        ac_io_emu_hdxs_cmd_send_version(hdxs, req);
+        case AC_IO_CMD_GET_VERSION:
+            log_misc("AC_IO_CMD_GET_VERSION(%d)", req->addr);
+            ac_io_emu_hdxs_cmd_send_version(hdxs, req);
 
-        break;
+            break;
 
-    case AC_IO_CMD_START_UP:
-        log_misc("AC_IO_CMD_START_UP(%d)", req->addr);
-        ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
+        case AC_IO_CMD_START_UP:
+            log_misc("AC_IO_CMD_START_UP(%d)", req->addr);
+            ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
 
-        break;
+            break;
 
-    case AC_IO_CMD_CLEAR:
-        log_misc("AC_IO_CMD_CLEAR(%d)", req->addr);
+        case AC_IO_CMD_CLEAR:
+            log_misc("AC_IO_CMD_CLEAR(%d)", req->addr);
 
-    case 0x110:
-    case 0x112:
-    case 0x128:
-        ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
+        case 0x110:
+        case 0x112:
+        case 0x128:
+            ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
 
-        break;
+            break;
 
-    case AC_IO_CMD_KEEPALIVE:
-        ac_io_emu_hdxs_send_empty(hdxs, req);
+        case AC_IO_CMD_KEEPALIVE:
+            ac_io_emu_hdxs_send_empty(hdxs, req);
 
-        break;
+            break;
 
-    default:
-        log_warning(
+        default:
+            log_warning(
                 "Unknown ACIO message %04x on HDXS node, addr=%d",
                 cmd_code,
                 req->addr);
 
-        break;
+            break;
     }
 }
 
 static void ac_io_emu_hdxs_cmd_send_version(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req)
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -94,8 +88,10 @@ static void ac_io_emu_hdxs_cmd_send_version(
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x06;
     resp.cmd.version.revision = 0x00;
-    memcpy(resp.cmd.version.product_code, "HDXS",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "HDXS",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
@@ -103,8 +99,7 @@ static void ac_io_emu_hdxs_cmd_send_version(
 }
 
 static void ac_io_emu_hdxs_send_empty(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req)
+    struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -117,9 +112,9 @@ static void ac_io_emu_hdxs_send_empty(
 }
 
 static void ac_io_emu_hdxs_send_status(
-        struct ac_io_emu_hdxs *hdxs,
-        const struct ac_io_message *req,
-        uint8_t status)
+    struct ac_io_emu_hdxs *hdxs,
+    const struct ac_io_message *req,
+    uint8_t status)
 {
     struct ac_io_message resp;
 

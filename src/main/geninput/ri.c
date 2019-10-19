@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "geninput/hid.h"
 #include "geninput/hid-mgr.h"
+#include "geninput/hid.h"
 #include "geninput/kbd.h"
 #include "geninput/mouse.h"
 #include "geninput/ri.h"
@@ -40,8 +40,9 @@ void ri_init(HWND hwnd)
     filter[2].hwndTarget = hwnd;
 
     if (!RegisterRawInputDevices(filter, lengthof(filter), sizeof(filter[0]))) {
-        log_fatal("RegisterRawInputDevices failed: %x",
-                (unsigned int) GetLastError());
+        log_fatal(
+            "RegisterRawInputDevices failed: %x",
+            (unsigned int) GetLastError());
     }
 
     ri_scan_devices();
@@ -72,7 +73,7 @@ void ri_scan_devices(void)
 
     ri_handles = xrealloc(ri_handles, sizeof(*ri_handles) * ri_ndevs);
 
-    for (i = 0 ; i < ri_ndevs ; i++) {
+    for (i = 0; i < ri_ndevs; i++) {
         ri_handles[i].fake_fd = NULL;
         ri_handles[i].hid_ri = NULL;
 
@@ -81,8 +82,8 @@ void ri_scan_devices(void)
 
         dev_node = xmalloc(size);
 
-        if (GetRawInputDeviceInfo(ridl[i].hDevice, RIDI_DEVICENAME, dev_node,
-                &size) == -1) {
+        if (GetRawInputDeviceInfo(
+                ridl[i].hDevice, RIDI_DEVICENAME, dev_node, &size) == -1) {
             log_warning("GetRawInputDeviceInfo(RIDI_DEVICENAME) data failed");
 
             goto skip;
@@ -113,7 +114,7 @@ void ri_scan_devices(void)
             hid_stub_attach(stub, (struct hid *) ri_handles[i].hid_ri);
         }
 
-skip:
+    skip:
         free(dev_node);
     }
 
@@ -130,10 +131,10 @@ void ri_handle_msg(HRAWINPUT msg)
 
     nbytes = sizeof(ri);
 
-    if (GetRawInputData(msg, RID_INPUT, &ri, &nbytes, sizeof(ri.header))
-            == (UINT) -1) {
-        log_warning("GetRawInputData failed: %x",
-                (unsigned int) GetLastError());
+    if (GetRawInputData(msg, RID_INPUT, &ri, &nbytes, sizeof(ri.header)) ==
+        (UINT) -1) {
+        log_warning(
+            "GetRawInputData failed: %x", (unsigned int) GetLastError());
 
         return;
     }
@@ -147,7 +148,7 @@ void ri_handle_msg(HRAWINPUT msg)
         return;
     }
 
-    for (i = 0 ; i < ri_ndevs ; i++) {
+    for (i = 0; i < ri_ndevs; i++) {
         if (ri_handles[i].fake_fd == ri.header.hDevice) {
             hid_ri_handle_event(ri_handles[i].hid_ri, &ri);
 
@@ -180,8 +181,8 @@ void ri_fini(void)
     filter[2].hwndTarget = NULL;
 
     if (!RegisterRawInputDevices(filter, lengthof(filter), sizeof(filter[0]))) {
-        log_warning("RegisterRawInputDevices(RIDEV_REMOVE) failed: %x",
-                (unsigned int) GetLastError());
+        log_warning(
+            "RegisterRawInputDevices(RIDEV_REMOVE) failed: %x",
+            (unsigned int) GetLastError());
     }
 }
-

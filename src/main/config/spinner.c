@@ -4,15 +4,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#define METRIC_COLOR                RGB(0, 0, 0)
-#define METRIC_RADIUS_CIRCLE        0.8f
-#define METRIC_RADIUS_NOTCH         0.2f
-#define METRIC_THICKNESS            3
+#define METRIC_COLOR RGB(0, 0, 0)
+#define METRIC_RADIUS_CIRCLE 0.8f
+#define METRIC_RADIUS_NOTCH 0.2f
+#define METRIC_THICKNESS 3
 
 static const wchar_t spinner_cls[] = L"spinner";
 
-static LRESULT CALLBACK spinner_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static LRESULT CALLBACK
+spinner_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static LRESULT spinner_handle_paint(HWND hwnd);
 static LRESULT spinner_handle_update(HWND hwnd, uint8_t pos);
 
@@ -24,14 +24,14 @@ void spinner_init(HINSTANCE inst)
     wcx.cbSize = sizeof(wcx);
     wcx.lpfnWndProc = spinner_wnd_proc;
     wcx.hInstance = inst;
-    wcx.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    wcx.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcx.lpszClassName = spinner_cls;
 
     RegisterClassEx(&wcx);
 }
 
-static LRESULT CALLBACK spinner_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static LRESULT CALLBACK
+spinner_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_CREATE:
@@ -80,22 +80,26 @@ static LRESULT spinner_handle_paint(HWND hwnd)
     SelectObject(dc, pen);
     SelectObject(dc, GetStockObject(WHITE_BRUSH));
 
-    Ellipse(dc,
-            (int) (cx * (1.0f - METRIC_RADIUS_CIRCLE)),
-            (int) (cy * (1.0f - METRIC_RADIUS_CIRCLE)),
-            (int) (cx * (1.0f + METRIC_RADIUS_CIRCLE)),
-            (int) (cy * (1.0f + METRIC_RADIUS_CIRCLE)));
+    Ellipse(
+        dc,
+        (int) (cx * (1.0f - METRIC_RADIUS_CIRCLE)),
+        (int) (cy * (1.0f - METRIC_RADIUS_CIRCLE)),
+        (int) (cx * (1.0f + METRIC_RADIUS_CIRCLE)),
+        (int) (cy * (1.0f + METRIC_RADIUS_CIRCLE)));
 
-    dx =  sinf(theta);
+    dx = sinf(theta);
     dy = -cosf(theta);
 
-    MoveToEx(dc,
-            (int) (cx * (1.0f + dx * METRIC_RADIUS_NOTCH)),
-            (int) (cy * (1.0f + dy * METRIC_RADIUS_NOTCH)), NULL);
+    MoveToEx(
+        dc,
+        (int) (cx * (1.0f + dx * METRIC_RADIUS_NOTCH)),
+        (int) (cy * (1.0f + dy * METRIC_RADIUS_NOTCH)),
+        NULL);
 
-    LineTo(dc,
-            (int) (cx * (1.0f + dx * METRIC_RADIUS_CIRCLE)),
-            (int) (cy * (1.0f + dy * METRIC_RADIUS_CIRCLE)));
+    LineTo(
+        dc,
+        (int) (cx * (1.0f + dx * METRIC_RADIUS_CIRCLE)),
+        (int) (cy * (1.0f + dy * METRIC_RADIUS_CIRCLE)));
 
     DeleteObject(pen);
     EndPaint(hwnd, &ps);
@@ -115,4 +119,3 @@ void spinner_fini(HINSTANCE inst)
 {
     UnregisterClass(spinner_cls, inst);
 }
-

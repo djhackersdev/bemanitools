@@ -10,7 +10,7 @@
 
 static int scan()
 {
-    char* path;
+    char *path;
 
     log_misc("Scanning...");
 
@@ -25,7 +25,7 @@ static int scan()
     }
 }
 
-static int info(const char* dev_path)
+static int info(const char *dev_path)
 {
     HANDLE handle;
     struct ezusb_ident ident;
@@ -52,10 +52,10 @@ static int info(const char* dev_path)
     return 0;
 }
 
-static int flash(const char* dev_path, const char* fw_path)
+static int flash(const char *dev_path, const char *fw_path)
 {
     HANDLE handle;
-    struct ezusb_firmware* fw;
+    struct ezusb_firmware *fw;
 
     fw = ezusb_firmware_load(fw_path);
 
@@ -64,8 +64,8 @@ static int flash(const char* dev_path, const char* fw_path)
         return -5;
     }
 
-    log_misc("Loaded firmware, crc 0x%X, segments %d", fw->crc, 
-        fw->segment_count);
+    log_misc(
+        "Loaded firmware, crc 0x%X, segments %d", fw->crc, fw->segment_count);
 
     if (ezusb_firmware_crc(fw) != fw->crc) {
         log_fatal("Firmware CRC check failed");
@@ -97,20 +97,21 @@ static int flash(const char* dev_path, const char* fw_path)
     return 0;
 }
 
-static void usage(const char* argv0)
+static void usage(const char *argv0)
 {
-    printf("ezusb2-tool for EZUSB FX2 hardware, e.g. IIDX/Pop'n IO2, build "
-        __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
-        "Usage: %s [cmd] ...\n"
-        "Available commands:\n"
-        "  scan: Scan for connected EZUSB FX2 devices and output the "
-        "device path\n"
-        "  info: Get basic information (vid, pid, name) of a connected "
-        "device\n"
-        "  flash: Flash a firmware binary\n", argv0);
+    printf("ezusb2-tool for EZUSB FX2 hardware, e.g. IIDX/Pop'n IO2, build " __DATE__ " " __TIME__
+           ", gitrev " STRINGIFY(GITREV) "\n"
+                                         "Usage: %s [cmd] ...\n"
+                                         "Available commands:\n"
+                                         "  scan: Scan for connected EZUSB FX2 devices and output the "
+                                         "device path\n"
+                                         "  info: Get basic information (vid, pid, name) of a connected "
+                                         "device\n"
+                                         "  flash: Flash a firmware binary\n",
+           argv0);
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     int arg_pos;
 
@@ -127,9 +128,10 @@ int main(int argc, char** argv)
         return scan();
     } else if (!strcmp(argv[arg_pos], "info")) {
         arg_pos++;
-        
+
         if (arg_pos >= argc) {
-            printf("Usage: info [dev_path]\n"
+            printf(
+                "Usage: info [dev_path]\n"
                 "  dev_path: Device path of device to query. Use the 'scan' "
                 "command to aquire a device path of a connected device\n");
             return -1;
@@ -140,7 +142,8 @@ int main(int argc, char** argv)
         arg_pos++;
 
         if (arg_pos + 1 >= argc) {
-            printf("Usage: flash [dev_path] [fw_path]\n"
+            printf(
+                "Usage: flash [dev_path] [fw_path]\n"
                 "  dev_path: Device path of device to flash. Use the 'scan' "
                 "command to aquire a device path of a connected device\n"
                 "  fw_path: Path to firmware binary file to flash\n");

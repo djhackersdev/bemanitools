@@ -47,13 +47,10 @@ struct ac_io_out {
 void ac_io_legacy_mode(void);
 
 void ac_io_in_init(struct ac_io_in *in);
-void ac_io_in_supply(struct ac_io_in *in, const struct ac_io_message *msg,
-        uint64_t delay);
+void ac_io_in_supply(
+    struct ac_io_in *in, const struct ac_io_message *msg, uint64_t delay);
 void ac_io_in_supply_thunk(
-        struct ac_io_in *in,
-        ac_io_in_thunk_t thunk,
-        void *ctx,
-        uint64_t delay);
+    struct ac_io_in *in, ac_io_in_thunk_t thunk, void *ctx, uint64_t delay);
 void ac_io_in_drain(struct ac_io_in *in, struct iobuf *dest);
 bool ac_io_in_is_msg_pending(const struct ac_io_in *in);
 

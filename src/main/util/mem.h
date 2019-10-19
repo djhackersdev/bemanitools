@@ -1,8 +1,8 @@
 #ifndef UTIL_MEM_H
 #define UTIL_MEM_H
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 void *xcalloc(size_t nbytes);
@@ -24,7 +24,12 @@ bool mem_nop(size_t mem_offset, size_t length);
  * @return If found, pointer to memory where the signiture was found (first
  *         occurance) with the signiture offset added, NULL otherwise
  */
-void* mem_find_signiture(const uint8_t* sig, uint32_t sig_len,
-    int32_t sig_offset, void* start_addr, void* end_addr, int32_t alignment);
+void *mem_find_signiture(
+    const uint8_t *sig,
+    uint32_t sig_len,
+    int32_t sig_offset,
+    void *start_addr,
+    void *end_addr,
+    int32_t alignment);
 
 #endif

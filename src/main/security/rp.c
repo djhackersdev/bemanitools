@@ -7,14 +7,14 @@
 #include "util/crypto.h"
 #include "util/log.h"
 
-static uint32_t security_rp_get_len_mcode(const struct security_mcode* mcode)
+static uint32_t security_rp_get_len_mcode(const struct security_mcode *mcode)
 {
     uint32_t len;
 
     len = 0;
 
-    while (len < sizeof(struct security_mcode) && 
-            ((const char*) mcode)[len] != ' ') {
+    while (len < sizeof(struct security_mcode) &&
+           ((const char *) mcode)[len] != ' ') {
         len++;
     }
 
@@ -22,16 +22,18 @@ static uint32_t security_rp_get_len_mcode(const struct security_mcode* mcode)
 }
 
 void security_rp_generate_signed_eeprom_data(
-        const struct security_mcode* boot_version, const uint32_t* boot_seeds,
-        const struct security_mcode* plug_mcode,
-        const struct security_id* plug_id, struct security_rp_eeprom* out)
+    const struct security_mcode *boot_version,
+    const uint32_t *boot_seeds,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp_eeprom *out)
 {
     uint8_t encryption_key[sizeof(security_rp_enc_table_key_base)];
     uint32_t boot_version_len;
     uint32_t idx;
     uint32_t seed;
-    uint8_t* enc_key_section1;
-    uint8_t* enc_key_section2;
+    uint8_t *enc_key_section1;
+    uint8_t *enc_key_section2;
     uint8_t data[32];
     struct blowfish ctx;
 
@@ -45,7 +47,9 @@ void security_rp_generate_signed_eeprom_data(
     log_assert(boot_seeds[1] <= 16);
     log_assert(boot_seeds[2] >= boot_seeds[1]);
 
-    memcpy(encryption_key, security_rp_enc_table_key_base,
+    memcpy(
+        encryption_key,
+        security_rp_enc_table_key_base,
         sizeof(security_rp_enc_table_key_base));
 
     boot_version_len = security_rp_get_len_mcode(boot_version);
@@ -53,13 +57,13 @@ void security_rp_generate_signed_eeprom_data(
     idx = 0;
 
     for (uint32_t i = 0; i < sizeof(encryption_key); i++) {
-        encryption_key[i] ^= ((const char*) boot_version)[idx];
+        encryption_key[i] ^= ((const char *) boot_version)[idx];
         idx = (idx + 1) % boot_version_len;
     }
 
     seed = 16 * (boot_seeds[2] + 16 * (boot_seeds[1] + 16 * boot_seeds[0]));
-    enc_key_section1 = (uint8_t*) encryption_key;
-    enc_key_section2 = (uint8_t*) (((uint8_t*) encryption_key) + 14);
+    enc_key_section1 = (uint8_t *) encryption_key;
+    enc_key_section2 = (uint8_t *) (((uint8_t *) encryption_key) + 14);
 
     memset(data, 0, sizeof(data));
 
@@ -79,6 +83,6 @@ void security_rp_generate_signed_eeprom_data(
         out->signature[i] = data[i + 16] ^ data[i + 22];
     }
 
-    security_util_8_to_6_encode_reverse((const uint8_t*) plug_mcode,
-        out->packed_payload);
+    security_util_8_to_6_encode_reverse(
+        (const uint8_t *) plug_mcode, out->packed_payload);
 }

@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <shlobj.h>
+#include <windows.h>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -12,8 +12,8 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-bool file_load(const char *filename, void **out_bytes, size_t *out_nbytes,
-        bool text_mode)
+bool file_load(
+    const char *filename, void **out_bytes, size_t *out_nbytes, bool text_mode)
 {
     FILE *f;
     void *bytes;
@@ -70,11 +70,11 @@ bool file_load(const char *filename, void **out_bytes, size_t *out_nbytes,
 
     /* Add null terminator */
     if (text_mode) {
-        ((char*) bytes)[nbytes - 1] = '\0';
+        ((char *) bytes)[nbytes - 1] = '\0';
     }
 
-    log_misc("File loaded %s, size %lu", filename,
-        (long unsigned int) *out_nbytes);
+    log_misc(
+        "File loaded %s, size %lu", filename, (long unsigned int) *out_nbytes);
 
     return true;
 
@@ -120,22 +120,21 @@ open_fail:
     return false;
 }
 
-bool path_exists(const char* path)
+bool path_exists(const char *path)
 {
     DWORD attrib = GetFileAttributes(path);
 
     return attrib != INVALID_FILE_ATTRIBUTES;
 }
 
-bool path_exists_wstr(const wchar_t* path)
+bool path_exists_wstr(const wchar_t *path)
 {
     DWORD attrib = GetFileAttributesW(path);
 
     return attrib != INVALID_FILE_ATTRIBUTES;
 }
 
-FILE *fopen_appdata(const char *vendor, const char *filename,
-        const char *mode)
+FILE *fopen_appdata(const char *vendor, const char *filename, const char *mode)
 {
     char root[MAX_PATH];
     char path[MAX_PATH];
@@ -145,18 +144,17 @@ FILE *fopen_appdata(const char *vendor, const char *filename,
     hr = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, root);
 
     if (FAILED(hr)) {
-        log_warning("Failed to get AppData folder: hr=%08x",
-                (unsigned int) hr);
+        log_warning("Failed to get AppData folder: hr=%08x", (unsigned int) hr);
 
         return NULL;
     }
 
     str_format(path, sizeof(path), "%s\\%s", root, vendor);
 
-    if (!CreateDirectory(path, NULL)
-            && GetLastError() != ERROR_ALREADY_EXISTS) {
-        log_warning("Failed to create %s: %08x",
-                path, (unsigned int) GetLastError());
+    if (!CreateDirectory(path, NULL) &&
+        GetLastError() != ERROR_ALREADY_EXISTS) {
+        log_warning(
+            "Failed to create %s: %08x", path, (unsigned int) GetLastError());
 
         return NULL;
     }
@@ -165,8 +163,8 @@ FILE *fopen_appdata(const char *vendor, const char *filename,
     f = fopen(path, mode);
 
     if (f == NULL) {
-        log_warning("fopen(\"%s\", \"%s\") failed: %s",
-                path, mode, strerror(errno));
+        log_warning(
+            "fopen(\"%s\", \"%s\") failed: %s", path, mode, strerror(errno));
     }
 
     return f;
@@ -179,17 +177,17 @@ bool path_mkdir(const char *path)
 
     str_cpy(buf, lengthof(buf), path);
 
-    for (pos = path_next_element(buf)
-            ; pos
-            ; pos = path_next_element(pos + 1)) {
+    for (pos = path_next_element(buf); pos; pos = path_next_element(pos + 1)) {
         *pos = '\0';
 
         if (strlen(buf) != 2 || buf[1] != ':') {
             CreateDirectory(buf, NULL);
 
             if (GetLastError() != ERROR_ALREADY_EXISTS) {
-                log_warning("%s: Cannot create directory: %#x",
-                        buf, (unsigned int) GetLastError());
+                log_warning(
+                    "%s: Cannot create directory: %#x",
+                    buf,
+                    (unsigned int) GetLastError());
 
                 return false;
             }
@@ -201,8 +199,10 @@ bool path_mkdir(const char *path)
     CreateDirectory(buf, NULL);
 
     if (GetLastError() != ERROR_ALREADY_EXISTS) {
-        log_warning("%s: Cannot create directory: %#x",
-                buf, (unsigned int) GetLastError());
+        log_warning(
+            "%s: Cannot create directory: %#x",
+            buf,
+            (unsigned int) GetLastError());
 
         return false;
     }
@@ -214,7 +214,7 @@ char *path_next_element(char *path)
 {
     char *c;
 
-    for (c = path ; *c ; c++) {
+    for (c = path; *c; c++) {
         if (*c == '/' || *c == '\\') {
             return c;
         }
@@ -264,4 +264,3 @@ void write_str(FILE *f, const char *str)
     fwrite(&len, sizeof(len), 1, f);
     fwrite(str, len, 1, f);
 }
-

@@ -4,7 +4,7 @@
 #include "util/net.h"
 
 /* Note: Don't care about cleaning up of returned strings to avoid code
- * clutter 
+ * clutter
  */
 
 static void test_parse_invalid()
@@ -183,7 +183,8 @@ static void test_parse_url_https_hostname()
     check_int_eq(addr.url.hostname.port, NET_INVALID_PORT);
     check_str_eq(addr.url.path, "somewhere");
 
-    check_bool_true(net_str_parse("https://www.google.com:22/somewhere", &addr));
+    check_bool_true(
+        net_str_parse("https://www.google.com:22/somewhere", &addr));
     check_int_eq(addr.type, NET_ADDR_TYPE_URL);
     check_bool_true(addr.url.is_https);
     check_int_eq(addr.url.type, NET_ADDR_TYPE_HOSTNAME);
@@ -346,7 +347,8 @@ static void test_net_addr_to_str_url_http_hostname()
     addr.url.hostname.port = 1234;
     strcpy(addr.url.path, "somewhere");
 
-    check_str_eq(net_addr_to_str(&addr), "http://www.google.com:1234/somewhere");
+    check_str_eq(
+        net_addr_to_str(&addr), "http://www.google.com:1234/somewhere");
 }
 
 static void test_net_addr_to_str_url_https_hostname()
@@ -387,7 +389,8 @@ static void test_net_addr_to_str_url_https_hostname()
     addr.url.hostname.port = 1234;
     strcpy(addr.url.path, "somewhere");
 
-    check_str_eq(net_addr_to_str(&addr), "https://www.google.com:1234/somewhere");
+    check_str_eq(
+        net_addr_to_str(&addr), "https://www.google.com:1234/somewhere");
 }
 
 static void test_resolve_hostname_str()

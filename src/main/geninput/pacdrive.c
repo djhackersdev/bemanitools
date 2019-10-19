@@ -1,7 +1,7 @@
 #define LOG_MODULE "pacdrive"
 
-#include <windows.h>
 #include <hidsdi.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -40,41 +40,46 @@ static struct hid_light pac_lights[16];
 static const wchar_t pac_name[] = L"PacDrive Shim";
 
 static bool pac_get_device_usage(const struct hid *hid, uint32_t *usage);
-static bool pac_get_name(const struct hid *hid, wchar_t *chars,
-        size_t *nchars);
-static bool pac_get_controls(const struct hid *hid,
-        struct hid_control *controls, size_t *ncontrols);
-static bool pac_get_lights(const struct hid *hid, struct hid_light *lights,
-        size_t *nlights);
+static bool pac_get_name(const struct hid *hid, wchar_t *chars, size_t *nchars);
+static bool pac_get_controls(
+    const struct hid *hid, struct hid_control *controls, size_t *ncontrols);
+static bool pac_get_lights(
+    const struct hid *hid, struct hid_light *lights, size_t *nlights);
 static bool pac_get_value(struct hid *hid, size_t control_no, int32_t *value);
-static bool pac_set_light(struct hid *hid, size_t light_no,
-        uint32_t intensity);
-static bool pac_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
-        size_t nbytes);
+static bool pac_set_light(struct hid *hid, size_t light_no, uint32_t intensity);
+static bool
+pac_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl, size_t nbytes);
 static void pac_close(struct hid *hid);
 
-static const struct hid_fd_vtbl pac_vtbl = {{
-    /* .close               = */ pac_close,
-    /* .get_device_usage    = */ pac_get_device_usage,
-    /* .get_name            = */ pac_get_name,
-    /* .get_controls        = */ pac_get_controls,
-    /* .get_lights          = */ pac_get_lights,
-    /* .get_value           = */ pac_get_value,
-    /* .set_light           = */ pac_set_light },
-    /* .handle_event        = */ pac_handle_event
-};
+static const struct hid_fd_vtbl pac_vtbl = {
+    {/* .close               = */ pac_close,
+     /* .get_device_usage    = */ pac_get_device_usage,
+     /* .get_name            = */ pac_get_name,
+     /* .get_controls        = */ pac_get_controls,
+     /* .get_lights          = */ pac_get_lights,
+     /* .get_value           = */ pac_get_value,
+     /* .set_light           = */ pac_set_light},
+    /* .handle_event        = */ pac_handle_event};
 
-bool pac_open(struct hid_fd **hid_out, const char *dev_node, HANDLE iocp,
-        uintptr_t iocp_ctx)
+bool pac_open(
+    struct hid_fd **hid_out,
+    const char *dev_node,
+    HANDLE iocp,
+    uintptr_t iocp_ctx)
 {
     HIDD_ATTRIBUTES attrs;
     HANDLE fd;
     struct pac *pac;
     int i;
 
-    fd = CreateFile(dev_node, GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-            FILE_FLAG_OVERLAPPED, NULL);
+    fd = CreateFile(
+        dev_node,
+        GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED,
+        NULL);
 
     if (fd == INVALID_HANDLE_VALUE) {
         goto open_fail;
@@ -95,16 +100,18 @@ bool pac_open(struct hid_fd **hid_out, const char *dev_node, HANDLE iocp,
 
     CreateIoCompletionPort(fd, iocp, iocp_ctx, 0);
 
-    if (!WriteFile(fd, &pac->io_buf, sizeof(pac->io_buf), NULL, &pac->ovl)
-            && GetLastError() != ERROR_IO_PENDING) {
-        log_warning("%s: Initial WriteFile failed: %08x",
-                dev_node, (unsigned int) GetLastError());
+    if (!WriteFile(fd, &pac->io_buf, sizeof(pac->io_buf), NULL, &pac->ovl) &&
+        GetLastError() != ERROR_IO_PENDING) {
+        log_warning(
+            "%s: Initial WriteFile failed: %08x",
+            dev_node,
+            (unsigned int) GetLastError());
 
         goto write_fail;
     }
 
-    for (i = 0 ; i < lengthof(pac_lights) ; i++) {
-        pac_lights[i].usage = 0x0008004B;   /* LED, Generic Indicator */
+    for (i = 0; i < lengthof(pac_lights); i++) {
+        pac_lights[i].usage = 0x0008004B; /* LED, Generic Indicator */
         pac_lights[i].value_min = 0;
         pac_lights[i].value_max = 1;
     }
@@ -133,8 +140,7 @@ static bool pac_get_device_usage(const struct hid *hid, uint32_t *usage)
     return true;
 }
 
-static bool pac_get_name(const struct hid *hid, wchar_t *chars,
-        size_t *nchars)
+static bool pac_get_name(const struct hid *hid, wchar_t *chars, size_t *nchars)
 {
     log_assert(nchars != NULL);
 
@@ -151,8 +157,8 @@ static bool pac_get_name(const struct hid *hid, wchar_t *chars,
     return true;
 }
 
-static bool pac_get_controls(const struct hid *hid,
-        struct hid_control *controls, size_t *ncontrols)
+static bool pac_get_controls(
+    const struct hid *hid, struct hid_control *controls, size_t *ncontrols)
 {
     log_assert(ncontrols != NULL);
 
@@ -161,8 +167,8 @@ static bool pac_get_controls(const struct hid *hid,
     return true;
 }
 
-static bool pac_get_lights(const struct hid *hid, struct hid_light *lights,
-        size_t *nlights)
+static bool
+pac_get_lights(const struct hid *hid, struct hid_light *lights, size_t *nlights)
 {
     log_assert(nlights != NULL);
 
@@ -184,8 +190,7 @@ static bool pac_get_value(struct hid *hid, size_t control_no, int32_t *value)
     return false;
 }
 
-static bool pac_set_light(struct hid *hid, size_t light_no,
-        uint32_t intensity)
+static bool pac_set_light(struct hid *hid, size_t light_no, uint32_t intensity)
 {
     struct pac *pac = containerof(hid, struct pac, super);
 
@@ -194,7 +199,7 @@ static bool pac_set_light(struct hid *hid, size_t light_no,
     }
 
     if (intensity != 0) {
-        pac->leds |=  (1 << light_no);
+        pac->leds |= (1 << light_no);
     } else {
         pac->leds &= ~(1 << light_no);
     }
@@ -202,8 +207,8 @@ static bool pac_set_light(struct hid *hid, size_t light_no,
     return true;
 }
 
-static bool pac_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
-        size_t nbytes)
+static bool
+pac_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl, size_t nbytes)
 {
     struct pac *pac = containerof(hid_fd, struct pac, super);
 
@@ -214,8 +219,9 @@ static bool pac_handle_event(struct hid_fd *hid_fd, OVERLAPPED *ovl,
 
     memset(&pac->ovl, 0, sizeof(pac->ovl));
 
-    if (!WriteFile(pac->fd, &pac->io_buf, sizeof(pac->io_buf), NULL,
-            &pac->ovl) && GetLastError() != ERROR_IO_PENDING) {
+    if (!WriteFile(
+            pac->fd, &pac->io_buf, sizeof(pac->io_buf), NULL, &pac->ovl) &&
+        GetLastError() != ERROR_IO_PENDING) {
         log_warning("WriteFile failed: %08x", (unsigned int) GetLastError());
 
         return false;
@@ -232,4 +238,3 @@ static void pac_close(struct hid *hid)
 
     free(pac);
 }
-

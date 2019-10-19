@@ -9,7 +9,10 @@
 
 #include "geninput/mapper.h"
 
-bool bind_control(HINSTANCE inst, HWND hwnd, const struct action_def *action,
-        struct mapped_action *ma);
+bool bind_control(
+    HINSTANCE inst,
+    HWND hwnd,
+    const struct action_def *action,
+    struct mapped_action *ma);
 
 #endif

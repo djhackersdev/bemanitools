@@ -7,10 +7,9 @@ struct iidxhook_config_iidxhook2 {
     bool distorted_ms_bg_fix;
 };
 
-void iidxhook_config_iidxhook2_init(struct cconfig* config);
+void iidxhook_config_iidxhook2_init(struct cconfig *config);
 
 void iidxhook_config_iidxhook2_get(
-        struct iidxhook_config_iidxhook2* config_iidxhook2, 
-        struct cconfig* config);
+    struct iidxhook_config_iidxhook2 *config_iidxhook2, struct cconfig *config);
 
 #endif

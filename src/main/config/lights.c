@@ -1,7 +1,7 @@
-#include <windows.h>
-#include <windowsx.h>
 #include <commctrl.h>
 #include <wchar.h>
+#include <windows.h>
+#include <windowsx.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,8 +32,8 @@ struct lights_ui {
     float pulse_coeff;
 };
 
-static INT_PTR CALLBACK lights_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+lights_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR lights_handle_init(HWND hwnd, const PROPSHEETPAGE *psp);
 static void lights_handle_init_devices(HWND hwnd);
 static void lights_handle_init_device(HWND hwnd, struct hid_stub *hid);
@@ -47,7 +47,8 @@ static void lights_pulse_start(HWND hwnd, size_t light_no);
 static void lights_pulse_stop(HWND hwnd);
 static INT_PTR lights_handle_fini(HWND hwnd);
 
-HPROPSHEETPAGE lights_tab_create(HINSTANCE inst, const struct schema *schema)
+HPROPSHEETPAGE
+lights_tab_create(HINSTANCE inst, const struct schema *schema)
 {
     PROPSHEETPAGE psp;
 
@@ -62,8 +63,8 @@ HPROPSHEETPAGE lights_tab_create(HINSTANCE inst, const struct schema *schema)
     return CreatePropertySheetPage(&psp);
 }
 
-static INT_PTR CALLBACK lights_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+lights_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NMHDR *n;
 
@@ -91,8 +92,8 @@ static INT_PTR CALLBACK lights_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
                 case IDC_LIGHT:
                     switch (n->code) {
                         case LVN_ITEMCHANGED:
-                            return lights_handle_highlight_light(hwnd,
-                                    (NMLISTVIEW *) n);
+                            return lights_handle_highlight_light(
+                                hwnd, (NMLISTVIEW *) n);
 
                         case NM_DBLCLK:
                             return lights_handle_bind_light(hwnd);
@@ -137,9 +138,8 @@ static void lights_handle_init_devices(HWND hwnd)
 
     hid_mgr_lock();
 
-    for (hid = hid_mgr_get_first_stub()
-            ; hid != NULL
-            ; hid = hid_mgr_get_next_stub(hid)) {
+    for (hid = hid_mgr_get_first_stub(); hid != NULL;
+         hid = hid_mgr_get_next_stub(hid)) {
         lights_handle_init_device(hwnd, hid);
     }
 
@@ -194,8 +194,8 @@ static void lights_handle_init_lights(HWND hwnd)
     inst = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     lights = GetDlgItem(hwnd, IDC_LIGHT);
 
-    ListView_SetExtendedListViewStyle(lights,
-            LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+    ListView_SetExtendedListViewStyle(
+        lights, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     LoadString(inst, IDS_COL_LIGHT_HID, str, lengthof(str));
 
@@ -258,15 +258,15 @@ static INT_PTR lights_handle_change_dev(HWND hwnd)
         goto locked_fail;
     }
 
-    for (i = 0 ; i < ui->nlights ; i++) {
-        if(ui->lights[i].name[0] != L'\0') {
+    for (i = 0; i < ui->nlights; i++) {
+        if (ui->lights[i].name[0] != L'\0') {
             item.pszText = ui->lights[i].name;
         } else {
             wchars[0] = L'\0';
 
             usages_get(chars, lengthof(chars), ui->lights[i].usage);
-            MultiByteToWideChar(CP_UTF8, 0, chars, lengthof(chars), wchars,
-                    lengthof(wchars));
+            MultiByteToWideChar(
+                CP_UTF8, 0, chars, lengthof(chars), wchars, lengthof(wchars));
 
             item.pszText = wchars;
         }
@@ -379,8 +379,8 @@ static INT_PTR lights_handle_pulse_tick(HWND hwnd)
     }
 
     bias = (float) (ui->lights[light_no].value_min);
-    scale = (float) (ui->lights[light_no].value_max
-            - ui->lights[light_no].value_min);
+    scale =
+        (float) (ui->lights[light_no].value_max - ui->lights[light_no].value_min);
 
     /* Intensity perception is non-linear. Pulse quadratically. */
 
@@ -408,13 +408,12 @@ static void lights_update_bindings(HWND hwnd)
     inst = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     lights_ctl = GetDlgItem(hwnd, IDC_LIGHT);
 
-    for (i = 0 ; i < ui->nlights ; i++) {
+    for (i = 0; i < ui->nlights; i++) {
         ListView_SetItemText(lights_ctl, i, 1, NULL);
     }
 
-    for (pos = mapper_iterate_lights()
-            ; light_iter_is_valid(pos)
-            ; light_iter_next(pos)) {
+    for (pos = mapper_iterate_lights(); light_iter_is_valid(pos);
+         light_iter_next(pos)) {
         light_iter_get_mapping(pos, &ml);
 
         if (ml.hid != ui->hid) {
@@ -430,10 +429,13 @@ static void lights_update_bindings(HWND hwnd)
 
         game_light = light_iter_get_game_light(pos);
 
-        for (i = 0 ; i < ui->schema->nlights ; i++) {
+        for (i = 0; i < ui->schema->nlights; i++) {
             if (ui->schema->lights[i].bit == game_light) {
-                LoadString(inst, ui->schema->lights[i].name_rsrc, wchars,
-                        lengthof(wchars));
+                LoadString(
+                    inst,
+                    ui->schema->lights[i].name_rsrc,
+                    wchars,
+                    lengthof(wchars));
                 ListView_SetItemText(lights_ctl, ml.light_no, 1, wchars);
             }
         }
@@ -510,4 +512,3 @@ static INT_PTR lights_handle_fini(HWND hwnd)
 
     return TRUE;
 }
-

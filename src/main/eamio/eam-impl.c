@@ -20,7 +20,7 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-#define EAM_SENSOR_COOLDOWN         1000
+#define EAM_SENSOR_COOLDOWN 1000
 
 struct eam_unit {
     char *card_path;
@@ -50,7 +50,7 @@ static const uint32_t eam_keypad_usages[EAM_IO_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_1]           = */ 0x00070059,
     /* [EAM_KEYPAD_4]           = */ 0x0007005C,
     /* [EAM_KEYPAD_7]           = */ 0x0007005F,
-    /* [EAM_KEYPAD_00]          = */ 0x00070058,        /* Keypad ENTER */
+    /* [EAM_KEYPAD_00]          = */ 0x00070058, /* Keypad ENTER */
     /* [EAM_KEYPAD_2]           = */ 0x0007005A,
     /* [EAM_KEYPAD_5]           = */ 0x0007005D,
     /* [EAM_KEYPAD_8]           = */ 0x00070060,
@@ -58,23 +58,22 @@ static const uint32_t eam_keypad_usages[EAM_IO_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_3]           = */ 0x0007005B,
     /* [EAM_KEYPAD_6]           = */ 0x0007005E,
     /* [EAM_KEYPAD_9]           = */ 0x00070061,
-    /* Sensor                   = */ 0x00070057
-};
+    /* Sensor                   = */ 0x00070057};
 
 static const uint32_t eam_keypad_usages_alt[EAM_IO_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_0]           = */ 0x00070027,
     /* [EAM_KEYPAD_1]           = */ 0x0007001E,
     /* [EAM_KEYPAD_4]           = */ 0x00070021,
     /* [EAM_KEYPAD_7]           = */ 0x00070024,
-    /* [EAM_KEYPAD_00]          = */ 0x0007002D,        /* - and _ */
+    /* [EAM_KEYPAD_00]          = */ 0x0007002D, /* - and _ */
     /* [EAM_KEYPAD_2]           = */ 0x0007001F,
     /* [EAM_KEYPAD_5]           = */ 0x00070022,
     /* [EAM_KEYPAD_8]           = */ 0x00070025,
-    /* [EAM_KEYPAD_DECIMAL]     = */ 0x0007002E,        /* + and = */
+    /* [EAM_KEYPAD_DECIMAL]     = */ 0x0007002E, /* + and = */
     /* [EAM_KEYPAD_3]           = */ 0x00070020,
     /* [EAM_KEYPAD_6]           = */ 0x00070023,
     /* [EAM_KEYPAD_9]           = */ 0x00070026,
-    /* Sensor                   = */ 0x0007002A         /* Backspace */
+    /* Sensor                   = */ 0x0007002A /* Backspace */
 };
 
 static uint8_t eam_impl_get_active_unit(void);
@@ -92,13 +91,13 @@ struct eam *eam_impl_create(void)
 
     InitializeCriticalSection(&eam->lock);
 
-    for (unit_no = 0 ; unit_no < lengthof(eam->units) ; unit_no++) {
+    for (unit_no = 0; unit_no < lengthof(eam->units); unit_no++) {
         unit = &eam->units[unit_no];
 
         unit->card_path = NULL;
         unit->hid = NULL;
 
-        for (btn_no = 0 ; btn_no < lengthof(unit->keypad_ctls) ; btn_no++) {
+        for (btn_no = 0; btn_no < lengthof(unit->keypad_ctls); btn_no++) {
             unit->keypad_ctls[btn_no] = (size_t) -1;
         }
 
@@ -139,7 +138,7 @@ void eam_impl_set_alt_10k(struct eam *eam, bool alt_10k)
 {
     int i;
 
-    for (i = 0 ; i < lengthof(eam->units) ; i++) {
+    for (i = 0; i < lengthof(eam->units); i++) {
         eam->units[i].bound_ctls = false;
     }
 
@@ -153,8 +152,8 @@ struct hid_stub *eam_impl_get_keypad_device(struct eam *eam, uint8_t unit_no)
     return eam->units[unit_no].hid;
 }
 
-void eam_impl_set_keypad_device(struct eam *eam, uint8_t unit_no,
-        struct hid_stub *hid)
+void eam_impl_set_keypad_device(
+    struct eam *eam, uint8_t unit_no, struct hid_stub *hid)
 {
     log_assert(unit_no < lengthof(eam->units));
 
@@ -171,8 +170,7 @@ const char *eam_impl_get_card_path(struct eam *eam, uint8_t unit_no)
     return eam->units[unit_no].card_path;
 }
 
-void eam_impl_set_card_path(struct eam *eam, uint8_t unit_no,
-        const char *path)
+void eam_impl_set_card_path(struct eam *eam, uint8_t unit_no, const char *path)
 {
     log_assert(unit_no < lengthof(eam->units));
 
@@ -215,7 +213,7 @@ uint16_t eam_impl_get_keypad_state(struct eam *eam, uint8_t unit_no)
     result = 0;
 
     if (unit->bound_ctls) {
-        for (i = 0 ; i < lengthof(unit->keypad_ctls) ; i++) {
+        for (i = 0; i < lengthof(unit->keypad_ctls); i++) {
             if (unit->keypad_ctls[i] == (size_t) -1) {
                 continue;
             }
@@ -244,9 +242,8 @@ static void eam_impl_bind_keypad(struct eam *eam, uint8_t unit_no)
 
     unit = &eam->units[unit_no];
 
-    if (unit->bound_ctls
-            || unit->hid == NULL
-            || !hid_stub_is_attached(unit->hid)) {
+    if (unit->bound_ctls || unit->hid == NULL ||
+        !hid_stub_is_attached(unit->hid)) {
         return;
     }
 
@@ -272,8 +269,8 @@ static void eam_impl_bind_keypad(struct eam *eam, uint8_t unit_no)
         goto content_fail;
     }
 
-    for (control_no = 0 ; control_no < ncontrols ; control_no++) {
-        for (btn_no = 0 ; btn_no < EAM_IO_KEYPAD_COUNT ; btn_no++) {
+    for (control_no = 0; control_no < ncontrols; control_no++) {
+        for (btn_no = 0; btn_no < EAM_IO_KEYPAD_COUNT; btn_no++) {
             if (controls[control_no].usage == usages[btn_no]) {
                 unit->keypad_ctls[btn_no] = control_no;
             }
@@ -336,7 +333,7 @@ bool eam_impl_get_sensor_state(struct eam *eam, uint8_t unit_no)
     }
 
     if (unit->sensor_hot) {
-        if ((int32_t) (unit->sensor_time - now) > 0) {
+        if ((int32_t)(unit->sensor_time - now) > 0) {
             result = true;
         } else {
             unit->sensor_time = 0;
@@ -351,8 +348,8 @@ bool eam_impl_get_sensor_state(struct eam *eam, uint8_t unit_no)
     return result;
 }
 
-uint8_t eam_impl_read_card(struct eam *eam, uint8_t unit_no, uint8_t *card_id,
-        uint8_t nbytes)
+uint8_t eam_impl_read_card(
+    struct eam *eam, uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 {
     char line[128];
     struct eam_unit *unit;
@@ -374,16 +371,20 @@ uint8_t eam_impl_read_card(struct eam *eam, uint8_t unit_no, uint8_t *card_id,
     if (f == NULL) {
         if (eam->autogen) {
             if (!eam_impl_autogen(unit, card_id)) {
-                log_warning("Unit %d: Failed to generate card ID into %s",
-                        unit_no, unit->card_path);
+                log_warning(
+                    "Unit %d: Failed to generate card ID into %s",
+                    unit_no,
+                    unit->card_path);
 
                 goto fopen_fail;
             }
 
             return true;
         } else {
-            log_warning("Unit %d: Card file at %s not present",
-                    unit_no, unit->card_path);
+            log_warning(
+                "Unit %d: Card file at %s not present",
+                unit_no,
+                unit->card_path);
 
             goto fopen_fail;
         }
@@ -399,8 +400,11 @@ uint8_t eam_impl_read_card(struct eam *eam, uint8_t unit_no, uint8_t *card_id,
     len = strlen(line);
 
     if (len != 2 * EAM_CARD_NBYTES) {
-        log_warning("%s: Expected %u chars (got %u)",
-                unit->card_path, 2 * EAM_CARD_NBYTES, (unsigned int) len);
+        log_warning(
+            "%s: Expected %u chars (got %u)",
+            unit->card_path,
+            2 * EAM_CARD_NBYTES,
+            (unsigned int) len);
 
         goto len_fail;
     }
@@ -411,8 +415,11 @@ uint8_t eam_impl_read_card(struct eam *eam, uint8_t unit_no, uint8_t *card_id,
         goto decode_fail;
     }
 
-    log_misc("Unit %d: Loaded card ID [%s] from file %s",
-            unit_no, line, unit->card_path);
+    log_misc(
+        "Unit %d: Loaded card ID [%s] from file %s",
+        unit_no,
+        line,
+        unit->card_path);
 
     fclose(f);
 
@@ -451,7 +458,7 @@ static bool eam_impl_autogen(struct eam_unit *unit, uint8_t *card_id)
     card_id[2] = 0x01;
     card_id[3] = 0x00;
 
-    for (i = 4 ; i < 8 ; i++) {
+    for (i = 4; i < 8; i++) {
         /* LSBit entropy of typical LFSR RNGs is usually poor */
         card_id[i] = rand() >> 7;
     }
@@ -461,8 +468,8 @@ static bool eam_impl_autogen(struct eam_unit *unit, uint8_t *card_id)
 
     fclose(f);
 
-    log_info("Generated random card ID [%s] into file %s",
-            hex, unit->card_path);
+    log_info(
+        "Generated random card ID [%s] into file %s", hex, unit->card_path);
 
     return true;
 }
@@ -474,7 +481,7 @@ void eam_impl_notify_hotplug(struct eam *eam, uint8_t drive_no)
 
     EnterCriticalSection(&eam->lock);
 
-    for (unit_no = 0 ; unit_no < lengthof(eam->units) ; unit_no++) {
+    for (unit_no = 0; unit_no < lengthof(eam->units); unit_no++) {
         if (eam->units[unit_no].drive_no == drive_no) {
             /* MMSYSTEM timeGetTime() is overkill, we don't exactly need super
                accurate timestamps here. */
@@ -493,7 +500,7 @@ void eam_impl_destroy(struct eam *eam)
 {
     int8_t unit_no;
 
-    for (unit_no = lengthof(eam->units) - 1 ; unit_no >= 0 ; unit_no--) {
+    for (unit_no = lengthof(eam->units) - 1; unit_no >= 0; unit_no--) {
         free(eam->units[unit_no].card_path);
     }
 
@@ -501,4 +508,3 @@ void eam_impl_destroy(struct eam *eam)
 
     free(eam);
 }
-

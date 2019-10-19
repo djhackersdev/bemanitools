@@ -8,15 +8,15 @@ uint8_t crc8(const void *ptr, size_t nbytes, uint8_t in)
     size_t i;
     size_t j;
 
-    //log_assert(ptr != NULL);
+    // log_assert(ptr != NULL);
 
     bytes = ptr;
     crc = ~in;
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         crc ^= bytes[i];
 
-        for (j = 0 ; j < 8 ; j++) {
+        for (j = 0; j < 8; j++) {
             if (crc & 1) {
                 crc = (crc >> 1) ^ 0x8C;
             } else {
@@ -35,15 +35,15 @@ uint16_t crc16(const void *ptr, size_t nbytes, uint16_t in)
     size_t i;
     size_t j;
 
-    //log_assert(ptr != NULL);
+    // log_assert(ptr != NULL);
 
     bytes = ptr;
     crc = ~in;
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         crc ^= bytes[i];
 
-        for (j = 0 ; j < 8 ; j++) {
+        for (j = 0; j < 8; j++) {
             if (crc & 1) {
                 crc = (crc >> 1) ^ 0x8408;
             } else {
@@ -62,15 +62,15 @@ uint32_t crc32(const void *ptr, size_t nbytes, uint32_t in)
     size_t i;
     size_t j;
 
-    //log_assert(ptr != NULL);
+    // log_assert(ptr != NULL);
 
     bytes = ptr;
     crc = ~in;
 
-    for (i = 0 ; i < nbytes  ; i++) {
+    for (i = 0; i < nbytes; i++) {
         crc ^= bytes[i];
 
-        for (j = 0 ; j < 8 ; j++) {
+        for (j = 0; j < 8; j++) {
             if (crc & 1) {
                 crc = (crc >> 1) ^ 0xEDB88320;
             } else {

@@ -1,8 +1,8 @@
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -43,7 +43,8 @@ void extio_fini(void)
     extio_fd = NULL;
 }
 
-HRESULT extio_dispatch_irp(struct irp *irp)
+HRESULT
+extio_dispatch_irp(struct irp *irp)
 {
     log_assert(irp != NULL);
 
@@ -52,12 +53,18 @@ HRESULT extio_dispatch_irp(struct irp *irp)
     }
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return extio_open(irp);
-    case IRP_OP_CLOSE:  return extio_close(irp);
-    case IRP_OP_READ:   return extio_read(irp);
-    case IRP_OP_WRITE:  return extio_write(irp);
-    case IRP_OP_IOCTL:  return extio_ioctl(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return extio_open(irp);
+        case IRP_OP_CLOSE:
+            return extio_close(irp);
+        case IRP_OP_READ:
+            return extio_read(irp);
+        case IRP_OP_WRITE:
+            return extio_write(irp);
+        case IRP_OP_IOCTL:
+            return extio_ioctl(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -126,31 +133,31 @@ static HRESULT extio_ioctl(struct irp *irp)
     log_assert(irp != NULL);
 
     switch (irp->ioctl) {
-    case IOCTL_SERIAL_GET_COMMSTATUS:
-        if (irp->read.bytes == NULL) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
+        case IOCTL_SERIAL_GET_COMMSTATUS:
+            if (irp->read.bytes == NULL) {
+                log_warning(
+                    "IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
 
-            return E_INVALIDARG;
-        }
+                return E_INVALIDARG;
+            }
 
-        if (irp->read.nbytes < sizeof(*status)) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
+            if (irp->read.nbytes < sizeof(*status)) {
+                log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
 
-            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        }
+                return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+            }
 
-        status = (SERIAL_STATUS *) irp->read.bytes;
-        status->Errors = 0;
-        status->AmountInInQueue = extio_pending ? 1 : 0;
+            status = (SERIAL_STATUS *) irp->read.bytes;
+            status->Errors = 0;
+            status->AmountInInQueue = extio_pending ? 1 : 0;
 
-        irp->read.pos = sizeof(*status);
+            irp->read.pos = sizeof(*status);
 
-        break;
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     return S_OK;
 }
-

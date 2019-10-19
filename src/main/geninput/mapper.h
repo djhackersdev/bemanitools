@@ -48,14 +48,14 @@ void light_iter_next(light_iter_t iter);
 void light_iter_free(light_iter_t iter);
 
 struct mapper *mapper_impl_create(void);
-void mapper_impl_clear_action_map(struct mapper *m, uint8_t action,
-        uint8_t page);
-void mapper_impl_clear_light_map(struct mapper *m,
-        const struct mapped_light *ml);
-bool mapper_impl_get_analog_map(struct mapper *m, uint8_t analog,
-        struct mapped_analog *ma);
-bool mapper_impl_get_action_map(struct mapper *m, uint8_t action, uint8_t page,
-        struct mapped_action *ma);
+void mapper_impl_clear_action_map(
+    struct mapper *m, uint8_t action, uint8_t page);
+void mapper_impl_clear_light_map(
+    struct mapper *m, const struct mapped_light *ml);
+bool mapper_impl_get_analog_map(
+    struct mapper *m, uint8_t analog, struct mapped_analog *ma);
+bool mapper_impl_get_action_map(
+    struct mapper *m, uint8_t action, uint8_t page, struct mapped_action *ma);
 int32_t mapper_impl_get_analog_sensitivity(struct mapper *m, uint8_t analog);
 uint8_t mapper_impl_get_nanalogs(struct mapper *m);
 uint8_t mapper_impl_get_nlights(struct mapper *m);
@@ -63,20 +63,24 @@ uint8_t mapper_impl_get_npages(struct mapper *m);
 bool mapper_impl_is_analog_absolute(struct mapper *m, uint8_t analog);
 action_iter_t mapper_impl_iterate_actions(struct mapper *m);
 light_iter_t mapper_impl_iterate_lights(struct mapper *m);
-void mapper_impl_set_action_map(struct mapper *m, uint8_t action, uint8_t page,
-        uint8_t bit, const struct mapped_action *ma);
-bool mapper_impl_set_analog_map(struct mapper *m, uint8_t analog,
-        const struct mapped_analog *ma);
-bool mapper_impl_set_analog_sensitivity(struct mapper *m, uint8_t analog,
-        int32_t sensitivity);
-void mapper_impl_set_light_map(struct mapper *m, const struct mapped_light *ml,
-        uint8_t game_light);
+void mapper_impl_set_action_map(
+    struct mapper *m,
+    uint8_t action,
+    uint8_t page,
+    uint8_t bit,
+    const struct mapped_action *ma);
+bool mapper_impl_set_analog_map(
+    struct mapper *m, uint8_t analog, const struct mapped_analog *ma);
+bool mapper_impl_set_analog_sensitivity(
+    struct mapper *m, uint8_t analog, int32_t sensitivity);
+void mapper_impl_set_light_map(
+    struct mapper *m, const struct mapped_light *ml, uint8_t game_light);
 void mapper_impl_set_nanalogs(struct mapper *m, uint8_t nanalogs);
 void mapper_impl_set_nlights(struct mapper *m, uint8_t nlights);
 uint8_t mapper_impl_read_analog(struct mapper *m, uint8_t analog);
 uint64_t mapper_impl_update(struct mapper *m);
-void mapper_impl_write_light(struct mapper *m, uint8_t light,
-        uint8_t intensity);
+void mapper_impl_write_light(
+    struct mapper *m, uint8_t light, uint8_t intensity);
 void mapper_impl_destroy(struct mapper *m);
 
 #endif

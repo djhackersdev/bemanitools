@@ -1,8 +1,8 @@
 #ifndef EZUSB_IIDX_EMU_CARD_MAG_H
 #define EZUSB_IIDX_EMU_CARD_MAG_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MAG_CARD_NUM_DATA_SECTORS 5
 
@@ -65,7 +65,10 @@ struct ezusb_iidx_emu_card_mag_data {
  * @see struct magnetic_card
  */
 void ezusb_iidx_emu_card_mag_generate_data(
-        struct ezusb_iidx_emu_card_mag_data* card, uint8_t* card_id,
-        uint8_t card_type, bool card_used, const char* card_version);
+    struct ezusb_iidx_emu_card_mag_data *card,
+    uint8_t *card_id,
+    uint8_t card_type,
+    bool card_used,
+    const char *card_version);
 
 #endif

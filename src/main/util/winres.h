@@ -22,18 +22,30 @@ struct resource {
     size_t pos;
 };
 
-void vrsprintf(char *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, va_list ap);
-void rsprintf(char *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, ...);
+void vrsprintf(
+    char *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    va_list ap);
+void rsprintf(
+    char *dest, size_t nchars, HINSTANCE inst, unsigned int fmt_resource, ...);
 
-void vrswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, va_list ap);
-void rswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, ...);
+void vrswprintf(
+    wchar_t *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    va_list ap);
+void rswprintf(
+    wchar_t *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    ...);
 
-void resource_open(struct resource *res, HINSTANCE inst, const char *type,
-        unsigned int ord);
+void resource_open(
+    struct resource *res, HINSTANCE inst, const char *type, unsigned int ord);
 size_t resource_fgets(struct resource *res, char *chars, size_t nchars);
 
 #endif

@@ -9,17 +9,14 @@ struct array {
     size_t nalloced;
 };
 
-#define array_item(type, array, i) \
-        (&(((type *) (array)->items)[i]))
+#define array_item(type, array, i) (&(((type *) (array)->items)[i]))
 
 #define array_reserve(type, array, nitems) \
-        ((type *) array_reserve_(sizeof(type), array, nitems))
+    ((type *) array_reserve_(sizeof(type), array, nitems))
 
-#define array_remove(type, array, i) \
-        array_remove_(sizeof(type), array, i)
+#define array_remove(type, array, i) array_remove_(sizeof(type), array, i)
 
-#define array_append(type, array) \
-        array_reserve(type, array, 1)
+#define array_append(type, array) array_reserve(type, array, 1)
 
 void array_init(struct array *array);
 void *array_reserve_(size_t itemsz, struct array *array, size_t nitems);

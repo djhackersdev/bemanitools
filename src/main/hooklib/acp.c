@@ -10,24 +10,30 @@
 
 #include "hooklib/acp.h"
 
-#include "util/defs.h"
 #include "util/codepage.h"
+#include "util/defs.h"
 #include "util/log.h"
 
 static NTSTATUS NTAPI my_RtlMultiByteToUnicodeN(
-        wchar_t *dest, unsigned long destsz, unsigned long *out_destsz,
-        const char *src, unsigned long srcsz);
+    wchar_t *dest,
+    unsigned long destsz,
+    unsigned long *out_destsz,
+    const char *src,
+    unsigned long srcsz);
 
 static const struct hook_symbol acp_hook_syms[] = {
     {
-        .name   = "RtlMultiByteToUnicodeN",
-        .patch  = my_RtlMultiByteToUnicodeN,
+        .name = "RtlMultiByteToUnicodeN",
+        .patch = my_RtlMultiByteToUnicodeN,
     },
 };
 
 static NTSTATUS NTAPI my_RtlMultiByteToUnicodeN(
-        wchar_t *dest, unsigned long destsz, unsigned long *out_destsz,
-        const char *src, unsigned long srcsz)
+    wchar_t *dest,
+    unsigned long destsz,
+    unsigned long *out_destsz,
+    const char *src,
+    unsigned long srcsz)
 {
     unsigned long result;
 
@@ -59,4 +65,3 @@ void acp_hook_init(void)
     hook_table_apply(NULL, "ntdll.dll", acp_hook_syms, lengthof(acp_hook_syms));
     log_info("ACP Hook enabled");
 }
-

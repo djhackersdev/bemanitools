@@ -9,14 +9,19 @@
 static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
 
-void sdvx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void sdvx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     input_set_loggers(misc, info, warning, fatal);
 }
 
-bool sdvx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool sdvx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     input_init(thread_create, thread_join, thread_destroy);
     mapper_config_load("sdvx");
@@ -33,7 +38,7 @@ void sdvx_io_set_gpio_lights(uint32_t gpio_lights)
 {
     size_t i;
 
-    for (i = 0 ; i < 16 ; i++) {
+    for (i = 0; i < 16; i++) {
         if (gpio_lights & (1 << i)) {
             mapper_write_light(i, 255);
         } else {
@@ -59,7 +64,7 @@ bool sdvx_io_read_input(void)
     pack = mapper_update();
 
     sdvx_io_gpio_sys = pack & 0xFF;
-    sdvx_io_gpio[0] = (pack >>  8) & 0x00FF;
+    sdvx_io_gpio[0] = (pack >> 8) & 0x00FF;
     sdvx_io_gpio[1] = (pack >> 16) & 0x00FF;
 
     return 0;
@@ -83,4 +88,3 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
 {
     return mapper_read_analog(spinner_no) * 4;
 }
-

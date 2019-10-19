@@ -93,12 +93,17 @@ static void test_encode_iidx_09_black_dongle()
 {
     struct security_rp_eeprom result;
 
-    security_rp_generate_signed_eeprom_data(&boot_version_iidx_09_to_13,
-        boot_seeds_iidx_09, &black_plug_mcode_iidx_09, &security_id_default,
+    security_rp_generate_signed_eeprom_data(
+        &boot_version_iidx_09_to_13,
+        boot_seeds_iidx_09,
+        &black_plug_mcode_iidx_09,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &exp_iidx_09_black_eeprom, 
-        sizeof(struct security_rp_eeprom), (void*) &result, 
+    check_data_eq(
+        (void *) &exp_iidx_09_black_eeprom,
+        sizeof(struct security_rp_eeprom),
+        (void *) &result,
         sizeof(struct security_rp_eeprom));
 }
 
@@ -106,12 +111,17 @@ static void test_encode_iidx_10_black_dongle()
 {
     struct security_rp_eeprom result;
 
-    security_rp_generate_signed_eeprom_data(&boot_version_iidx_09_to_13,
-        boot_seeds_iidx_10, &black_plug_mcode_iidx_10, &security_id_default,
+    security_rp_generate_signed_eeprom_data(
+        &boot_version_iidx_09_to_13,
+        boot_seeds_iidx_10,
+        &black_plug_mcode_iidx_10,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &exp_iidx_10_black_eeprom, 
-        sizeof(struct security_rp_eeprom), (void*) &result, 
+    check_data_eq(
+        (void *) &exp_iidx_10_black_eeprom,
+        sizeof(struct security_rp_eeprom),
+        (void *) &result,
         sizeof(struct security_rp_eeprom));
 }
 
@@ -119,12 +129,17 @@ static void test_encode_iidx_11_black_dongle()
 {
     struct security_rp_eeprom result;
 
-    security_rp_generate_signed_eeprom_data(&boot_version_iidx_09_to_13,
-        boot_seeds_iidx_11, &black_plug_mcode_iidx_11, &security_id_default,
+    security_rp_generate_signed_eeprom_data(
+        &boot_version_iidx_09_to_13,
+        boot_seeds_iidx_11,
+        &black_plug_mcode_iidx_11,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &exp_iidx_11_black_eeprom, 
-        sizeof(struct security_rp_eeprom), (void*) &result, 
+    check_data_eq(
+        (void *) &exp_iidx_11_black_eeprom,
+        sizeof(struct security_rp_eeprom),
+        (void *) &result,
         sizeof(struct security_rp_eeprom));
 }
 
@@ -132,12 +147,17 @@ static void test_encode_iidx_12_black_dongle()
 {
     struct security_rp_eeprom result;
 
-    security_rp_generate_signed_eeprom_data(&boot_version_iidx_09_to_13,
-        boot_seeds_iidx_12, &black_plug_mcode_iidx_12, &security_id_default,
+    security_rp_generate_signed_eeprom_data(
+        &boot_version_iidx_09_to_13,
+        boot_seeds_iidx_12,
+        &black_plug_mcode_iidx_12,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &exp_iidx_12_black_eeprom, 
-        sizeof(struct security_rp_eeprom), (void*) &result, 
+    check_data_eq(
+        (void *) &exp_iidx_12_black_eeprom,
+        sizeof(struct security_rp_eeprom),
+        (void *) &result,
         sizeof(struct security_rp_eeprom));
 }
 
@@ -145,12 +165,17 @@ static void test_encode_iidx_13_black_dongle()
 {
     struct security_rp_eeprom result;
 
-    security_rp_generate_signed_eeprom_data(&boot_version_iidx_09_to_13,
-        boot_seeds_iidx_13, &black_plug_mcode_iidx_13, &security_id_default,
+    security_rp_generate_signed_eeprom_data(
+        &boot_version_iidx_09_to_13,
+        boot_seeds_iidx_13,
+        &black_plug_mcode_iidx_13,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &exp_iidx_13_black_eeprom, 
-        sizeof(struct security_rp_eeprom), (void*) &result, 
+    check_data_eq(
+        (void *) &exp_iidx_13_black_eeprom,
+        sizeof(struct security_rp_eeprom),
+        (void *) &result,
         sizeof(struct security_rp_eeprom));
 }
 

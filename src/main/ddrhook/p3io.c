@@ -21,9 +21,9 @@ static HRESULT p3io_ddr_get_cab_type(void *ctx, enum p3io_cab_type *type);
 static HRESULT p3io_ddr_get_video_freq(void *ctx, enum p3io_video_freq *freq);
 
 static const struct p3io_ops p3io_ddr_ops = {
-    .read_jamma     = p3io_ddr_read_jamma,
-    .set_outputs     = p3io_ddr_set_outputs,
-    .get_cab_type   = p3io_ddr_get_cab_type,
+    .read_jamma = p3io_ddr_read_jamma,
+    .set_outputs = p3io_ddr_set_outputs,
+    .get_cab_type = p3io_ddr_get_cab_type,
     .get_video_freq = p3io_ddr_get_video_freq,
 };
 

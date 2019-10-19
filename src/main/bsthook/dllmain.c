@@ -38,10 +38,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
     log_info("Starting up BeatStream IO backend");
 
     bst_io_set_loggers(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     ok = bst_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
@@ -50,10 +47,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
     }
 
     eam_io_set_loggers(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
@@ -102,14 +96,11 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     }
 
     log_to_external(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     args_recover(&argc, &argv);
 
-    for (i = 1 ; i < argc ; i++) {
+    for (i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             continue;
         }
@@ -133,4 +124,3 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 
     return TRUE;
 }
-

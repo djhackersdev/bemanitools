@@ -6,30 +6,30 @@
 #include "p3io/frame.h"
 
 enum {
-    P3IO_CMD_GET_VERSION            = 0x01,
-    P3IO_CMD_SET_WATCHDOG           = 0x05,
-    P3IO_CMD_POWEROFF               = 0x22,
-    P3IO_CMD_SET_OUTPUTS            = 0x24,
-    P3IO_CMD_READ_PLUG              = 0x25,
-    P3IO_CMD_GET_CAB_TYPE_OR_DIPSW  = 0x27,
-    P3IO_CMD_GET_VIDEO_FREQ         = 0x29,
-    P3IO_CMD_SET_MODE               = 0x2F,
-    P3IO_CMD_GET_COINSTOCK          = 0x31,
-    P3IO_CMD_SET_COINCOUNTER        = 0x32,
-    P3IO_CMD_RS232_OPEN_CLOSE       = 0x38,
-    P3IO_CMD_RS232_WRITE            = 0x3A,
-    P3IO_CMD_RS232_READ             = 0x3B,
+    P3IO_CMD_GET_VERSION = 0x01,
+    P3IO_CMD_SET_WATCHDOG = 0x05,
+    P3IO_CMD_POWEROFF = 0x22,
+    P3IO_CMD_SET_OUTPUTS = 0x24,
+    P3IO_CMD_READ_PLUG = 0x25,
+    P3IO_CMD_GET_CAB_TYPE_OR_DIPSW = 0x27,
+    P3IO_CMD_GET_VIDEO_FREQ = 0x29,
+    P3IO_CMD_SET_MODE = 0x2F,
+    P3IO_CMD_GET_COINSTOCK = 0x31,
+    P3IO_CMD_SET_COINCOUNTER = 0x32,
+    P3IO_CMD_RS232_OPEN_CLOSE = 0x38,
+    P3IO_CMD_RS232_WRITE = 0x3A,
+    P3IO_CMD_RS232_READ = 0x3B,
 };
 
 enum {
-    P3IO_RS232_CMD_OPEN         = 0x00,
-    P3IO_RS232_CMD_CLOSE        = 0xFF,
+    P3IO_RS232_CMD_OPEN = 0x00,
+    P3IO_RS232_CMD_CLOSE = 0xFF,
 };
 
 enum {
-    P3IO_RS232_BAUD_19200       = 0x02,
-    P3IO_RS232_BAUD_38400       = 0x03,
-    P3IO_RS232_BAUD_57600       = 0x04,
+    P3IO_RS232_BAUD_19200 = 0x02,
+    P3IO_RS232_BAUD_38400 = 0x03,
+    P3IO_RS232_BAUD_57600 = 0x04,
 };
 
 #pragma pack(push, 1)
@@ -170,8 +170,6 @@ union p3io_resp_any {
 uint8_t p3io_req_cmd(const union p3io_req_any *src);
 
 void p3io_resp_init(
-        struct p3io_hdr *dest,
-        size_t nbytes,
-        const struct p3io_hdr *req);
+    struct p3io_hdr *dest, size_t nbytes, const struct p3io_hdr *req);
 
 #endif

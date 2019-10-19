@@ -12,10 +12,7 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-enum snap_control_heuristic {
-    CONTROL_CENTERING_AXIS,
-    CONTROL_MULTISWITCH
-};
+enum snap_control_heuristic { CONTROL_CENTERING_AXIS, CONTROL_MULTISWITCH };
 
 struct snap_known_control {
     uint32_t usage;
@@ -24,32 +21,34 @@ struct snap_known_control {
 
 static struct snap_known_control snap_known_controls[] = {
     /* X axis */
-    { 0x00010030, CONTROL_CENTERING_AXIS },
+    {0x00010030, CONTROL_CENTERING_AXIS},
 
     /* Y axis */
-    { 0x00010031, CONTROL_CENTERING_AXIS },
+    {0x00010031, CONTROL_CENTERING_AXIS},
 
     /* Z axis */
-    { 0x00010032, CONTROL_CENTERING_AXIS },
+    {0x00010032, CONTROL_CENTERING_AXIS},
 
     /* X rotation */
-    { 0x00010033, CONTROL_CENTERING_AXIS },
+    {0x00010033, CONTROL_CENTERING_AXIS},
 
     /* Y rotation */
-    { 0x00010034, CONTROL_CENTERING_AXIS },
+    {0x00010034, CONTROL_CENTERING_AXIS},
 
     /* Z rotation */
-    { 0x00010035, CONTROL_CENTERING_AXIS },
+    {0x00010035, CONTROL_CENTERING_AXIS},
 
     /* I don't have an adapter that presents a slider/dial/wheel so I don't
        know how to deal with those things right now */
 
     /* Hat switch */
-    { 0x00010039, CONTROL_MULTISWITCH }
-};
+    {0x00010039, CONTROL_MULTISWITCH}};
 
-static bool snap_check_for_edge(const struct hid_control *ctl, int32_t val,
-        int32_t other_val, struct mapped_action *ma);
+static bool snap_check_for_edge(
+    const struct hid_control *ctl,
+    int32_t val,
+    int32_t other_val,
+    struct mapped_action *ma);
 
 void snap_init(struct snap *snap)
 {
@@ -63,10 +62,8 @@ void snap_init(struct snap *snap)
 
     ndevs = 0;
 
-    for (pos = hid_mgr_get_first_stub()
-            ; pos != NULL
-            ; pos = hid_mgr_get_next_stub(pos)) {
-
+    for (pos = hid_mgr_get_first_stub(); pos != NULL;
+         pos = hid_mgr_get_next_stub(pos)) {
         ndevs++;
     }
 
@@ -75,10 +72,8 @@ void snap_init(struct snap *snap)
 
     i = 0;
 
-    for (pos = hid_mgr_get_first_stub(), i = 0
-            ; pos != NULL && i < ndevs
-            ; pos = hid_mgr_get_next_stub(pos), i++) {
-
+    for (pos = hid_mgr_get_first_stub(), i = 0; pos != NULL && i < ndevs;
+         pos = hid_mgr_get_next_stub(pos), i++) {
         if (!hid_stub_is_attached(pos)) {
             continue;
         }
@@ -89,13 +84,13 @@ void snap_init(struct snap *snap)
 
         snap->devs[i].hid = pos;
         snap->devs[i].ncontrols = ncontrols;
-        snap->devs[i].controls = xcalloc(ncontrols
-                * sizeof(struct hid_control));
+        snap->devs[i].controls =
+            xcalloc(ncontrols * sizeof(struct hid_control));
         snap->devs[i].states = xcalloc(ncontrols * sizeof(int32_t));
 
         hid_stub_get_controls(pos, snap->devs[i].controls, &ncontrols);
 
-        for (j = 0 ; j < ncontrols ; j++) {
+        for (j = 0; j < ncontrols; j++) {
             hid_stub_get_value(pos, j, &snap->devs[i].states[j]);
         }
     }
@@ -103,8 +98,10 @@ void snap_init(struct snap *snap)
     hid_mgr_unlock();
 }
 
-bool snap_find_edge(const struct snap *snap, const struct snap *other_snap,
-        struct mapped_action *ma)
+bool snap_find_edge(
+    const struct snap *snap,
+    const struct snap *other_snap,
+    struct mapped_action *ma)
 {
     const struct hid_control *ctl;
     int32_t val;
@@ -125,7 +122,7 @@ bool snap_find_edge(const struct snap *snap, const struct snap *other_snap,
         return false;
     }
 
-    for (i = 0 ; i < snap->ndevs ; i++) {
+    for (i = 0; i < snap->ndevs; i++) {
         if (snap->devs[i].hid != other_snap->devs[i].hid) {
             return false;
         }
@@ -134,12 +131,14 @@ bool snap_find_edge(const struct snap *snap, const struct snap *other_snap,
             return false;
         }
 
-        if (memcmp(snap->devs[i].controls, other_snap->devs[i].controls,
+        if (memcmp(
+                snap->devs[i].controls,
+                other_snap->devs[i].controls,
                 snap->devs[i].ncontrols * sizeof(struct hid_control)) != 0) {
             return false;
         }
 
-        for (j = 0 ; j < snap->devs[i].ncontrols ; j++) {
+        for (j = 0; j < snap->devs[i].ncontrols; j++) {
             ctl = &snap->devs[i].controls[j];
             val = snap->devs[i].states[j];
             other_val = other_snap->devs[i].states[j];
@@ -156,8 +155,11 @@ bool snap_find_edge(const struct snap *snap, const struct snap *other_snap,
     return false;
 }
 
-static bool snap_check_for_edge(const struct hid_control *ctl, int32_t val,
-        int32_t other_val, struct mapped_action *ma)
+static bool snap_check_for_edge(
+    const struct hid_control *ctl,
+    int32_t val,
+    int32_t other_val,
+    struct mapped_action *ma)
 {
     size_t i;
     int32_t range;
@@ -179,7 +181,7 @@ static bool snap_check_for_edge(const struct hid_control *ctl, int32_t val,
     } else {
         /* Here we kinda have to take things on a case by case basis */
 
-        for (i = 0 ; i < lengthof(snap_known_controls) ; i++) {
+        for (i = 0; i < lengthof(snap_known_controls); i++) {
             if (snap_known_controls[i].usage != ctl->usage) {
                 continue;
             }
@@ -213,8 +215,8 @@ static bool snap_check_for_edge(const struct hid_control *ctl, int32_t val,
                     /* Assume positions are discrete. Precisely match any
                        transitioned-to value that isn't a null state. */
 
-                    if (val >= ctl->value_min && val <= ctl->value_max
-                            && val != other_val) {
+                    if (val >= ctl->value_min && val <= ctl->value_max &&
+                        val != other_val) {
                         ma->value_min = val;
                         ma->value_max = val;
 
@@ -237,11 +239,10 @@ void snap_fini(struct snap *snap)
 {
     size_t i;
 
-    for (i = 0 ; i < snap->ndevs ; i++) {
+    for (i = 0; i < snap->ndevs; i++) {
         free(snap->devs[i].states);
         free(snap->devs[i].controls);
     }
 
     free(snap->devs);
 }
-

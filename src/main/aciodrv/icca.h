@@ -26,7 +26,8 @@ bool aciodrv_icca_init(uint8_t node_id);
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_set_state(uint8_t node_id, int slot_state, struct ac_io_icca_state* state);
+bool aciodrv_icca_set_state(
+    uint8_t node_id, int slot_state, struct ac_io_icca_state *state);
 
 /**
  * Get the current state of an ICCA node.
@@ -39,7 +40,7 @@ bool aciodrv_icca_set_state(uint8_t node_id, int slot_state, struct ac_io_icca_s
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state);
+bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state *state);
 
 /**
  * Trigger a card read action on the ICCA reader. Make sure to call this
@@ -55,6 +56,6 @@ bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state);
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state* state);
+bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state *state);
 
 #endif

@@ -22,10 +22,10 @@ struct security_rp2_eeprom {
  * Generate signed eeprom data from non encrypted and unobfuscated data required
  * to pass security checks on games using black (game specific) and white
  * (eamuse) roundplugs.
- * 
+ *
  * This implementation (rp 2) is used by the following games
  * - iidx 14 to 17
- * 
+ *
  * @param type Type of plug to sign eeprom data for (black or white).
  * @param boot_version The boot version mcode that is used for bootstrapping
  *                     the security backend (of the ezusb.dll).
@@ -35,12 +35,13 @@ struct security_rp2_eeprom {
  * @param plug_id The id stored on the plug. This data is normally stored in the
  *                ROM area of the black dongle is is often refered to as the
  *                "PCBID" or "EAMID" when stored on the white dongle.
- * @param out Pointer to the eeprom data struct for the resulting data. 
+ * @param out Pointer to the eeprom data struct for the resulting data.
  */
 void security_rp2_generate_signed_eeprom_data(
-        enum security_rp_util_rp_type type,
-        const struct security_mcode* boot_version,
-        const struct security_mcode* plug_mcode,
-        const struct security_id* plug_id, struct security_rp2_eeprom* out);
+    enum security_rp_util_rp_type type,
+    const struct security_mcode *boot_version,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp2_eeprom *out);
 
 #endif

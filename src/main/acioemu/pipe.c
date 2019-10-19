@@ -13,11 +13,10 @@
 #include "util/mem.h"
 #include "util/time.h"
 
-static struct ac_io_in_queued *ac_io_in_queued_alloc(struct ac_io_in *in,
-        uint64_t delay_us);
+static struct ac_io_in_queued *
+ac_io_in_queued_alloc(struct ac_io_in *in, uint64_t delay_us);
 static void ac_io_in_queued_populate(
-        struct ac_io_in_queued *iq,
-        const struct ac_io_message *msg);
+    struct ac_io_in_queued *iq, const struct ac_io_message *msg);
 static void ac_io_in_queued_putc(struct ac_io_in_queued *iq, uint8_t b);
 
 static bool ac_io_out_supply_byte(struct ac_io_out *out, uint8_t b);
@@ -30,8 +29,8 @@ static bool ac_io_out_reject_message(struct ac_io_out *out);
 
 static bool ac_io_enable_legacy_mode = false;
 
-static struct ac_io_in_queued *ac_io_in_queued_alloc(struct ac_io_in *in,
-        uint64_t delay_us)
+static struct ac_io_in_queued *
+ac_io_in_queued_alloc(struct ac_io_in *in, uint64_t delay_us)
 {
     struct ac_io_in_queued *iq;
 
@@ -51,8 +50,7 @@ static struct ac_io_in_queued *ac_io_in_queued_alloc(struct ac_io_in *in,
 }
 
 static void ac_io_in_queued_populate(
-        struct ac_io_in_queued *iq,
-        const struct ac_io_message *msg)
+    struct ac_io_in_queued *iq, const struct ac_io_message *msg)
 {
     uint8_t checksum;
     const uint8_t *src;
@@ -68,7 +66,7 @@ static void ac_io_in_queued_populate(
     src = (const uint8_t *) msg;
     checksum = 0;
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         ac_io_in_queued_putc(iq, src[i]);
         checksum += src[i];
     }
@@ -97,8 +95,8 @@ void ac_io_in_init(struct ac_io_in *in)
     list_init(&in->queue);
 }
 
-void ac_io_in_supply(struct ac_io_in *in, const struct ac_io_message *msg,
-        uint64_t delay_us)
+void ac_io_in_supply(
+    struct ac_io_in *in, const struct ac_io_message *msg, uint64_t delay_us)
 {
     struct ac_io_in_queued *dest;
 
@@ -113,10 +111,7 @@ void ac_io_in_supply(struct ac_io_in *in, const struct ac_io_message *msg,
 }
 
 void ac_io_in_supply_thunk(
-        struct ac_io_in *in,
-        ac_io_in_thunk_t thunk,
-        void *ctx,
-        uint64_t delay_us)
+    struct ac_io_in *in, ac_io_in_thunk_t thunk, void *ctx, uint64_t delay_us)
 {
     struct ac_io_in_queued *dest;
 
@@ -177,7 +172,7 @@ void ac_io_in_drain(struct ac_io_in *in, struct iobuf *dest)
         if (ac_io_enable_legacy_mode) {
             break;
         }
-     } while (nmoved > 0);
+    } while (nmoved > 0);
 }
 
 bool ac_io_in_is_msg_pending(const struct ac_io_in *in)
@@ -209,7 +204,6 @@ static bool ac_io_out_supply_byte(struct ac_io_out *out, uint8_t b)
     if (out->in_frame) {
         return ac_io_out_supply_frame_byte(out, b);
     } else {
-
         if (b == AC_IO_SOF) {
             out->in_frame = true;
         } else if (b == AC_IO_ESCAPE) {
@@ -235,7 +229,6 @@ static bool ac_io_out_supply_frame_byte(struct ac_io_out *out, uint8_t b)
 
         return true;
     } else if (b == AC_IO_SOF) {
-
         if (out->pos == 0) {
             /* Got autobaud/empty message */
             out->have_message = true;
@@ -247,7 +240,6 @@ static bool ac_io_out_supply_frame_byte(struct ac_io_out *out, uint8_t b)
 
             return true;
         }
-
     }
 
     /* Payload byte */
@@ -257,13 +249,11 @@ static bool ac_io_out_supply_frame_byte(struct ac_io_out *out, uint8_t b)
     /* Handle contextually-implied end-of-packet events */
 
     if (out->pos > offsetof(struct ac_io_message, addr)) {
-
         if (out->msg.addr == AC_IO_BROADCAST) {
             return ac_io_out_detect_broadcast_eof(out);
         } else {
             return ac_io_out_detect_command_eof(out);
         }
-
     }
 
     return true;
@@ -274,9 +264,8 @@ static bool ac_io_out_detect_broadcast_eof(struct ac_io_out *out)
     size_t end;
 
     if (out->pos > offsetof(struct ac_io_message, bcast.nbytes)) {
-        end = offsetof(struct ac_io_message,bcast.raw)
-                + out->msg.bcast.nbytes
-                + 1;
+        end = offsetof(struct ac_io_message, bcast.raw) +
+            out->msg.bcast.nbytes + 1;
 
         if (out->pos == end) {
             return ac_io_out_check_sum(out);
@@ -291,9 +280,7 @@ static bool ac_io_out_detect_command_eof(struct ac_io_out *out)
     size_t end;
 
     if (out->pos > offsetof(struct ac_io_message, cmd.nbytes)) {
-        end = offsetof(struct ac_io_message, cmd.raw)
-                + out->msg.cmd.nbytes
-                + 1;
+        end = offsetof(struct ac_io_message, cmd.raw) + out->msg.cmd.nbytes + 1;
 
         if (out->pos == end) {
             return ac_io_out_check_sum(out);
@@ -310,15 +297,17 @@ static bool ac_io_out_check_sum(struct ac_io_out *out)
 
     checksum = 0;
 
-    for (i = 0 ; i < out->pos - 1 ; i++) {
+    for (i = 0; i < out->pos - 1; i++) {
         checksum += out->bytes[i];
     }
 
     if (checksum == out->bytes[out->pos - 1]) {
         return ac_io_out_accept_message(out);
     } else {
-        log_warning("Checksum bad: expected %02x got %02x",
-                checksum, out->bytes[out->pos - 1]);
+        log_warning(
+            "Checksum bad: expected %02x got %02x",
+            checksum,
+            out->bytes[out->pos - 1]);
 
         return ac_io_out_reject_message(out);
     }
@@ -363,4 +352,3 @@ void ac_io_out_consume_message(struct ac_io_out *out)
     out->have_message = false;
     out->escape = false;
 }
-

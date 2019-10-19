@@ -7,11 +7,11 @@
 #include "bemanitools/glue.h"
 #include "bemanitools/input.h"
 
-#include "geninput/hid.h"
 #include "geninput/hid-mgr.h"
+#include "geninput/hid.h"
 #include "geninput/io-thread.h"
-#include "geninput/mapper.h"
 #include "geninput/mapper-s11n.h"
+#include "geninput/mapper.h"
 
 #include "util/fs.h"
 #include "util/log.h"
@@ -31,14 +31,17 @@ static FILE *mapper_config_open(const char *game_type, const char *mode)
     return fopen_appdata("DJHACKERS", path, mode);
 }
 
-void input_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void input_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     log_to_external(misc, info, warning, fatal);
 }
 
-void input_init(thread_create_t create, thread_join_t join,
-        thread_destroy_t destroy)
+void input_init(
+    thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
     if (InterlockedIncrement(&input_init_count) != 1) {
         return;
@@ -125,8 +128,8 @@ void mapper_clear_light_map(const struct mapped_light *ml)
     mapper_impl_clear_light_map(mapper_inst, ml);
 }
 
-bool mapper_get_action_map(uint8_t action, uint8_t page,
-        struct mapped_action *ma)
+bool mapper_get_action_map(
+    uint8_t action, uint8_t page, struct mapped_action *ma)
 {
     return mapper_impl_get_action_map(mapper_inst, action, page, ma);
 }
@@ -166,8 +169,8 @@ light_iter_t mapper_iterate_lights(void)
     return mapper_impl_iterate_lights(mapper_inst);
 }
 
-void mapper_set_action_map(uint8_t action, uint8_t page, uint8_t bit,
-        const struct mapped_action *ma)
+void mapper_set_action_map(
+    uint8_t action, uint8_t page, uint8_t bit, const struct mapped_action *ma)
 {
     mapper_impl_set_action_map(mapper_inst, action, page, bit, ma);
 }
@@ -220,4 +223,3 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)
 
     return TRUE;
 }
-

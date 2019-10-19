@@ -9,10 +9,13 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-bool cconfig_util_get_int(struct cconfig* config, const char* key, int32_t* ret,
-        int32_t default_value)
+bool cconfig_util_get_int(
+    struct cconfig *config,
+    const char *key,
+    int32_t *ret,
+    int32_t default_value)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -29,10 +32,10 @@ bool cconfig_util_get_int(struct cconfig* config, const char* key, int32_t* ret,
     return false;
 }
 
-bool cconfig_util_get_float(struct cconfig* config, const char* key, float* ret,
-        float default_value)
+bool cconfig_util_get_float(
+    struct cconfig *config, const char *key, float *ret, float default_value)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -49,10 +52,10 @@ bool cconfig_util_get_float(struct cconfig* config, const char* key, float* ret,
     return false;
 }
 
-bool cconfig_util_get_bool(struct cconfig* config, const char* key, bool* ret,
-        bool default_value)
+bool cconfig_util_get_bool(
+    struct cconfig *config, const char *key, bool *ret, bool default_value)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -73,10 +76,14 @@ bool cconfig_util_get_bool(struct cconfig* config, const char* key, bool* ret,
     return false;
 }
 
-bool cconfig_util_get_str(struct cconfig* config, const char* key, 
-        char* buffer, size_t len, const char* default_value)
+bool cconfig_util_get_str(
+    struct cconfig *config,
+    const char *key,
+    char *buffer,
+    size_t len,
+    const char *default_value)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
     size_t str_len;
 
     log_assert(config);
@@ -97,11 +104,15 @@ bool cconfig_util_get_str(struct cconfig* config, const char* key,
     return false;
 }
 
-bool cconfig_util_get_data(struct cconfig* config, const char* key, 
-        uint8_t* buffer, size_t len, const uint8_t* default_value)
+bool cconfig_util_get_data(
+    struct cconfig *config,
+    const char *key,
+    uint8_t *buffer,
+    size_t len,
+    const uint8_t *default_value)
 {
     size_t res_len;
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -124,10 +135,10 @@ bool cconfig_util_get_data(struct cconfig* config, const char* key,
     return false;
 }
 
-void cconfig_util_set_int(struct cconfig* config, const char* key,
-        int32_t value, const char* desc)
+void cconfig_util_set_int(
+    struct cconfig *config, const char *key, int32_t value, const char *desc)
 {
-    char* str;
+    char *str;
     size_t str_len;
 
     log_assert(config);
@@ -143,10 +154,10 @@ void cconfig_util_set_int(struct cconfig* config, const char* key,
     free(str);
 }
 
-void cconfig_util_set_float(struct cconfig* config, const char* key,
-        float value, const char* desc)
+void cconfig_util_set_float(
+    struct cconfig *config, const char *key, float value, const char *desc)
 {
-    char* str;
+    char *str;
     size_t str_len;
 
     log_assert(config);
@@ -162,8 +173,8 @@ void cconfig_util_set_float(struct cconfig* config, const char* key,
     free(str);
 }
 
-void cconfig_util_set_bool(struct cconfig* config, const char* key, bool value,
-        const char* desc)
+void cconfig_util_set_bool(
+    struct cconfig *config, const char *key, bool value, const char *desc)
 {
     log_assert(config);
     log_assert(key);
@@ -172,8 +183,11 @@ void cconfig_util_set_bool(struct cconfig* config, const char* key, bool value,
     cconfig_set(config, key, value ? "true" : "false", desc);
 }
 
-void cconfig_util_set_str(struct cconfig* config, const char* key,
-        const char* value, const char* desc)
+void cconfig_util_set_str(
+    struct cconfig *config,
+    const char *key,
+    const char *value,
+    const char *desc)
 {
     log_assert(config);
     log_assert(key);
@@ -183,10 +197,14 @@ void cconfig_util_set_str(struct cconfig* config, const char* key,
     cconfig_set(config, key, value, desc);
 }
 
-void cconfig_util_set_data(struct cconfig* config, const char* key,
-        const uint8_t* value, size_t len, const char* desc)
+void cconfig_util_set_data(
+    struct cconfig *config,
+    const char *key,
+    const uint8_t *value,
+    size_t len,
+    const char *desc)
 {
-    char* str;
+    char *str;
     size_t str_len;
 
     log_assert(config);
@@ -202,10 +220,13 @@ void cconfig_util_set_data(struct cconfig* config, const char* key,
     free(str);
 }
 
-void cconfig_util_log(struct cconfig* config, log_formatter_t log_formatter)
+void cconfig_util_log(struct cconfig *config, log_formatter_t log_formatter)
 {
     for (uint32_t i = 0; i < config->nentries; i++) {
-        log_formatter(LOG_MODULE, "%s=%s", config->entries[i].key, 
+        log_formatter(
+            LOG_MODULE,
+            "%s=%s",
+            config->entries[i].key,
             config->entries[i].value);
     }
 }

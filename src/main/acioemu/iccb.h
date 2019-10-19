@@ -16,12 +16,9 @@ struct ac_io_emu_iccb {
 };
 
 void ac_io_emu_iccb_init(
-        struct ac_io_emu_iccb *iccb,
-        struct ac_io_emu *emu,
-        uint8_t unit_no);
+    struct ac_io_emu_iccb *iccb, struct ac_io_emu *emu, uint8_t unit_no);
 
 void ac_io_emu_iccb_dispatch_request(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req);
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req);
 
 #endif

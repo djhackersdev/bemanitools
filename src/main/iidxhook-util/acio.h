@@ -9,7 +9,7 @@
 
 /**
  * Initialize an emulated ACIO on COM1 for IIDX.
- * 
+ *
  * @param legacy_mode Set to true if running on slotted readers on iidx 13-18.
  *        Old games using slotted readers might use an old libacio version that
  *        does not support handling of multi messages per package. Instead,

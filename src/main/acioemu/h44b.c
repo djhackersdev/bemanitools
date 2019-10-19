@@ -16,18 +16,15 @@
 #include "util/hex.h"
 
 static void ac_io_emu_h44b_cmd_send_version(
-        struct ac_io_emu_h44b *h44b,
-        const struct ac_io_message *req);
+    struct ac_io_emu_h44b *h44b, const struct ac_io_message *req);
 
 static void ac_io_emu_h44b_send_status(
-        struct ac_io_emu_h44b *h44b,
-        const struct ac_io_message *req,
-        uint8_t status);
+    struct ac_io_emu_h44b *h44b,
+    const struct ac_io_message *req,
+    uint8_t status);
 
 void ac_io_emu_h44b_init(
-        struct ac_io_emu_h44b *h44b,
-        struct ac_io_emu *emu,
-        uint8_t unit_no)
+    struct ac_io_emu_h44b *h44b, struct ac_io_emu *emu, uint8_t unit_no)
 {
     memset(h44b, 0, sizeof(*h44b));
     h44b->emu = emu;
@@ -35,8 +32,7 @@ void ac_io_emu_h44b_init(
 }
 
 void ac_io_emu_h44b_dispatch_request(
-        struct ac_io_emu_h44b *h44b,
-        const struct ac_io_message *req)
+    struct ac_io_emu_h44b *h44b, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
 
@@ -58,7 +54,8 @@ void ac_io_emu_h44b_dispatch_request(
         case AC_IO_H44B_CMD_SET_OUTPUTS:
             /* Not using the struct ac_io_h44b_output here */
             for (int i = 0; i < 6; i++) {
-                jb_io_set_rgb_led((enum jb_io_rgb_led) i,
+                jb_io_set_rgb_led(
+                    (enum jb_io_rgb_led) i,
                     req->cmd.raw[i * 3],
                     req->cmd.raw[i * 3 + 1],
                     req->cmd.raw[i * 3 + 2]);
@@ -71,16 +68,17 @@ void ac_io_emu_h44b_dispatch_request(
             break;
 
         default:
-            log_warning("Unknown ACIO message %04x on h44b node, addr=%d",
-                    cmd_code, req->addr);
+            log_warning(
+                "Unknown ACIO message %04x on h44b node, addr=%d",
+                cmd_code,
+                req->addr);
 
             break;
     }
 }
 
 static void ac_io_emu_h44b_cmd_send_version(
-        struct ac_io_emu_h44b *h44b,
-        const struct ac_io_message *req)
+    struct ac_io_emu_h44b *h44b, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -93,8 +91,10 @@ static void ac_io_emu_h44b_cmd_send_version(
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x00;
     resp.cmd.version.revision = 0x02;
-    memcpy(resp.cmd.version.product_code, "H44B",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "H44B",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
@@ -102,9 +102,9 @@ static void ac_io_emu_h44b_cmd_send_version(
 }
 
 static void ac_io_emu_h44b_send_status(
-        struct ac_io_emu_h44b *h44b,
-        const struct ac_io_message *req,
-        uint8_t status)
+    struct ac_io_emu_h44b *h44b,
+    const struct ac_io_message *req,
+    uint8_t status)
 {
     struct ac_io_message resp;
 

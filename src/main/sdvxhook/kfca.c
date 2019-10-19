@@ -35,40 +35,42 @@ void kfca_dispatch_request(const struct ac_io_message *req)
     cmd_code = ac_io_u16(req->cmd.code);
 
     switch (cmd_code) {
-    case AC_IO_CMD_GET_VERSION:
-        log_misc("AC_IO_CMD_GET_VERSION(%d)", req->addr);
-        kfca_send_version(req);
+        case AC_IO_CMD_GET_VERSION:
+            log_misc("AC_IO_CMD_GET_VERSION(%d)", req->addr);
+            kfca_send_version(req);
 
-        break;
+            break;
 
-    case AC_IO_CMD_START_UP:
-        log_misc("AC_IO_CMD_START_UP(%d)", req->addr);
-        kfca_report_status(req, 0x00);
+        case AC_IO_CMD_START_UP:
+            log_misc("AC_IO_CMD_START_UP(%d)", req->addr);
+            kfca_report_status(req, 0x00);
 
-        break;
+            break;
 
-    case AC_IO_CMD_KFCA_POLL:
-        kfca_poll(req);
+        case AC_IO_CMD_KFCA_POLL:
+            kfca_poll(req);
 
-        break;
+            break;
 
-    case AC_IO_CMD_KFCA_WATCHDOG:
-        log_misc("AC_IO_CMD_KFCA_WATCHDOG(%d)", req->addr);
-        kfca_report_status(req, 0x00);
+        case AC_IO_CMD_KFCA_WATCHDOG:
+            log_misc("AC_IO_CMD_KFCA_WATCHDOG(%d)", req->addr);
+            kfca_report_status(req, 0x00);
 
-        break;
+            break;
 
-    case AC_IO_CMD_KFCA_AMP_CONTROL:
-        log_misc("AC_IO_CMD_KFCA_AMP_CONTROL(%d)", req->addr);
-        kfca_report_0128(req);
+        case AC_IO_CMD_KFCA_AMP_CONTROL:
+            log_misc("AC_IO_CMD_KFCA_AMP_CONTROL(%d)", req->addr);
+            kfca_report_0128(req);
 
-        break;
+            break;
 
-    default:
-        log_warning("Unknown ACIO message %04x on KFCA mode, addr=%d",
-                cmd_code, req->addr);
+        default:
+            log_warning(
+                "Unknown ACIO message %04x on KFCA mode, addr=%d",
+                cmd_code,
+                req->addr);
 
-        break;
+            break;
     }
 }
 
@@ -85,8 +87,10 @@ static void kfca_send_version(const struct ac_io_message *req)
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x01;
     resp.cmd.version.revision = 0x00;
-    memcpy(resp.cmd.version.product_code, "KFCA",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "KFCA",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
@@ -106,7 +110,8 @@ static void kfca_report_status(const struct ac_io_message *req, uint8_t status)
     ac_io_emu_response_push(kfca_ac_io_emu, &resp, 0);
 }
 
-static void kfca_report_0128(const struct ac_io_message *req) {
+static void kfca_report_0128(const struct ac_io_message *req)
+{
     struct ac_io_message resp;
 
     resp.addr = req->addr | AC_IO_RESPONSE_FLAG;
@@ -132,7 +137,7 @@ static void kfca_poll(const struct ac_io_message *req)
 
     sdvx_io_set_gpio_lights(ac_io_u32(pout->gpio));
 
-    for (i = 0 ; i < lengthof(pout->pwm) ; i++) {
+    for (i = 0; i < lengthof(pout->pwm); i++) {
         sdvx_io_set_pwm_light(i, pout->pwm[i]);
     }
 
@@ -148,10 +153,7 @@ static void kfca_poll(const struct ac_io_message *req)
     ctx = req->addr | (req->cmd.code << 8) | (req->cmd.seq_no << 24);
 
     ac_io_emu_response_push_thunk(
-            kfca_ac_io_emu,
-            kfca_poll_thunk,
-            (void *) ctx,
-            delay);
+        kfca_ac_io_emu, kfca_poll_thunk, (void *) ctx, delay);
 }
 
 static void kfca_poll_thunk(void *ctx_ptr, struct ac_io_message *resp)
@@ -192,4 +194,3 @@ static void kfca_poll_thunk(void *ctx_ptr, struct ac_io_message *resp)
     pin->gpio[0] = ac_io_u16(sdvx_io_get_input_gpio(0));
     pin->gpio[1] = ac_io_u16(sdvx_io_get_input_gpio(1));
 }
-

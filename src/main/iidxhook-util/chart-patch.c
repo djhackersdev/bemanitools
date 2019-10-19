@@ -61,15 +61,15 @@ static struct chart_patch_file chart_patch_file_1;
 static struct chart_patch_file chart_patch_file_checksum;
 static CRITICAL_SECTION chart_patch_lock;
 
-static bool chart_patch_file_load(struct irp* irp_open, 
-        struct chart_patch_file *file, const wchar_t* path)
+static bool chart_patch_file_load(
+    struct irp *irp_open, struct chart_patch_file *file, const wchar_t *path)
 {
     struct irp irp;
     void *bytes;
     size_t nbytes;
     HANDLE fd;
     HRESULT hr;
-    char* tmp;
+    char *tmp;
 
     /* Reset file to ensure consistent not-available state */
     memset(file, 0, sizeof(struct chart_patch_file));
@@ -158,7 +158,7 @@ static bool chart_patch_file_load(struct irp* irp_open,
     return true;
 }
 
-static bool chart_patch_is_chart_id(const wchar_t* str)
+static bool chart_patch_is_chart_id(const wchar_t *str)
 {
     for (int i = 0; i < 4; i++) {
         if (!(str[i] >= L'0' && str[i] <= L'9')) {
@@ -184,24 +184,27 @@ static void chart_patch_execute_patch_1()
     factor = chart_patch_hz / chart_patch_timebase;
     toc = (struct chart_toc_entry *) chart_patch_file_1.state.bytes;
 
-    log_misc("Patching chart: orig %f, target %f, factor %f", 
-        chart_patch_timebase, chart_patch_hz, factor);
+    log_misc(
+        "Patching chart: orig %f, target %f, factor %f",
+        chart_patch_timebase,
+        chart_patch_hz,
+        factor);
 
-    for (i = 0 ; i < 12 ; i++) {
+    for (i = 0; i < 12; i++) {
         if (toc[i].offset == 0) {
             continue; /* No such chart */
         }
 
-        for (   chart_offset  = toc[i].offset ;
-                chart_offset  < toc[i].offset + toc[i].length ;
-                chart_offset += sizeof(struct chart_event)) {
-            event = (struct chart_event *) 
-                &chart_patch_file_1.state.bytes[chart_offset];
+        for (chart_offset = toc[i].offset;
+             chart_offset < toc[i].offset + toc[i].length;
+             chart_offset += sizeof(struct chart_event)) {
+            event = (struct chart_event *) &chart_patch_file_1.state
+                        .bytes[chart_offset];
 
             /* Don't clobber the end-of-chart marker */
 
             if (event->time != 0x7FFFFFFF) {
-                event->time  = (uint32_t) round(event->time * factor);
+                event->time = (uint32_t) round(event->time * factor);
             }
         }
     }
@@ -218,18 +221,17 @@ static void chart_patch_execute_patch_checksum()
     size_t i;
 
     header = (struct ospreybin *) &chart_patch_file_checksum.state.bytes[0];
-    entries = (struct ospreybin_entry *) 
-        &chart_patch_file_checksum.state.bytes[sizeof(*header)];
+    entries = (struct ospreybin_entry *) &chart_patch_file_checksum.state
+                  .bytes[sizeof(*header)];
 
-    for (i = 0 ; i < header->num_entries ; i++) {
+    for (i = 0; i < header->num_entries; i++) {
         entry = &entries[i];
 
         if (!str_eq(chart_patch_file_1_name, entry->filename)) {
             continue;
         }
 
-        span_start = 
-            &chart_patch_file_1.state.bytes[entry->offset_in_file];
+        span_start = &chart_patch_file_1.state.bytes[entry->offset_in_file];
         span_len = entry->checksum_length;
         checksum = crc32(span_start, span_len, 0);
 
@@ -242,7 +244,7 @@ static void chart_patch_execute_patch_checksum()
     log_warning("Could not find checksum row for %s", chart_patch_file_1_name);
 }
 
-static bool chart_patch_file_trap(struct irp* irp)
+static bool chart_patch_file_trap(struct irp *irp)
 {
     wchar_t buffer_1_path[1024];
     wchar_t buffer_checksum_path[1024];
@@ -250,7 +252,7 @@ static bool chart_patch_file_trap(struct irp* irp)
     wchar_t chart_file[7];
     bool is_1_file;
     bool is_checksum_file;
-    char* tmp;
+    char *tmp;
 
     /* This has to trap three different scenarios:
        1. open .1 chart file only
@@ -259,9 +261,14 @@ static bool chart_patch_file_trap(struct irp* irp)
        In the end, we have to serve either just the .1 file or both the .1
        and checksum file from memory until the application closes one or both
        files */
-    if (swscanf(irp->open_filename, L"..\\data\\sd_data%*[\\/]%c%c%c%c%*[\\/]", 
-            &chart_id[0], &chart_id[1], &chart_id[2], &chart_id[3]) == 4 &&
-            chart_patch_is_chart_id(chart_id)) {
+    if (swscanf(
+            irp->open_filename,
+            L"..\\data\\sd_data%*[\\/]%c%c%c%c%*[\\/]",
+            &chart_id[0],
+            &chart_id[1],
+            &chart_id[2],
+            &chart_id[3]) == 4 &&
+        chart_patch_is_chart_id(chart_id)) {
         chart_id[4] = '\0';
 
         wstr_narrow(irp->open_filename, &tmp);
@@ -300,13 +307,18 @@ static bool chart_patch_file_trap(struct irp* irp)
             log_misc("Preparing in-memory chart %s...", tmp);
             free(tmp);
 
-            wsprintfW(buffer_1_path, L"..\\data\\sd_data\\\\%s\\%s.1", chart_id,
+            wsprintfW(
+                buffer_1_path,
+                L"..\\data\\sd_data\\\\%s\\%s.1",
+                chart_id,
                 chart_id);
-            wsprintfW(buffer_checksum_path,
-                L"..\\data\\sd_data\\%s\\osprey.bin", chart_id);
+            wsprintfW(
+                buffer_checksum_path,
+                L"..\\data\\sd_data\\%s\\osprey.bin",
+                chart_id);
 
-            if (!chart_patch_file_load(irp, &chart_patch_file_1, 
-                    buffer_1_path)) {
+            if (!chart_patch_file_load(
+                    irp, &chart_patch_file_1, buffer_1_path)) {
                 wstr_narrow(buffer_1_path, &tmp);
                 log_fatal("Cannot load .1 file %s", tmp);
                 free(tmp);
@@ -315,13 +327,13 @@ static bool chart_patch_file_trap(struct irp* irp)
             chart_patch_execute_patch_1();
 
             wstr_narrow(chart_file, &tmp);
-            memcpy(chart_patch_file_1_name, tmp, 
-                sizeof(chart_patch_file_1_name));
+            memcpy(
+                chart_patch_file_1_name, tmp, sizeof(chart_patch_file_1_name));
             free(tmp);
 
             /* Optional on some games */
-            if (chart_patch_file_load(irp, &chart_patch_file_checksum, 
-                    buffer_checksum_path)) {
+            if (chart_patch_file_load(
+                    irp, &chart_patch_file_checksum, buffer_checksum_path)) {
                 chart_patch_execute_patch_checksum();
             }
 
@@ -349,16 +361,15 @@ static bool chart_patch_file_trap(struct irp* irp)
     return false;
 }
 
-static HRESULT chart_patch_file_close_irp(
-        struct chart_patch_file *file,
-        struct irp *irp_close)
+static HRESULT
+chart_patch_file_close_irp(struct chart_patch_file *file, struct irp *irp_close)
 {
     HRESULT hr;
     struct irp irp;
 
     file->active = false;
 
-    // log_misc("chart_patch_file_close_irp %d %p %d %p", 
+    // log_misc("chart_patch_file_close_irp %d %p %d %p",
     //     chart_patch_file_1.active,
     //     chart_patch_file_1.fd,
     //     chart_patch_file_checksum.active,
@@ -373,12 +384,12 @@ static HRESULT chart_patch_file_close_irp(
             irp.fd = chart_patch_file_1.fd;
 
             hr = irp_invoke_next(&irp);
-            
+
             if (hr != S_OK) {
                 log_warning("Closing dummy .1 file handle failed");
             }
-                        
-            free((void*) chart_patch_file_1.state.bytes);
+
+            free((void *) chart_patch_file_1.state.bytes);
             memset(&chart_patch_file_1, 0, sizeof(struct chart_patch_file));
         }
 
@@ -392,9 +403,9 @@ static HRESULT chart_patch_file_close_irp(
                 log_warning("Closing dummy checksum file handle failed");
             }
 
-            free((void*) chart_patch_file_checksum.state.bytes);
-            memset(&chart_patch_file_checksum, 0, 
-                sizeof(struct chart_patch_file));
+            free((void *) chart_patch_file_checksum.state.bytes);
+            memset(
+                &chart_patch_file_checksum, 0, sizeof(struct chart_patch_file));
         }
 
         chart_patch_file_detour = false;
@@ -405,9 +416,8 @@ static HRESULT chart_patch_file_close_irp(
     return S_OK;
 }
 
-static HRESULT chart_patch_file_read(
-        struct chart_patch_file *file,
-        struct irp *irp)
+static HRESULT
+chart_patch_file_read(struct chart_patch_file *file, struct irp *irp)
 {
     // log_misc("chart_patch_file_read %p", file->fd);
 
@@ -416,30 +426,29 @@ static HRESULT chart_patch_file_read(
     return S_OK;
 }
 
-static HRESULT chart_patch_file_seek(
-        struct chart_patch_file *file,
-        struct irp *irp)
+static HRESULT
+chart_patch_file_seek(struct chart_patch_file *file, struct irp *irp)
 {
     ssize_t pos;
 
     switch (irp->seek_origin) {
-    case FILE_BEGIN:
-        pos = irp->seek_offset;
+        case FILE_BEGIN:
+            pos = irp->seek_offset;
 
-        break;
+            break;
 
-    case FILE_CURRENT:
-        pos = irp->seek_offset + file->state.pos;
+        case FILE_CURRENT:
+            pos = irp->seek_offset + file->state.pos;
 
-        break;
+            break;
 
-    case FILE_END:
-        pos = irp->seek_offset + file->state.nbytes;
+        case FILE_END:
+            pos = irp->seek_offset + file->state.nbytes;
 
-        break;
+            break;
 
-    default:
-        return E_INVALIDARG;
+        default:
+            return E_INVALIDARG;
     }
 
     file->state.pos = max(0, min(pos, file->state.nbytes));
@@ -448,18 +457,22 @@ static HRESULT chart_patch_file_seek(
     return S_OK;
 }
 
-static HRESULT chart_patch_file_dispatch_irp(
-        struct chart_patch_file *file,
-        struct irp *irp)
+static HRESULT
+chart_patch_file_dispatch_irp(struct chart_patch_file *file, struct irp *irp)
 {
     // log_misc("chart_patch_file_dispatch_irp %p", file->fd);
 
     switch (irp->op) {
-    case IRP_OP_CLOSE:  return chart_patch_file_close_irp(file, irp);
-    case IRP_OP_READ:   return chart_patch_file_read(file, irp);
-    case IRP_OP_WRITE:  return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
-    case IRP_OP_SEEK:   return chart_patch_file_seek(file, irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_CLOSE:
+            return chart_patch_file_close_irp(file, irp);
+        case IRP_OP_READ:
+            return chart_patch_file_read(file, irp);
+        case IRP_OP_WRITE:
+            return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+        case IRP_OP_SEEK:
+            return chart_patch_file_seek(file, irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -498,7 +511,8 @@ void iidxhook_util_chart_patch_set_refresh_rate(double hz)
     log_info("Set target refresh rate %f", chart_patch_hz);
 }
 
-HRESULT iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
+HRESULT
+iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
 {
     HRESULT hr;
 
@@ -516,8 +530,8 @@ HRESULT iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
         } else {
             if (irp->fd != INVALID_HANDLE_VALUE && irp->fd != NULL) {
                 if (irp->fd == chart_patch_file_1.fd) {
-                    hr = chart_patch_file_dispatch_irp(&chart_patch_file_1, 
-                        irp);
+                    hr =
+                        chart_patch_file_dispatch_irp(&chart_patch_file_1, irp);
                 } else if (irp->fd == chart_patch_file_checksum.fd) {
                     hr = chart_patch_file_dispatch_irp(
                         &chart_patch_file_checksum, irp);

@@ -17,8 +17,8 @@
 #include "util/thread.h"
 
 static int log_thread_proc(void *ctx);
-static void log_post(char level, const char *module, const char *fmt,
-        va_list ap);
+static void
+log_post(char level, const char *module, const char *fmt, va_list ap);
 static void log_post_misc(const char *module, const char *fmt, ...);
 static void log_post_info(const char *module, const char *fmt, ...);
 static void log_post_warning(const char *module, const char *fmt, ...);
@@ -39,17 +39,20 @@ void log_server_init(void)
     log_rv_consumer = CreateSemaphore(NULL, 0, 1, NULL);
     ready = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    log_to_external(log_post_misc, log_post_info, log_post_warning,
-            log_post_fatal);
+    log_to_external(
+        log_post_misc, log_post_info, log_post_warning, log_post_fatal);
 
     log_thread_id = avs_thread_create(log_thread_proc, ready, 16384, 0);
 
     if (WaitForSingleObject(ready, INFINITE)) {
         // can't do any logging here, yet.
-        fprintf(stderr, "ERROR log_server_init: WaitForSingleObject failed: %08x", (unsigned int) GetLastError());
+        fprintf(
+            stderr,
+            "ERROR log_server_init: WaitForSingleObject failed: %08x",
+            (unsigned int) GetLastError());
         return;
     }
-    
+
     CloseHandle(ready);
 
     log_misc("Started log server thread");
@@ -66,10 +69,10 @@ static int log_thread_proc(void *ctx)
     log_body_misc(LOG_MODULE, "Log server thread is running");
 
     while (run) {
-
         if (WaitForSingleObject(log_rv_consumer, INFINITE)) {
-            log_fatal("WaitForSingleObject failed: %08x",
-                    (unsigned int) GetLastError());
+            log_fatal(
+                "WaitForSingleObject failed: %08x",
+                (unsigned int) GetLastError());
         }
 
         switch (log_rv_level) {
@@ -100,8 +103,8 @@ static int log_thread_proc(void *ctx)
         }
 
         if (!ReleaseSemaphore(log_rv_producer, 1, NULL)) {
-            log_fatal("ReleaseSemaphore failed: %08x",
-                    (unsigned int) GetLastError());
+            log_fatal(
+                "ReleaseSemaphore failed: %08x", (unsigned int) GetLastError());
         }
     }
 
@@ -110,8 +113,8 @@ static int log_thread_proc(void *ctx)
     return 0;
 }
 
-static void log_post(char level, const char *module, const char *fmt,
-        va_list ap)
+static void
+log_post(char level, const char *module, const char *fmt, va_list ap)
 {
     if (WaitForSingleObject(log_rv_producer, INFINITE)) {
         return;
@@ -124,14 +127,14 @@ static void log_post(char level, const char *module, const char *fmt,
     ReleaseSemaphore(log_rv_consumer, 1, NULL);
 }
 
-#define LOG_POST_IMPL(name, level) \
+#define LOG_POST_IMPL(name, level)                             \
     static void name(const char *module, const char *fmt, ...) \
-    { \
-        va_list ap; \
-        \
-        va_start(ap, fmt); \
-        log_post(level, module, fmt, ap); \
-        va_end(ap); \
+    {                                                          \
+        va_list ap;                                            \
+                                                               \
+        va_start(ap, fmt);                                     \
+        log_post(level, module, fmt, ap);                      \
+        va_end(ap);                                            \
     }
 
 LOG_POST_IMPL(log_post_misc, 'M')
@@ -158,4 +161,3 @@ void log_server_fini(void)
     log_rv_producer = NULL;
     log_rv_consumer = NULL;
 }
-

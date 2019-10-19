@@ -12,8 +12,8 @@ const struct security_id security_id_default = {
     .checksum = 0x6F,
 };
 
-static uint8_t security_id_checksum_calc(uint8_t initseed, 
-        const uint8_t* inbuf, size_t length)
+static uint8_t
+security_id_checksum_calc(uint8_t initseed, const uint8_t *inbuf, size_t length)
 {
     const uint8_t *v3; // edi@1
     int v4; // ebp@2
@@ -41,28 +41,28 @@ static uint8_t security_id_checksum_calc(uint8_t initseed,
             v7 = 0;
 
             do {
-                v8 = (result ^ (uint8_t) (v6 >> v7)) & 1;
+                v8 = (result ^ (uint8_t)(v6 >> v7)) & 1;
                 v9 = result >> 1;
 
                 if (v8) {
                     v9 ^= 0x8Cu;
                 }
 
-                v10 = (v9 ^ (uint8_t) (v6 >> (v7 + 1))) & 1;
+                v10 = (v9 ^ (uint8_t)(v6 >> (v7 + 1))) & 1;
                 v11 = v9 >> 1;
 
                 if (v10) {
                     v11 ^= 0x8Cu;
                 }
 
-                v12 = (v11 ^ (uint8_t) (v6 >> (v7 + 2))) & 1;
+                v12 = (v11 ^ (uint8_t)(v6 >> (v7 + 2))) & 1;
                 v13 = v11 >> 1;
 
                 if (v12) {
                     v13 ^= 0x8Cu;
                 }
 
-                v14 = (v13 ^ (uint8_t) (v6 >> (v7 + 3))) & 1;
+                v14 = (v13 ^ (uint8_t)(v6 >> (v7 + 3))) & 1;
                 result = v13 >> 1;
 
                 if (v14) {
@@ -74,13 +74,13 @@ static uint8_t security_id_checksum_calc(uint8_t initseed,
 
             v3 = (v3 + 1);
             --v4;
-          } while (v4);
-      }
+        } while (v4);
+    }
 
     return result;
 }
 
-static uint8_t security_id_checksum_buffer(const uint8_t* inbuf)
+static uint8_t security_id_checksum_buffer(const uint8_t *inbuf)
 {
     uint8_t bufcheck[7];
 
@@ -95,7 +95,7 @@ static uint8_t security_id_checksum_buffer(const uint8_t* inbuf)
     return security_id_checksum_calc(0, bufcheck, sizeof(bufcheck));
 }
 
-bool security_id_parse(const char* str, struct security_id* id)
+bool security_id_parse(const char *str, struct security_id *id)
 {
     log_assert(str);
     log_assert(id);
@@ -103,9 +103,9 @@ bool security_id_parse(const char* str, struct security_id* id)
     return hex_decode(id, sizeof(struct security_id), str, strlen(str));
 }
 
-char* security_id_to_str(const struct security_id* id, bool id_only)
+char *security_id_to_str(const struct security_id *id, bool id_only)
 {
-    char* str;
+    char *str;
     size_t len;
 
     log_assert(id);
@@ -125,7 +125,7 @@ char* security_id_to_str(const struct security_id* id, bool id_only)
     return str;
 }
 
-void security_id_prepare(struct security_id* id)
+void security_id_prepare(struct security_id *id)
 {
     log_assert(id);
 
@@ -133,10 +133,10 @@ void security_id_prepare(struct security_id* id)
     id->checksum = security_id_checksum_buffer(id->id);
 }
 
-bool security_id_verify(const struct security_id* id)
+bool security_id_verify(const struct security_id *id)
 {
     log_assert(id);
-    
+
     return id->header == SECURITY_ID_HEADER &&
         id->checksum == security_id_checksum_buffer(id->id);
 }

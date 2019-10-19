@@ -1,8 +1,8 @@
 #include <windows.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "bemanitools/eamio.h"
@@ -38,7 +38,7 @@
 #include "util/thread.h"
 
 #define IIDXHOOK5_INFO_HEADER \
-    "iidxhook for Lincle" \
+    "iidxhook for Lincle"     \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define IIDXHOOK5_CMD_USAGE \
     "Usage: launcher.exe -K iidxhook5.dll <bm2dx.dll> [options...]"
@@ -53,7 +53,8 @@ static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
 
-static void iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_gfx)
+static void
+iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 {
     struct iidxhook_util_d3d9_config d3d9_config;
 
@@ -77,8 +78,8 @@ static void iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
-    struct cconfig* config;
-    
+    struct cconfig *config;
+
     struct iidxhook_config_gfx config_gfx;
 
     log_server_init();
@@ -90,7 +91,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook_config_gfx_init(config);
 
-    if (!cconfig_hook_config_init(config, IIDXHOOK5_INFO_HEADER "\n" IIDXHOOK5_CMD_USAGE, CCONFIG_CMD_USAGE_OUT_DBG)) {
+    if (!cconfig_hook_config_init(
+            config,
+            IIDXHOOK5_INFO_HEADER "\n" IIDXHOOK5_CMD_USAGE,
+            CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
         log_server_fini();
         exit(EXIT_FAILURE);
@@ -107,8 +111,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     /* Start up IIDXIO.DLL */
     log_info("Starting IIDX IO backend");
-    iidx_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-            log_impl_fatal);
+    iidx_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
     if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
         log_fatal("Initializing IIDX IO backend failed");
@@ -116,8 +120,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     /* Start up EAMIO.DLL */
     log_misc("Initializing card reader backend");
-    eam_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-            log_impl_fatal);
+    eam_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
     if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
         log_fatal("Initializing card reader backend failed");
@@ -170,10 +174,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     }
 
     log_to_external(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 
@@ -184,4 +185,3 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 end:
     return TRUE;
 }
-

@@ -18,10 +18,14 @@ static void test_mcode_encode_decode_eamuse()
     uint8_t buffer[8];
     uint8_t result[8];
 
-    security_util_8_to_6_encode((const uint8_t*) &security_mcode_eamuse, buffer);
+    security_util_8_to_6_encode(
+        (const uint8_t *) &security_mcode_eamuse, buffer);
     security_util_6_to_8_decode(buffer, result);
 
-    check_data_eq(result, sizeof(result), &security_mcode_eamuse,
+    check_data_eq(
+        result,
+        sizeof(result),
+        &security_mcode_eamuse,
         sizeof(security_mcode_eamuse));
 }
 
@@ -30,11 +34,14 @@ static void test_mcode_encode_decode_jubeat()
     uint8_t buffer[8];
     uint8_t result[8];
 
-    security_util_8_to_6_encode((const uint8_t*) &black_plug_mcode_jubeat,
-        buffer);
+    security_util_8_to_6_encode(
+        (const uint8_t *) &black_plug_mcode_jubeat, buffer);
     security_util_6_to_8_decode(buffer, result);
 
-    check_data_eq(result, sizeof(result), &black_plug_mcode_jubeat,
+    check_data_eq(
+        result,
+        sizeof(result),
+        &black_plug_mcode_jubeat,
         sizeof(black_plug_mcode_jubeat));
 }
 
@@ -43,11 +50,14 @@ static void test_mcode_encode_decode_reverse_eamuse()
     uint8_t buffer[8];
     uint8_t result[8];
 
-    security_util_8_to_6_encode_reverse((const uint8_t*) &security_mcode_eamuse,
-        buffer);
+    security_util_8_to_6_encode_reverse(
+        (const uint8_t *) &security_mcode_eamuse, buffer);
     security_util_6_to_8_decode_reverse(buffer, result);
 
-    check_data_eq(result, sizeof(result), &security_mcode_eamuse,
+    check_data_eq(
+        result,
+        sizeof(result),
+        &security_mcode_eamuse,
         sizeof(security_mcode_eamuse));
 }
 
@@ -57,10 +67,13 @@ static void test_mcode_encode_decode_reverse_jubeat()
     uint8_t result[8];
 
     security_util_8_to_6_encode_reverse(
-        (const uint8_t*) &black_plug_mcode_jubeat, buffer);
+        (const uint8_t *) &black_plug_mcode_jubeat, buffer);
     security_util_6_to_8_decode_reverse(buffer, result);
 
-    check_data_eq(result, sizeof(result), &black_plug_mcode_jubeat, 
+    check_data_eq(
+        result,
+        sizeof(result),
+        &black_plug_mcode_jubeat,
         sizeof(black_plug_mcode_jubeat));
 }
 

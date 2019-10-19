@@ -7,10 +7,10 @@
 
 #include "msg.h"
 
-bool ezusb2_iidx_interrupt_read(HANDLE handle,
-    struct ezusb2_iidx_msg_interrupt_read_packet* packet);
+bool ezusb2_iidx_interrupt_read(
+    HANDLE handle, struct ezusb2_iidx_msg_interrupt_read_packet *packet);
 
-bool ezusb2_iidx_interrupt_write(HANDLE handle,
-    const struct ezusb2_iidx_msg_interrupt_write_packet* packet);
+bool ezusb2_iidx_interrupt_write(
+    HANDLE handle, const struct ezusb2_iidx_msg_interrupt_write_packet *packet);
 
 #endif

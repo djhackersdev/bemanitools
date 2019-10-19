@@ -3,8 +3,8 @@
 
 #include <windows.h>
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <wchar.h>
 
 #include "geninput/hid.h"
@@ -23,15 +23,15 @@ void hid_stub_detach(struct hid_stub *stub);
 bool hid_stub_get_name(struct hid_stub *stub, wchar_t *name, size_t *nchars);
 bool hid_stub_is_attached(struct hid_stub *stub);
 bool hid_stub_get_device_usage(struct hid_stub *stub, uint32_t *usage);
-bool hid_stub_get_controls(struct hid_stub *stub, struct hid_control *controls,
-        size_t *ncontrols);
-bool hid_stub_get_lights(struct hid_stub *stub, struct hid_light *lights,
-        size_t *nlights);
-bool hid_stub_get_value(struct hid_stub *stub, size_t control_no,
-        int32_t *out_value);
-bool hid_stub_set_light(struct hid_stub *stub, size_t light_no,
-        uint32_t intensity);
-bool hid_stub_handle_completion(struct hid_stub *stub, OVERLAPPED *ovl,
-        size_t nbytes);
+bool hid_stub_get_controls(
+    struct hid_stub *stub, struct hid_control *controls, size_t *ncontrols);
+bool hid_stub_get_lights(
+    struct hid_stub *stub, struct hid_light *lights, size_t *nlights);
+bool hid_stub_get_value(
+    struct hid_stub *stub, size_t control_no, int32_t *out_value);
+bool hid_stub_set_light(
+    struct hid_stub *stub, size_t light_no, uint32_t intensity);
+bool hid_stub_handle_completion(
+    struct hid_stub *stub, OVERLAPPED *ovl, size_t nbytes);
 
 #endif

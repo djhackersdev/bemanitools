@@ -50,8 +50,11 @@ enum jb_io_rgb_led {
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void jb_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void jb_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your JB IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -61,8 +64,10 @@ void jb_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool jb_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool jb_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your JB IO emulation DLL */
 
@@ -78,6 +83,7 @@ uint8_t jb_io_get_sys_inputs(void);
 
 uint16_t jb_io_get_panel_inputs(void);
 
-void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b);
+void jb_io_set_rgb_led(
+    enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b);
 
 #endif

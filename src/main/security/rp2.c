@@ -5,22 +5,30 @@
 #include "util/log.h"
 
 static const uint8_t security_rp2_sign_key_base_black[] = {
-    0x32, 0x44, 0x58, 0x47, 0x4C, 0x44, 0x41, 0x43
-};
+    0x32, 0x44, 0x58, 0x47, 0x4C, 0x44, 0x41, 0x43};
 
 static const uint8_t security_rp2_sign_key_base_white[] = {
-    0x45, 0x2D, 0x41, 0x4D, 0x55, 0x53, 0x45, 0x33
-};
+    0x45, 0x2D, 0x41, 0x4D, 0x55, 0x53, 0x45, 0x33};
 
-static uint8_t security_rp2_signature_scramble_table[16] = {
-    0x0C, 0x02, 0x0F, 0x01, 
-    0x07, 0x09, 0x04, 0x0A,
-    0x00, 0x0E, 0x03, 0x0D, 
-    0x0B, 0x05, 0x08, 0x06
-};
+static uint8_t security_rp2_signature_scramble_table[16] = {0x0C,
+                                                            0x02,
+                                                            0x0F,
+                                                            0x01,
+                                                            0x07,
+                                                            0x09,
+                                                            0x04,
+                                                            0x0A,
+                                                            0x00,
+                                                            0x0E,
+                                                            0x03,
+                                                            0x0D,
+                                                            0x0B,
+                                                            0x05,
+                                                            0x08,
+                                                            0x06};
 
-static void security_rp2_create_signiture(const uint8_t *plug_id_enc, 
-        const uint8_t *sign_key_packed, uint8_t *out)
+static void security_rp2_create_signiture(
+    const uint8_t *plug_id_enc, const uint8_t *sign_key_packed, uint8_t *out)
 {
     uint8_t data[14];
     uint8_t md5[16];
@@ -46,28 +54,29 @@ static void security_rp2_create_signiture(const uint8_t *plug_id_enc,
 }
 
 void security_rp2_generate_signed_eeprom_data(
-        enum security_rp_util_rp_type type,
-        const struct security_mcode* boot_version,
-        const struct security_mcode* plug_mcode,
-        const struct security_id* plug_id, struct security_rp2_eeprom* out)
+    enum security_rp_util_rp_type type,
+    const struct security_mcode *boot_version,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp2_eeprom *out)
 {
     uint8_t sign_key[8];
     uint8_t plug_id_enc[8];
-    char* boot_version_str;
+    char *boot_version_str;
 
     log_assert(boot_version);
     log_assert(plug_mcode);
     log_assert(plug_id);
     log_assert(out);
 
-    boot_version_str = (char*) boot_version;
- 
+    boot_version_str = (char *) boot_version;
+
     /* -------------------------------- */
 
     switch (type) {
         case SECURITY_RP_UTIL_RP_TYPE_BLACK:
-            memcpy(sign_key, security_rp2_sign_key_base_black, 
-                sizeof(sign_key));
+            memcpy(
+                sign_key, security_rp2_sign_key_base_black, sizeof(sign_key));
 
             sign_key[0] = boot_version_str[0] ^ sign_key[0];
             sign_key[1] ^= boot_version_str[1];
@@ -81,9 +90,9 @@ void security_rp2_generate_signed_eeprom_data(
             break;
 
         case SECURITY_RP_UTIL_RP_TYPE_WHITE:
-            memcpy(sign_key, security_rp2_sign_key_base_white, 
-                sizeof(sign_key));
- 
+            memcpy(
+                sign_key, security_rp2_sign_key_base_white, sizeof(sign_key));
+
             break;
 
         default:
@@ -106,8 +115,8 @@ void security_rp2_generate_signed_eeprom_data(
     plug_id_enc[6] = plug_id->id[7];
     plug_id_enc[7] = plug_id->id[1];
 
-    security_rp2_create_signiture(plug_id_enc, sign_key, (uint8_t*) out);
+    security_rp2_create_signiture(plug_id_enc, sign_key, (uint8_t *) out);
 
-    security_util_8_to_6_encode((const uint8_t*) plug_mcode,
-        out->packed_payload);
+    security_util_8_to_6_encode(
+        (const uint8_t *) plug_mcode, out->packed_payload);
 }

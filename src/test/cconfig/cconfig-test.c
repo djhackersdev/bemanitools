@@ -5,7 +5,7 @@
 
 static void test_init()
 {
-    struct cconfig* config;
+    struct cconfig *config;
 
     config = cconfig_init();
 
@@ -17,7 +17,7 @@ static void test_init()
 
 static void test_get_empty()
 {
-    struct cconfig* config;
+    struct cconfig *config;
 
     config = cconfig_init();
 
@@ -31,8 +31,8 @@ static void test_get_empty()
 
 static void test_set_get_one_elem()
 {
-    struct cconfig* config;
-    struct cconfig_entry* entry;
+    struct cconfig *config;
+    struct cconfig_entry *entry;
 
     config = cconfig_init();
 
@@ -50,15 +50,15 @@ static void test_set_get_one_elem()
 
     check_str_eq(entry->key, "test");
     check_str_eq(entry->value, "123");
-    check_str_eq(entry->desc, "desc"); 
+    check_str_eq(entry->desc, "desc");
 
     cconfig_finit(config);
 }
 
 static void test_set_get_one_elem2()
 {
-    struct cconfig* config;
-    struct cconfig_entry* entry;
+    struct cconfig *config;
+    struct cconfig_entry *entry;
 
     config = cconfig_init();
 
@@ -76,15 +76,15 @@ static void test_set_get_one_elem2()
 
     check_str_eq(entry->key, "test");
     check_str_eq(entry->value, "123");
-    check_str_eq(entry->desc, ""); 
+    check_str_eq(entry->desc, "");
 
     cconfig_finit(config);
 }
 
 static void test_set_get_same_elem()
 {
-    struct cconfig* config;
-    struct cconfig_entry* entry;
+    struct cconfig *config;
+    struct cconfig_entry *entry;
 
     config = cconfig_init();
 
@@ -104,15 +104,15 @@ static void test_set_get_same_elem()
 
     check_str_eq(entry->key, "test");
     check_str_eq(entry->value, "12345");
-    check_str_eq(entry->desc, "aaa"); 
+    check_str_eq(entry->desc, "aaa");
 
     cconfig_finit(config);
 }
 
 static void test_set_get_many_elem()
 {
-    struct cconfig* config;
-    struct cconfig_entry* entry;
+    struct cconfig *config;
+    struct cconfig_entry *entry;
     char key[16];
 
     config = cconfig_init();
@@ -140,7 +140,7 @@ static void test_set_get_many_elem()
 
         check_str_eq(entry->key, key);
         check_str_eq(entry->value, "123");
-        check_str_eq(entry->desc, "desc"); 
+        check_str_eq(entry->desc, "desc");
     }
 
     cconfig_finit(config);

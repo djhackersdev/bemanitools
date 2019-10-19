@@ -1,14 +1,14 @@
-#include "cconfig/cmd.h"
 #include "cconfig/cconfig-util.h"
+#include "cconfig/cmd.h"
 
 #include "test/check.h"
 #include "test/test.h"
 
 static void test_cmd()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     int argc = 6;
-    char* argv[] = {"-P", "test=aaa", "-C", "asdf", "-P", "test2=123"};
+    char *argv[] = {"-P", "test=aaa", "-C", "asdf", "-P", "test2=123"};
     char str[32];
     int32_t val;
 
@@ -21,7 +21,8 @@ static void test_cmd()
 
     check_int_eq(config->nentries, 2);
 
-    check_bool_true(cconfig_util_get_str(config, "test", str, sizeof(str), "1"));
+    check_bool_true(
+        cconfig_util_get_str(config, "test", str, sizeof(str), "1"));
     check_str_eq(str, "aaa");
 
     check_bool_true(cconfig_util_get_int(config, "test2", &val, 0));
@@ -32,9 +33,9 @@ static void test_cmd()
 
 static void test_cmd_absent_entries()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     int argc = 6;
-    char* argv[] = {"-P", "test=aaa", "-C", "asdf", "-P", "test2=123"};
+    char *argv[] = {"-P", "test=aaa", "-C", "asdf", "-P", "test2=123"};
     char str[32];
     int32_t val;
 
@@ -49,7 +50,8 @@ static void test_cmd_absent_entries()
 
     check_int_eq(config->nentries, 1);
 
-    check_bool_true(cconfig_util_get_str(config, "test", str, sizeof(str), "1"));
+    check_bool_true(
+        cconfig_util_get_str(config, "test", str, sizeof(str), "1"));
     check_str_eq(str, "aaa");
 
     check_bool_false(cconfig_util_get_int(config, "test2", &val, 0));

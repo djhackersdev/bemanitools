@@ -1,8 +1,8 @@
-#include <windows.h>    /* Usermode API */
+#include <windows.h> /* Usermode API */
 
-#include <ntdef.h>      /* Kernel-mode API for ioctls */
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h> /* Kernel-mode API for ioctls */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -61,18 +61,26 @@ bool ac_io_emu_match_irp(const struct ac_io_emu *emu, const struct irp *irp)
     }
 }
 
-HRESULT ac_io_emu_dispatch_irp(struct ac_io_emu *emu, struct irp *irp)
+HRESULT
+ac_io_emu_dispatch_irp(struct ac_io_emu *emu, struct irp *irp)
 {
     log_assert(irp != NULL);
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return ac_io_emu_open(emu, irp);
-    case IRP_OP_CLOSE:  return ac_io_emu_close(emu, irp);
-    case IRP_OP_READ:   return ac_io_emu_read(emu, irp);
-    case IRP_OP_WRITE:  return ac_io_emu_write(emu, irp);
-    case IRP_OP_IOCTL:  return ac_io_emu_ioctl(emu, irp);
-    case IRP_OP_FSYNC:  return S_FALSE;
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return ac_io_emu_open(emu, irp);
+        case IRP_OP_CLOSE:
+            return ac_io_emu_close(emu, irp);
+        case IRP_OP_READ:
+            return ac_io_emu_read(emu, irp);
+        case IRP_OP_WRITE:
+            return ac_io_emu_write(emu, irp);
+        case IRP_OP_IOCTL:
+            return ac_io_emu_ioctl(emu, irp);
+        case IRP_OP_FSYNC:
+            return S_FALSE;
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -129,29 +137,30 @@ static HRESULT ac_io_emu_ioctl(struct ac_io_emu *emu, struct irp *irp)
     log_assert(irp != NULL);
 
     switch (irp->ioctl) {
-    case IOCTL_SERIAL_GET_COMMSTATUS:
-        if (irp->read.bytes == NULL) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
+        case IOCTL_SERIAL_GET_COMMSTATUS:
+            if (irp->read.bytes == NULL) {
+                log_warning(
+                    "IOCTL_SERIAL_GET_COMMSTATUS: Output buffer is NULL");
 
-            return E_INVALIDARG;
-        }
+                return E_INVALIDARG;
+            }
 
-        if (irp->read.nbytes < sizeof(*status)) {
-            log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
+            if (irp->read.nbytes < sizeof(*status)) {
+                log_warning("IOCTL_SERIAL_GET_COMMSTATUS: Buffer is too small");
 
-            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        }
+                return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+            }
 
-        status = (SERIAL_STATUS *) irp->read.bytes;
-        status->Errors = 0;
-        status->AmountInInQueue = ac_io_in_is_msg_pending(&emu->in);
+            status = (SERIAL_STATUS *) irp->read.bytes;
+            status->Errors = 0;
+            status->AmountInInQueue = ac_io_in_is_msg_pending(&emu->in);
 
-        irp->read.pos = sizeof(*status);
+            irp->read.pos = sizeof(*status);
 
-        return S_FALSE;
+            return S_FALSE;
 
-    default:
-        return S_FALSE;
+        default:
+            return S_FALSE;
     }
 }
 
@@ -170,9 +179,7 @@ void ac_io_emu_request_pop(struct ac_io_emu *emu)
 }
 
 void ac_io_emu_response_push(
-        struct ac_io_emu *emu,
-        const struct ac_io_message *resp,
-        uint64_t delay_us)
+    struct ac_io_emu *emu, const struct ac_io_message *resp, uint64_t delay_us)
 {
     log_assert(emu != NULL);
     log_assert(resp != NULL);
@@ -181,14 +188,10 @@ void ac_io_emu_response_push(
 }
 
 void ac_io_emu_response_push_thunk(
-        struct ac_io_emu *emu,
-        ac_io_in_thunk_t thunk,
-        void *ctx,
-        uint64_t delay_us)
+    struct ac_io_emu *emu, ac_io_in_thunk_t thunk, void *ctx, uint64_t delay_us)
 {
     log_assert(emu != NULL);
     log_assert(thunk != NULL);
 
     ac_io_in_supply_thunk(&emu->in, thunk, ctx, delay_us);
 }
-

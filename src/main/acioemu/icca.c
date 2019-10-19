@@ -23,39 +23,35 @@ enum ac_io_icca_subcmd {
 };
 
 enum ac_io_icca_flag {
-    AC_IO_ICCA_FLAG_FRONT_SENSOR    = 0x10,
-    AC_IO_ICCA_FLAG_REAR_SENSOR     = 0x20,
-    AC_IO_ICCA_FLAG_SOLENOID        = 0x40
+    AC_IO_ICCA_FLAG_FRONT_SENSOR = 0x10,
+    AC_IO_ICCA_FLAG_REAR_SENSOR = 0x20,
+    AC_IO_ICCA_FLAG_SOLENOID = 0x40
 };
 
 enum ac_io_icca_status_code {
-    AC_IO_ICCA_STATUS_FAULT         = 0x00,
-    AC_IO_ICCA_STATUS_IDLE          = 0x01,
-    AC_IO_ICCA_STATUS_GOT_UID       = 0x02
+    AC_IO_ICCA_STATUS_FAULT = 0x00,
+    AC_IO_ICCA_STATUS_IDLE = 0x01,
+    AC_IO_ICCA_STATUS_GOT_UID = 0x02
 };
 
 static void ac_io_emu_icca_cmd_send_version(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req);
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req);
 
 static void ac_io_emu_icca_send_state(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req,
-        uint64_t delay_us);
+    struct ac_io_emu_icca *icca,
+    const struct ac_io_message *req,
+    uint64_t delay_us);
 
 static void ac_io_emu_icca_send_empty(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req);
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req);
 
 static void ac_io_emu_icca_send_status(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req,
-        uint8_t status);
+    struct ac_io_emu_icca *icca,
+    const struct ac_io_message *req,
+    uint8_t status);
 
 void ac_io_emu_icca_init(
-        struct ac_io_emu_icca *icca,
-        struct ac_io_emu *emu,
-        uint8_t unit_no)
+    struct ac_io_emu_icca *icca, struct ac_io_emu *emu, uint8_t unit_no)
 {
     memset(icca, 0, sizeof(*icca));
     icca->emu = emu;
@@ -65,8 +61,7 @@ void ac_io_emu_icca_init(
 }
 
 void ac_io_emu_icca_dispatch_request(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req)
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
     uint64_t delay_us;
@@ -131,10 +126,9 @@ void ac_io_emu_icca_dispatch_request(
 
             break;
 
-        case AC_IO_ICCA_CMD_SET_SLOT_STATE:
-        {
-            struct ac_io_icca_misc* misc = 
-                (struct ac_io_icca_misc*) &req->cmd.raw;
+        case AC_IO_ICCA_CMD_SET_SLOT_STATE: {
+            struct ac_io_icca_misc *misc =
+                (struct ac_io_icca_misc *) &req->cmd.raw;
             uint8_t cmd;
 
             switch (misc->subcmd) {
@@ -157,15 +151,19 @@ void ac_io_emu_icca_dispatch_request(
 
                 default:
                     cmd = 0xFF;
-                    log_warning("Unhandled slot command %X, node %d", 
-                        misc->subcmd, icca->unit_no);
+                    log_warning(
+                        "Unhandled slot command %X, node %d",
+                        misc->subcmd,
+                        icca->unit_no);
                     break;
             }
 
             if (cmd != 0xFF) {
                 if (!eam_io_card_slot_cmd(icca->unit_no, cmd)) {
-                    log_warning("Eamio failed to handle slot cmd %d for node %d",
-                        cmd, icca->unit_no);
+                    log_warning(
+                        "Eamio failed to handle slot cmd %d for node %d",
+                        cmd,
+                        icca->unit_no);
                 }
             }
 
@@ -176,9 +174,11 @@ void ac_io_emu_icca_dispatch_request(
         }
 
         case AC_IO_ICCA_CMD_POLL:
-            delay_us = time_get_elapsed_us(time_get_counter() - icca->time_counter_last_poll);
+            delay_us = time_get_elapsed_us(
+                time_get_counter() - icca->time_counter_last_poll);
 
-            /* emulating delay implemented by hardware. do not delay messages that exceed a certain threshold. */
+            /* emulating delay implemented by hardware. do not delay messages
+             * that exceed a certain threshold. */
             if (delay_us > 16000) {
                 delay_us = 0;
             }
@@ -195,16 +195,17 @@ void ac_io_emu_icca_dispatch_request(
             break;
 
         default:
-            log_warning("Unknown ACIO message %04x on ICCA node, addr=%d",
-                    cmd_code, req->addr);
+            log_warning(
+                "Unknown ACIO message %04x on ICCA node, addr=%d",
+                cmd_code,
+                req->addr);
 
             break;
     }
 }
 
 static void ac_io_emu_icca_cmd_send_version(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req)
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -217,8 +218,10 @@ static void ac_io_emu_icca_cmd_send_version(
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x06;
     resp.cmd.version.revision = 0x00;
-    memcpy(resp.cmd.version.product_code, "ICCA",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "ICCA",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
@@ -226,8 +229,7 @@ static void ac_io_emu_icca_cmd_send_version(
 }
 
 static void ac_io_emu_icca_send_empty(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req)
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -240,9 +242,9 @@ static void ac_io_emu_icca_send_empty(
 }
 
 static void ac_io_emu_icca_send_status(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req,
-        uint8_t status)
+    struct ac_io_emu_icca *icca,
+    const struct ac_io_message *req,
+    uint8_t status)
 {
     struct ac_io_message resp;
 
@@ -256,9 +258,9 @@ static void ac_io_emu_icca_send_status(
 }
 
 static void ac_io_emu_icca_send_state(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req,
-        uint64_t delay_us)
+    struct ac_io_emu_icca *icca,
+    const struct ac_io_message *req,
+    uint64_t delay_us)
 {
     struct ac_io_message resp;
     struct ac_io_icca_state *body;
@@ -277,25 +279,22 @@ static void ac_io_emu_icca_send_state(
 
     keypad = eam_io_get_keypad_state(icca->unit_no);
     sensor_state = eam_io_get_sensor_state(icca->unit_no);
-    
+
     keypad_rise = keypad & (icca->last_keypad ^ keypad);
     card_full_insert = sensor_state & (1 << EAM_IO_SENSOR_FRONT) &&
         sensor_state & (1 << EAM_IO_SENSOR_BACK);
 
     if (sensor_state != icca->last_sensor) {
-
         if (card_full_insert) {
-
-            if (!eam_io_card_slot_cmd(icca->unit_no, 
-                    EAM_IO_CARD_SLOT_CMD_READ)) {
-                log_warning("EAM_IO_CARD_SLOT_CMD_READ to unit %d failed", 
+            if (!eam_io_card_slot_cmd(
+                    icca->unit_no, EAM_IO_CARD_SLOT_CMD_READ)) {
+                log_warning(
+                    "EAM_IO_CARD_SLOT_CMD_READ to unit %d failed",
                     icca->unit_no);
             }
 
-            icca->card_result = eam_io_read_card(
-                    icca->unit_no,
-                    icca->uid,
-                    sizeof(icca->uid));
+            icca->card_result =
+                eam_io_read_card(icca->unit_no, icca->uid, sizeof(icca->uid));
 
             // fault if sensor says to read but we got no card
             icca->fault = (icca->card_result == EAM_IO_CARD_NONE);
@@ -338,8 +337,8 @@ static void ac_io_emu_icca_send_state(
 
     memcpy(body->uid, icca->uid, sizeof(body->uid));
     body->card_type = 0;
-    if (body->status_code == AC_IO_ICCA_STATUS_GOT_UID){
-        if (icca->detected_new_reader){
+    if (body->status_code == AC_IO_ICCA_STATUS_GOT_UID) {
+        if (icca->detected_new_reader) {
             // sensor_state actually refers to cardtype for wavepass readers
             // EAM_IO_CARD_ISO15696 = 1 -> 0
             // EAM_IO_CARD_FELICA = 2 -> 1
@@ -349,7 +348,6 @@ static void ac_io_emu_icca_send_state(
     }
 
     if (keypad_rise) {
-
         if (icca->key_events[0]) {
             event = (icca->key_events[0] + 0x10) & 0xF0;
         } else {
@@ -382,4 +380,3 @@ static void ac_io_emu_icca_send_state(
 
     ac_io_emu_response_push(icca->emu, &resp, delay_us);
 }
-

@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <wchar.h>
+#include <windows.h>
 
 #include "config/bind.h"
 #include "config/resource.h"
@@ -16,15 +16,18 @@ struct bind_state {
     uintptr_t timer_id;
 };
 
-static INT_PTR CALLBACK bind_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+bind_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR bind_handle_init(HWND hwnd, struct bind_state *self);
 static INT_PTR bind_handle_tick(HWND hwnd);
 static INT_PTR bind_handle_cancel(HWND hwnd);
 static INT_PTR bind_handle_destroy(HWND hwnd);
 
-bool bind_control(HINSTANCE inst, HWND hwnd, const struct action_def *action,
-        struct mapped_action *ma)
+bool bind_control(
+    HINSTANCE inst,
+    HWND hwnd,
+    const struct action_def *action,
+    struct mapped_action *ma)
 {
     struct bind_state self;
     bool result;
@@ -36,8 +39,12 @@ bool bind_control(HINSTANCE inst, HWND hwnd, const struct action_def *action,
     snap_init(&self.snaps[1]);
     snap_init(&self.snaps[0]);
 
-    result = DialogBoxParam(inst, MAKEINTRESOURCE(IDD_BIND), hwnd,
-            bind_dlg_proc, (LPARAM) &self) != 0;
+    result = DialogBoxParam(
+                 inst,
+                 MAKEINTRESOURCE(IDD_BIND),
+                 hwnd,
+                 bind_dlg_proc,
+                 (LPARAM) &self) != 0;
 
     snap_fini(&self.snaps[0]);
     snap_fini(&self.snaps[1]);
@@ -45,8 +52,8 @@ bool bind_control(HINSTANCE inst, HWND hwnd, const struct action_def *action,
     return result;
 }
 
-static INT_PTR CALLBACK bind_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+bind_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -99,8 +106,10 @@ static INT_PTR bind_handle_tick(HWND hwnd)
     snap_fini(&self->snaps[self->cur_snap]);
     snap_init(&self->snaps[self->cur_snap]);
 
-    if (snap_find_edge(&self->snaps[self->cur_snap],
-            &self->snaps[!self->cur_snap], self->ma)) {
+    if (snap_find_edge(
+            &self->snaps[self->cur_snap],
+            &self->snaps[!self->cur_snap],
+            self->ma)) {
         EndDialog(hwnd, 1);
     }
 
@@ -124,4 +133,3 @@ static INT_PTR bind_handle_destroy(HWND hwnd)
 
     return TRUE;
 }
-

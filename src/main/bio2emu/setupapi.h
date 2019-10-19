@@ -3,6 +3,6 @@
 
 #include "util/array.h"
 
-void bio2emu_setupapi_hook_init(struct array* bio2_ports);
+void bio2emu_setupapi_hook_init(struct array *bio2_ports);
 
 #endif

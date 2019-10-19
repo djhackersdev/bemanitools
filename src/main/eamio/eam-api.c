@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <dbt.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,8 +17,7 @@
 #include "util/msg-thread.h"
 #include "util/thread.h"
 
-static void eam_handle_hotplug_msg(WPARAM wparam,
-        const DEV_BROADCAST_HDR *hdr);
+static void eam_handle_hotplug_msg(WPARAM wparam, const DEV_BROADCAST_HDR *hdr);
 static FILE *eam_io_config_open(const char *mode);
 static void eam_io_config_load(void);
 static void eam_io_config_save(void);
@@ -35,25 +34,26 @@ static HANDLE eam_hinst;
 static struct eam *eam_inst;
 
 static const struct eam_io_config_api eam_io_config_api = {
-    .config_save        = eam_io_config_save,
-    .get_autogen        = eam_io_get_autogen,
-    .set_autogen        = eam_io_set_autogen,
-    .get_alt_10k        = eam_io_get_alt_10k,
-    .set_alt_10k        = eam_io_set_alt_10k,
-    .get_keypad_device  = eam_io_get_keypad_device,
-    .set_keypad_device  = eam_io_set_keypad_device,
-    .get_card_path      = eam_io_get_card_path,
-    .set_card_path      = eam_io_set_card_path,
+    .config_save = eam_io_config_save,
+    .get_autogen = eam_io_get_autogen,
+    .set_autogen = eam_io_set_autogen,
+    .get_alt_10k = eam_io_get_alt_10k,
+    .set_alt_10k = eam_io_set_alt_10k,
+    .get_keypad_device = eam_io_get_keypad_device,
+    .set_keypad_device = eam_io_set_keypad_device,
+    .get_card_path = eam_io_get_card_path,
+    .set_card_path = eam_io_set_card_path,
 };
 
 void msg_window_setup(HWND hwnd)
 {
-    log_info("Drive insertion listener ready, thread id = %d",
-            (int) GetCurrentThreadId());
+    log_info(
+        "Drive insertion listener ready, thread id = %d",
+        (int) GetCurrentThreadId());
 }
 
-LRESULT WINAPI msg_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+LRESULT WINAPI
+msg_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_DEVICECHANGE:
@@ -99,14 +99,17 @@ static FILE *eam_io_config_open(const char *mode)
     return fopen_appdata("DJHACKERS", "eam_v4_22.bin", mode);
 }
 
-void eam_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void eam_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     log_to_external(misc, info, warning, fatal);
 }
 
-bool eam_io_init(thread_create_t create, thread_join_t join,
-        thread_destroy_t destroy)
+bool eam_io_init(
+    thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
     input_init(create, join, destroy);
     thread_api_init(create, join, destroy);
@@ -255,4 +258,3 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)
 
     return TRUE;
 }
-

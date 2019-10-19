@@ -6,21 +6,23 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-static struct cconfig_entry* cconfig_extend_config(struct cconfig* config)
+static struct cconfig_entry *cconfig_extend_config(struct cconfig *config)
 {
     config->nentries++;
 
-    config->entries = xrealloc(config->entries, 
-        config->nentries * sizeof(struct cconfig_entry));
-    memset(&config->entries[config->nentries - 1], 0, 
+    config->entries = xrealloc(
+        config->entries, config->nentries * sizeof(struct cconfig_entry));
+    memset(
+        &config->entries[config->nentries - 1],
+        0,
         sizeof(struct cconfig_entry));
-        
+
     return &config->entries[config->nentries - 1];
 }
 
-struct cconfig* cconfig_init()
+struct cconfig *cconfig_init()
 {
-    struct cconfig* config;
+    struct cconfig *config;
 
     config = xmalloc(sizeof(struct cconfig));
     memset(config, 0, sizeof(struct cconfig));
@@ -28,7 +30,7 @@ struct cconfig* cconfig_init()
     return config;
 }
 
-struct cconfig_entry* cconfig_get(struct cconfig* config, const char* key)
+struct cconfig_entry *cconfig_get(struct cconfig *config, const char *key)
 {
     log_assert(config);
     log_assert(key);
@@ -42,10 +44,13 @@ struct cconfig_entry* cconfig_get(struct cconfig* config, const char* key)
     return NULL;
 }
 
-void cconfig_set(struct cconfig* config, const char* key, const char* value, 
-        const char* desc)
+void cconfig_set(
+    struct cconfig *config,
+    const char *key,
+    const char *value,
+    const char *desc)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -69,9 +74,9 @@ void cconfig_set(struct cconfig* config, const char* key, const char* value,
     entry->value = str_dup(value);
 }
 
-void cconfig_set2(struct cconfig* config, const char* key, const char* value)
+void cconfig_set2(struct cconfig *config, const char *key, const char *value)
 {
-    struct cconfig_entry* entry;
+    struct cconfig_entry *entry;
 
     log_assert(config);
     log_assert(key);
@@ -89,14 +94,14 @@ void cconfig_set2(struct cconfig* config, const char* key, const char* value)
     entry->key = str_dup(key);
     entry->value = str_dup(value);
 
-    /* Description optional, but do not wipe previous description if 
+    /* Description optional, but do not wipe previous description if
        available */
     if (!entry->desc) {
         entry->desc = "";
     }
 }
 
-void cconfig_finit(struct cconfig* config)
+void cconfig_finit(struct cconfig *config)
 {
     for (uint32_t i = 0; i < config->nentries; i++) {
         free(config->entries[i].key);

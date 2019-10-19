@@ -1,8 +1,8 @@
 #define LOG_MODULE "ezusb-emu-device"
 
-#include <windows.h>
 #include <setupapi.h>
 #include <usb100.h>
+#include <windows.h>
 
 #include <string.h>
 
@@ -43,10 +43,10 @@ enum ezusb_pipe {
 };
 
 static HANDLE ezusb_emu_fd;
-static struct ezusb_firmware* ezusb_emu_firmware;
-static struct ezusb_emu_msg_hook* ezusb_emu_dev_fx_msg_hook;
+static struct ezusb_firmware *ezusb_emu_firmware;
+static struct ezusb_emu_msg_hook *ezusb_emu_dev_fx_msg_hook;
 
-void ezusb_emu_device_hook_init(struct ezusb_emu_msg_hook* msg_hook)
+void ezusb_emu_device_hook_init(struct ezusb_emu_msg_hook *msg_hook)
 {
     log_assert(ezusb_emu_fd == NULL);
 
@@ -63,7 +63,8 @@ void ezusb_emu_device_hook_fini(void)
     ezusb_emu_fd = NULL;
 }
 
-HRESULT ezusb_emu_device_dispatch_irp(struct irp *irp)
+HRESULT
+ezusb_emu_device_dispatch_irp(struct irp *irp)
 {
     if (irp->op != IRP_OP_OPEN && irp->fd != ezusb_emu_fd) {
         return irp_invoke_next(irp);
@@ -74,10 +75,14 @@ HRESULT ezusb_emu_device_dispatch_irp(struct irp *irp)
        CloseHandle calls and don't even log them). */
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return ezusb_open(irp);
-    case IRP_OP_CLOSE:  return S_OK;
-    case IRP_OP_IOCTL:  return ezusb_ioctl(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return ezusb_open(irp);
+        case IRP_OP_CLOSE:
+            return S_OK;
+        case IRP_OP_IOCTL:
+            return ezusb_ioctl(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -103,8 +108,14 @@ static HRESULT ezusb_ioctl(struct irp *irp)
     /* For debugging */
 #ifdef EZUSB_EMU_DEBUG_DUMP
     /* For debugging */
-    ezusb_emu_util_log_usb_msg("BEFORE", irp->ioctl, irp->read.bytes, 
-        irp->read.nbytes, irp->read.bytes, irp->read.nbytes, irp->write.bytes, 
+    ezusb_emu_util_log_usb_msg(
+        "BEFORE",
+        irp->ioctl,
+        irp->read.bytes,
+        irp->read.nbytes,
+        irp->read.bytes,
+        irp->read.nbytes,
+        irp->write.bytes,
         irp->write.nbytes);
 #endif
 
@@ -135,8 +146,14 @@ static HRESULT ezusb_ioctl(struct irp *irp)
 
 #ifdef EZUSB_EMU_DEBUG_DUMP
     /* For debugging */
-    ezusb_emu_util_log_usb_msg("AFTER", irp->ioctl, irp->read.bytes, 
-        irp->read.nbytes, irp->read.bytes, irp->read.nbytes, irp->write.bytes, 
+    ezusb_emu_util_log_usb_msg(
+        "AFTER",
+        irp->ioctl,
+        irp->read.bytes,
+        irp->read.nbytes,
+        irp->read.bytes,
+        irp->read.nbytes,
+        irp->write.bytes,
         irp->write.nbytes);
 #endif
 }
@@ -164,9 +181,9 @@ static HRESULT ezusb_get_device_descriptor(struct irp *irp)
     irp->read.pos = sizeof(*desc);
 
     log_misc(
-            "get_device_descriptor: vid %02x, pid %02x",
-            desc->idVendor,
-            desc->idProduct);
+        "get_device_descriptor: vid %02x, pid %02x",
+        desc->idVendor,
+        desc->idProduct);
 
     return S_OK;
 }
@@ -186,15 +203,16 @@ static HRESULT ezusb_vendor_req(struct irp *irp)
     vc = (VENDOR_OR_CLASS_REQUEST_CONTROL *) irp->write.bytes;
 
     log_misc(
-            "vendor req %02x, value %04x, index %04x",
-            vc->request,
-            vc->value,
-            vc->index);
+        "vendor req %02x, value %04x, index %04x",
+        vc->request,
+        vc->value,
+        vc->index);
 
     if (vc->request == 0x00 && vc->value == 0x0001 && vc->index == 0x0100) {
         log_misc("vendor req: reset hold, starting fw download...");
         ezusb_emu_firmware = ezusb_firmware_alloc();
-    } else if (vc->request == 0x00 && vc->value == 0x0001 && vc->index == 0x0000) {
+    } else if (
+        vc->request == 0x00 && vc->value == 0x0001 && vc->index == 0x0000) {
         log_misc("vendor req: reset release, finished fw download");
         /* FW download finished, reset 8051 and start the downloaded FW */
 
@@ -235,12 +253,11 @@ static HRESULT ezusb_upload_fw(struct irp *irp)
        supposed to receive data, not send it! */
 
     log_misc(
-            "upload_fw: offset: %04x, nbytes: %04x",
-            hdr->Offset,
-            irp->read.nbytes);
-    ezusb_firmware_add_segment(ezusb_emu_firmware, 
-        ezusb_firmware_segment_alloc(hdr->Offset, irp->read.nbytes, 
-        (void*) irp->read.bytes));
+        "upload_fw: offset: %04x, nbytes: %04x", hdr->Offset, irp->read.nbytes);
+    ezusb_firmware_add_segment(
+        ezusb_emu_firmware,
+        ezusb_firmware_segment_alloc(
+            hdr->Offset, irp->read.nbytes, (void *) irp->read.bytes));
 
     return S_OK;
 }
@@ -260,16 +277,16 @@ static HRESULT ezusb_pipe_read(struct irp *irp)
     ctl = (BULK_TRANSFER_CONTROL *) irp->write.bytes;
 
     switch (ctl->pipeNum) {
-    case EZUSB_PIPE_INTERRUPT_IN:
-        return ezusb_emu_dev_fx_msg_hook->interrupt_read(&irp->read);
+        case EZUSB_PIPE_INTERRUPT_IN:
+            return ezusb_emu_dev_fx_msg_hook->interrupt_read(&irp->read);
 
-    case EZUSB_PIPE_BULK_IN:
-        return ezusb_emu_dev_fx_msg_hook->bulk_read(&irp->read);
+        case EZUSB_PIPE_BULK_IN:
+            return ezusb_emu_dev_fx_msg_hook->bulk_read(&irp->read);
 
-    default:
-        log_warning("No such read pipe: %u", (unsigned int) ctl->pipeNum);
+        default:
+            log_warning("No such read pipe: %u", (unsigned int) ctl->pipeNum);
 
-        return E_INVALIDARG;
+            return E_INVALIDARG;
     }
 }
 
@@ -292,17 +309,15 @@ static HRESULT ezusb_pipe_write(struct irp *irp)
     write.pos = 0;
 
     switch (ctl->pipeNum) {
-    case EZUSB_PIPE_INTERRUPT_OUT:
-        return ezusb_emu_dev_fx_msg_hook->interrupt_write(&write);
+        case EZUSB_PIPE_INTERRUPT_OUT:
+            return ezusb_emu_dev_fx_msg_hook->interrupt_write(&write);
 
-    case EZUSB_PIPE_BULK_OUT:
-        return ezusb_emu_dev_fx_msg_hook->bulk_write(&write);
+        case EZUSB_PIPE_BULK_OUT:
+            return ezusb_emu_dev_fx_msg_hook->bulk_write(&write);
 
-    default:
-        log_warning("No such write pipe: %u", (unsigned int) ctl->pipeNum);
+        default:
+            log_warning("No such write pipe: %u", (unsigned int) ctl->pipeNum);
 
-        return E_INVALIDARG;
+            return E_INVALIDARG;
     }
 }
-
-

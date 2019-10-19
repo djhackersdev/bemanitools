@@ -11,9 +11,9 @@ struct iidxhook8_config_io {
     bool disable_poll_limiter;
 };
 
-void iidxhook8_config_io_init(struct cconfig* config);
+void iidxhook8_config_io_init(struct cconfig *config);
 
-void iidxhook8_config_io_get(struct iidxhook8_config_io* config_io, 
-        struct cconfig* config);
+void iidxhook8_config_io_get(
+    struct iidxhook8_config_io *config_io, struct cconfig *config);
 
 #endif

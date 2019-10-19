@@ -4,8 +4,12 @@
 #include "util/str.h"
 #include "util/winres.h"
 
-void vrsprintf(char *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, va_list ap)
+void vrsprintf(
+    char *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    va_list ap)
 {
     char fmt_buffer[1024];
 
@@ -14,8 +18,8 @@ void vrsprintf(char *dest, size_t nchars, HINSTANCE inst,
     dest[nchars - 1] = '\0';
 }
 
-void rsprintf(char *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, ...)
+void rsprintf(
+    char *dest, size_t nchars, HINSTANCE inst, unsigned int fmt_resource, ...)
 {
     va_list ap;
 
@@ -24,8 +28,12 @@ void rsprintf(char *dest, size_t nchars, HINSTANCE inst,
     va_end(ap);
 }
 
-void vrswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, va_list ap)
+void vrswprintf(
+    wchar_t *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    va_list ap)
 {
     wchar_t fmt_buffer[1024];
 
@@ -34,8 +42,12 @@ void vrswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
     dest[nchars - 1] = L'\0';
 }
 
-void rswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
-        unsigned int fmt_resource, ...)
+void rswprintf(
+    wchar_t *dest,
+    size_t nchars,
+    HINSTANCE inst,
+    unsigned int fmt_resource,
+    ...)
 {
     va_list ap;
 
@@ -44,8 +56,8 @@ void rswprintf(wchar_t *dest, size_t nchars, HINSTANCE inst,
     va_end(ap);
 }
 
-void resource_open(struct resource *res, HINSTANCE inst, const char *type,
-        unsigned int ord)
+void resource_open(
+    struct resource *res, HINSTANCE inst, const char *type, unsigned int ord)
 {
     HRSRC h1;
     HGLOBAL h2;
@@ -67,7 +79,7 @@ size_t resource_fgets(struct resource *res, char *chars, size_t nchars)
     c = '\0';
     remain = res->nbytes - res->pos;
 
-    for (i = 0 ; i < remain ; i++) {
+    for (i = 0; i < remain; i++) {
         if (c == '\n') {
             break;
         }
@@ -83,4 +95,3 @@ size_t resource_fgets(struct resource *res, char *chars, size_t nchars)
 
     return i > 0;
 }
-

@@ -18,16 +18,14 @@
 
 static int STDCALL my_wvsprintfA(LPSTR lpOut, LPCSTR lpFmt, va_list args);
 
-static int (STDCALL *real_wvsprintfA)(LPSTR lpOut, LPCSTR lpFmt, va_list args);
+static int(STDCALL *real_wvsprintfA)(LPSTR lpOut, LPCSTR lpFmt, va_list args);
 
 /* ------------------------------------------------------------------------- */
 
 static const struct hook_symbol ezusb_log_hook_syms[] = {
-    {
-        .name       = "wvsprintfA",
-        .patch      = my_wvsprintfA,
-        .link       = (void **) &real_wvsprintfA
-    },
+    {.name = "wvsprintfA",
+     .patch = my_wvsprintfA,
+     .link = (void **) &real_wvsprintfA},
 };
 
 /* ------------------------------------------------------------------------- */
@@ -46,10 +44,7 @@ static int STDCALL my_wvsprintfA(LPSTR lpOut, LPCSTR lpFmt, va_list args)
 void ezusb_log_hook_init(void)
 {
     hook_table_apply(
-            NULL,
-            "user32.dll",
-            ezusb_log_hook_syms,
-            lengthof(ezusb_log_hook_syms));
+        NULL, "user32.dll", ezusb_log_hook_syms, lengthof(ezusb_log_hook_syms));
 
     log_info("Inserted ezusb log hooks");
 }

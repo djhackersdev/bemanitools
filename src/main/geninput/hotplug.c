@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <dbt.h>
+#include <windows.h>
 
 #include <string.h>
 
@@ -21,12 +21,13 @@ void hotplug_init(HWND wnd)
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     filter.dbcc_classguid = hid_guid;
 
-    hotplug_handle = RegisterDeviceNotification(wnd, &filter,
-            DEVICE_NOTIFY_WINDOW_HANDLE);
+    hotplug_handle =
+        RegisterDeviceNotification(wnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
 
     if (hotplug_handle == NULL) {
-        log_fatal("Failed to register for HID hotplug notifications: %08x",
-                (unsigned int) GetLastError());
+        log_fatal(
+            "Failed to register for HID hotplug notifications: %08x",
+            (unsigned int) GetLastError());
     }
 }
 
@@ -60,8 +61,8 @@ void hotplug_fini(void)
     ok = UnregisterDeviceNotification(hotplug_handle);
 
     if (!ok) {
-        log_warning("Failed to unregister HID hotplug notifications: %08x",
-                (unsigned int) GetLastError());
+        log_warning(
+            "Failed to unregister HID hotplug notifications: %08x",
+            (unsigned int) GetLastError());
     }
 }
-

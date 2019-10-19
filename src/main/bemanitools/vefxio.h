@@ -12,8 +12,11 @@
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void vefx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void vefx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your IIDX IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -23,8 +26,10 @@ void vefx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool vefx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool vefx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your IIDX IO emulation DLL */
 
@@ -40,7 +45,7 @@ void vefx_io_fini(void);
 
    See iidxio.c for mappings. */
 
-bool vefx_io_recv(uint64_t* ppad);
+bool vefx_io_recv(uint64_t *ppad);
 
 /* Get slider position, where 0 is the bottom position and 15 is the topmost
    position. slider_no is a number between 0 (leftmost) and 4 (rightmost). */

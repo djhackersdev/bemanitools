@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <dbt.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -12,35 +12,36 @@
 
 #include "util/log.h"
 
-static const uint8_t eam_io_keypad_mappings[16] = {
-    EAM_IO_KEYPAD_DECIMAL,
-    EAM_IO_KEYPAD_3,
-    EAM_IO_KEYPAD_6,
-    EAM_IO_KEYPAD_9,
-    0xFF,
-    0xFF,
-    0xFF,
-    0xFF,
-    EAM_IO_KEYPAD_0,
-    EAM_IO_KEYPAD_1,
-    EAM_IO_KEYPAD_4,
-    EAM_IO_KEYPAD_7,
-    EAM_IO_KEYPAD_00,
-    EAM_IO_KEYPAD_2,
-    EAM_IO_KEYPAD_5,
-    EAM_IO_KEYPAD_8
-};
+static const uint8_t eam_io_keypad_mappings[16] = {EAM_IO_KEYPAD_DECIMAL,
+                                                   EAM_IO_KEYPAD_3,
+                                                   EAM_IO_KEYPAD_6,
+                                                   EAM_IO_KEYPAD_9,
+                                                   0xFF,
+                                                   0xFF,
+                                                   0xFF,
+                                                   0xFF,
+                                                   EAM_IO_KEYPAD_0,
+                                                   EAM_IO_KEYPAD_1,
+                                                   EAM_IO_KEYPAD_4,
+                                                   EAM_IO_KEYPAD_7,
+                                                   EAM_IO_KEYPAD_00,
+                                                   EAM_IO_KEYPAD_2,
+                                                   EAM_IO_KEYPAD_5,
+                                                   EAM_IO_KEYPAD_8};
 
 static struct ac_io_icca_state eam_io_icca_state[2];
 
-void eam_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void eam_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     log_to_external(misc, info, warning, fatal);
 }
 
-bool eam_io_init(thread_create_t create, thread_join_t join,
-        thread_destroy_t destroy)
+bool eam_io_init(
+    thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
     if (!aciodrv_device_open("COM1", 57600)) {
         log_warning("Opening acio device on COM1 failed");
@@ -48,7 +49,6 @@ bool eam_io_init(thread_create_t create, thread_join_t join,
     }
 
     for (uint8_t i = 0; i < 2; i++) {
-
         if (!aciodrv_icca_init(i)) {
             log_warning("Initializing icca %d failed", i);
             return false;
@@ -83,11 +83,11 @@ uint8_t eam_io_get_sensor_state(uint8_t unit_no)
     uint8_t sensors = 0;
 
     if ((eam_io_icca_state[unit_no].sensor_state &
-            AC_IO_ICCA_SENSOR_MASK_BACK_ON) > 0) {
+         AC_IO_ICCA_SENSOR_MASK_BACK_ON) > 0) {
         sensors |= (1 << EAM_IO_SENSOR_BACK);
     }
     if ((eam_io_icca_state[unit_no].sensor_state &
-            AC_IO_ICCA_SENSOR_MASK_FRONT_ON) > 0) {
+         AC_IO_ICCA_SENSOR_MASK_FRONT_ON) > 0) {
         sensors |= (1 << EAM_IO_SENSOR_FRONT);
     }
 
@@ -108,16 +108,16 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 {
     switch (cmd) {
         case EAM_IO_CARD_SLOT_CMD_CLOSE:
-            return aciodrv_icca_set_state(unit_no,
-                AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
+            return aciodrv_icca_set_state(
+                unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_OPEN:
-            return aciodrv_icca_set_state(unit_no,
-                AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
+            return aciodrv_icca_set_state(
+                unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_EJECT:
-            return aciodrv_icca_set_state(unit_no,
-                AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
+            return aciodrv_icca_set_state(
+                unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_READ:
             return aciodrv_icca_read_card(unit_no, NULL) &&
@@ -144,4 +144,3 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)
 {
     return TRUE;
 }
-

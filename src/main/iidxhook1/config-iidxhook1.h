@@ -7,10 +7,9 @@ struct iidxhook_config_iidxhook1 {
     bool happy_sky_ms_bg_fix;
 };
 
-void iidxhook_config_iidxhook1_init(struct cconfig* config);
+void iidxhook_config_iidxhook1_init(struct cconfig *config);
 
 void iidxhook_config_iidxhook1_get(
-        struct iidxhook_config_iidxhook1* config_iidxhook1, 
-        struct cconfig* config);
+    struct iidxhook_config_iidxhook1 *config_iidxhook1, struct cconfig *config);
 
 #endif

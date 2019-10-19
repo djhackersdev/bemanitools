@@ -41,15 +41,16 @@ static int msg_thread_proc(void *param)
 
        Because THAT totally makes sense. */
 
-    hwnd = CreateWindowEx(0, msg_wndclass_name, NULL, 0, 0, 0, 0, 0,
-            NULL, NULL, inst, NULL);
+    hwnd = CreateWindowEx(
+        0, msg_wndclass_name, NULL, 0, 0, 0, 0, 0, NULL, NULL, inst, NULL);
 
     msg_window_setup(hwnd); /* callback */
 
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
     SetEvent(msg_thread_ready);
 
-    while (msg_thread_step(hwnd));
+    while (msg_thread_step(hwnd))
+        ;
 
     msg_window_teardown(hwnd); /* callback */
 
@@ -64,8 +65,8 @@ static bool msg_thread_step(HWND hwnd)
     MSG msg;
     DWORD result;
 
-    result = MsgWaitForMultipleObjectsEx(1, &msg_thread_stop, INFINITE,
-            QS_ALLINPUT, MWMO_ALERTABLE);
+    result = MsgWaitForMultipleObjectsEx(
+        1, &msg_thread_stop, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
 
     switch (result) {
         case WAIT_OBJECT_0:
@@ -83,14 +84,15 @@ static bool msg_thread_step(HWND hwnd)
             return true;
 
         case WAIT_FAILED:
-            log_warning("MsgWaitForMultipleObjectsEx failed: %08x",
-                    (unsigned int) GetLastError());
+            log_warning(
+                "MsgWaitForMultipleObjectsEx failed: %08x",
+                (unsigned int) GetLastError());
 
             return false;
 
         default:
-            log_warning("Spurious wakeup: result = %08x",
-                    (unsigned int) result);
+            log_warning(
+                "Spurious wakeup: result = %08x", (unsigned int) result);
 
             return true;
     }
@@ -115,4 +117,3 @@ void msg_thread_fini(void)
 
     CloseHandle(msg_thread_stop);
 }
-

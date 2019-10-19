@@ -11,12 +11,11 @@ struct options {
     bool disable_cardemu;
 };
 
-void options_init_from_cmdline(struct options* options);
+void options_init_from_cmdline(struct options *options);
 
-void options_init(struct options* options);
-bool options_read_cmdline(struct options* options,
-        int argc, const char** argv);
+void options_init(struct options *options);
+bool options_read_cmdline(struct options *options, int argc, const char **argv);
 void options_print_usage(void);
-void options_fini(struct options* options);
+void options_fini(struct options *options);
 
 #endif

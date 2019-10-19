@@ -3,11 +3,12 @@
 #include "test/check.h"
 #include "test/test.h"
 
-/* We don't care about cleaning up some of the memory to avoid cluttering the tests */
+/* We don't care about cleaning up some of the memory to avoid cluttering the
+ * tests */
 
 static void test_config_io_defaults()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook8_config_io config_io;
 
     config = cconfig_init();
@@ -24,7 +25,7 @@ static void test_config_io_defaults()
 
 static void test_config_io()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook8_config_io config_io;
 
     config = cconfig_init();
@@ -46,7 +47,7 @@ static void test_config_io()
 
 static void test_config_invalid_values()
 {
-   struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook8_config_io config_io;
 
     config = cconfig_init();

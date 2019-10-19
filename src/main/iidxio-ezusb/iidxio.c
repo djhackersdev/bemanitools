@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <mmsystem.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -33,8 +33,11 @@ static struct ezusb_iidx_msg_interrupt_read_packet iidx_io_ezusb_read_packet;
 static struct ezusb_iidx_msg_interrupt_write_packet iidx_io_ezusb_write_packet;
 static bool iidxio_io_ezusb_16seg_rts;
 
-void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void iidx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     iidx_io_log_misc = misc;
     iidx_io_log_info = info;
@@ -42,14 +45,17 @@ void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
     iidx_io_log_fatal = fatal;
 }
 
-bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool iidx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     struct ezusb_ident ident;
 
     iidxio_io_ezusb_16seg_rts = false;
 
-    log_info("!!! IMPORTANT: Ensure that you have flashed the correct firmware "
+    log_info(
+        "!!! IMPORTANT: Ensure that you have flashed the correct firmware "
         "to your hardware and the FPGA BEFORE running this !!!");
 
     log_misc("Opening device path %s...", EZUSB_DEVICE_PATH);
@@ -64,8 +70,8 @@ bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
             log_fatal("Getting ezusb ident failed");
             return false;
         } else {
-            log_info("Connected ezusb: vid 0x%X, pid 0x%X", ident.vid, 
-                ident.pid);
+            log_info(
+                "Connected ezusb: vid 0x%X, pid 0x%X", ident.vid, ident.pid);
             return true;
         }
     }
@@ -113,9 +119,14 @@ bool iidx_io_ep1_send(void)
 
     transfer.pipeNum = EZUSB_IIDX_MSG_PIPE_INTERRUPT_OUT;
 
-    if (!ezusb_iidx_ioctl(iidx_io_ezusb_handle, IOCTL_EZUSB_BULK_WRITE, 
-            &transfer, sizeof(transfer), &iidx_io_ezusb_write_packet, 
-            sizeof(iidx_io_ezusb_write_packet), &outpkt)) {
+    if (!ezusb_iidx_ioctl(
+            iidx_io_ezusb_handle,
+            IOCTL_EZUSB_BULK_WRITE,
+            &transfer,
+            sizeof(transfer),
+            &iidx_io_ezusb_write_packet,
+            sizeof(iidx_io_ezusb_write_packet),
+            &outpkt)) {
         log_fatal("Failed to write interrupt endpoint of ezusb");
         return false;
     } else {
@@ -125,17 +136,18 @@ bool iidx_io_ep1_send(void)
 
 bool iidx_io_ep2_recv(void)
 {
-    if (!ezusb_iidx_interrupt_read(iidx_io_ezusb_handle, 
-            &iidx_io_ezusb_read_packet)) {
+    if (!ezusb_iidx_interrupt_read(
+            iidx_io_ezusb_handle, &iidx_io_ezusb_read_packet)) {
         log_fatal("Failed to read interrupt endpoints of ezusb");
         return false;
     }
 
     // Wait for board to be ready to receive data on bulk endpoint
-    // On older Windows platforms, just writing the the 16seg bulk endpoint all the
-    // time was fine, probably because the driver was overall slower than on newer platforms, e.g. Windows 10.
-    // There, you crash the C02 firmware AND the kernel mode driver if you don't wait for the bulk endpoint
-    // to become ready before writing to it.
+    // On older Windows platforms, just writing the the 16seg bulk endpoint all
+    // the time was fine, probably because the driver was overall slower than on
+    // newer platforms, e.g. Windows 10. There, you crash the C02 firmware AND
+    // the kernel mode driver if you don't wait for the bulk endpoint to become
+    // ready before writing to it.
     if (iidx_io_ezusb_read_packet.status == EZUSB_IIDX_16SEG_CMD_STATUS_OK) {
         iidxio_io_ezusb_16seg_rts = true;
     } else {
@@ -212,4 +224,3 @@ bool iidx_io_ep3_write_16seg(const char *text)
 
     return true;
 }
-

@@ -17,9 +17,10 @@ void array_remove_(size_t itemsz, struct array *array, size_t i)
 
     array->nitems--;
 
-    memmove(((uint8_t *) array->items) + i * itemsz,
-            ((uint8_t *) array->items) + (i + 1) * itemsz,
-            (array->nitems - i) * itemsz);
+    memmove(
+        ((uint8_t *) array->items) + i * itemsz,
+        ((uint8_t *) array->items) + (i + 1) * itemsz,
+        (array->nitems - i) * itemsz);
 }
 
 void *array_reserve_(size_t itemsz, struct array *array, size_t nitems)
@@ -55,4 +56,3 @@ void array_fini(struct array *array)
 {
     free(array->items);
 }
-

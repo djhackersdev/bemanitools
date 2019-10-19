@@ -4,9 +4,8 @@
 #include "util/list.h"
 
 extern inline struct list_node *list_peek_head(struct list *list);
-extern inline const struct list_node *list_peek_head_const(
-        const struct list *list
-);
+extern inline const struct list_node *
+list_peek_head_const(const struct list *list);
 
 void list_init(struct list *list)
 {
@@ -30,7 +29,7 @@ bool list_contains(struct list *list, struct list_node *node)
 {
     struct list_node *pos;
 
-    for (pos = list->head ; pos != NULL ; pos = pos->next) {
+    for (pos = list->head; pos != NULL; pos = pos->next) {
         if (pos == node) {
             return true;
         }
@@ -64,9 +63,8 @@ void list_remove(struct list *list, struct list_node *node)
     struct list_node *pos;
     struct list_node *prev;
 
-    for (prev = NULL, pos = list->head
-            ; pos != NULL
-            ; prev = pos, pos = pos->next) {
+    for (prev = NULL, pos = list->head; pos != NULL;
+         prev = pos, pos = pos->next) {
         if (pos == node) {
             if (prev != NULL) {
                 prev->next = node->next;
@@ -84,5 +82,3 @@ void list_remove(struct list *list, struct list_node *node)
         }
     }
 }
-
-

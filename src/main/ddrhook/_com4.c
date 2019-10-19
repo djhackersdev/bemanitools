@@ -1,8 +1,8 @@
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -38,7 +38,7 @@ void com4_init(void)
     ac_io_emu_init(&com4_ac_io_emu, L"COM4");
     ac_io_emu_hdxs_init(&com4_hdxs, &com4_ac_io_emu);
 
-    for (i = 0 ; i < lengthof(com4_icca) ; i++) {
+    for (i = 0; i < lengthof(com4_icca); i++) {
         ac_io_emu_icca_init(&com4_icca[i], &com4_ac_io_emu, i);
     }
 }
@@ -48,7 +48,8 @@ void com4_fini(void)
     ac_io_emu_fini(&com4_ac_io_emu);
 }
 
-HRESULT com4_dispatch_irp(struct irp *irp)
+HRESULT
+com4_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -69,36 +70,37 @@ HRESULT com4_dispatch_irp(struct irp *irp)
         msg = ac_io_emu_request_peek(&com4_ac_io_emu);
 
         switch (msg->addr) {
-        case 0:
-            ac_io_emu_cmd_assign_addrs(&com4_ac_io_emu, msg, 3);
+            case 0:
+                ac_io_emu_cmd_assign_addrs(&com4_ac_io_emu, msg, 3);
 
-            break;
+                break;
 
-        case 1:
-            ac_io_emu_icca_dispatch_request(&com4_icca[0], msg);
+            case 1:
+                ac_io_emu_icca_dispatch_request(&com4_icca[0], msg);
 
-            break;
+                break;
 
-        case 2:
-            ac_io_emu_icca_dispatch_request(&com4_icca[1], msg);
+            case 2:
+                ac_io_emu_icca_dispatch_request(&com4_icca[1], msg);
 
-            break;
+                break;
 
-        case 3:
-            ac_io_emu_hdxs_dispatch_request(&com4_hdxs, msg);
+            case 3:
+                ac_io_emu_hdxs_dispatch_request(&com4_hdxs, msg);
 
-            break;
+                break;
 
-        case AC_IO_BROADCAST:
-            log_warning("Broadcast(?) message on p3io ACIO bus?");
+            case AC_IO_BROADCAST:
+                log_warning("Broadcast(?) message on p3io ACIO bus?");
 
-            break;
+                break;
 
-        default:
-            log_warning("p3io ACIO message on unhandled bus address: %d",
+            default:
+                log_warning(
+                    "p3io ACIO message on unhandled bus address: %d",
                     msg->addr);
 
-            break;
+                break;
         }
 
         ac_io_emu_request_pop(&com4_ac_io_emu);

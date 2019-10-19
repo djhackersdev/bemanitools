@@ -6,7 +6,10 @@
 
 #include "geninput/io-thread.h"
 
-bool pac_open(struct hid_fd **hid_out, const char *dev_node, HANDLE iocp,
-        uintptr_t iocp_ctx);
+bool pac_open(
+    struct hid_fd **hid_out,
+    const char *dev_node,
+    HANDLE iocp,
+    uintptr_t iocp_ctx);
 
 #endif

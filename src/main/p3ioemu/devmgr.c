@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <string.h>
@@ -16,93 +16,85 @@
 
 /* Link pointers */
 
-static HDEVINFO (WINAPI * next_SetupDiGetClassDevsW)(
-        const GUID *class_guid,
-        const wchar_t *enumerator,
-        HWND hwnd,
-        DWORD flags);
+static HDEVINFO(WINAPI *next_SetupDiGetClassDevsW)(
+    const GUID *class_guid, const wchar_t *enumerator, HWND hwnd, DWORD flags);
 
-static HDEVINFO (WINAPI * next_SetupDiGetClassDevsA)(
-        const GUID *class_guid,
-        const char *enumerator,
-        HWND hwnd,
-        DWORD flags);
+static HDEVINFO(WINAPI *next_SetupDiGetClassDevsA)(
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags);
 
-static BOOL (WINAPI *next_SetupDiEnumDeviceInterfaces)(
-        HDEVINFO dev_info,
-        SP_DEVINFO_DATA *info_data,
-        const GUID *iface_guid,
-        DWORD index,
-        SP_DEVICE_INTERFACE_DATA *ifd);
+static BOOL(WINAPI *next_SetupDiEnumDeviceInterfaces)(
+    HDEVINFO dev_info,
+    SP_DEVINFO_DATA *info_data,
+    const GUID *iface_guid,
+    DWORD index,
+    SP_DEVICE_INTERFACE_DATA *ifd);
 
-static BOOL (WINAPI *next_SetupDiGetDeviceInterfaceDetailW)(
-        HDEVINFO dev_info,
-        SP_DEVICE_INTERFACE_DATA *ifd,
-        SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
-        DWORD size,
-        DWORD *required_size,
-        SP_DEVINFO_DATA *info_data);
+static BOOL(WINAPI *next_SetupDiGetDeviceInterfaceDetailW)(
+    HDEVINFO dev_info,
+    SP_DEVICE_INTERFACE_DATA *ifd,
+    SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
+    DWORD size,
+    DWORD *required_size,
+    SP_DEVINFO_DATA *info_data);
 
-static BOOL (WINAPI *next_SetupDiDestroyDeviceInfoList)(HDEVINFO dev_info);
+static BOOL(WINAPI *next_SetupDiDestroyDeviceInfoList)(HDEVINFO dev_info);
 
 /* API hooks */
 
 static HDEVINFO WINAPI my_SetupDiGetClassDevsW(
-        const GUID *class_guid,
-        const wchar_t *enumerator,
-        HWND hwnd,
-        DWORD flags);
+    const GUID *class_guid, const wchar_t *enumerator, HWND hwnd, DWORD flags);
 
 static HDEVINFO WINAPI my_SetupDiGetClassDevsA(
-        const GUID *class_guid,
-        const char *enumerator,
-        HWND hwnd,
-        DWORD flags);
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags);
 
 static BOOL WINAPI my_SetupDiEnumDeviceInterfaces(
-        HDEVINFO dev_info,
-        SP_DEVINFO_DATA *info_data,
-        const GUID *iface_guid,
-        DWORD index,
-        SP_DEVICE_INTERFACE_DATA *ifd);
+    HDEVINFO dev_info,
+    SP_DEVINFO_DATA *info_data,
+    const GUID *iface_guid,
+    DWORD index,
+    SP_DEVICE_INTERFACE_DATA *ifd);
 
 static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
-        HDEVINFO dev_info,
-        SP_DEVICE_INTERFACE_DATA *ifd,
-        SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
-        DWORD size,
-        DWORD *required_size,
-        SP_DEVINFO_DATA *info_data);
+    HDEVINFO dev_info,
+    SP_DEVICE_INTERFACE_DATA *ifd,
+    SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
+    DWORD size,
+    DWORD *required_size,
+    SP_DEVINFO_DATA *info_data);
 
 static BOOL WINAPI my_SetupDiDestroyDeviceInfoList(HDEVINFO dev_info);
 
 static const struct hook_symbol p3io_setupapi_syms[] = {
     {
-        .name       = "SetupDiGetClassDevsW",
-        .patch      = my_SetupDiGetClassDevsW,
-        .link       = (void **) &next_SetupDiGetClassDevsW,
-    }, {
-        .name       = "SetupDiGetClassDevsA",
-        .patch      = my_SetupDiGetClassDevsA,
-        .link       = (void **) &next_SetupDiGetClassDevsA,
-    }, {
+        .name = "SetupDiGetClassDevsW",
+        .patch = my_SetupDiGetClassDevsW,
+        .link = (void **) &next_SetupDiGetClassDevsW,
+    },
+    {
+        .name = "SetupDiGetClassDevsA",
+        .patch = my_SetupDiGetClassDevsA,
+        .link = (void **) &next_SetupDiGetClassDevsA,
+    },
+    {
 #if 0
         .name       = "SetupDiEnumDeviceInfo",
         .patch      = my_SetupDiEnumDeviceInfo,
         .link       = (void **) &next_SetupDiEnumDeviceInfo,
     }, {
 #endif
-        .name       = "SetupDiEnumDeviceInterfaces",
-        .patch      = my_SetupDiEnumDeviceInterfaces,
-        .link       = (void **) &next_SetupDiEnumDeviceInterfaces,
-    }, {
-        .name       = "SetupDiGetDeviceInterfaceDetailW",
-        .patch      = my_SetupDiGetDeviceInterfaceDetailW,
-        .link       = (void **) &next_SetupDiGetDeviceInterfaceDetailW,
-    }, {
-        .name       = "SetupDiDestroyDeviceInfoList",
-        .patch      = my_SetupDiDestroyDeviceInfoList,
-        .link       = (void **) &next_SetupDiDestroyDeviceInfoList,
+        .name = "SetupDiEnumDeviceInterfaces",
+        .patch = my_SetupDiEnumDeviceInterfaces,
+        .link = (void **) &next_SetupDiEnumDeviceInterfaces,
+    },
+    {
+        .name = "SetupDiGetDeviceInterfaceDetailW",
+        .patch = my_SetupDiGetDeviceInterfaceDetailW,
+        .link = (void **) &next_SetupDiGetDeviceInterfaceDetailW,
+    },
+    {
+        .name = "SetupDiDestroyDeviceInfoList",
+        .patch = my_SetupDiDestroyDeviceInfoList,
+        .link = (void **) &next_SetupDiDestroyDeviceInfoList,
     },
 };
 
@@ -114,10 +106,7 @@ static const wchar_t p3io_path[] = L"$p3io\\p3io";
 static HDEVINFO p3io_hdevinfo;
 
 static HDEVINFO WINAPI my_SetupDiGetClassDevsA(
-        const GUID *class_guid,
-        const char *enumerator,
-        HWND hwnd,
-        DWORD flags)
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags)
 {
     HDEVINFO result;
 
@@ -131,10 +120,7 @@ static HDEVINFO WINAPI my_SetupDiGetClassDevsA(
 }
 
 static HDEVINFO WINAPI my_SetupDiGetClassDevsW(
-        const GUID *class_guid,
-        const wchar_t *enumerator,
-        HWND hwnd,
-        DWORD flags)
+    const GUID *class_guid, const wchar_t *enumerator, HWND hwnd, DWORD flags)
 {
     HDEVINFO result;
 
@@ -148,19 +134,15 @@ static HDEVINFO WINAPI my_SetupDiGetClassDevsW(
 }
 
 static BOOL WINAPI my_SetupDiEnumDeviceInterfaces(
-        HDEVINFO dev_info,
-        SP_DEVINFO_DATA *info_data,
-        const GUID *iface_guid,
-        DWORD index,
-        SP_DEVICE_INTERFACE_DATA *ifd)
+    HDEVINFO dev_info,
+    SP_DEVINFO_DATA *info_data,
+    const GUID *iface_guid,
+    DWORD index,
+    SP_DEVICE_INTERFACE_DATA *ifd)
 {
     if (dev_info != p3io_hdevinfo) {
         return next_SetupDiEnumDeviceInterfaces(
-            dev_info,
-            info_data,
-            iface_guid,
-            index,
-            ifd);
+            dev_info, info_data, iface_guid, index, ifd);
     }
 
     /* Not implemented */
@@ -192,21 +174,16 @@ static BOOL WINAPI my_SetupDiEnumDeviceInterfaces(
 }
 
 static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
-        HDEVINFO dev_info,
-        SP_DEVICE_INTERFACE_DATA *ifd,
-        SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
-        DWORD size,
-        DWORD *required_size,
-        SP_DEVINFO_DATA *info_data)
+    HDEVINFO dev_info,
+    SP_DEVICE_INTERFACE_DATA *ifd,
+    SP_DEVICE_INTERFACE_DETAIL_DATA_W *detail,
+    DWORD size,
+    DWORD *required_size,
+    SP_DEVINFO_DATA *info_data)
 {
     if (dev_info != p3io_hdevinfo) {
         return next_SetupDiGetDeviceInterfaceDetailW(
-            dev_info,
-            ifd,
-            detail,
-            size,
-            required_size,
-            info_data);
+            dev_info, ifd, detail, size, required_size, info_data);
     }
 
     /* Not implemented */
@@ -230,9 +207,7 @@ static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
             return FALSE;
         }
 
-        memcpy( detail->DevicePath,
-                p3io_path_prefix,
-                sizeof(p3io_path_prefix));
+        memcpy(detail->DevicePath, p3io_path_prefix, sizeof(p3io_path_prefix));
     }
 
     SetLastError(ERROR_SUCCESS);
@@ -252,10 +227,10 @@ static BOOL WINAPI my_SetupDiDestroyDeviceInfoList(HDEVINFO dev_info)
 void p3io_setupapi_insert_hooks(HMODULE target)
 {
     hook_table_apply(
-            target,
-            "setupapi.dll",
-            p3io_setupapi_syms,
-            lengthof(p3io_setupapi_syms));
+        target,
+        "setupapi.dll",
+        p3io_setupapi_syms,
+        lengthof(p3io_setupapi_syms));
 
     log_info("Inserted P3IO setupapi hooks into %p", target);
 }

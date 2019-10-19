@@ -10,10 +10,10 @@
 
 /**
  * Init the fully emulated IIDX msg backend for a EZUSB FX2 (IO2) board
- * 
- * @return ezusb_emu_msg_hook structure with hook calls for ezusb msg 
+ *
+ * @return ezusb_emu_msg_hook structure with hook calls for ezusb msg
  *         dispatching
  */
-struct ezusb_emu_msg_hook* ezusb2_iidx_emu_msg_init(void);
+struct ezusb_emu_msg_hook *ezusb2_iidx_emu_msg_init(void);
 
 #endif

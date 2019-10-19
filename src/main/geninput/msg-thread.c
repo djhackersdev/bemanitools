@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <dbt.h>
+#include <windows.h>
 
 #include <stdint.h>
 
@@ -14,14 +14,15 @@ void msg_window_setup(HWND hwnd)
     ri_init(hwnd);
     hotplug_init(hwnd);
 
-    log_info("Message pump thread ready, thread id = %d",
-                (unsigned int) GetCurrentThreadId());
+    log_info(
+        "Message pump thread ready, thread id = %d",
+        (unsigned int) GetCurrentThreadId());
 
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 }
 
-LRESULT WINAPI msg_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+LRESULT WINAPI
+msg_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INPUT:
@@ -48,4 +49,3 @@ void msg_window_teardown(HWND hwnd)
     hotplug_fini();
     ri_fini();
 }
-

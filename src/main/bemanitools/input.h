@@ -22,8 +22,11 @@
 
    This is the only function that can safely be called before input_init(). */
 
-void input_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void input_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize the generic input subsystem. You must pass on the thread
    management functions that have been supplied to your DLL.
@@ -35,8 +38,10 @@ void input_set_loggers(log_formatter_t misc, log_formatter_t info,
    game_type parameter, otherwise you will not receive any input, and any
    attempts to set a light output level will have no effect. */
 
-void input_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+void input_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down the generic input subsystem. After calling this function, no
    geninput functions other than input_set_loggers() or input_init() may be

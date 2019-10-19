@@ -25,11 +25,11 @@
 
 /* This doesn't really belong here, but it's what libavs does so w/e */
 
-#define log_assert(x) \
-    do { \
-        if (!(x)) { \
+#define log_assert(x)                                          \
+    do {                                                       \
+        if (!(x)) {                                            \
             log_assert_body(__FILE__, __LINE__, __FUNCTION__); \
-        } \
+        }                                                      \
     } while (0)
 
 #else
@@ -37,14 +37,19 @@
 #define log_misc(...)
 #define log_info(...)
 #define log_warning(...)
-#define log_assert(x) do { if (!(x)) { abort(); } } while (0)
+#define log_assert(x) \
+    do {              \
+        if (!(x)) {   \
+            abort();  \
+        }             \
+    } while (0)
 
 #endif
 
-#define log_fatal(...) \
-    do { \
+#define log_fatal(...)                           \
+    do {                                         \
         log_impl_fatal(LOG_MODULE, __VA_ARGS__); \
-        abort(); \
+        abort();                                 \
     } while (0)
 
 typedef void (*log_writer_t)(void *ctx, const char *chars, size_t nchars);
@@ -55,8 +60,11 @@ extern log_formatter_t log_impl_warning;
 extern log_formatter_t log_impl_fatal;
 
 void log_assert_body(const char *file, int line, const char *function);
-void log_to_external(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void log_to_external(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 void log_to_writer(log_writer_t writer, void *ctx);
 
 void log_set_level(unsigned int new_level);

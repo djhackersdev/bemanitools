@@ -3,7 +3,7 @@
 
 #include "geninput/hid.h"
 
-#define MOUSE_DEVICE_USAGE              0x00010002
+#define MOUSE_DEVICE_USAGE 0x00010002
 
 void mouse_create(struct hid_ri **hid_ri, const char *dev_node);
 

@@ -17,8 +17,8 @@ struct pe_iat_entry {
 const pe_iid_t *pe_iid_get_first(HMODULE pe);
 const char *pe_iid_get_name(HMODULE pe, const pe_iid_t *iid);
 const pe_iid_t *pe_iid_get_next(HMODULE pe, const pe_iid_t *iid);
-bool pe_iid_get_iat_entry(HMODULE pe, const pe_iid_t *iid, size_t n,
-        struct pe_iat_entry *entry);
+bool pe_iid_get_iat_entry(
+    HMODULE pe, const pe_iid_t *iid, size_t n, struct pe_iat_entry *entry);
 void *pe_get_export(HMODULE pe, const char *name, uint16_t ord);
 BOOL pe_call_dll_main(HMODULE pe, uint32_t reason, void *ctx);
 

@@ -15,13 +15,14 @@ static bool aciodrv_icca_queue_loop_start(uint8_t node_id)
     msg.cmd.nbytes = 1;
     msg.cmd.status = 0;
 
-    if (!aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Starting queue loop failed");
         return false;
     }
 
-    log_info("Started queue loop of node %d, status: %d",
-        node_id, msg.cmd.status);
+    log_info(
+        "Started queue loop of node %d, status: %d", node_id, msg.cmd.status);
 
     return true;
 }
@@ -35,8 +36,8 @@ bool aciodrv_icca_init(uint8_t node_id)
     return true;
 }
 
-bool aciodrv_icca_set_state(uint8_t node_id, int slot_state,
-        struct ac_io_icca_state* state)
+bool aciodrv_icca_set_state(
+    uint8_t node_id, int slot_state, struct ac_io_icca_state *state)
 {
     struct ac_io_message msg;
 
@@ -47,8 +48,8 @@ bool aciodrv_icca_set_state(uint8_t node_id, int slot_state,
     msg.cmd.raw[0] = sizeof(struct ac_io_icca_state);
     msg.cmd.raw[1] = slot_state;
 
-    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
-            msg.cmd.raw[0])) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + msg.cmd.raw[0])) {
         log_warning("Setting state of node %d failed", node_id + 1);
         return false;
     }
@@ -60,7 +61,7 @@ bool aciodrv_icca_set_state(uint8_t node_id, int slot_state,
     return true;
 }
 
-bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state)
+bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state *state)
 {
     struct ac_io_message msg;
 
@@ -70,8 +71,8 @@ bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state)
     /* buffer size of data we expect */
     msg.cmd.count = sizeof(struct ac_io_icca_state);
 
-    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
-            msg.cmd.count)) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + msg.cmd.count)) {
         log_warning("Getting state of node %d failed", node_id + 1);
         return false;
     }
@@ -83,7 +84,7 @@ bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state* state)
     return true;
 }
 
-bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state* state)
+bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state *state)
 {
     struct ac_io_message msg;
 
@@ -93,8 +94,8 @@ bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state* state)
     /* buffer size of data we expect */
     msg.cmd.count = sizeof(struct ac_io_icca_state);
 
-    if (    !aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
-            msg.cmd.count)) {
+    if (!aciodrv_send_and_recv(
+            &msg, offsetof(struct ac_io_message, cmd.raw) + msg.cmd.count)) {
         log_warning("Reading card of node %d failed", node_id + 1);
         return false;
     }

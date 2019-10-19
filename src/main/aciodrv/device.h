@@ -13,7 +13,7 @@
  * @return True if opening the port and resetting the device was successful,
  *         false on error.
  */
-bool aciodrv_device_open(const char* port, int baud);
+bool aciodrv_device_open(const char *port, int baud);
 
 /**
  * Get the node count on the opened device.
@@ -27,8 +27,8 @@ uint8_t aciodrv_device_get_node_count(void);
  *
  * @param node_id Id of the node. Needs to be in range of the total node count.
  * @param product Buffer to return the product id to.
- * @return True on success, false on error. If True the variable product contains
- *         the identifier of the queried node.
+ * @return True on success, false on error. If True the variable product
+ * contains the identifier of the queried node.
  */
 bool aciodrv_device_get_node_product_ident(uint8_t node_id, char product[4]);
 
@@ -42,7 +42,7 @@ bool aciodrv_device_get_node_product_ident(uint8_t node_id, char product[4]);
  * @param resp_size Size of the expecting response.
  * @return True on success, false on error.
  */
-bool aciodrv_send_and_recv(struct ac_io_message* msg, int resp_size);
+bool aciodrv_send_and_recv(struct ac_io_message *msg, int resp_size);
 
 /**
  * Close the previously opened ACIO device.

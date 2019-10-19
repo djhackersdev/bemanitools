@@ -8,17 +8,17 @@
    the "bemanitools" header files included by this source file for detailed
    information about the API you'll need to implement. */
 
-#include <windows.h>
 #include <mmsystem.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "bemanitools/iidxio.h"
-#include "bemanitools/vefxio.h"
 #include "bemanitools/input.h"
+#include "bemanitools/vefxio.h"
 
-#define MSEC_PER_NOTCH       8
+#define MSEC_PER_NOTCH 8
 
 enum iidx_io_pad_bit {
     /* Synthetic inputs stuffed into unused bits in the pad word.
@@ -79,8 +79,14 @@ struct iidx_io_tt {
 static void iidx_io_tt_update(uint32_t now, uint64_t pad, int i);
 
 static const struct iidx_io_tt_inputs iidx_io_tt_inputs[2] = {
-{ IIDX_IO_P1_TT_UP, IIDX_IO_P1_TT_DOWN, IIDX_IO_P1_TT_STAB, IIDX_IO_P1_START },
-{ IIDX_IO_P2_TT_UP, IIDX_IO_P2_TT_DOWN, IIDX_IO_P2_TT_STAB, IIDX_IO_P2_START },
+    {IIDX_IO_P1_TT_UP,
+     IIDX_IO_P1_TT_DOWN,
+     IIDX_IO_P1_TT_STAB,
+     IIDX_IO_P1_START},
+    {IIDX_IO_P2_TT_UP,
+     IIDX_IO_P2_TT_DOWN,
+     IIDX_IO_P2_TT_STAB,
+     IIDX_IO_P2_START},
 };
 
 static struct iidx_io_tt iidx_io_tt[2];
@@ -97,8 +103,11 @@ static log_formatter_t iidx_io_log_warning;
 static log_formatter_t iidx_io_log_fatal;
 #endif
 
-void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void iidx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     /* Pass logger functions on to geninput so that it has somewhere to write
        its own log output. */
@@ -123,8 +132,10 @@ void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 #endif
 }
 
-bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool iidx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     vefx_io_init(thread_create, thread_join, thread_destroy);
     timeBeginPeriod(1);
@@ -159,7 +170,7 @@ void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
 {
     uint8_t i;
 
-    for (i = 0x00 ; i < 0x0E ; i++) {
+    for (i = 0x00; i < 0x0E; i++) {
         mapper_write_light(i, deck_lights & (1 << i) ? 255 : 0);
     }
 }
@@ -168,7 +179,7 @@ void iidx_io_ep1_set_panel_lights(uint8_t panel_lights)
 {
     uint8_t i;
 
-    for (i = 0x00 ; i < 0x04 ; i++) {
+    for (i = 0x00; i < 0x04; i++) {
         mapper_write_light(0x18 + i, panel_lights & (1 << i) ? 255 : 0);
     }
 }
@@ -177,7 +188,7 @@ void iidx_io_ep1_set_top_lamps(uint8_t top_lamps)
 {
     uint8_t i;
 
-    for (i = 0x00 ; i < 0x08 ; i++) {
+    for (i = 0x00; i < 0x08; i++) {
         mapper_write_light(0x10 + i, top_lamps & (1 << i) ? 255 : 0);
     }
 }
@@ -209,10 +220,9 @@ bool iidx_io_ep2_recv(void)
     pad = (uint64_t) mapper_update();
     vefx_io_recv(&pad);
 
-    for (i = 0 ; i < 2 ; i++) {
+    for (i = 0; i < 2; i++) {
         iidx_io_tt_update(now, pad, i);
     }
-
 
     /* Mask out the stuff provided by geninput and store the pad state for
        later retrieval via iidx_io_ep2_get_pad() */
@@ -315,4 +325,3 @@ bool iidx_io_ep3_write_16seg(const char *text)
 {
     return vefx_io_write_16seg(text);
 }
-

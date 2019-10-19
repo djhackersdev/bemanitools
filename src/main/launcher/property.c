@@ -49,12 +49,10 @@ struct property *boot_property_load(const char *filename)
 
     buffer = xmalloc(nbytes);
     prop = property_create(
-                    PROPERTY_FLAG_READ |
-                    PROPERTY_FLAG_WRITE |
-                    PROPERTY_FLAG_CREATE |
-                    PROPERTY_FLAG_APPEND,
-            buffer,
-            nbytes);
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
+            PROPERTY_FLAG_APPEND,
+        buffer,
+        nbytes);
     rewind(f);
 
     if (!property_insert_read(prop, 0, boot_property_fread, f_keyhole)) {
@@ -76,4 +74,3 @@ void boot_property_free(struct property *prop)
     property_destroy(prop);
     free(buffer);
 }
-

@@ -14,10 +14,9 @@ struct iidxhook_util_config_eamuse {
     struct security_id eamid;
 };
 
-void iidxhook_util_config_eamuse_init(struct cconfig* config);
+void iidxhook_util_config_eamuse_init(struct cconfig *config);
 
 void iidxhook_util_config_eamuse_get(
-        struct iidxhook_util_config_eamuse* config_eamuse, 
-        struct cconfig* config);
+    struct iidxhook_util_config_eamuse *config_eamuse, struct cconfig *config);
 
 #endif

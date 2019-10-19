@@ -14,7 +14,7 @@ const struct security_mcode security_mcode_eamuse = {
     .revision = '@',
 };
 
-bool security_mcode_parse(const char* str, struct security_mcode* mcode)
+bool security_mcode_parse(const char *str, struct security_mcode *mcode)
 {
     size_t len;
 
@@ -34,9 +34,9 @@ bool security_mcode_parse(const char* str, struct security_mcode* mcode)
     return true;
 }
 
-char* security_mcode_to_str(const struct security_mcode* mcode)
+char *security_mcode_to_str(const struct security_mcode *mcode)
 {
-    char* str;
+    char *str;
 
     log_assert(mcode);
 

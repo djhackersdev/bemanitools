@@ -6,7 +6,7 @@
 
 static void test_set_get_int()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     int32_t value;
 
     config = cconfig_init();
@@ -29,7 +29,7 @@ static void test_set_get_int()
 
 static void test_get_int_na()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     int32_t value;
 
     config = cconfig_init();
@@ -45,7 +45,7 @@ static void test_get_int_na()
 
 static void test_set_get_float()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     float value;
 
     config = cconfig_init();
@@ -67,7 +67,7 @@ static void test_set_get_float()
 
 static void test_get_float_na()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     float value;
 
     config = cconfig_init();
@@ -83,7 +83,7 @@ static void test_get_float_na()
 
 static void test_set_get_bool()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     bool value;
 
     config = cconfig_init();
@@ -105,7 +105,7 @@ static void test_set_get_bool()
 
 static void test_get_bool_na()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     bool value;
 
     config = cconfig_init();
@@ -121,7 +121,7 @@ static void test_get_bool_na()
 
 static void test_set_get_str()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     char value[1024];
 
     config = cconfig_init();
@@ -135,8 +135,8 @@ static void test_set_get_str()
     check_str_eq(config->entries[0].key, "test");
     check_str_eq(config->entries[0].desc, "desc");
 
-    check_bool_true(cconfig_util_get_str(config, "test", value, sizeof(value),
-        "world hello"));
+    check_bool_true(cconfig_util_get_str(
+        config, "test", value, sizeof(value), "world hello"));
     check_str_eq(value, "hello world");
 
     cconfig_finit(config);
@@ -144,7 +144,7 @@ static void test_set_get_str()
 
 static void test_get_str_na()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     char value[1024];
 
     config = cconfig_init();
@@ -152,8 +152,8 @@ static void test_get_str_na()
     check_int_eq(config->nentries, 0);
     check_null(config->entries);
 
-    check_bool_false(cconfig_util_get_str(config, "test", value, sizeof(value), 
-        "world hello"));
+    check_bool_false(cconfig_util_get_str(
+        config, "test", value, sizeof(value), "world hello"));
     check_str_eq(value, "world hello");
 
     cconfig_finit(config);
@@ -161,7 +161,7 @@ static void test_get_str_na()
 
 static void test_set_get_data()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     uint8_t value[1024];
     uint8_t value2[1024];
     uint8_t value_default[] = {0x00};
@@ -181,8 +181,8 @@ static void test_set_get_data()
     check_str_eq(config->entries[0].key, "test");
     check_str_eq(config->entries[0].desc, "desc");
 
-    check_bool_true(cconfig_util_get_data(config, "test", value2, sizeof(value2),
-        value_default));
+    check_bool_true(cconfig_util_get_data(
+        config, "test", value2, sizeof(value2), value_default));
     check_data_eq(value2, sizeof(value2), value, sizeof(value));
 
     cconfig_finit(config);
@@ -190,7 +190,7 @@ static void test_set_get_data()
 
 static void test_get_data_na()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     uint8_t value[1024];
     uint8_t value_default[] = {0x01};
 
@@ -199,8 +199,8 @@ static void test_get_data_na()
     check_int_eq(config->nentries, 0);
     check_null(config->entries);
 
-    check_bool_false(cconfig_util_get_data(config, "test", value, sizeof(value), 
-        value_default));
+    check_bool_false(cconfig_util_get_data(
+        config, "test", value, sizeof(value), value_default));
     check_data_eq(value, 1, value_default, sizeof(value_default));
 
     cconfig_finit(config);

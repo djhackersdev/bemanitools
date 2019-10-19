@@ -8,9 +8,9 @@ struct iidxhook_config_misc {
     bool rteffect_stub;
 };
 
-void iidxhook_config_misc_init(struct cconfig* config);
+void iidxhook_config_misc_init(struct cconfig *config);
 
-void iidxhook_config_misc_get(struct iidxhook_config_misc* config_misc, 
-        struct cconfig* config);
+void iidxhook_config_misc_get(
+    struct iidxhook_config_misc *config_misc, struct cconfig *config);
 
 #endif

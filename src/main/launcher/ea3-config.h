@@ -29,12 +29,14 @@ struct ea3_ident {
 };
 
 void ea3_ident_init(struct ea3_ident *ident);
-bool ea3_ident_from_property(struct ea3_ident *ident,
-        struct property *ea3_config);
+bool ea3_ident_from_property(
+    struct ea3_ident *ident, struct property *ea3_config);
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident);
-bool ea3_ident_invoke_module_init(struct ea3_ident *ident,
-        const struct module_context *module, struct property_node *app_config);
-void ea3_ident_to_property(const struct ea3_ident *ident,
-        struct property *ea3_config);
+bool ea3_ident_invoke_module_init(
+    struct ea3_ident *ident,
+    const struct module_context *module,
+    struct property_node *app_config);
+void ea3_ident_to_property(
+    const struct ea3_ident *ident, struct property *ea3_config);
 
 #endif

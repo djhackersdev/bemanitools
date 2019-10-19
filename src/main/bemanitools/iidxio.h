@@ -44,16 +44,16 @@ enum iidx_io_key_bit {
 /* Bit mapping for the P1 and P2 deck lights */
 
 enum iidx_io_deck_light {
-    IIDX_IO_DECK_LIGHT_P1_1 =  0,
-    IIDX_IO_DECK_LIGHT_P1_2 =  1,
-    IIDX_IO_DECK_LIGHT_P1_3 =  2,
-    IIDX_IO_DECK_LIGHT_P1_4 =  3,
-    IIDX_IO_DECK_LIGHT_P1_5 =  4,
-    IIDX_IO_DECK_LIGHT_P1_6 =  5,
-    IIDX_IO_DECK_LIGHT_P1_7 =  6,
+    IIDX_IO_DECK_LIGHT_P1_1 = 0,
+    IIDX_IO_DECK_LIGHT_P1_2 = 1,
+    IIDX_IO_DECK_LIGHT_P1_3 = 2,
+    IIDX_IO_DECK_LIGHT_P1_4 = 3,
+    IIDX_IO_DECK_LIGHT_P1_5 = 4,
+    IIDX_IO_DECK_LIGHT_P1_6 = 5,
+    IIDX_IO_DECK_LIGHT_P1_7 = 6,
 
-    IIDX_IO_DECK_LIGHT_P2_1 =  8,
-    IIDX_IO_DECK_LIGHT_P2_2 =  9,
+    IIDX_IO_DECK_LIGHT_P2_1 = 8,
+    IIDX_IO_DECK_LIGHT_P2_2 = 9,
     IIDX_IO_DECK_LIGHT_P2_3 = 10,
     IIDX_IO_DECK_LIGHT_P2_4 = 11,
     IIDX_IO_DECK_LIGHT_P2_5 = 12,
@@ -66,16 +66,19 @@ enum iidx_io_deck_light {
 enum iidx_io_panel_light {
     IIDX_IO_PANEL_LIGHT_P1_START = 0,
     IIDX_IO_PANEL_LIGHT_P2_START = 1,
-    IIDX_IO_PANEL_LIGHT_VEFX     = 2,
-    IIDX_IO_PANEL_LIGHT_EFFECT   = 3,
+    IIDX_IO_PANEL_LIGHT_VEFX = 2,
+    IIDX_IO_PANEL_LIGHT_EFFECT = 3,
 };
 
 /* The first function that will be called on your DLL. You will be supplied
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void iidx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your IIDX IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -85,8 +88,10 @@ void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool iidx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your IIDX IO emulation DLL */
 

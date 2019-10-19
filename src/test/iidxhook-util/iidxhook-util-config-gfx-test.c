@@ -3,12 +3,12 @@
 #include "test/check.h"
 #include "test/test.h"
 
-/* We don't care about cleaning up some of the memory to avoid cluttering 
+/* We don't care about cleaning up some of the memory to avoid cluttering
    the tests */
 
 static void test_config_gfx_defaults()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_config_gfx config_gfx;
 
     config = cconfig_init();
@@ -27,12 +27,14 @@ static void test_config_gfx_defaults()
     check_bool_false(config_gfx.windowed);
     check_int_eq(config_gfx.scale_back_buffer_width, 0);
     check_int_eq(config_gfx.scale_back_buffer_height, 0);
-    check_int_eq(config_gfx.scale_back_buffer_width, IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE);
+    check_int_eq(
+        config_gfx.scale_back_buffer_width,
+        IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE);
 }
 
 static void test_config_gfx()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_config_gfx config_gfx;
 
     config = cconfig_init();
@@ -62,12 +64,14 @@ static void test_config_gfx()
     check_bool_true(config_gfx.windowed);
     check_int_eq(config_gfx.scale_back_buffer_width, 1920);
     check_int_eq(config_gfx.scale_back_buffer_height, 1080);
-    check_int_eq(config_gfx.scale_back_buffer_filter, IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_LINEAR);
+    check_int_eq(
+        config_gfx.scale_back_buffer_filter,
+        IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_LINEAR);
 }
 
 static void test_config_gfx_invalid_values()
 {
-    struct cconfig* config;
+    struct cconfig *config;
     struct iidxhook_config_gfx config_gfx;
 
     config = cconfig_init();
@@ -97,7 +101,9 @@ static void test_config_gfx_invalid_values()
     check_bool_false(config_gfx.windowed);
     check_int_eq(config_gfx.scale_back_buffer_width, 0);
     check_int_eq(config_gfx.scale_back_buffer_height, 0);
-    check_int_eq(config_gfx.scale_back_buffer_width, IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE);
+    check_int_eq(
+        config_gfx.scale_back_buffer_width,
+        IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE);
 }
 
 TEST_MODULE_BEGIN("iidxhook-config-gfx")

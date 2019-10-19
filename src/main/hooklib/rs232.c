@@ -1,8 +1,8 @@
-#include <windows.h>    /* Usermode API */
+#include <windows.h> /* Usermode API */
 
-#include <ntdef.h>      /* Kernel-mode API for ioctls */
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h> /* Kernel-mode API for ioctls */
 
 #include <stdbool.h>
 #include <string.h>
@@ -10,16 +10,14 @@
 #include "hook/iohook.h"
 #include "hook/table.h"
 
+#include "util/array.h"
 #include "util/hr.h"
 #include "util/log.h"
-#include "util/array.h"
 
 /* RS232 API hooks */
 
-static BOOL STDCALL my_ClearCommError(
-        HANDLE fd,
-        uint32_t *errors,
-        COMSTAT *status);
+static BOOL STDCALL
+my_ClearCommError(HANDLE fd, uint32_t *errors, COMSTAT *status);
 
 static BOOL STDCALL my_EscapeCommFunction(HANDLE fd, uint32_t func);
 static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb);
@@ -31,71 +29,69 @@ static BOOL STDCALL my_SetupComm(HANDLE fd, uint32_t in_q, uint32_t out_q);
 static BOOL STDCALL my_SetCommBreak(HANDLE fd);
 static BOOL STDCALL my_ClearCommBreak(HANDLE fd);
 
-static BOOL (STDCALL *real_ClearCommError)(
-        HANDLE fd,
-        uint32_t *errors,
-        COMSTAT *status);
+static BOOL(STDCALL *real_ClearCommError)(
+    HANDLE fd, uint32_t *errors, COMSTAT *status);
 
-static BOOL (STDCALL *real_EscapeCommFunction)(HANDLE fd, uint32_t func);
-static BOOL (STDCALL *real_GetCommState)(HANDLE fd, DCB *dcb);
-static BOOL (STDCALL *real_PurgeComm)(HANDLE fd, uint32_t flags);
-static BOOL (STDCALL *real_SetCommMask)(HANDLE fd, uint32_t mask);
-static BOOL (STDCALL *real_SetCommState)(HANDLE fd, const DCB *dcb);
-static BOOL (STDCALL *real_SetCommTimeouts)(HANDLE fd, COMMTIMEOUTS *timeouts);
-static BOOL (STDCALL *real_SetupComm)(HANDLE fd, uint32_t in_q, uint32_t out_q);
-static BOOL (STDCALL *real_SetCommBreak)(HANDLE fd);
-static BOOL (STDCALL *real_ClearCommBreak)(HANDLE fd);
+static BOOL(STDCALL *real_EscapeCommFunction)(HANDLE fd, uint32_t func);
+static BOOL(STDCALL *real_GetCommState)(HANDLE fd, DCB *dcb);
+static BOOL(STDCALL *real_PurgeComm)(HANDLE fd, uint32_t flags);
+static BOOL(STDCALL *real_SetCommMask)(HANDLE fd, uint32_t mask);
+static BOOL(STDCALL *real_SetCommState)(HANDLE fd, const DCB *dcb);
+static BOOL(STDCALL *real_SetCommTimeouts)(HANDLE fd, COMMTIMEOUTS *timeouts);
+static BOOL(STDCALL *real_SetupComm)(HANDLE fd, uint32_t in_q, uint32_t out_q);
+static BOOL(STDCALL *real_SetCommBreak)(HANDLE fd);
+static BOOL(STDCALL *real_ClearCommBreak)(HANDLE fd);
 
 static struct hook_symbol rs232_syms[] = {
     {
-        .name   = "ClearCommError",
-        .patch  = my_ClearCommError,
-        .link   = (void*) &real_ClearCommError,
+        .name = "ClearCommError",
+        .patch = my_ClearCommError,
+        .link = (void *) &real_ClearCommError,
     },
     {
-        .name   = "EscapeCommFunction",
-        .patch  = my_EscapeCommFunction,
-        .link   = (void*) &real_EscapeCommFunction,
+        .name = "EscapeCommFunction",
+        .patch = my_EscapeCommFunction,
+        .link = (void *) &real_EscapeCommFunction,
     },
     {
-        .name   = "GetCommState",
-        .patch  = my_GetCommState,
-        .link   = (void*) &real_GetCommState,
+        .name = "GetCommState",
+        .patch = my_GetCommState,
+        .link = (void *) &real_GetCommState,
     },
     {
-        .name   = "PurgeComm",
-        .patch  = my_PurgeComm,
-        .link   = (void*) &real_PurgeComm,
+        .name = "PurgeComm",
+        .patch = my_PurgeComm,
+        .link = (void *) &real_PurgeComm,
     },
     {
-        .name   = "SetCommMask",
-        .patch  = my_SetCommMask,
-        .link   = (void*) &real_SetCommMask,
+        .name = "SetCommMask",
+        .patch = my_SetCommMask,
+        .link = (void *) &real_SetCommMask,
     },
     {
-        .name   = "SetCommState",
-        .patch  = my_SetCommState,
-        .link   = (void*) &real_SetCommState,
+        .name = "SetCommState",
+        .patch = my_SetCommState,
+        .link = (void *) &real_SetCommState,
     },
     {
-        .name   = "SetCommTimeouts",
-        .patch  = my_SetCommTimeouts,
-        .link   = (void*) &real_SetCommTimeouts,
+        .name = "SetCommTimeouts",
+        .patch = my_SetCommTimeouts,
+        .link = (void *) &real_SetCommTimeouts,
     },
     {
-        .name   = "SetupComm",
-        .patch  = my_SetupComm,
-        .link   = (void*) &real_SetupComm,
+        .name = "SetupComm",
+        .patch = my_SetupComm,
+        .link = (void *) &real_SetupComm,
     },
     {
-        .name   = "SetCommBreak",
-        .patch  = my_SetCommBreak,
-        .link   = (void*) &real_SetCommBreak,
+        .name = "SetCommBreak",
+        .patch = my_SetCommBreak,
+        .link = (void *) &real_SetCommBreak,
     },
     {
-        .name   = "ClearCommBreak",
-        .patch  = my_ClearCommBreak,
-        .link   = (void*) &real_ClearCommBreak,
+        .name = "ClearCommBreak",
+        .patch = my_ClearCommBreak,
+        .link = (void *) &real_ClearCommBreak,
     },
 };
 
@@ -105,13 +101,14 @@ static CRITICAL_SECTION hooked_port_fds_cs;
 
 /**
  * Some notes:
- * 
- * The point of this, is to allow rs232 hooks for only the descriptors that we hook.
- * This is because the emulation here is incomplete.
- * Although the IOCTL's do end up being passed to the real hardware, the game rejects some of the responses and hangs.
- * By short circuiting out, and calling the real Comm functions instead, it works.
- * And hence, card-reader passthrough works on IIDX25+/SDVX5+ finally without eamio-real
- * 
+ *
+ * The point of this, is to allow rs232 hooks for only the descriptors that we
+ * hook. This is because the emulation here is incomplete. Although the IOCTL's
+ * do end up being passed to the real hardware, the game rejects some of the
+ * responses and hangs. By short circuiting out, and calling the real Comm
+ * functions instead, it works. And hence, card-reader passthrough works on
+ * IIDX25+/SDVX5+ finally without eamio-real
+ *
  */
 
 void rs232_hook_init(void)
@@ -128,12 +125,13 @@ void rs232_hook_limit_hooks(void)
     rs232_limit_hooks = true;
 }
 
-static BOOL rs232_check_fd(HANDLE fd) {
+static BOOL rs232_check_fd(HANDLE fd)
+{
     HANDLE check;
 
-    if (rs232_limit_hooks){
+    if (rs232_limit_hooks) {
         EnterCriticalSection(&hooked_port_fds_cs);
-        for (size_t i = 0 ; i < hooked_port_fds.nitems ; i++) {
+        for (size_t i = 0; i < hooked_port_fds.nitems; i++) {
             check = *array_item(HANDLE, &hooked_port_fds, i);
             if (check == fd) {
                 LeaveCriticalSection(&hooked_port_fds_cs);
@@ -155,10 +153,8 @@ void rs232_hook_add_fd(HANDLE fd)
     LeaveCriticalSection(&hooked_port_fds_cs);
 }
 
-static BOOL STDCALL my_ClearCommError(
-        HANDLE fd,
-        uint32_t *errors,
-        COMSTAT *status)
+static BOOL STDCALL
+my_ClearCommError(HANDLE fd, uint32_t *errors, COMSTAT *status)
 {
     struct irp irp;
     SERIAL_STATUS llstatus;
@@ -179,9 +175,7 @@ static BOOL STDCALL my_ClearCommError(
 
     if (FAILED(hr)) {
         log_warning(
-                "%s: IOCTL_SERIAL_GET_COMMSTATUS failed: %lx",
-                __func__,
-                hr);
+            "%s: IOCTL_SERIAL_GET_COMMSTATUS failed: %lx", __func__, hr);
 
         return hr_propagate_win32(hr, FALSE);
     }
@@ -266,19 +260,35 @@ static BOOL STDCALL my_EscapeCommFunction(HANDLE fd, uint32_t cmd)
     }
 
     switch (cmd) {
-    case CLRBREAK:  ioctl = IOCTL_SERIAL_SET_BREAK_OFF; break;
-    case CLRDTR:    ioctl = IOCTL_SERIAL_CLR_DTR; break;
-    case CLRRTS:    ioctl = IOCTL_SERIAL_CLR_RTS; break;
-    case SETBREAK:  ioctl = IOCTL_SERIAL_SET_BREAK_ON; break;
-    case SETDTR:    ioctl = IOCTL_SERIAL_SET_RTS; break;
-    case SETRTS:    ioctl = IOCTL_SERIAL_SET_RTS; break;
-    case SETXOFF:   ioctl = IOCTL_SERIAL_SET_XOFF; break;
-    case SETXON:    ioctl = IOCTL_SERIAL_SET_XON; break;
-    default:
-        log_warning("%s: Invalid comm function %08x", __func__, cmd);
-        SetLastError(ERROR_INVALID_PARAMETER);
+        case CLRBREAK:
+            ioctl = IOCTL_SERIAL_SET_BREAK_OFF;
+            break;
+        case CLRDTR:
+            ioctl = IOCTL_SERIAL_CLR_DTR;
+            break;
+        case CLRRTS:
+            ioctl = IOCTL_SERIAL_CLR_RTS;
+            break;
+        case SETBREAK:
+            ioctl = IOCTL_SERIAL_SET_BREAK_ON;
+            break;
+        case SETDTR:
+            ioctl = IOCTL_SERIAL_SET_RTS;
+            break;
+        case SETRTS:
+            ioctl = IOCTL_SERIAL_SET_RTS;
+            break;
+        case SETXOFF:
+            ioctl = IOCTL_SERIAL_SET_XOFF;
+            break;
+        case SETXON:
+            ioctl = IOCTL_SERIAL_SET_XON;
+            break;
+        default:
+            log_warning("%s: Invalid comm function %08x", __func__, cmd);
+            SetLastError(ERROR_INVALID_PARAMETER);
 
-        return FALSE;
+            return FALSE;
     }
 
     memset(&irp, 0, sizeof(irp));
@@ -326,10 +336,10 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
            days. So we only support the latest size of this struct. */
 
         log_warning(
-                "%s: dcb->DCBlength = %d, expected %d",
-                __func__,
-                (int) dcb->DCBlength,
-                (unsigned int) sizeof(*dcb));
+            "%s: dcb->DCBlength = %d, expected %d",
+            __func__,
+            (int) dcb->DCBlength,
+            (unsigned int) sizeof(*dcb));
         SetLastError(ERROR_INVALID_PARAMETER);
 
         return FALSE;
@@ -383,9 +393,7 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
 
     if (FAILED(hr)) {
         log_warning(
-                "%s: IOCTL_SERIAL_GET_LINE_CONTROL failed: %lx",
-                __func__,
-                hr);
+            "%s: IOCTL_SERIAL_GET_LINE_CONTROL failed: %lx", __func__, hr);
 
         return hr_propagate_win32(hr, FALSE);
     }
@@ -502,7 +510,6 @@ static BOOL STDCALL my_PurgeComm(HANDLE fd, uint32_t flags)
     return hr_propagate_win32(hr, SUCCEEDED(hr));
 }
 
-
 static BOOL STDCALL my_SetCommMask(HANDLE fd, uint32_t mask)
 {
     struct irp irp;
@@ -553,10 +560,10 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
            days. So we only support the latest size of this struct. */
 
         log_warning(
-                "%s: dcb->DCBlength = %d, expected %d",
-                __func__,
-                (int) dcb->DCBlength,
-                (unsigned int) sizeof(*dcb));
+            "%s: dcb->DCBlength = %d, expected %d",
+            __func__,
+            (int) dcb->DCBlength,
+            (unsigned int) sizeof(*dcb));
         SetLastError(ERROR_INVALID_PARAMETER);
 
         return FALSE;
@@ -590,8 +597,10 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
             break;
 
         default:
-            log_warning("%s: dcb->fDtrControl value %d is invalid",
-                    __func__, dcb->fDtrControl);
+            log_warning(
+                "%s: dcb->fDtrControl value %d is invalid",
+                __func__,
+                dcb->fDtrControl);
             SetLastError(ERROR_INVALID_PARAMETER);
 
             return FALSE;
@@ -621,9 +630,9 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
 
         default:
             log_warning(
-                    "%s: dcb->fRtsControl value %d is invalid",
-                    __func__,
-                    dcb->fRtsControl);
+                "%s: dcb->fRtsControl value %d is invalid",
+                __func__,
+                dcb->fRtsControl);
             SetLastError(ERROR_INVALID_PARAMETER);
 
             return FALSE;
@@ -684,9 +693,7 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
 
     if (FAILED(hr)) {
         log_warning(
-                "%s: IOCTL_SERIAL_SET_LINE_CONTROL failed: %lx",
-                __func__,
-                hr);
+            "%s: IOCTL_SERIAL_SET_LINE_CONTROL failed: %lx", __func__, hr);
 
         return hr_propagate_win32(hr, FALSE);
     }
@@ -721,11 +728,11 @@ static BOOL STDCALL my_SetCommTimeouts(HANDLE fd, COMMTIMEOUTS *src)
         return real_SetCommTimeouts(fd, src);
     }
 
-    dest.ReadIntervalTimeout            = src->ReadIntervalTimeout;
-    dest.ReadTotalTimeoutMultiplier     = src->ReadTotalTimeoutMultiplier;
-    dest.ReadTotalTimeoutConstant       = src->ReadTotalTimeoutConstant;
-    dest.WriteTotalTimeoutMultiplier    = src->WriteTotalTimeoutMultiplier;
-    dest.WriteTotalTimeoutConstant      = src->WriteTotalTimeoutConstant;
+    dest.ReadIntervalTimeout = src->ReadIntervalTimeout;
+    dest.ReadTotalTimeoutMultiplier = src->ReadTotalTimeoutMultiplier;
+    dest.ReadTotalTimeoutConstant = src->ReadTotalTimeoutConstant;
+    dest.WriteTotalTimeoutMultiplier = src->WriteTotalTimeoutMultiplier;
+    dest.WriteTotalTimeoutConstant = src->WriteTotalTimeoutConstant;
 
     memset(&irp, 0, sizeof(irp));
     irp.op = IRP_OP_IOCTL;
@@ -766,7 +773,8 @@ static BOOL STDCALL my_SetupComm(HANDLE fd, uint32_t in_q, uint32_t out_q)
     hr = irp_invoke_next(&irp);
 
     if (FAILED(hr)) {
-        log_warning("%s: IOCTL_SERIAL_SET_QUEUE_SIZE failed: %lx",__func__, hr);
+        log_warning(
+            "%s: IOCTL_SERIAL_SET_QUEUE_SIZE failed: %lx", __func__, hr);
     }
 
     return hr_propagate_win32(hr, SUCCEEDED(hr));
@@ -817,4 +825,3 @@ static BOOL STDCALL my_ClearCommBreak(HANDLE fd)
 
     return hr_propagate_win32(hr, SUCCEEDED(hr));
 }
-

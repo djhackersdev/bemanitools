@@ -14,7 +14,7 @@ void eamuse_hook_init(void);
  *
  * @param addr net_addr struct with address to the server.
  */
-void eamuse_set_addr(const struct net_addr* addr);
+void eamuse_set_addr(const struct net_addr *addr);
 
 /**
  * Check if the target eamuse server is reachable. Reports success/error using

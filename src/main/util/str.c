@@ -38,9 +38,9 @@ bool wstr_ends_with(const wchar_t *haystack, const wchar_t *needle)
     }
 
     return !memcmp(
-            &haystack[haystack_len - needle_len],
-            needle,
-            needle_len * sizeof(wchar_t));
+        &haystack[haystack_len - needle_len],
+        needle,
+        needle_len * sizeof(wchar_t));
 }
 
 size_t str_format(char *buf, size_t nchars, const char *fmt, ...)
@@ -80,8 +80,7 @@ size_t wstr_format(wchar_t *buf, size_t nchars, const wchar_t *fmt, ...)
     return result;
 }
 
-size_t wstr_vformat(wchar_t *buf, size_t nchars, const wchar_t *fmt,
-        va_list ap)
+size_t wstr_vformat(wchar_t *buf, size_t nchars, const wchar_t *fmt, va_list ap)
 {
     int result;
 
@@ -166,7 +165,7 @@ void str_trim(char *str)
 {
     char *pos;
 
-    for (pos = str + strlen(str) - 1 ; pos > str ; pos--) {
+    for (pos = str + strlen(str) - 1; pos > str; pos--) {
         if (!isspace(*pos)) {
             return;
         }
@@ -219,8 +218,8 @@ bool wstr_narrow(const wchar_t *src, char **dest)
 
     *dest = xmalloc(nbytes);
 
-    if (WideCharToMultiByte(CP_ACP, 0, src, -1, *dest, nbytes, NULL, NULL)
-            != nbytes) {
+    if (WideCharToMultiByte(CP_ACP, 0, src, -1, *dest, nbytes, NULL, NULL) !=
+        nbytes) {
         goto conv_fail;
     }
 
@@ -251,4 +250,3 @@ bool wstr_eq(const wchar_t *lhs, const wchar_t *rhs)
         return wcscmp(lhs, rhs) == 0;
     }
 }
-

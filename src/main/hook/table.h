@@ -14,9 +14,9 @@ struct hook_symbol {
 };
 
 void hook_table_apply(
-        HMODULE target,
-        const char *depname,
-        const struct hook_symbol *syms,
-        size_t nsyms);
+    HMODULE target,
+    const char *depname,
+    const struct hook_symbol *syms,
+    size_t nsyms);
 
 #endif

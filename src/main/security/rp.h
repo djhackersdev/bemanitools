@@ -21,24 +21,26 @@ struct security_rp_eeprom {
 /**
  * Generate signed eeprom data from non encrypted and unobfuscated data required
  * to pass security checks on games using black (game specific) roundplugs.
- * 
+ *
  * This implementation (rp (1)) is used by the following games
  * - iidx 09 to 13
- * 
+ *
  * @param boot_version The boot version mcode that is used for bootstrapping
  *                     the security backend (of the ezusb.dll).
  * @param boot_seeds Boot seeds (three numbers >= 0) set when the game is
  *                   bootstrapping the security backend (of the ezusb.dll).
  * @param plug_mcode The mcode of the game to boot. Typically, this code is
- *                   printed onto the housing of the black dongle. 
+ *                   printed onto the housing of the black dongle.
  * @param plug_id The id stored of the plug. This data is normally stored in the
  *                ROM area of the black dongle is is often refered to as the
  *                "PCBID" or "EAMID" when stored on the white dongle.
- * @param out Pointer to the eeprom data struct for the resulting data. 
+ * @param out Pointer to the eeprom data struct for the resulting data.
  */
 void security_rp_generate_signed_eeprom_data(
-        const struct security_mcode* boot_version, const uint32_t* boot_seeds,
-        const struct security_mcode* plug_mcode,
-        const struct security_id* plug_id, struct security_rp_eeprom* out);
+    const struct security_mcode *boot_version,
+    const uint32_t *boot_seeds,
+    const struct security_mcode *plug_mcode,
+    const struct security_id *plug_id,
+    struct security_rp_eeprom *out);
 
 #endif

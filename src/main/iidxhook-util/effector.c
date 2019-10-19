@@ -17,24 +17,24 @@ static BOOL my_SetSpeakerMode(int direct_sound_struct, int a2);
 
 static const struct hook_symbol effector_hook_syms[] = {
     {
-        .name       = "EnableEqualizer",
-        .patch      = my_EnableEqualizer,
+        .name = "EnableEqualizer",
+        .patch = my_EnableEqualizer,
     },
     {
-        .name       = "GetEqualizerStatus",
-        .patch      = my_GetEqualizerStatus,
+        .name = "GetEqualizerStatus",
+        .patch = my_GetEqualizerStatus,
     },
     {
-        .name       = "SetEqualizerGain",
-        .patch      = my_SetEqualizerGain,
+        .name = "SetEqualizerGain",
+        .patch = my_SetEqualizerGain,
     },
     {
-        .name       = "SetGlobalEnvironment",
-        .patch      = my_SetGlobalEnvironment,
+        .name = "SetGlobalEnvironment",
+        .patch = my_SetGlobalEnvironment,
     },
     {
-        .name       = "SetSpeakerMode",
-        .patch      = my_SetSpeakerMode,
+        .name = "SetSpeakerMode",
+        .patch = my_SetSpeakerMode,
     },
 };
 
@@ -76,10 +76,7 @@ static BOOL my_SetSpeakerMode(int direct_sound_struct, int a2)
 void effector_hook_init(void)
 {
     hook_table_apply(
-            NULL,
-            "rteffect.dll",
-            effector_hook_syms,
-            lengthof(effector_hook_syms));
+        NULL, "rteffect.dll", effector_hook_syms, lengthof(effector_hook_syms));
 
     log_info("Inserted rteffect hooks");
 }

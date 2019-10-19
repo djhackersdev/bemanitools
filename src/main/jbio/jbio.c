@@ -8,8 +8,8 @@
    the "bemanitools" header files included by this source file for detailed
    information about the API you'll need to implement. */
 
-#include <windows.h>
 #include <mmsystem.h>
+#include <windows.h>
 
 #include "bemanitools/input.h"
 #include "bemanitools/jbio.h"
@@ -26,8 +26,11 @@ static log_formatter_t jb_io_log_warning;
 static log_formatter_t jb_io_log_fatal;
 #endif
 
-void jb_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void jb_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     /* Pass logger functions on to geninput so that it has somewhere to write
        its own log output. */
@@ -47,8 +50,10 @@ void jb_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 #endif
 }
 
-bool jb_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool jb_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     timeBeginPeriod(1);
 

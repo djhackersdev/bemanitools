@@ -3,9 +3,9 @@
 #include <stdlib.h>
 
 #include "geninput/dev-list.h"
-#include "geninput/hid.h"
 #include "geninput/hid-generic.h"
 #include "geninput/hid-mgr.h"
+#include "geninput/hid.h"
 #include "geninput/io-thread.h"
 #include "geninput/pacdrive.h"
 
@@ -47,8 +47,8 @@ static void io_thread_proc_add_device(const char *dev_node)
     if (!hid_stub_is_attached(stub)) {
         ctx = (uintptr_t) stub;
 
-        if (pac_open(&hid_fd, dev_node, io_thread_cp, ctx)
-                || hid_generic_open(&hid_fd, dev_node, io_thread_cp, ctx)) {
+        if (pac_open(&hid_fd, dev_node, io_thread_cp, ctx) ||
+            hid_generic_open(&hid_fd, dev_node, io_thread_cp, ctx)) {
             hid_stub_attach(stub, (struct hid *) hid_fd);
         }
     }
@@ -74,8 +74,9 @@ static void io_thread_proc_init(void)
 
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
-    log_info("USB I/O thread ready, thread id = %d",
-            (unsigned int) GetCurrentThreadId());
+    log_info(
+        "USB I/O thread ready, thread id = %d",
+        (unsigned int) GetCurrentThreadId());
 }
 
 static void io_thread_proc_main_loop(void)
@@ -88,8 +89,8 @@ static void io_thread_proc_main_loop(void)
     BOOL ok;
 
     for (;;) {
-        ok = GetQueuedCompletionStatus(io_thread_cp, &nbytes,
-                (ULONG_PTR *) &ctx, &p_ovl, 0);
+        ok = GetQueuedCompletionStatus(
+            io_thread_cp, &nbytes, (ULONG_PTR *) &ctx, &p_ovl, 0);
 
         if (p_ovl != NULL) {
             /* An I/O completed (depending on the value of `ok' either
@@ -100,8 +101,9 @@ static void io_thread_proc_main_loop(void)
             hid_mgr_lock();
 
             if (!ok) {
-                log_warning("Async IO returned failure: %08x",
-                        (unsigned int) GetLastError());
+                log_warning(
+                    "Async IO returned failure: %08x",
+                    (unsigned int) GetLastError());
                 hid_stub_detach(stub);
             } else {
                 ok = hid_stub_handle_completion(stub, p_ovl, nbytes);
@@ -133,8 +135,9 @@ static void io_thread_proc_main_loop(void)
         } else {
             /* Otherwise idk what's going on */
 
-            log_warning("Spurious wakeup in I/O mux: %08x",
-                    (unsigned int) GetLastError());
+            log_warning(
+                "Spurious wakeup in I/O mux: %08x",
+                (unsigned int) GetLastError());
         }
     }
 }
@@ -169,8 +172,7 @@ void io_thread_init(void)
 
     barrier = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    io_thread_id = thread_create(io_thread_proc, barrier,
-            16384, 0);
+    io_thread_id = thread_create(io_thread_proc, barrier, 16384, 0);
 
     WaitForSingleObject(barrier, INFINITE);
     CloseHandle(barrier);
@@ -201,4 +203,3 @@ void io_thread_fini(void)
     thread_join(io_thread_id, NULL);
     thread_destroy(io_thread_id);
 }
-

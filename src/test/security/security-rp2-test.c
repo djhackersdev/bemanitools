@@ -120,96 +120,144 @@ static void test_encode_iidx_14_black_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_BLACK, 
-        &boot_version_iidx_14, &black_plug_mcode_iidx_14, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_BLACK,
+        &boot_version_iidx_14,
+        &black_plug_mcode_iidx_14,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_14_black_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_14_black_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_14_white_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_WHITE, 
-        &boot_version_iidx_14, &security_mcode_eamuse, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_WHITE,
+        &boot_version_iidx_14,
+        &security_mcode_eamuse,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_14_white_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_14_white_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_15_black_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_BLACK, 
-        &boot_version_iidx_15, &black_plug_mcode_iidx_15, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_BLACK,
+        &boot_version_iidx_15,
+        &black_plug_mcode_iidx_15,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_15_black_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_15_black_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_15_white_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_WHITE, 
-        &boot_version_iidx_15, &security_mcode_eamuse, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_WHITE,
+        &boot_version_iidx_15,
+        &security_mcode_eamuse,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_15_white_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_15_white_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_16_black_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_BLACK, 
-        &boot_version_iidx_16, &black_plug_mcode_iidx_16, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_BLACK,
+        &boot_version_iidx_16,
+        &black_plug_mcode_iidx_16,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_16_black_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_16_black_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_16_white_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_WHITE, 
-        &boot_version_iidx_16, &security_mcode_eamuse, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_WHITE,
+        &boot_version_iidx_16,
+        &security_mcode_eamuse,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_16_white_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_16_white_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_17_black_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_BLACK, 
-        &boot_version_iidx_17, &black_plug_mcode_iidx_17, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_BLACK,
+        &boot_version_iidx_17,
+        &black_plug_mcode_iidx_17,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_17_black_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_17_black_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 static void test_encode_iidx_17_white_dongle()
 {
     struct security_rp2_eeprom result;
 
-    security_rp2_generate_signed_eeprom_data(SECURITY_RP_UTIL_RP_TYPE_WHITE, 
-        &boot_version_iidx_17, &security_mcode_eamuse, &security_id_default,
+    security_rp2_generate_signed_eeprom_data(
+        SECURITY_RP_UTIL_RP_TYPE_WHITE,
+        &boot_version_iidx_17,
+        &security_mcode_eamuse,
+        &security_id_default,
         &result);
 
-    check_data_eq((void*) &result, sizeof(struct security_rp2_eeprom),
-        (void*) &exp_iidx_17_white_eeprom, sizeof(struct security_rp2_eeprom));
+    check_data_eq(
+        (void *) &result,
+        sizeof(struct security_rp2_eeprom),
+        (void *) &exp_iidx_17_white_eeprom,
+        sizeof(struct security_rp2_eeprom));
 }
 
 TEST_MODULE_BEGIN("security-rp2")

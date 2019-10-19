@@ -6,14 +6,19 @@
 
 #include "util/log.h"
 
-void ddr_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void ddr_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     input_set_loggers(misc, info, warning, fatal);
 }
 
-bool ddr_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool ddr_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     input_init(thread_create, thread_join, thread_destroy);
     mapper_config_load("ddr");
@@ -56,4 +61,3 @@ void ddr_io_fini(void)
 {
     input_fini();
 }
-

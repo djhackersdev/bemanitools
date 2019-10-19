@@ -58,8 +58,8 @@ static uint64_t action_mapping_update(struct action_mapping *am);
 static void analog_mapping_bind(struct analog_mapping *am);
 static void analog_mapping_update(struct analog_mapping *am);
 static void light_mapping_bind(struct light_mapping *lm);
-static void light_mapping_send(struct light_mapping *lm,
-        const struct mapper *m);
+static void
+light_mapping_send(struct light_mapping *lm, const struct mapper *m);
 
 struct mapper *mapper_inst;
 
@@ -202,9 +202,9 @@ static void analog_mapping_update(struct analog_mapping *am)
 
     if (am->absolute) {
         tmp = (value - am->affine_bias) / am->affine_scale;
-        am->pos = (uint8_t) ((tmp + 0.5) * 256.0);
+        am->pos = (uint8_t)((tmp + 0.5) * 256.0);
     } else {
-        am->pos += (int8_t) (value * exp(am->sensitivity / 256.0));
+        am->pos += (int8_t)(value * exp(am->sensitivity / 256.0));
     }
 }
 
@@ -286,8 +286,7 @@ unbound_fail:
     return;
 }
 
-static void light_mapping_send(struct light_mapping *lm,
-        const struct mapper *m)
+static void light_mapping_send(struct light_mapping *lm, const struct mapper *m)
 {
     double tmp;
     uint32_t value;
@@ -307,7 +306,7 @@ static void light_mapping_send(struct light_mapping *lm,
 
     intensity = m->lights[lm->game_light];
     tmp = (intensity / 256.0) * lm->affine_scale;
-    value = (int32_t) (tmp + 0.5) + lm->affine_bias;
+    value = (int32_t)(tmp + 0.5) + lm->affine_bias;
 
     hid_stub_set_light(lm->dest.hid, lm->dest.light_no, value);
 }
@@ -331,13 +330,13 @@ struct mapper *mapper_impl_create(void)
     return m;
 }
 
-void mapper_impl_clear_action_map(struct mapper *m, uint8_t action,
-        uint8_t page)
+void mapper_impl_clear_action_map(
+    struct mapper *m, uint8_t action, uint8_t page)
 {
     struct action_mapping *am;
     size_t i;
 
-    for (i = 0 ; i < m->actions.nitems ; i++) {
+    for (i = 0; i < m->actions.nitems; i++) {
         am = array_item(struct action_mapping, &m->actions, i);
 
         if (am->action == action && am->page == page) {
@@ -348,13 +347,13 @@ void mapper_impl_clear_action_map(struct mapper *m, uint8_t action,
     }
 }
 
-void mapper_impl_clear_light_map(struct mapper *m,
-            const struct mapped_light *ml)
+void mapper_impl_clear_light_map(
+    struct mapper *m, const struct mapped_light *ml)
 {
     struct light_mapping *lm;
     size_t i;
 
-    for (i = 0 ; i < m->light_maps.nitems ; ) {
+    for (i = 0; i < m->light_maps.nitems;) {
         lm = array_item(struct light_mapping, &m->light_maps, i);
 
         if (memcmp(&lm->dest, ml, sizeof(*ml)) == 0) {
@@ -365,13 +364,13 @@ void mapper_impl_clear_light_map(struct mapper *m,
     }
 }
 
-bool mapper_impl_get_action_map(struct mapper *m, uint8_t action, uint8_t page,
-        struct mapped_action *ma)
+bool mapper_impl_get_action_map(
+    struct mapper *m, uint8_t action, uint8_t page, struct mapped_action *ma)
 {
     const struct action_mapping *am;
     size_t i;
 
-    for (i = 0 ; i < m->actions.nitems ; i++) {
+    for (i = 0; i < m->actions.nitems; i++) {
         am = array_item(struct action_mapping, &m->actions, i);
 
         if (am->action == action && am->page == page) {
@@ -384,8 +383,8 @@ bool mapper_impl_get_action_map(struct mapper *m, uint8_t action, uint8_t page,
     return false;
 }
 
-bool mapper_impl_get_analog_map(struct mapper *m, uint8_t analog,
-        struct mapped_analog *ma)
+bool mapper_impl_get_analog_map(
+    struct mapper *m, uint8_t analog, struct mapped_analog *ma)
 {
     memset(ma, 0, sizeof(*ma));
 
@@ -425,7 +424,7 @@ uint8_t mapper_impl_get_npages(struct mapper *m)
 
     max_page = -1;
 
-    for (i = 0 ; i < m->actions.nitems ; i++) {
+    for (i = 0; i < m->actions.nitems; i++) {
         am = array_item(struct action_mapping, &m->actions, i);
 
         if (max_page < am->page) {
@@ -433,7 +432,7 @@ uint8_t mapper_impl_get_npages(struct mapper *m)
         }
     }
 
-    return (uint8_t) (max_page + 1);
+    return (uint8_t)(max_page + 1);
 }
 
 action_iter_t mapper_impl_iterate_actions(struct mapper *m)
@@ -475,13 +474,17 @@ bool mapper_impl_is_analog_absolute(struct mapper *m, uint8_t analog)
     return m->analogs[analog].absolute;
 }
 
-void mapper_impl_set_action_map(struct mapper *m, uint8_t action, uint8_t page,
-        uint8_t bit, const struct mapped_action *ma)
+void mapper_impl_set_action_map(
+    struct mapper *m,
+    uint8_t action,
+    uint8_t page,
+    uint8_t bit,
+    const struct mapped_action *ma)
 {
     struct action_mapping *am;
     size_t i;
 
-    for (i = 0 ; i < m->actions.nitems ; i++) {
+    for (i = 0; i < m->actions.nitems; i++) {
         am = array_item(struct action_mapping, &m->actions, i);
 
         if (am->action == action && am->page == page) {
@@ -499,8 +502,8 @@ void mapper_impl_set_action_map(struct mapper *m, uint8_t action, uint8_t page,
     am->bit = bit;
 }
 
-bool mapper_impl_set_analog_map(struct mapper *m, uint8_t analog,
-        const struct mapped_analog *ma)
+bool mapper_impl_set_analog_map(
+    struct mapper *m, uint8_t analog, const struct mapped_analog *ma)
 {
     struct analog_mapping *am;
 
@@ -516,8 +519,8 @@ bool mapper_impl_set_analog_map(struct mapper *m, uint8_t analog,
     return true;
 }
 
-bool mapper_impl_set_analog_sensitivity(struct mapper *m, uint8_t analog,
-        int32_t sensitivity)
+bool mapper_impl_set_analog_sensitivity(
+    struct mapper *m, uint8_t analog, int32_t sensitivity)
 {
     if (analog >= m->nanalogs) {
         return false;
@@ -528,13 +531,13 @@ bool mapper_impl_set_analog_sensitivity(struct mapper *m, uint8_t analog,
     return true;
 }
 
-void mapper_impl_set_light_map(struct mapper *m, const struct mapped_light *ml,
-        uint8_t game_light)
+void mapper_impl_set_light_map(
+    struct mapper *m, const struct mapped_light *ml, uint8_t game_light)
 {
     struct light_mapping *lm;
     size_t i;
 
-    for (i = 0 ; i < m->light_maps.nitems ; i++) {
+    for (i = 0; i < m->light_maps.nitems; i++) {
         lm = array_item(struct light_mapping, &m->light_maps, i);
 
         if (memcmp(&lm->dest, ml, sizeof(*ml)) == 0) {
@@ -584,18 +587,18 @@ uint64_t mapper_impl_update(struct mapper *m)
 
     hid_mgr_lock();
 
-    for (i = 0 ; i < m->light_maps.nitems ; i++) {
+    for (i = 0; i < m->light_maps.nitems; i++) {
         lm = array_item(struct light_mapping, &m->light_maps, i);
         light_mapping_send(lm, m);
     }
 
-    for (i = 0 ; i < m->nanalogs ; i++) {
+    for (i = 0; i < m->nanalogs; i++) {
         analog_mapping_update(&m->analogs[i]);
     }
 
     result = 0;
 
-    for (i = 0 ; i < m->actions.nitems ; i++) {
+    for (i = 0; i < m->actions.nitems; i++) {
         am = array_item(struct action_mapping, &m->actions, i);
         result |= action_mapping_update(am);
     }
@@ -605,8 +608,7 @@ uint64_t mapper_impl_update(struct mapper *m)
     return result;
 }
 
-void mapper_impl_write_light(struct mapper *m, uint8_t light,
-        uint8_t intensity)
+void mapper_impl_write_light(struct mapper *m, uint8_t light, uint8_t intensity)
 {
     if (light >= m->nlights) {
         return;
@@ -623,4 +625,3 @@ void mapper_impl_destroy(struct mapper *m)
     array_fini(&m->actions);
     free(m);
 }
-

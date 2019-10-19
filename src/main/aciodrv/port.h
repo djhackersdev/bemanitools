@@ -1,8 +1,8 @@
 #ifndef ACIODRV_PORT_H
 #define ACIODRV_PORT_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Open a serial port for communication with a ACIO device.
@@ -12,7 +12,7 @@
  * @return True if opening the com port was successful, false on error.
  * @note This will open and setup the com port, only.
  */
-bool aciodrv_port_open(const char* port, int baud);
+bool aciodrv_port_open(const char *port, int baud);
 
 /**
  * Read data from the opened com port.

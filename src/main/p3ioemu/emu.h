@@ -39,13 +39,13 @@ struct p3io_ops {
     HRESULT (*get_cab_type)(void *ctx, enum p3io_cab_type *type);
     HRESULT (*get_video_freq)(void *ctx, enum p3io_video_freq *freq);
     HRESULT (*get_coinstock)(void *ctx, uint16_t *slots, size_t nslots);
-    HRESULT (*get_roundplug)(void *ctx, uint8_t plug_id, uint8_t* rom,
-        uint8_t* eeprom);
+    HRESULT(*get_roundplug)
+    (void *ctx, uint8_t plug_id, uint8_t *rom, uint8_t *eeprom);
 };
 
 /**
  * Initialize the p3io emulation backend.
- * 
+ *
  * @param ops Dispatch table with operation hooks for your target game.
  * @param ctx A context which is passed along with every call to a function of
  *            your provided dispatch table.

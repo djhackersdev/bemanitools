@@ -10,33 +10,32 @@
 
 #define debug_print(...) fprintf(stderr, __VA_ARGS__)
 
-static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp);
+static HRESULT my_d3d9_handler(struct hook_d3d9_irp *irp);
 
-static const hook_d3d9_irp_handler_t d3d9_handlers[] = {
-    my_d3d9_handler
-};
+static const hook_d3d9_irp_handler_t d3d9_handlers[] = {my_d3d9_handler};
 
-static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
+static HRESULT my_d3d9_handler(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
     enum hook_d3d9_irp_op pre_op;
 
     debug_print("my_d3d9_handler dispatch: %d\n", irp->op);
 
-    // Important: All parameter checks must align with the parameters from the test executable
+    // Important: All parameter checks must align with the parameters from the
+    // test executable
 
     // Pre-real invoke checks
     switch (irp->op) {
         case HOOK_D3D9_IRP_OP_INVALID:
             exit(EXIT_FAILURE);
             break;
-        
+
         case HOOK_D3D9_IRP_OP_CTX_CREATE:
             debug_print("Pre HOOK_D3D9_IRP_OP_CTX_CREATE\n");
-            
+
             check_int_eq(irp->args.ctx_create.sdk_ver, D3D_SDK_VERSION);
             check_null(irp->args.ctx_create.ctx);
-            
+
             break;
 
         case HOOK_D3D9_IRP_OP_ENUM_DISPLAY_DEVICES:
@@ -45,20 +44,22 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
             check_null(irp->args.enum_display_devices.dev_name);
             check_int_eq(irp->args.enum_display_devices.dev_num, 0);
             check_non_null(irp->args.enum_display_devices.info);
-            check_int_eq(irp->args.enum_display_devices.flags, EDD_GET_DEVICE_INTERFACE_NAME);
+            check_int_eq(
+                irp->args.enum_display_devices.flags,
+                EDD_GET_DEVICE_INTERFACE_NAME);
 
             break;
 
         case HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX:
             debug_print("Pre HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX\n");
 
-            // Cannot test because wine is also using this call causing the tests to fail
-            // check_int_eq(irp->args.create_window_ex.ex_style, 0);
-            // check_str_eq(irp->args.create_window_ex.class_name, "d3d9hook");
-            // check_str_eq(irp->args.create_window_ex.window_name, "d3d9hook test");
-            // check_int_eq(irp->args.create_window_ex.style, WS_OVERLAPPEDWINDOW);
-            // check_int_eq(irp->args.create_window_ex.x, 0);
-            // check_int_eq(irp->args.create_window_ex.y, 0);
+            // Cannot test because wine is also using this call causing the
+            // tests to fail check_int_eq(irp->args.create_window_ex.ex_style,
+            // 0); check_str_eq(irp->args.create_window_ex.class_name,
+            // "d3d9hook"); check_str_eq(irp->args.create_window_ex.window_name,
+            // "d3d9hook test"); check_int_eq(irp->args.create_window_ex.style,
+            // WS_OVERLAPPEDWINDOW); check_int_eq(irp->args.create_window_ex.x,
+            // 0); check_int_eq(irp->args.create_window_ex.y, 0);
             // check_int_eq(irp->args.create_window_ex.width, 640);
             // check_int_eq(irp->args.create_window_ex.height, 480);
             // check_null(irp->args.create_window_ex.wnd_parent);
@@ -72,7 +73,8 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
         case HOOK_D3D9_IRP_OP_GET_CLIENT_RECT:
             debug_print("Pre HOOK_D3D9_IRP_OP_GET_CLIENT_RECT\n");
 
-            // Cannot test because wine is also using this call causing the tests to fail
+            // Cannot test because wine is also using this call causing the
+            // tests to fail
 
             break;
 
@@ -80,10 +82,13 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
             debug_print("Pre HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE\n");
 
             check_non_null(irp->args.ctx_create_device.self);
-            check_int_eq(irp->args.ctx_create_device.adapter, D3DADAPTER_DEFAULT);
+            check_int_eq(
+                irp->args.ctx_create_device.adapter, D3DADAPTER_DEFAULT);
             check_int_eq(irp->args.ctx_create_device.type, D3DDEVTYPE_HAL);
             check_non_null(irp->args.ctx_create_device.hwnd);
-            check_int_eq(irp->args.ctx_create_device.flags, D3DCREATE_HARDWARE_VERTEXPROCESSING);
+            check_int_eq(
+                irp->args.ctx_create_device.flags,
+                D3DCREATE_HARDWARE_VERTEXPROCESSING);
             check_non_null(irp->args.ctx_create_device.pp);
             check_non_null(irp->args.ctx_create_device.pdev);
 
@@ -158,13 +163,13 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
             case HOOK_D3D9_IRP_OP_INVALID:
                 exit(EXIT_FAILURE);
                 break;
-            
+
             case HOOK_D3D9_IRP_OP_CTX_CREATE:
                 debug_print("Post HOOK_D3D9_IRP_OP_CTX_CREATE\n");
-                
+
                 check_int_eq(irp->args.ctx_create.sdk_ver, D3D_SDK_VERSION);
                 check_non_null(irp->args.ctx_create.ctx);
-                
+
                 break;
 
             case HOOK_D3D9_IRP_OP_ENUM_DISPLAY_DEVICES:
@@ -173,18 +178,24 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
                 check_null(irp->args.enum_display_devices.dev_name);
                 check_int_eq(irp->args.enum_display_devices.dev_num, 0);
                 check_non_null(irp->args.enum_display_devices.info);
-                check_int_eq(irp->args.enum_display_devices.flags, EDD_GET_DEVICE_INTERFACE_NAME);
+                check_int_eq(
+                    irp->args.enum_display_devices.flags,
+                    EDD_GET_DEVICE_INTERFACE_NAME);
 
                 break;
 
             case HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX:
                 debug_print("Post HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX\n");
 
-                // Cannot test because wine is also using this call causing the tests to fail
+                // Cannot test because wine is also using this call causing the
+                // tests to fail
                 // check_int_eq(irp->args.create_window_ex.ex_style, 0);
-                // check_str_eq(irp->args.create_window_ex.class_name, "d3d9hook");
-                // check_str_eq(irp->args.create_window_ex.window_name, "d3d9hook test");
-                // check_int_eq(irp->args.create_window_ex.style, WS_OVERLAPPEDWINDOW);
+                // check_str_eq(irp->args.create_window_ex.class_name,
+                // "d3d9hook");
+                // check_str_eq(irp->args.create_window_ex.window_name,
+                // "d3d9hook test");
+                // check_int_eq(irp->args.create_window_ex.style,
+                // WS_OVERLAPPEDWINDOW);
                 // check_int_eq(irp->args.create_window_ex.x, 0);
                 // check_int_eq(irp->args.create_window_ex.y, 0);
                 // check_int_eq(irp->args.create_window_ex.width, 640);
@@ -200,7 +211,8 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
             case HOOK_D3D9_IRP_OP_GET_CLIENT_RECT:
                 debug_print("Post HOOK_D3D9_IRP_OP_GET_CLIENT_RECT\n");
 
-                // Cannot test because wine is also using this call causing the tests to fail
+                // Cannot test because wine is also using this call causing the
+                // tests to fail
 
                 break;
 
@@ -208,10 +220,13 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
                 debug_print("Post HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE\n");
 
                 check_non_null(irp->args.ctx_create_device.self);
-                check_int_eq(irp->args.ctx_create_device.adapter, D3DADAPTER_DEFAULT);
+                check_int_eq(
+                    irp->args.ctx_create_device.adapter, D3DADAPTER_DEFAULT);
                 check_int_eq(irp->args.ctx_create_device.type, D3DDEVTYPE_HAL);
                 check_non_null(irp->args.ctx_create_device.hwnd);
-                check_int_eq(irp->args.ctx_create_device.flags, D3DCREATE_HARDWARE_VERTEXPROCESSING);
+                check_int_eq(
+                    irp->args.ctx_create_device.flags,
+                    D3DCREATE_HARDWARE_VERTEXPROCESSING);
                 check_non_null(irp->args.ctx_create_device.pp);
                 check_non_null(irp->args.ctx_create_device.pdev);
 
@@ -225,8 +240,10 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
                 check_int_eq(irp->args.dev_create_texture.height, 240);
                 check_int_eq(irp->args.dev_create_texture.levels, 0);
                 check_int_eq(irp->args.dev_create_texture.usage, 0);
-                check_int_eq(irp->args.dev_create_texture.format, D3DFMT_A8R8G8B8);
-                check_int_eq(irp->args.dev_create_texture.pool, D3DPOOL_DEFAULT);
+                check_int_eq(
+                    irp->args.dev_create_texture.format, D3DFMT_A8R8G8B8);
+                check_int_eq(
+                    irp->args.dev_create_texture.pool, D3DPOOL_DEFAULT);
                 check_non_null(irp->args.dev_create_texture.texture);
                 check_null(irp->args.dev_create_texture.shared_handle);
 
@@ -261,8 +278,10 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp* irp)
                 debug_print("Post HOOK_D3D9_IRP_OP_DEV_SET_RENDER_STATE\n");
 
                 check_non_null(irp->args.dev_set_render_state.self);
-                check_int_eq(irp->args.dev_set_render_state.state, D3DRS_FILLMODE);
-                check_int_eq(irp->args.dev_set_render_state.value, D3DFILL_POINT);
+                check_int_eq(
+                    irp->args.dev_set_render_state.state, D3DRS_FILLMODE);
+                check_int_eq(
+                    irp->args.dev_set_render_state.value, D3DFILL_POINT);
 
                 break;
 

@@ -26,8 +26,8 @@ struct bind_adv_state {
     bool was_valid;
 };
 
-static INT_PTR CALLBACK bind_adv_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+bind_adv_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR bind_adv_handle_init(HWND hwnd, struct bind_adv_state *state);
 static void bind_adv_handle_init_devs(HWND hwnd);
 static void bind_adv_handle_init_insert_dev(HWND hwnd, struct hid_stub *hid);
@@ -47,8 +47,8 @@ static void bind_adv_select_dev(HWND hwnd, size_t dev_no);
 static void bind_adv_select_ctl(HWND hwnd, size_t ctl_no);
 static void bind_adv_set_range(HWND hwnd, int32_t range_min, int32_t range_max);
 
-bool bind_adv(HINSTANCE inst, HWND hwnd, struct mapped_action *ma,
-        bool was_valid)
+bool bind_adv(
+    HINSTANCE inst, HWND hwnd, struct mapped_action *ma, bool was_valid)
 {
     struct bind_adv_state state;
     INT_PTR ok;
@@ -58,8 +58,12 @@ bool bind_adv(HINSTANCE inst, HWND hwnd, struct mapped_action *ma,
     state.ma = *ma;
     state.was_valid = was_valid;
 
-    ok = DialogBoxParam(inst, MAKEINTRESOURCE(IDD_BIND_ADV), hwnd,
-            bind_adv_dlg_proc, (LPARAM) &state) != 0;
+    ok = DialogBoxParam(
+             inst,
+             MAKEINTRESOURCE(IDD_BIND_ADV),
+             hwnd,
+             bind_adv_dlg_proc,
+             (LPARAM) &state) != 0;
 
     if (ok) {
         *ma = state.ma;
@@ -68,8 +72,8 @@ bool bind_adv(HINSTANCE inst, HWND hwnd, struct mapped_action *ma,
     return ok != 0;
 }
 
-static INT_PTR CALLBACK bind_adv_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+bind_adv_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -148,14 +152,13 @@ static INT_PTR bind_adv_handle_init(HWND hwnd, struct bind_adv_state *state)
         return TRUE;
     }
 
-    for (i = 0 ; i < state->devs.nitems ; i++) {
+    for (i = 0; i < state->devs.nitems; i++) {
         hid = *array_item(struct hid_stub *, &state->devs, i);
 
         if (hid == state->ma.hid) {
             bind_adv_select_dev(hwnd, (int) i);
             bind_adv_select_ctl(hwnd, state->ma.control_no);
-            bind_adv_set_range(hwnd, state->ma.value_min,
-                    state->ma.value_max);
+            bind_adv_set_range(hwnd, state->ma.value_min, state->ma.value_max);
         }
     }
 
@@ -168,9 +171,8 @@ static void bind_adv_handle_init_devs(HWND hwnd)
 
     hid_mgr_lock();
 
-    for (hid = hid_mgr_get_first_stub()
-            ; hid != NULL
-            ; hid = hid_mgr_get_next_stub(hid)) {
+    for (hid = hid_mgr_get_first_stub(); hid != NULL;
+         hid = hid_mgr_get_next_stub(hid)) {
         bind_adv_handle_init_insert_dev(hwnd, hid);
     }
 
@@ -204,8 +206,7 @@ static void bind_adv_handle_init_insert_dev(HWND hwnd, struct hid_stub *hid)
 name_fail:
     free(name);
 
-size_fail:
-    ;
+size_fail:;
 }
 
 static INT_PTR bind_adv_handle_change_ctl(HWND hwnd)
@@ -366,8 +367,8 @@ static bool bind_adv_get_range(HWND hwnd, int32_t *out_min, int32_t *out_max)
     wnd_min = GetDlgItem(hwnd, IDC_BINDING_MIN);
     wnd_max = GetDlgItem(hwnd, IDC_BINDING_MAX);
 
-    return bind_adv_get_int(wnd_min, out_min)
-            && bind_adv_get_int(wnd_max, out_max);
+    return bind_adv_get_int(wnd_min, out_min) &&
+        bind_adv_get_int(wnd_max, out_max);
 }
 
 static bool bind_adv_get_int(HWND control, int32_t *out)
@@ -452,7 +453,7 @@ static void bind_adv_select_dev(HWND hwnd, size_t dev_no)
         goto data_fail;
     }
 
-    for (i = 0 ; i < state->nctls ; i++) {
+    for (i = 0; i < state->nctls; i++) {
         wchars[0] = L'\0';
 
         usages_get(chars, lengthof(chars), state->ctls[i].usage);
@@ -527,4 +528,3 @@ static void bind_adv_set_range(HWND hwnd, int32_t range_min, int32_t range_max)
 
     bind_adv_validate(hwnd);
 }
-

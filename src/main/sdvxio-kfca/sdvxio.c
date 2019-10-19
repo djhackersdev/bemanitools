@@ -6,7 +6,6 @@
 #include "bemanitools/glue.h"
 #include "bemanitools/sdvxio.h"
 
-
 #include "aciodrv/device.h"
 #include "aciodrv/kfca.h"
 
@@ -29,12 +28,14 @@ static uint16_t sdvx_io_analog[2];
 static bool running;
 static bool processing_io;
 
-
 struct ac_io_kfca_poll_out pout_staging;
 struct ac_io_kfca_poll_out pout_ready;
 
-void sdvx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void sdvx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     sdvx_io_log_misc = misc;
     sdvx_io_log_info = info;
@@ -42,10 +43,11 @@ void sdvx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
     sdvx_io_log_fatal = fatal;
 }
 
-bool sdvx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool sdvx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
-
     if (!aciodrv_device_open("COM3", 57600)) {
         log_info("Opening acio device failed\n");
         return -1;
@@ -66,8 +68,7 @@ bool sdvx_io_init(thread_create_t thread_create, thread_join_t thread_join,
 void sdvx_io_fini(void)
 {
     running = false;
-    while(processing_io) {
-
+    while (processing_io) {
     }
 }
 
@@ -143,4 +144,3 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
     }
     return sdvx_io_analog[spinner_no];
 }
-

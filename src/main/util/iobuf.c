@@ -35,16 +35,16 @@ void iobuf_flip(struct const_iobuf *dest, const struct iobuf *src)
     dest->nbytes = src->pos;
 }
 
-void iobuf_log(struct iobuf* buffer, const char* tag)
+void iobuf_log(struct iobuf *buffer, const char *tag)
 {
-    char* str;
+    char *str;
     size_t str_len;
 
     str_len = buffer->nbytes * 2 + 1;
     str = xmalloc(str_len);
 
-    log_misc("[%s] (%d %d)", tag, (uint32_t) buffer->nbytes,
-        (uint32_t) buffer->pos);
+    log_misc(
+        "[%s] (%d %d)", tag, (uint32_t) buffer->nbytes, (uint32_t) buffer->pos);
 
     hex_encode_uc(buffer->bytes, buffer->nbytes, str, str_len);
 
@@ -53,16 +53,16 @@ void iobuf_log(struct iobuf* buffer, const char* tag)
     free(str);
 }
 
-void iobuf_log_const(struct const_iobuf* buffer, const char* tag)
+void iobuf_log_const(struct const_iobuf *buffer, const char *tag)
 {
-    char* str;
+    char *str;
     size_t str_len;
 
     str_len = buffer->nbytes * 2 + 1;
     str = xmalloc(str_len);
 
-    log_misc("[%s] (%d %d)", tag, (uint32_t) buffer->nbytes,
-        (uint32_t) buffer->pos);
+    log_misc(
+        "[%s] (%d %d)", tag, (uint32_t) buffer->nbytes, (uint32_t) buffer->pos);
 
     hex_encode_uc(buffer->bytes, buffer->nbytes, str, str_len);
 

@@ -3,16 +3,16 @@
 
 #include "ezusb/util.h"
 
-#include "util/log.h"
 #include "util/crc.h"
 #include "util/fs.h"
+#include "util/log.h"
 #include "util/mem.h"
 
-struct ezusb_firmware* ezusb_firmware_load(const char* file)
+struct ezusb_firmware *ezusb_firmware_load(const char *file)
 {
-    void* buffer;
+    void *buffer;
     size_t buffer_size;
-    struct ezusb_firmware* fw;
+    struct ezusb_firmware *fw;
     size_t pos;
 
     log_assert(file);
@@ -25,19 +25,19 @@ struct ezusb_firmware* ezusb_firmware_load(const char* file)
 
     fw = xmalloc(sizeof(struct ezusb_firmware));
 
-    fw->crc = ((struct ezusb_firmware*) buffer)->crc;
-    fw->segment_count = ((struct ezusb_firmware*) buffer)->segment_count;
+    fw->crc = ((struct ezusb_firmware *) buffer)->crc;
+    fw->segment_count = ((struct ezusb_firmware *) buffer)->segment_count;
 
     pos += sizeof(uint16_t) * 2;
 
-    fw->segments = xmalloc(
-        sizeof(struct ezusb_firmware_segment) * fw->segment_count);
+    fw->segments =
+        xmalloc(sizeof(struct ezusb_firmware_segment) * fw->segment_count);
 
     for (uint16_t i = 0; i < fw->segment_count; i++) {
-        uint16_t size = *((uint16_t*) (buffer + pos));
+        uint16_t size = *((uint16_t *) (buffer + pos));
         pos += sizeof(uint16_t);
 
-        uint16_t offset = *((uint16_t*) (buffer + pos));
+        uint16_t offset = *((uint16_t *) (buffer + pos));
         pos += sizeof(uint16_t);
 
         fw->segments[i] = xmalloc(sizeof(uint16_t) * 2 + size);
@@ -51,10 +51,10 @@ struct ezusb_firmware* ezusb_firmware_load(const char* file)
     return fw;
 }
 
-bool ezusb_firmware_save(const char* file, struct ezusb_firmware* fw)
+bool ezusb_firmware_save(const char *file, struct ezusb_firmware *fw)
 {
     size_t size;
-    void* buffer;
+    void *buffer;
     size_t pos;
     bool res;
 
@@ -72,13 +72,15 @@ bool ezusb_firmware_save(const char* file, struct ezusb_firmware* fw)
 
     buffer = xmalloc(size);
 
-    ((struct ezusb_firmware*) buffer)->crc = fw->crc;
-    ((struct ezusb_firmware*) buffer)->segment_count = fw->segment_count;
+    ((struct ezusb_firmware *) buffer)->crc = fw->crc;
+    ((struct ezusb_firmware *) buffer)->segment_count = fw->segment_count;
 
     pos += sizeof(uint16_t) * 2;
 
     for (uint16_t i = 0; i < fw->segment_count; i++) {
-        memcpy(buffer + pos, fw->segments[i], 
+        memcpy(
+            buffer + pos,
+            fw->segments[i],
             sizeof(uint16_t) * 2 + fw->segments[i]->size);
         pos += sizeof(uint16_t) * 2 + fw->segments[i]->size;
     }
@@ -89,9 +91,9 @@ bool ezusb_firmware_save(const char* file, struct ezusb_firmware* fw)
     return res;
 }
 
-struct ezusb_firmware* ezusb_firmware_alloc()
+struct ezusb_firmware *ezusb_firmware_alloc()
 {
-    struct ezusb_firmware* fw;
+    struct ezusb_firmware *fw;
 
     fw = xmalloc(sizeof(struct ezusb_firmware));
 
@@ -102,10 +104,10 @@ struct ezusb_firmware* ezusb_firmware_alloc()
     return fw;
 }
 
-struct ezusb_firmware_segment* ezusb_firmware_segment_alloc(uint16_t offset, 
-        uint16_t size, void* data)
+struct ezusb_firmware_segment *
+ezusb_firmware_segment_alloc(uint16_t offset, uint16_t size, void *data)
 {
-    struct ezusb_firmware_segment* seg;
+    struct ezusb_firmware_segment *seg;
 
     log_assert(size > 0);
     log_assert(data);
@@ -119,18 +121,19 @@ struct ezusb_firmware_segment* ezusb_firmware_segment_alloc(uint16_t offset,
     return seg;
 }
 
-void ezusb_firmware_add_segment(struct ezusb_firmware* fw, 
-        struct ezusb_firmware_segment* segment)
+void ezusb_firmware_add_segment(
+    struct ezusb_firmware *fw, struct ezusb_firmware_segment *segment)
 {
-    struct ezusb_firmware_segment** tmp;
+    struct ezusb_firmware_segment **tmp;
 
     log_assert(fw);
     log_assert(segment);
 
     fw->segment_count++;
 
-    tmp = xrealloc(fw->segments, 
-        sizeof(struct ezusb_firmware_segment*) * fw->segment_count);
+    tmp = xrealloc(
+        fw->segments,
+        sizeof(struct ezusb_firmware_segment *) * fw->segment_count);
 
     if (tmp != NULL) {
         fw->segments = tmp;
@@ -139,7 +142,7 @@ void ezusb_firmware_add_segment(struct ezusb_firmware* fw,
     fw->segments[fw->segment_count - 1] = segment;
 }
 
-uint16_t ezusb_firmware_crc(struct ezusb_firmware* fw)
+uint16_t ezusb_firmware_crc(struct ezusb_firmware *fw)
 {
     uint16_t crc;
 
@@ -148,14 +151,14 @@ uint16_t ezusb_firmware_crc(struct ezusb_firmware* fw)
     crc = 0;
 
     for (uint16_t i = 0; i < fw->segment_count; i++) {
-        crc = crc16(fw->segments[i], 
-            sizeof(uint16_t) * 2 + fw->segments[i]->size, crc);
+        crc = crc16(
+            fw->segments[i], sizeof(uint16_t) * 2 + fw->segments[i]->size, crc);
     }
 
     return crc;
 }
 
-void ezusb_firmware_free(struct ezusb_firmware* fw)
+void ezusb_firmware_free(struct ezusb_firmware *fw)
 {
     log_assert(fw);
 

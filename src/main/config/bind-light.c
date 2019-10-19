@@ -22,14 +22,19 @@ struct bind_light_state {
     bool *bound;
 };
 
-static INT_PTR CALLBACK bind_light_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
-static INT_PTR bind_light_handle_init(HWND hwnd,
-        struct bind_light_state *state);
+static INT_PTR CALLBACK
+bind_light_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static INT_PTR
+bind_light_handle_init(HWND hwnd, struct bind_light_state *state);
 static INT_PTR bind_light_handle_ok(HWND hwnd);
 
-bool bind_light(HINSTANCE inst, HWND hwnd, const struct schema *schema,
-        const struct mapped_light *ml, uint8_t *game_light, bool *bound)
+bool bind_light(
+    HINSTANCE inst,
+    HWND hwnd,
+    const struct schema *schema,
+    const struct mapped_light *ml,
+    uint8_t *game_light,
+    bool *bound)
 {
     struct bind_light_state state;
 
@@ -38,17 +43,21 @@ bool bind_light(HINSTANCE inst, HWND hwnd, const struct schema *schema,
     state.game_light = game_light;
     state.bound = bound;
 
-    return DialogBoxParam(inst, MAKEINTRESOURCE(IDD_BIND_LIGHT), hwnd,
-            bind_light_dlg_proc, (LPARAM) &state) != 0;
+    return DialogBoxParam(
+               inst,
+               MAKEINTRESOURCE(IDD_BIND_LIGHT),
+               hwnd,
+               bind_light_dlg_proc,
+               (LPARAM) &state) != 0;
 }
 
-static INT_PTR CALLBACK bind_light_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+bind_light_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INITDIALOG:
-            return bind_light_handle_init(hwnd,
-                    (struct bind_light_state *) lparam);
+            return bind_light_handle_init(
+                hwnd, (struct bind_light_state *) lparam);
 
         case WM_COMMAND:
             switch (LOWORD(wparam)) {
@@ -75,8 +84,7 @@ static INT_PTR CALLBACK bind_light_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
     return FALSE;
 }
 
-static INT_PTR bind_light_handle_init(HWND hwnd,
-        struct bind_light_state *state)
+static INT_PTR bind_light_handle_init(HWND hwnd, struct bind_light_state *state)
 {
     char chars[256];
     wchar_t wchars[256];
@@ -94,13 +102,13 @@ static INT_PTR bind_light_handle_init(HWND hwnd,
 
     ComboBox_AddString(game_light_ctl, L"");
 
-    for (i = 0 ; i < state->schema->nlights ; i++) {
-        LoadString(inst, state->schema->lights[i].name_rsrc,
-                wchars, lengthof(wchars));
+    for (i = 0; i < state->schema->nlights; i++) {
+        LoadString(
+            inst, state->schema->lights[i].name_rsrc, wchars, lengthof(wchars));
         ComboBox_AddString(game_light_ctl, wchars);
 
-        if (state->bound
-                && state->schema->lights[i].bit == *state->game_light) {
+        if (state->bound &&
+            state->schema->lights[i].bit == *state->game_light) {
             ComboBox_SetCurSel(game_light_ctl, i + 1);
         }
     }
@@ -159,4 +167,3 @@ static INT_PTR bind_light_handle_ok(HWND hwnd)
 
     return TRUE;
 }
-

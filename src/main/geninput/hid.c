@@ -55,8 +55,11 @@ bool hid_ri_get_name(wchar_t *chars, size_t *nchars, const wchar_t *src_chars)
     }
 }
 
-bool hid_ri_get_controls(struct hid_control *controls, size_t *ncontrols,
-        const struct hid_control *src_controls, size_t src_ncontrols)
+bool hid_ri_get_controls(
+    struct hid_control *controls,
+    size_t *ncontrols,
+    const struct hid_control *src_controls,
+    size_t src_ncontrols)
 {
     log_assert(ncontrols != NULL);
 
@@ -74,4 +77,3 @@ bool hid_ri_get_controls(struct hid_control *controls, size_t *ncontrols,
         return false;
     }
 }
-

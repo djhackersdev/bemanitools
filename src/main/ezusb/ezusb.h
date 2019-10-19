@@ -1,17 +1,17 @@
 /**
  * Module for fundamental communication with a legacy Ezusb board, e.g.
  * IIDX C02 IO.
- * 
+ *
  * This module does not implement any sort of higher level protocol which is
  * required by the games to exchange data with the device, e.g. getting input
  * states of keys and setting light outputs. Further modules are utilizing this
  * base layer to implement higher level communication.
- * 
+ *
  * Note: This module requires the old "cyusb" driver which is NOT compatible
  * with anything newer than WinXP and does not support 64-bit systems. The newer
  * "cyusb3" driver does NOT work with this.
- * 
- * @author icex2 
+ *
+ * @author icex2
  */
 #ifndef EZUSB_H
 #define EZUSB_H
@@ -23,7 +23,10 @@
 
 #include "ezusb/util.h"
 
-static const GUID EZUSB_GUID = {0xAE18AA60, 0x7F6A, 0x11D4,
+static const GUID EZUSB_GUID = {
+    0xAE18AA60,
+    0x7F6A,
+    0x11D4,
     {0x97, 0xDD, 0x00, 0x01, 0x02, 0x29, 0xB9, 0x59}};
 
 /* Used by IIDX instead of scanning for the device */
@@ -47,38 +50,38 @@ static const GUID EZUSB_GUID = {0xAE18AA60, 0x7F6A, 0x11D4,
  * \\\\.\\Ezusb-3
  * \\\\.\\Ezusb-4
  * \\\\.\\Ezusb-5
- * 
+ *
  * Where \\\\.\\Ezusb-X is used if slot X-1 is still occupied, e.g. when
  * flashing the device and after a usb re-enumerate.
- * 
+ *
  * @param device_path Path to the Ezusb device.
- * @return A valid handle to the device on success, INVALID_HANDLE_VALUE on 
+ * @return A valid handle to the device on success, INVALID_HANDLE_VALUE on
  *         error.
  */
-HANDLE ezusb_open(const char* path);
+HANDLE ezusb_open(const char *path);
 
 /**
  * Get identifier information of the device.
- * 
+ *
  * @param handle Valid device handle.
  * @param ident Pointer to memory to write the identifier information to.
  * @return True if successful and identifier information was written to the
  *         the struct, false on error.
  */
-bool ezusb_get_ident(HANDLE handle, struct ezusb_ident* ident);
+bool ezusb_get_ident(HANDLE handle, struct ezusb_ident *ident);
 
 /**
  * Download a firmware to the ezusb device.
- * 
+ *
  * @param handle Valid device handle.
  * @param fw Firmware to write to the target ezusb device.
  * @return True on success, false on failure.
  */
-bool ezusb_download_firmware(HANDLE handle, struct ezusb_firmware* fw);
+bool ezusb_download_firmware(HANDLE handle, struct ezusb_firmware *fw);
 
 /**
  * Close an opened ezusb device handle.
- * 
+ *
  * @param handle Valid handle to close.
  */
 void ezusb_close(HANDLE handle);

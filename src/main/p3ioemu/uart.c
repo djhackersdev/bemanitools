@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <string.h>
 
@@ -17,10 +17,8 @@
 #include "util/iobuf.h"
 #include "util/log.h"
 
-static HRESULT p3io_uart_open(
-        const wchar_t *path,
-        uint32_t baud_rate,
-        HANDLE *fd);
+static HRESULT
+p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd);
 static HRESULT p3io_uart_close(HANDLE fd);
 static HRESULT p3io_uart_read(HANDLE fd, struct iobuf *iobuf);
 static HRESULT p3io_uart_write(HANDLE fd, struct const_iobuf *iobuf);
@@ -28,9 +26,7 @@ static HRESULT p3io_uart_write(HANDLE fd, struct const_iobuf *iobuf);
 static const wchar_t *p3io_uart_paths[2];
 static HANDLE p3io_uart_fds[2];
 
-static const uint32_t p3io_uart_baud_codes[] = {
-    0, 0, 19200, 38400, 57600
-};
+static const uint32_t p3io_uart_baud_codes[] = {0, 0, 19200, 38400, 57600};
 
 void p3io_uart_set_path(size_t uart_no, const wchar_t *path)
 {
@@ -40,8 +36,7 @@ void p3io_uart_set_path(size_t uart_no, const wchar_t *path)
 }
 
 void p3io_uart_cmd_open_close(
-        const struct p3io_req_rs232_open_close *req,
-        struct p3io_resp_u8 *resp)
+    const struct p3io_req_rs232_open_close *req, struct p3io_resp_u8 *resp)
 {
     const wchar_t *path;
     uint32_t baud_rate;
@@ -58,52 +53,52 @@ void p3io_uart_cmd_open_close(
     }
 
     switch (req->subcmd) {
-    case P3IO_RS232_CMD_OPEN:
-        log_info("Opening remote RS232 port #%d", req->port_no);
+        case P3IO_RS232_CMD_OPEN:
+            log_info("Opening remote RS232 port #%d", req->port_no);
 
-        if (req->baud_code < lengthof(p3io_uart_baud_codes)) {
-            baud_rate = p3io_uart_baud_codes[req->baud_code];
-        } else {
-            baud_rate = 0;
-        }
+            if (req->baud_code < lengthof(p3io_uart_baud_codes)) {
+                baud_rate = p3io_uart_baud_codes[req->baud_code];
+            } else {
+                baud_rate = 0;
+            }
 
-        if (baud_rate == 0) {
-            log_warning("Invalid baud rate code: %02x", req->baud_code);
+            if (baud_rate == 0) {
+                log_warning("Invalid baud rate code: %02x", req->baud_code);
+                hr = E_FAIL;
+
+                goto end;
+            }
+
+            path = p3io_uart_paths[req->port_no];
+
+            if (path == NULL) {
+                log_warning("UART #%i: No downstream connection", req->port_no);
+                hr = E_FAIL;
+
+                goto end;
+            }
+
+            hr = p3io_uart_open(path, baud_rate, &p3io_uart_fds[req->port_no]);
+
+            if (FAILED(hr)) {
+                log_warning("p3io_uart_open() failed: %x", (int) hr);
+            }
+
+            break;
+
+        case P3IO_RS232_CMD_CLOSE:
+            log_info("Closing remote RS232 port #%d", req->port_no);
+
+            hr = p3io_uart_close(p3io_uart_fds[req->port_no]);
+            p3io_uart_fds[req->port_no] = NULL;
+
+            break;
+
+        default:
+            log_warning("Unknown subcommand %02x", req->subcmd);
             hr = E_FAIL;
 
-            goto end;
-        }
-
-        path = p3io_uart_paths[req->port_no];
-
-        if (path == NULL) {
-            log_warning("UART #%i: No downstream connection", req->port_no);
-            hr = E_FAIL;
-
-            goto end;
-        }
-
-        hr = p3io_uart_open(path, baud_rate, &p3io_uart_fds[req->port_no]);
-
-        if (FAILED(hr)) {
-            log_warning("p3io_uart_open() failed: %x", (int) hr);
-        }
-
-        break;
-
-    case P3IO_RS232_CMD_CLOSE:
-        log_info("Closing remote RS232 port #%d", req->port_no);
-
-        hr = p3io_uart_close(p3io_uart_fds[req->port_no]);
-        p3io_uart_fds[req->port_no] = NULL;
-
-        break;
-
-    default:
-        log_warning("Unknown subcommand %02x", req->subcmd);
-        hr = E_FAIL;
-
-        break;
+            break;
     }
 
 end:
@@ -113,8 +108,7 @@ end:
 }
 
 void p3io_uart_cmd_read(
-        const struct p3io_req_rs232_read *req,
-        struct p3io_resp_rs232_read *resp)
+    const struct p3io_req_rs232_read *req, struct p3io_resp_rs232_read *resp)
 {
     struct iobuf iobuf;
     HRESULT hr;
@@ -152,8 +146,7 @@ end:
 }
 
 void p3io_uart_cmd_write(
-        const struct p3io_req_rs232_write *req,
-        struct p3io_resp_rs232_write *resp)
+    const struct p3io_req_rs232_write *req, struct p3io_resp_rs232_write *resp)
 {
     struct const_iobuf iobuf;
     HRESULT hr;
@@ -177,10 +170,8 @@ end:
     resp->nbytes = iobuf.pos;
 }
 
-static HRESULT p3io_uart_open(
-        const wchar_t *path,
-        uint32_t baud_rate,
-        HANDLE *fd)
+static HRESULT
+p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
 {
     struct irp irp;
     uint32_t comm_mask;

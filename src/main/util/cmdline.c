@@ -8,8 +8,8 @@
 
 #include <windows.h>
 
-static void push_argv(int *argc, char ***argv, const char *begin,
-    const char *end)
+static void
+push_argv(int *argc, char ***argv, const char *begin, const char *end)
 {
     size_t nchars;
     char *str;
@@ -37,7 +37,7 @@ void args_recover(int *argc_out, char ***argv_out)
     argv = NULL;
     quote = false;
 
-    for (begin = pos = GetCommandLine() ; *pos ; pos++) {
+    for (begin = pos = GetCommandLine(); *pos; pos++) {
         switch (*pos) {
             case '"':
                 if (!quote) {
@@ -81,7 +81,7 @@ void args_free(int argc, char **argv)
 {
     int i;
 
-    for (i = 0 ; i < argc ; i++) {
+    for (i = 0; i < argc; i++) {
         free(argv[i]);
     }
 
@@ -98,7 +98,7 @@ char *args_join(int argc, char **argv)
 
     nchars = 0;
 
-    for (i = 0 ; i < argc ; i++) {
+    for (i = 0; i < argc; i++) {
         /* 3 = leading space plus two surrounding quotes.
            The first element has no leading space, but this is counterbalanced
            by the fact that the string needs a NUL terminator. */
@@ -108,7 +108,7 @@ char *args_join(int argc, char **argv)
     str = xmalloc(nchars);
     pos = str;
 
-    for (i = 0 ; i < argc ; i++) {
+    for (i = 0; i < argc; i++) {
         if (i != 0) {
             *pos++ = ' ';
         }
@@ -126,4 +126,3 @@ char *args_join(int argc, char **argv)
 
     return str;
 }
-

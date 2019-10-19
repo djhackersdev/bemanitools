@@ -1,8 +1,8 @@
 #ifndef EZUSB_IIDX_MSG_H
 #define EZUSB_IIDX_MSG_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define EZUSB_PAGESIZE 62
 
@@ -56,40 +56,40 @@ struct ezusb_iidx_msg_interrupt_read_packet {
     /*
       Dip switches somewhere here?
       0: Not used
-	  1: Not used
-	  2: Not used
-	  3: Not used
-	  4: Not used
-	  5: Not used
-	  6: usb mute?
-	  7: Not used
+      1: Not used
+      2: Not used
+      3: Not used
+      4: Not used
+      5: Not used
+      6: usb mute?
+      7: Not used
 
-	  8: P1_1
-	  9: P1_2
-	  10: P1_3
-	  11: P1_4
-	  12: P1_5
-	  13: P1_6
-	  14: P1_7
-	  15: P2_1
+      8: P1_1
+      9: P1_2
+      10: P1_3
+      11: P1_4
+      12: P1_5
+      13: P1_6
+      14: P1_7
+      15: P2_1
 
-	  16: P2_2
-	  17: P2_3
-	  18: P2_4
-	  19: P2_5
-	  20: P2_6
-	  21: P2_7
-	  22: Coin mech
-	  23: Not used
-	  24: P1_Start
+      16: P2_2
+      17: P2_3
+      18: P2_4
+      19: P2_5
+      20: P2_6
+      21: P2_7
+      22: Coin mech
+      23: Not used
+      24: P1_Start
 
-	  25: P2_Start
-	  26: VEFX
-	  27: Effector
-	  28: Test
-	  29: Service
-	  30: unknown/not used
-	  31: coin mode state: this needs to be set according to the currently
+      25: P2_Start
+      26: VEFX
+      27: Effector
+      28: Test
+      29: Service
+      30: unknown/not used
+      31: coin mode state: this needs to be set according to the currently
           active coin node (coin mode1 -> 0, coin mode 2 -> 1)
     */
     uint32_t inverted_pad;

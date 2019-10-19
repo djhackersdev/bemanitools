@@ -1,13 +1,13 @@
-#include <windows.h>
 #include <commctrl.h>
 #include <wchar.h>
+#include <windows.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "config/bind.h"
 #include "config/bind-adv.h"
+#include "config/bind.h"
 #include "config/resource.h"
 #include "config/schema.h"
 #include "config/usages.h"
@@ -20,10 +20,10 @@
 #include "util/mem.h"
 #include "util/winres.h"
 
-static INT_PTR CALLBACK buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
-static bool buttons_get_control_name(const struct mapped_action *ma,
-        wchar_t *str, size_t nchars);
+static INT_PTR CALLBACK
+buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static bool buttons_get_control_name(
+    const struct mapped_action *ma, wchar_t *str, size_t nchars);
 static INT_PTR buttons_handle_init(HWND hwnd, const PROPSHEETPAGE *psp);
 static INT_PTR buttons_handle_binding_adv(HWND hwnd);
 static INT_PTR buttons_handle_binding_clear(HWND hwnd);
@@ -40,7 +40,8 @@ struct buttons_tab {
     uint8_t npages;
 };
 
-HPROPSHEETPAGE buttons_tab_create(HINSTANCE inst, const struct schema *schema)
+HPROPSHEETPAGE
+buttons_tab_create(HINSTANCE inst, const struct schema *schema)
 {
     PROPSHEETPAGE psp;
 
@@ -55,8 +56,8 @@ HPROPSHEETPAGE buttons_tab_create(HINSTANCE inst, const struct schema *schema)
     return CreatePropertySheetPage(&psp);
 }
 
-static INT_PTR CALLBACK buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     NMHDR *n;
 
@@ -71,8 +72,8 @@ static INT_PTR CALLBACK buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
                 case IDC_PAGE:
                     switch (n->code) {
                         case UDN_DELTAPOS:
-                            return buttons_handle_switch_page(hwnd,
-                                    (NMUPDOWN *) n);
+                            return buttons_handle_switch_page(
+                                hwnd, (NMUPDOWN *) n);
 
                         default:
                             return FALSE;
@@ -101,7 +102,7 @@ static INT_PTR CALLBACK buttons_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
 
                 case IDC_BINDING_EDIT:
                     return buttons_handle_binding_edit(hwnd, FALSE);
-                
+
                 case IDC_BINDING_EDIT_MANY:
                     return buttons_handle_binding_edit(hwnd, TRUE);
 
@@ -136,8 +137,8 @@ static INT_PTR buttons_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
     inst = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     bindings_ctl = GetDlgItem(hwnd, IDC_BINDINGS);
 
-    ListView_SetExtendedListViewStyle(bindings_ctl,
-            LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+    ListView_SetExtendedListViewStyle(
+        bindings_ctl, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
     LoadString(inst, IDS_COL_ACTION, str, lengthof(str));
 
@@ -157,11 +158,11 @@ static INT_PTR buttons_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
 
     ListView_InsertColumn(bindings_ctl, 1, &col);
 
-    for (i = 0 ; i < self->schema->nactions ; i++) {
+    for (i = 0; i < self->schema->nactions; i++) {
         memset(&item, 0, sizeof(item));
 
-        LoadString(inst, self->schema->actions[i].name_rsrc, str,
-                lengthof(str));
+        LoadString(
+            inst, self->schema->actions[i].name_rsrc, str, lengthof(str));
 
         item.mask = LVIF_TEXT;
         item.iItem = (int) i;
@@ -197,8 +198,8 @@ static void buttons_update_pager(HWND hwnd)
 
     self->npages = mapper_get_npages() + 1;
 
-    rswprintf(str, lengthof(str), inst, IDS_PAGE, self->page_no + 1,
-            self->npages);
+    rswprintf(
+        str, lengthof(str), inst, IDS_PAGE, self->page_no + 1, self->npages);
     SetWindowText(GetDlgItem(hwnd, IDC_PAGE_TEXT), str);
 }
 
@@ -219,7 +220,7 @@ static void buttons_update_bindings(HWND hwnd)
 
     /* Clear binding cell text */
 
-    for (i = 0 ; i < self->schema->nactions ; i++) {
+    for (i = 0; i < self->schema->nactions; i++) {
         memset(&item, 0, sizeof(item));
 
         item.mask = LVIF_TEXT;
@@ -234,9 +235,8 @@ static void buttons_update_bindings(HWND hwnd)
 
     hid_mgr_lock();
 
-    for (pos = mapper_iterate_actions()
-            ; action_iter_is_valid(pos)
-            ; action_iter_next(pos)) {
+    for (pos = mapper_iterate_actions(); action_iter_is_valid(pos);
+         action_iter_next(pos)) {
         if (action_iter_get_page(pos) != self->page_no) {
             continue;
         }
@@ -262,8 +262,8 @@ static void buttons_update_bindings(HWND hwnd)
     hid_mgr_unlock();
 }
 
-static bool buttons_get_control_name(const struct mapped_action *ma,
-        wchar_t *str, size_t nchars)
+static bool buttons_get_control_name(
+    const struct mapped_action *ma, wchar_t *str, size_t nchars)
 {
     char chars[128];
     struct hid_control *controls;
@@ -367,11 +367,11 @@ static INT_PTR buttons_handle_binding_edit(HWND hwnd, BOOL bind_many)
         return TRUE;
     }
 
-    for(action_no = action_start;
-            action_no < self->schema->nactions;
-            action_no++) {
+    for (action_no = action_start; action_no < self->schema->nactions;
+         action_no++) {
         // Make sure the next listview item is visible
-        ListView_SetItemState (listview, action_no, LVIS_FOCUSED | LVIS_SELECTED, 0x000F);
+        ListView_SetItemState(
+            listview, action_no, LVIS_FOCUSED | LVIS_SELECTED, 0x000F);
         ListView_EnsureVisible(listview, action_no, FALSE);
 
         bit = self->schema->actions[action_no].bit;
@@ -380,14 +380,18 @@ static INT_PTR buttons_handle_binding_edit(HWND hwnd, BOOL bind_many)
             mapper_set_action_map((uint8_t) action_no, self->page_no, bit, &ma);
             buttons_update(hwnd);
 
-            log_misc("Bind act %d -> dev %p ctl %u range [%d, %d]",
-                    self->schema->actions[action_no].bit, ma.hid,
-                    (unsigned int) ma.control_no, ma.value_min, ma.value_max);
+            log_misc(
+                "Bind act %d -> dev %p ctl %u range [%d, %d]",
+                self->schema->actions[action_no].bit,
+                ma.hid,
+                (unsigned int) ma.control_no,
+                ma.value_min,
+                ma.value_max);
         } else {
             break;
         }
 
-        if(!bind_many) {
+        if (!bind_many) {
             break;
         }
     }
@@ -423,4 +427,3 @@ static INT_PTR buttons_handle_fini(HWND hwnd)
 
     return TRUE;
 }
-

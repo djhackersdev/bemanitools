@@ -74,64 +74,65 @@ struct net_addr {
  * - Plain hostname with port, e.g. localhost:1234
  * - HTTP(s) URL, e.g. http://www.myremote.com
  * - HTTP(s) URL with port, e.g. http://www.myremote.com:1234
- * - HTTP(s) URL with or without port and path: http://www.myremote.com:1234/somewhere
- * 
+ * - HTTP(s) URL with or without port and path:
+ * http://www.myremote.com:1234/somewhere
+ *
  * @param str String to parse.
  * @param addr Pointer to a net_addr struct to write the result to.
  * @return True if parsing is successful, false on parse error.
  */
-bool net_str_parse(const char* str, struct net_addr* addr);
+bool net_str_parse(const char *str, struct net_addr *addr);
 
 // port not printed if invalid
 /**
  * net_addr struct to string function. Create a single c-string representation.
- * 
+ *
  * @param addr Input net_addr.
  * @return c-string representation. Note: Invalid port values are omitted.
  */
-char* net_addr_to_str(const struct net_addr* addr);
+char *net_addr_to_str(const struct net_addr *addr);
 
 /**
  * Resolve a hostname to an IPV4 address.
- * 
+ *
  * @param hostname Hostname to resolve, e.g. localhost.
  * @param res_addr Pointer to a net_addr_ipv4 struct to store the result to.
  * @return True if resolving was successful, false on error.
  */
-bool net_resolve_hostname(const char* hostname, struct net_addr_ipv4* res_addr);
+bool net_resolve_hostname(const char *hostname, struct net_addr_ipv4 *res_addr);
 
 /**
  * Resolve a net_addr struct to an IPV4 address. If the net_addr struct is
  * actually of IPV4 type, the IPV4 address and port are simply copied to the
  * result struct.
- * 
+ *
  * @param addr net_addr struct to resolve.
  * @param res_addr Pointer to a net_addr_ipv4 struct to store the result to.
  * @return True if resolving was successful, false on error.
  */
-bool net_resolve_hostname_net_addr(const struct net_addr* addr,
-        struct net_addr_ipv4* res_addr);
+bool net_resolve_hostname_net_addr(
+    const struct net_addr *addr, struct net_addr_ipv4 *res_addr);
 
 /**
  * Check if a remote server is reachable, i.e. it is possible to open a
  * connection to it.
- * 
+ *
  * @param addr net_addr struct of target server to check.
  * @param timeout_ms Timeout for the check in ms.
  * @return True if target server is reachable/connectable, false otherwise.
  */
-bool net_check_remote_connection(const struct net_addr* addr,
-        uint32_t timeout_ms);
+bool net_check_remote_connection(
+    const struct net_addr *addr, uint32_t timeout_ms);
 
 /**
  * Check if a remote server is reachable, i.e. it is possible to open a
  * connection to it.
- * 
+ *
  * @param addr net_addr_ipv4 struct of target server to check.
  * @param timeout_ms Timeout for the check in ms.
  * @return True if target server is reachable/connectable, false otherwise.
  */
-bool net_check_remote_connection_ipv4(const struct net_addr_ipv4* addr,
-        uint32_t timeout_ms);
+bool net_check_remote_connection_ipv4(
+    const struct net_addr_ipv4 *addr, uint32_t timeout_ms);
 
 #endif

@@ -51,7 +51,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     args_recover(&argc, &argv);
 
-    for (i = 1 ; i < argc ; i++) {
+    for (i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             continue;
         }
@@ -84,10 +84,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("Initializing DDR IO backend");
 
     ddr_io_set_loggers(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     ok = ddr_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
@@ -98,10 +95,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("Initializing card reader backend");
 
     eam_io_set_loggers(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
@@ -142,10 +136,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     }
 
     log_to_external(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

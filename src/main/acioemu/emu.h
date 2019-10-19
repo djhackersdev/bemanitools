@@ -27,13 +27,11 @@ HRESULT ac_io_emu_dispatch_irp(struct ac_io_emu *emu, struct irp *irp);
 const struct ac_io_message *ac_io_emu_request_peek(const struct ac_io_emu *emu);
 void ac_io_emu_request_pop(struct ac_io_emu *emu);
 void ac_io_emu_response_push(
-        struct ac_io_emu *emu,
-        const struct ac_io_message *resp,
-        uint64_t delay_ms);
+    struct ac_io_emu *emu, const struct ac_io_message *resp, uint64_t delay_ms);
 void ac_io_emu_response_push_thunk(
-        struct ac_io_emu *emu,
-        ac_io_in_thunk_t thunk,
-        void *ctx,
-        uint64_t delay_ms);
+    struct ac_io_emu *emu,
+    ac_io_in_thunk_t thunk,
+    void *ctx,
+    uint64_t delay_ms);
 
 #endif

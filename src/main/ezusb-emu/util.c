@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include <stdio.h>
 #include <setupapi.h>
+#include <stdio.h>
 #include <usb100.h>
 
 #include "ezusb-emu/util.h"
@@ -19,13 +19,19 @@ enum ezusb_pipe {
     EZUSB_PIPE_BULK_IN = 3
 };
 
-void ezusb_emu_util_log_usb_msg(const char* prefix, uint32_t ctl_code,
-        const BULK_TRANSFER_CONTROL *ctl, uint32_t ctl_size, void* header,
-        uint32_t header_bytes, void* data, uint32_t data_bytes)
+void ezusb_emu_util_log_usb_msg(
+    const char *prefix,
+    uint32_t ctl_code,
+    const BULK_TRANSFER_CONTROL *ctl,
+    uint32_t ctl_size,
+    void *header,
+    uint32_t header_bytes,
+    void *data,
+    uint32_t data_bytes)
 {
     char header_str[4096];
     char data_str[4096];
-    const char* ctl_code_str;
+    const char *ctl_code_str;
 
     switch (ctl_code) {
         case IOCTL_Ezusb_GET_DEVICE_DESCRIPTOR:
@@ -70,6 +76,12 @@ void ezusb_emu_util_log_usb_msg(const char* prefix, uint32_t ctl_code,
     hex_encode_uc(header, header_bytes, header_str, sizeof(header_str));
     hex_encode_uc(data, data_bytes, data_str, sizeof(data_str));
 
-    log_warning("[EZUSB DUMP %s][%s] header(%d) %s |||| data(%d) %s",
-        prefix, ctl_code_str, header_bytes, header_str, data_bytes, data_str);
+    log_warning(
+        "[EZUSB DUMP %s][%s] header(%d) %s |||| data(%d) %s",
+        prefix,
+        ctl_code_str,
+        header_bytes,
+        header_str,
+        data_bytes,
+        data_str);
 }

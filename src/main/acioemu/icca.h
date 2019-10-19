@@ -23,12 +23,9 @@ struct ac_io_emu_icca {
 };
 
 void ac_io_emu_icca_init(
-        struct ac_io_emu_icca *icca,
-        struct ac_io_emu *emu,
-        uint8_t unit_no);
+    struct ac_io_emu_icca *icca, struct ac_io_emu *emu, uint8_t unit_no);
 
 void ac_io_emu_icca_dispatch_request(
-        struct ac_io_emu_icca *icca,
-        const struct ac_io_message *req);
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req);
 
 #endif

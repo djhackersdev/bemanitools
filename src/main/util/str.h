@@ -2,8 +2,8 @@
 #define UTIL_STR_H
 
 #include <stdarg.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <wchar.h>
 
 void str_cat(char *dest, size_t dnchars, const char *src);
@@ -23,7 +23,7 @@ bool wstr_ends_with(const wchar_t *haystack, const wchar_t *needle);
 bool wstr_eq(const wchar_t *lhs, const wchar_t *rhs);
 size_t wstr_format(wchar_t *buf, size_t nchars, const wchar_t *fmt, ...);
 bool wstr_narrow(const wchar_t *src, char **dest);
-size_t wstr_vformat(wchar_t *buf, size_t nchars, const wchar_t *fmt,
-        va_list ap);
+size_t
+wstr_vformat(wchar_t *buf, size_t nchars, const wchar_t *fmt, va_list ap);
 
 #endif

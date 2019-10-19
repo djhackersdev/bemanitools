@@ -10,17 +10,17 @@
 #include "util/log.h"
 #include "util/str.h"
 
-enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
-        const char* path, bool add_params_if_absent)
+enum cconfig_conf_error cconfig_conf_load_from_file(
+    struct cconfig *config, const char *path, bool add_params_if_absent)
 {
-    char* pos_lines;
-    char* pos_key_val;
-    char* ctx_lines;
-    char* ctx_key_val;
-    char* data;
+    char *pos_lines;
+    char *pos_key_val;
+    char *ctx_lines;
+    char *ctx_key_val;
+    char *data;
     size_t len;
 
-    if (!file_load(path, (void**) &data, &len, true)) {
+    if (!file_load(path, (void **) &data, &len, true)) {
         /* If file does not exist, create one with default configuration
            values */
         if (path_exists(path)) {
@@ -33,11 +33,11 @@ enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
     pos_lines = strtok_r(data, "\n", &ctx_lines);
 
     while (pos_lines != NULL) {
-        char* pos_line_dup;
-        char* key = NULL;
-        char* val = NULL;
+        char *pos_line_dup;
+        char *key = NULL;
+        char *val = NULL;
         int cnt = 0;
-        struct cconfig_entry* entry;
+        struct cconfig_entry *entry;
 
         /* ignore comments and empty lines */
         if (strlen(pos_lines) > 0 && pos_lines[0] != '#') {
@@ -47,7 +47,6 @@ enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
             log_misc("Line: %s", pos_lines);
 
             while (pos_key_val != NULL) {
-
                 if (cnt == 0) {
                     key = pos_key_val;
                 } else if (cnt == 1) {
@@ -60,8 +59,10 @@ enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
 
             /* Key requiured, value can be NULL */
             if (cnt != 1 && cnt != 2) {
-                log_warning("Invalid options line %s in options file %s",
-                    pos_lines, path);
+                log_warning(
+                    "Invalid options line %s in options file %s",
+                    pos_lines,
+                    path);
                 free(pos_line_dup);
                 free(data);
                 return CCONFIG_CONF_ERROR_PARSING;
@@ -80,8 +81,10 @@ enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
                 cconfig_set2(config, key, val);
             } else {
                 /* Ignore cmd params that are not found in config */
-                log_warning("Could not find parameter with key '%s' in "
-                    "config, ignored", key);
+                log_warning(
+                    "Could not find parameter with key '%s' in "
+                    "config, ignored",
+                    key);
             }
 
             free(pos_line_dup);
@@ -92,13 +95,13 @@ enum cconfig_conf_error cconfig_conf_load_from_file(struct cconfig* config,
 
     free(data);
 
-    return CCONFIG_CONF_SUCCESS;  
+    return CCONFIG_CONF_SUCCESS;
 }
 
-enum cconfig_conf_error cconfig_conf_save_to_file(struct cconfig* config,
-        const char* path)
+enum cconfig_conf_error
+cconfig_conf_save_to_file(struct cconfig *config, const char *path)
 {
-    FILE* file;
+    FILE *file;
 
     file = fopen(path, "wb+");
 
@@ -108,7 +111,10 @@ enum cconfig_conf_error cconfig_conf_save_to_file(struct cconfig* config,
 
     for (uint32_t i = 0; i < config->nentries; i++) {
         fprintf(file, "# %s\n", config->entries[i].desc);
-        fprintf(file, "%s=%s\n\n", config->entries[i].key,
+        fprintf(
+            file,
+            "%s=%s\n\n",
+            config->entries[i].key,
             config->entries[i].value);
     }
 

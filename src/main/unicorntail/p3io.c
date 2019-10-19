@@ -45,7 +45,8 @@ void p3io_filter_fini(void)
     DeleteCriticalSection(&p3io_handle_lock);
 }
 
-HRESULT p3io_filter_dispatch_irp(struct irp *irp)
+HRESULT
+p3io_filter_dispatch_irp(struct irp *irp)
 {
     bool match;
 
@@ -58,11 +59,16 @@ HRESULT p3io_filter_dispatch_irp(struct irp *irp)
     }
 
     switch (irp->op) {
-    case IRP_OP_OPEN:   return p3io_handle_open(irp);
-    case IRP_OP_CLOSE:  return p3io_handle_close(irp);
-    case IRP_OP_WRITE:  return p3io_handle_write(irp);
-    case IRP_OP_READ:   return p3io_handle_read(irp);
-    default:            return irp_invoke_next(irp);
+        case IRP_OP_OPEN:
+            return p3io_handle_open(irp);
+        case IRP_OP_CLOSE:
+            return p3io_handle_close(irp);
+        case IRP_OP_WRITE:
+            return p3io_handle_write(irp);
+        case IRP_OP_READ:
+            return p3io_handle_read(irp);
+        default:
+            return irp_invoke_next(irp);
     }
 }
 
@@ -73,7 +79,7 @@ static bool p3io_match_irp_locked(const struct irp *irp)
     if (irp->op == IRP_OP_OPEN) {
         return wstr_ends_with(irp->open_filename, L"\\p3io");
     } else {
-        for (i = 0 ; i < p3io_handles.nitems ; i++) {
+        for (i = 0; i < p3io_handles.nitems; i++) {
             if (irp->fd == *array_item(HANDLE, &p3io_handles, i)) {
                 return true;
             }
@@ -110,7 +116,7 @@ static HRESULT p3io_handle_close(struct irp *irp)
 
     EnterCriticalSection(&p3io_handle_lock);
 
-    for (i = 0 ; i < p3io_handles.nitems ; i++) {
+    for (i = 0; i < p3io_handles.nitems; i++) {
         if (irp->fd == array_item(HANDLE, &p3io_handles, i)) {
             array_remove(HANDLE, &p3io_handles, i);
 
@@ -141,29 +147,29 @@ static HRESULT p3io_handle_write(struct irp *irp)
     }
 
     switch (p3io_req_cmd(&req)) {
-    case P3IO_CMD_RS232_OPEN_CLOSE:
-        EnterCriticalSection(&p3io_cmd_lock);
-        p3io_uart_cmd_open_close(&req.rs232_open_close, &resp.u8);
+        case P3IO_CMD_RS232_OPEN_CLOSE:
+            EnterCriticalSection(&p3io_cmd_lock);
+            p3io_uart_cmd_open_close(&req.rs232_open_close, &resp.u8);
 
-        break;
+            break;
 
-    case P3IO_CMD_RS232_WRITE:
-        EnterCriticalSection(&p3io_cmd_lock);
-        p3io_uart_cmd_write(&req.rs232_write, &resp.rs232_write);
+        case P3IO_CMD_RS232_WRITE:
+            EnterCriticalSection(&p3io_cmd_lock);
+            p3io_uart_cmd_write(&req.rs232_write, &resp.rs232_write);
 
-        break;
+            break;
 
-    case P3IO_CMD_RS232_READ:
-        EnterCriticalSection(&p3io_cmd_lock);
-        p3io_uart_cmd_read(&req.rs232_read, &resp.rs232_read);
+        case P3IO_CMD_RS232_READ:
+            EnterCriticalSection(&p3io_cmd_lock);
+            p3io_uart_cmd_read(&req.rs232_read, &resp.rs232_read);
 
-        break;
+            break;
 
-    default:
-        /* Non-UART command, break out here. */
-        irp->write.pos = 0;
+        default:
+            /* Non-UART command, break out here. */
+            irp->write.pos = 0;
 
-        return irp_invoke_next(irp);
+            return irp_invoke_next(irp);
     }
 
     /* Frame up and queue a response packet */

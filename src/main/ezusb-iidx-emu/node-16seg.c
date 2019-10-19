@@ -10,11 +10,10 @@
 
 #include "util/log.h"
 
-uint8_t ezusb_iidx_emu_node_16seg_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
-        uint8_t cmd_data2)
+uint8_t ezusb_iidx_emu_node_16seg_process_cmd(
+    uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
-    switch (cmd_id)
-    {
+    switch (cmd_id) {
         case EZUSB_IIDX_16SEG_CMD_WRITE:
             return EZUSB_IIDX_16SEG_CMD_STATUS_OK;
 
@@ -24,13 +23,15 @@ uint8_t ezusb_iidx_emu_node_16seg_process_cmd(uint8_t cmd_id, uint8_t cmd_data,
     }
 }
 
-bool ezusb_iidx_emu_node_16seg_read_packet(struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_16seg_read_packet(
+    struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     log_fatal("Read packet not supported on 16seg node");
     return false;
 }
 
-bool ezusb_iidx_emu_node_16seg_write_packet(const struct ezusb_iidx_msg_bulk_packet* pkg)
+bool ezusb_iidx_emu_node_16seg_write_packet(
+    const struct ezusb_iidx_msg_bulk_packet *pkg)
 {
     char _16seg[10];
 

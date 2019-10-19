@@ -27,10 +27,14 @@ static log_formatter_t iidx_io_log_fatal;
 static HANDLE iidx_io_ezusb2_handle;
 
 static struct ezusb2_iidx_msg_interrupt_read_packet iidx_io_ezusb2_read_packet;
-static struct ezusb2_iidx_msg_interrupt_write_packet iidx_io_ezusb2_write_packet;
+static struct ezusb2_iidx_msg_interrupt_write_packet
+    iidx_io_ezusb2_write_packet;
 
-void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal)
+void iidx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal)
 {
     iidx_io_log_misc = misc;
     iidx_io_log_info = info;
@@ -38,14 +42,17 @@ void iidx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
     iidx_io_log_fatal = fatal;
 }
 
-bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy)
+bool iidx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy)
 {
     struct ezusb_ident ident;
-    char* device_path;
+    char *device_path;
     uint64_t time_start;
 
-    log_info("!!! IMPORTANT: Ensure that you have flashed the correct firmware "
+    log_info(
+        "!!! IMPORTANT: Ensure that you have flashed the correct firmware "
         "to your hardware BEFORE running this !!!");
 
     log_misc("Finding connected ezusb2...");
@@ -61,8 +68,8 @@ bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
 
         log_misc("Failed to find connected ezusb2 device, retry...");
         Sleep(1000);
-    } while (time_get_elapsed_ms(time_get_counter() - time_start) < 
-            EZUSB2_FIND_TIMEOUT_MS);
+    } while (time_get_elapsed_ms(time_get_counter() - time_start) <
+             EZUSB2_FIND_TIMEOUT_MS);
 
     if (!device_path) {
         log_fatal("Could not find a connected ezusb2 device");
@@ -83,8 +90,11 @@ bool iidx_io_init(thread_create_t thread_create, thread_join_t thread_join,
             log_fatal("Getting ezusb2 ident failed");
             return false;
         } else {
-            log_info("Connected ezusb2: name %s, vid 0x%X, pid 0x%X", 
-                ident.name, ident.vid, ident.pid);
+            log_info(
+                "Connected ezusb2: name %s, vid 0x%X, pid 0x%X",
+                ident.name,
+                ident.vid,
+                ident.pid);
             return true;
         }
     }
@@ -122,8 +132,8 @@ void iidx_io_ep1_set_top_neons(bool top_neons)
 
 bool iidx_io_ep1_send(void)
 {
-    if (!ezusb2_iidx_interrupt_write(iidx_io_ezusb2_handle, 
-            &iidx_io_ezusb2_write_packet)) {
+    if (!ezusb2_iidx_interrupt_write(
+            iidx_io_ezusb2_handle, &iidx_io_ezusb2_write_packet)) {
         log_fatal("Failed to write interrupt endpoint of ezusb");
         return false;
     } else {
@@ -133,8 +143,8 @@ bool iidx_io_ep1_send(void)
 
 bool iidx_io_ep2_recv(void)
 {
-    if (!ezusb2_iidx_interrupt_read(iidx_io_ezusb2_handle, 
-            &iidx_io_ezusb2_read_packet)) {
+    if (!ezusb2_iidx_interrupt_read(
+            iidx_io_ezusb2_handle, &iidx_io_ezusb2_read_packet)) {
         log_fatal("Failed to read interrupt endpoint of ezusb");
         return false;
     } else {
@@ -174,7 +184,7 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
 
 uint8_t iidx_io_ep2_get_sys(void)
 {
-    return (((~iidx_io_ezusb2_read_packet.inverted_pad) >> 4) & 0x03) | 
+    return (((~iidx_io_ezusb2_read_packet.inverted_pad) >> 4) & 0x03) |
         ((((~iidx_io_ezusb2_read_packet.inverted_pad) >> 30) & 1) << 2);
 }
 
@@ -194,4 +204,3 @@ bool iidx_io_ep3_write_16seg(const char *text)
     memcpy(iidx_io_ezusb2_write_packet.seg16, text, 9);
     return true;
 }
-

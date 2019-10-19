@@ -8,10 +8,8 @@
 #include "util/iobuf.h"
 #include "util/log.h"
 
-HRESULT p3io_frame_encode(
-        struct iobuf *dest,
-        const void *ptr,
-        size_t nbytes)
+HRESULT
+p3io_frame_encode(struct iobuf *dest, const void *ptr, size_t nbytes)
 {
     const uint8_t *bytes;
     uint8_t b;
@@ -28,7 +26,7 @@ HRESULT p3io_frame_encode(
 
     dest->bytes[dest->pos++] = 0xAA;
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         b = bytes[i];
 
         if (b == 0xAA || b == 0xFF) {
@@ -57,9 +55,8 @@ trunc:
     return E_FAIL;
 }
 
-HRESULT p3io_frame_decode(
-        struct iobuf *dest,
-        struct const_iobuf *src)
+HRESULT
+p3io_frame_decode(struct iobuf *dest, struct const_iobuf *src)
 {
     bool escape;
     uint8_t b;

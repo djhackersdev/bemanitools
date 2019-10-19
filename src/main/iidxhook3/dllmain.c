@@ -1,8 +1,8 @@
 #include <windows.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "bemanitools/eamio.h"
 #include "bemanitools/iidxio.h"
@@ -22,8 +22,8 @@
 #include "hook/iohook.h"
 #include "hook/table.h"
 
-#include "hooklib/adapter.h"
 #include "hooklib/acp.h"
+#include "hooklib/adapter.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
@@ -42,7 +42,7 @@
 #include "util/str.h"
 #include "util/thread.h"
 
-#define IIDXHOOK3_INFO_HEADER \
+#define IIDXHOOK3_INFO_HEADER                           \
     "iidxhook for Gold, DJTroopers, Empress and Sirius" \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define IIDXHOOK3_CMD_USAGE \
@@ -60,18 +60,17 @@ static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
 };
 
 static HANDLE STDCALL my_OpenProcess(DWORD, BOOL, DWORD);
-static HANDLE (STDCALL *real_OpenProcess)(DWORD, BOOL, DWORD);
+static HANDLE(STDCALL *real_OpenProcess)(DWORD, BOOL, DWORD);
 static bool iidxhook_init_check;
 
 static const struct hook_symbol init_hook_syms[] = {
-    {
-        .name       = "OpenProcess",
-        .patch      = my_OpenProcess,
-        .link       = (void **) &real_OpenProcess
-    },
+    {.name = "OpenProcess",
+     .patch = my_OpenProcess,
+     .link = (void **) &real_OpenProcess},
 };
 
-static void iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_gfx)
+static void
+iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 {
     struct iidxhook_util_d3d9_config d3d9_config;
 
@@ -96,12 +95,17 @@ static void iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_
     if (config_gfx->monitor_check == 0) {
         log_info("Auto monitor check enabled");
 
-        d3d9_config.iidx09_to_19_monitor_check_cb = iidxhook_util_chart_patch_set_refresh_rate;
-        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+        d3d9_config.iidx09_to_19_monitor_check_cb =
+            iidxhook_util_chart_patch_set_refresh_rate;
+        iidxhook_util_chart_patch_init(
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
     } else if (config_gfx->monitor_check > 0) {
-        log_info("Manual monitor check, resulting refresh rate: %f", config_gfx->monitor_check);
+        log_info(
+            "Manual monitor check, resulting refresh rate: %f",
+            config_gfx->monitor_check);
 
-        iidxhook_util_chart_patch_init(IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+        iidxhook_util_chart_patch_init(
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
         iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
     }
 
@@ -114,10 +118,10 @@ static void iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_
  * This seems to be a good entry point to intercept
  * before the game calls anything important
  */
-HANDLE STDCALL my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
-        DWORD dwProcessId)
+HANDLE STDCALL
+my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 {
-    struct cconfig* config;
+    struct cconfig *config;
 
     struct iidxhook_util_config_eamuse config_eamuse;
     struct iidxhook_config_gfx config_gfx;
@@ -141,7 +145,10 @@ HANDLE STDCALL my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
     iidxhook_config_misc_init(config);
     iidxhook_config_sec_init(config);
 
-    if (!cconfig_hook_config_init(config, IIDXHOOK3_INFO_HEADER "\n" IIDXHOOK3_CMD_USAGE, CCONFIG_CMD_USAGE_OUT_DBG)) {
+    if (!cconfig_hook_config_init(
+            config,
+            IIDXHOOK3_INFO_HEADER "\n" IIDXHOOK3_CMD_USAGE,
+            CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
         exit(EXIT_FAILURE);
     }
@@ -186,8 +193,8 @@ HANDLE STDCALL my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
     /* Start up IIDXIO.DLL */
 
     log_info("Starting IIDX IO backend");
-    iidx_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-            log_impl_fatal);
+    iidx_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
     if (!iidx_io_init(thread_create, thread_join, thread_destroy)) {
         log_fatal("Initializing IIDX IO backend failed");
@@ -196,8 +203,8 @@ HANDLE STDCALL my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
     /* Start up EAMIO.DLL */
 
     log_misc("Initializing card reader backend");
-    eam_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-        log_impl_fatal);
+    eam_io_set_loggers(
+        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
     if (!eam_io_init(thread_create, thread_join, thread_destroy)) {
         log_fatal("Initializing card reader backend failed");
@@ -230,7 +237,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
 #ifdef DEBUG_HOOKING
-        FILE* file = fopen("iidxhook.dllmain.log", "w+");
+        FILE *file = fopen("iidxhook.dllmain.log", "w+");
         log_to_writer(log_writer_file, file);
 #else
         log_to_writer(log_writer_null, NULL);
@@ -238,10 +245,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         /* Bootstrap hook for further init tasks (see above) */
 
         hook_table_apply(
-                NULL,
-                "kernel32.dll",
-                init_hook_syms,
-                lengthof(init_hook_syms));
+            NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));
 
         /* Actual hooks for game specific stuff */
         /* Some hooks are setting dependent and can only be applied later in
@@ -263,4 +267,3 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     return TRUE;
 }
-

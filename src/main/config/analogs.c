@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <commctrl.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-#define SENSITIVITY_SCALE               4
+#define SENSITIVITY_SCALE 4
 
 struct analogs_ui {
     struct array children;
@@ -32,16 +32,16 @@ struct analog_ui {
     uint8_t pos;
 };
 
-static INT_PTR CALLBACK analogs_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+analogs_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR analogs_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp);
 static INT_PTR analogs_ui_handle_activate(HWND hwnd);
 static INT_PTR analogs_ui_handle_passivate(HWND hwnd);
 static INT_PTR analogs_ui_handle_tick(HWND hwnd);
 static INT_PTR analogs_ui_handle_fini(HWND hwnd);
 
-static INT_PTR CALLBACK analog_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+analog_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR analog_ui_handle_init(HWND hwnd, struct analog_def *def);
 static void analog_ui_handle_init_label(HWND hwnd);
 static void analog_ui_handle_init_dev(HWND hwnd);
@@ -54,8 +54,8 @@ static INT_PTR analog_ui_handle_sensitivity_change(HWND hwnd);
 static INT_PTR analog_ui_handle_tick(HWND hwnd);
 static INT_PTR analog_ui_handle_fini(HWND hwnd);
 
-HPROPSHEETPAGE analogs_ui_tab_create(HINSTANCE inst,
-        const struct schema *schema)
+HPROPSHEETPAGE
+analogs_ui_tab_create(HINSTANCE inst, const struct schema *schema)
 {
     PROPSHEETPAGE psp;
 
@@ -70,8 +70,8 @@ HPROPSHEETPAGE analogs_ui_tab_create(HINSTANCE inst,
     return CreatePropertySheetPage(&psp);
 }
 
-static INT_PTR CALLBACK analogs_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+analogs_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     const NMHDR *n;
 
@@ -122,13 +122,17 @@ static INT_PTR analogs_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
 
     ypos = 0;
 
-    for (i = 0 ; i < schema->nanalogs ; i++) {
-        child = CreateDialogParam(inst, MAKEINTRESOURCE(IDD_ANALOG), hwnd,
-                analog_ui_dlg_proc, (LPARAM) &schema->analogs[i]);
+    for (i = 0; i < schema->nanalogs; i++) {
+        child = CreateDialogParam(
+            inst,
+            MAKEINTRESOURCE(IDD_ANALOG),
+            hwnd,
+            analog_ui_dlg_proc,
+            (LPARAM) &schema->analogs[i]);
 
         GetWindowRect(child, &r);
-        SetWindowPos(child, HWND_BOTTOM, 0, ypos, 0, 0,
-                SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetWindowPos(
+            child, HWND_BOTTOM, 0, ypos, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 
         ypos += r.bottom - r.top;
 
@@ -162,7 +166,7 @@ static INT_PTR analogs_ui_handle_tick(HWND hwnd)
 
     ui = (struct analogs_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-    for (i = 0 ; i < ui->children.nitems ; i++) {
+    for (i = 0; i < ui->children.nitems; i++) {
         child = *array_item(HWND, &ui->children, i);
         SendMessage(child, WM_USER, 0, 0);
     }
@@ -182,8 +186,8 @@ static INT_PTR analogs_ui_handle_fini(HWND hwnd)
     return TRUE;
 }
 
-static INT_PTR CALLBACK analog_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+analog_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -280,9 +284,8 @@ static void analog_ui_handle_init_dev(HWND hwnd)
     ma.hid = NULL;
     mapper_get_analog_map(ui->def->tag, &ma);
 
-    for (hid = hid_mgr_get_first_stub()
-            ; hid != NULL
-            ; hid = hid_mgr_get_next_stub(hid)) {
+    for (hid = hid_mgr_get_first_stub(); hid != NULL;
+         hid = hid_mgr_get_next_stub(hid)) {
         if (!analog_ui_match_device(hid)) {
             continue;
         }
@@ -327,8 +330,11 @@ static void analog_ui_handle_init_sensitivity(HWND hwnd)
     pos = 256 * SENSITIVITY_SCALE + mapper_get_analog_sensitivity(ui->def->tag);
 
     SendMessage(slider, TBM_SETTICFREQ, 256, 0);
-    SendMessage(slider, TBM_SETRANGE, FALSE,
-            MAKELPARAM(0, SENSITIVITY_SCALE * 256 * 2));
+    SendMessage(
+        slider,
+        TBM_SETRANGE,
+        FALSE,
+        MAKELPARAM(0, SENSITIVITY_SCALE * 256 * 2));
     SendMessage(slider, TBM_SETPOS, TRUE, (LPARAM) pos);
 
     EnableWindow(slider, !mapper_is_analog_absolute(ui->def->tag));
@@ -350,7 +356,7 @@ static bool analog_ui_match_device(struct hid_stub *hid)
         goto content_fail;
     }
 
-    for (i = 0 ; i < ncontrols ; i++) {
+    for (i = 0; i < ncontrols; i++) {
         if (controls[i].value_max - controls[i].value_min > 1) {
             break;
         }
@@ -386,7 +392,7 @@ static void analog_ui_populate_controls(HWND hwnd)
 
     InvalidateRect(controls_ctl, NULL, TRUE);
 
-    for (index = nitems ; index >= 0 ; index--) {
+    for (index = nitems; index >= 0; index--) {
         SendMessage(controls_ctl, CB_DELETESTRING, index, 0);
     }
 
@@ -411,7 +417,7 @@ static void analog_ui_populate_controls(HWND hwnd)
 
     mapper_get_analog_map(ui->def->tag, &ma);
 
-    for (i = 0 ; i < ncontrols ; i++) {
+    for (i = 0; i < ncontrols; i++) {
         if (controls[i].value_max - controls[i].value_min <= 1) {
             continue;
         }
@@ -537,4 +543,3 @@ static INT_PTR analog_ui_handle_fini(HWND hwnd)
 
     return TRUE;
 }
-

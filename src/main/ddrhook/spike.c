@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
+#include <ntdef.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -36,7 +36,8 @@ void spike_fini(void)
     ac_io_emu_fini(&spike_ac_io_emu);
 }
 
-HRESULT spike_dispatch_irp(struct irp *irp)
+HRESULT
+spike_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -57,60 +58,61 @@ HRESULT spike_dispatch_irp(struct irp *irp)
         msg = ac_io_emu_request_peek(&spike_ac_io_emu);
 
         switch (msg->addr) {
-        case 0:
-            ac_io_emu_cmd_assign_addrs(&spike_ac_io_emu, msg, 7);
-
-            break;
-
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-            switch (ac_io_u16(msg->cmd.code)) {
-            case AC_IO_CMD_GET_VERSION:
-                spike_handle_get_version(msg);
+            case 0:
+                ac_io_emu_cmd_assign_addrs(&spike_ac_io_emu, msg, 7);
 
                 break;
 
-            case AC_IO_CMD_START_UP:
-                spike_handle_status(msg);
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                switch (ac_io_u16(msg->cmd.code)) {
+                    case AC_IO_CMD_GET_VERSION:
+                        spike_handle_get_version(msg);
+
+                        break;
+
+                    case AC_IO_CMD_START_UP:
+                        spike_handle_status(msg);
+
+                        break;
+
+                    case AC_IO_CMD_KEEPALIVE:
+                        spike_send_empty(msg);
+
+                        break;
+
+                    case 0x100:
+                    case 0x110:
+                    case 0x112:
+                    case 0x128:
+                        spike_handle_status(msg);
+
+                        break;
+
+                    default:
+                        log_warning(
+                            "Spike ACIO unhandled cmd: %04X",
+                            ac_io_u16(msg->cmd.code));
+                }
 
                 break;
 
-            case AC_IO_CMD_KEEPALIVE:
-                spike_send_empty(msg);
-
-                break;
-
-            case 0x100:
-            case 0x110:
-            case 0x112:
-            case 0x128:
-                spike_handle_status(msg);
+            case AC_IO_BROADCAST:
+                spike_handle_broadcast(msg);
 
                 break;
 
             default:
-                log_warning("Spike ACIO unhandled cmd: %04X",
-                ac_io_u16(msg->cmd.code));
-            }
-
-            break;
-
-        case AC_IO_BROADCAST:
-            spike_handle_broadcast(msg);
-
-            break;
-
-        default:
-            log_warning(
+                log_warning(
                     "Spike ACIO message on unhandled bus address: %d",
                     msg->addr);
 
-            break;
+                break;
         }
 
         ac_io_emu_request_pop(&spike_ac_io_emu);
@@ -138,8 +140,10 @@ static void spike_handle_get_version(const struct ac_io_message *req)
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x01;
     resp.cmd.version.revision = 0x00;
-    memcpy(resp.cmd.version.product_code, "DDRS",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "DDRS",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 

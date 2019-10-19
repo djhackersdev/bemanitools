@@ -18,8 +18,11 @@ enum bst_io_in_gpio_sys_bit {
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void bst_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void bst_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your BST IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -29,8 +32,10 @@ void bst_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool bst_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool bst_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your SDVX IO emulation DLL */
 

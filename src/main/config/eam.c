@@ -1,6 +1,6 @@
-#include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
+#include <windows.h>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -47,8 +47,8 @@ struct eam_unit_ui {
     struct array devs;
 };
 
-static INT_PTR CALLBACK eam_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
+static INT_PTR CALLBACK
+eam_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp);
 static INT_PTR eam_ui_handle_activate(HWND hwnd);
 static INT_PTR eam_ui_handle_passivate(HWND hwnd);
@@ -57,10 +57,10 @@ static INT_PTR eam_ui_handle_change_alt_10k(HWND hwnd);
 static INT_PTR eam_ui_handle_change_autogen(HWND hwnd);
 static INT_PTR eam_ui_handle_fini(HWND hwnd);
 
-static INT_PTR CALLBACK eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam);
-static INT_PTR eam_unit_ui_handle_init(HWND hwnd,
-        const struct eam_unit_def *def);
+static INT_PTR CALLBACK
+eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static INT_PTR
+eam_unit_ui_handle_init(HWND hwnd, const struct eam_unit_def *def);
 static void eam_unit_ui_handle_init_devs(HWND hwnd);
 static void eam_unit_ui_handle_init_path(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_browse(HWND hwnd);
@@ -70,8 +70,11 @@ static INT_PTR eam_unit_ui_handle_fini(HWND hwnd);
 
 static const struct eam_io_config_api *eam_io_config_api;
 
-HPROPSHEETPAGE eam_ui_tab_create(HINSTANCE inst, const struct schema *schema,
-        const struct eam_io_config_api *api)
+HPROPSHEETPAGE
+eam_ui_tab_create(
+    HINSTANCE inst,
+    const struct schema *schema,
+    const struct eam_io_config_api *api)
 {
     PROPSHEETPAGE psp;
 
@@ -88,8 +91,8 @@ HPROPSHEETPAGE eam_ui_tab_create(HINSTANCE inst, const struct schema *schema,
     return CreatePropertySheetPage(&psp);
 }
 
-static INT_PTR CALLBACK eam_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+eam_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     const NMHDR *n;
 
@@ -159,13 +162,17 @@ static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
 
     ypos = 0;
 
-    for (i = 0 ; i < schema->nunits ; i++) {
-        child = CreateDialogParam(inst, MAKEINTRESOURCE(IDD_READER), hwnd,
-                eam_unit_ui_dlg_proc, (LPARAM) &schema->units[i]);
+    for (i = 0; i < schema->nunits; i++) {
+        child = CreateDialogParam(
+            inst,
+            MAKEINTRESOURCE(IDD_READER),
+            hwnd,
+            eam_unit_ui_dlg_proc,
+            (LPARAM) &schema->units[i]);
 
         GetWindowRect(child, &r);
-        SetWindowPos(child, HWND_BOTTOM, 0, ypos, 0, 0,
-                SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetWindowPos(
+            child, HWND_BOTTOM, 0, ypos, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 
         ypos += r.bottom - r.top;
 
@@ -207,7 +214,7 @@ static INT_PTR eam_ui_handle_tick(HWND hwnd)
 
     mapper_update();
 
-    for (i = 0 ; i < ui->children.nitems ; i++) {
+    for (i = 0; i < ui->children.nitems; i++) {
         child = *array_item(HWND, &ui->children, i);
         SendMessage(child, WM_USER, 0, 0);
     }
@@ -253,13 +260,13 @@ static INT_PTR eam_ui_handle_fini(HWND hwnd)
     return TRUE;
 }
 
-static INT_PTR CALLBACK eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
-        LPARAM lparam)
+static INT_PTR CALLBACK
+eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
         case WM_INITDIALOG:
-            return eam_unit_ui_handle_init(hwnd,
-                    (struct eam_unit_def *) lparam);
+            return eam_unit_ui_handle_init(
+                hwnd, (struct eam_unit_def *) lparam);
 
         case WM_USER:
             return eam_unit_ui_handle_tick(hwnd);
@@ -296,8 +303,8 @@ static INT_PTR CALLBACK eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam,
     }
 }
 
-static INT_PTR eam_unit_ui_handle_init(HWND hwnd,
-        const struct eam_unit_def *def)
+static INT_PTR
+eam_unit_ui_handle_init(HWND hwnd, const struct eam_unit_def *def)
 {
     struct eam_unit_ui *ui;
     wchar_t str[128];
@@ -338,15 +345,14 @@ static void eam_unit_ui_handle_init_devs(HWND hwnd)
 
     hid_mgr_lock();
 
-    for (hid = hid_mgr_get_first_stub()
-            ; hid != NULL
-            ; hid = hid_mgr_get_next_stub(hid)) {
+    for (hid = hid_mgr_get_first_stub(); hid != NULL;
+         hid = hid_mgr_get_next_stub(hid)) {
         if (!hid_stub_get_device_usage(hid, &dev_usage)) {
             continue;
         }
 
-        if (dev_usage != KBD_DEVICE_USAGE_KEYBOARD
-                && dev_usage != KBD_DEVICE_USAGE_KEYPAD) {
+        if (dev_usage != KBD_DEVICE_USAGE_KEYBOARD &&
+            dev_usage != KBD_DEVICE_USAGE_KEYPAD) {
             continue;
         }
 
@@ -486,4 +492,3 @@ static INT_PTR eam_unit_ui_handle_fini(HWND hwnd)
 
     return TRUE;
 }
-

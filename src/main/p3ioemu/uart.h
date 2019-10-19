@@ -6,15 +6,12 @@
 void p3io_uart_set_path(size_t uart_no, const wchar_t *path);
 
 void p3io_uart_cmd_open_close(
-        const struct p3io_req_rs232_open_close *req,
-        struct p3io_resp_u8 *resp);
+    const struct p3io_req_rs232_open_close *req, struct p3io_resp_u8 *resp);
 
 void p3io_uart_cmd_read(
-        const struct p3io_req_rs232_read *req,
-        struct p3io_resp_rs232_read *resp);
+    const struct p3io_req_rs232_read *req, struct p3io_resp_rs232_read *resp);
 
 void p3io_uart_cmd_write(
-        const struct p3io_req_rs232_write *req,
-        struct p3io_resp_rs232_write *resp);
+    const struct p3io_req_rs232_write *req, struct p3io_resp_rs232_write *resp);
 
 #endif

@@ -14,26 +14,21 @@
 #include "bemanitools/eamio.h"
 
 static void ac_io_emu_iccb_cmd_send_version(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req);
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req);
 
 static void ac_io_emu_iccb_send_state(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req);
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req);
 
 static void ac_io_emu_iccb_send_empty(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req);
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req);
 
 static void ac_io_emu_iccb_send_status(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req,
-        uint8_t status);
+    struct ac_io_emu_iccb *iccb,
+    const struct ac_io_message *req,
+    uint8_t status);
 
 void ac_io_emu_iccb_init(
-        struct ac_io_emu_iccb *iccb,
-        struct ac_io_emu *emu,
-        uint8_t unit_no)
+    struct ac_io_emu_iccb *iccb, struct ac_io_emu *emu, uint8_t unit_no)
 {
     memset(iccb, 0, sizeof(*iccb));
     iccb->emu = emu;
@@ -41,8 +36,7 @@ void ac_io_emu_iccb_init(
 }
 
 void ac_io_emu_iccb_dispatch_request(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req)
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req)
 {
     uint16_t cmd_code;
 
@@ -104,16 +98,17 @@ void ac_io_emu_iccb_dispatch_request(
             break;
 
         default:
-            log_warning("Unknown ACIO message %04x on ICCB node, addr=%d",
-                    cmd_code, req->addr);
+            log_warning(
+                "Unknown ACIO message %04x on ICCB node, addr=%d",
+                cmd_code,
+                req->addr);
 
             break;
     }
 }
 
 static void ac_io_emu_iccb_cmd_send_version(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req)
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -126,8 +121,10 @@ static void ac_io_emu_iccb_cmd_send_version(
     resp.cmd.version.major = 0x01;
     resp.cmd.version.minor = 0x05;
     resp.cmd.version.revision = 0x01;
-    memcpy(resp.cmd.version.product_code, "ICCB",
-            sizeof(resp.cmd.version.product_code));
+    memcpy(
+        resp.cmd.version.product_code,
+        "ICCB",
+        sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));
 
@@ -135,8 +132,7 @@ static void ac_io_emu_iccb_cmd_send_version(
 }
 
 static void ac_io_emu_iccb_send_empty(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req)
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -149,9 +145,9 @@ static void ac_io_emu_iccb_send_empty(
 }
 
 static void ac_io_emu_iccb_send_status(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req,
-        uint8_t status)
+    struct ac_io_emu_iccb *iccb,
+    const struct ac_io_message *req,
+    uint8_t status)
 {
     struct ac_io_message resp;
 
@@ -165,8 +161,7 @@ static void ac_io_emu_iccb_send_status(
 }
 
 static void ac_io_emu_iccb_send_state(
-        struct ac_io_emu_iccb *iccb,
-        const struct ac_io_message *req)
+    struct ac_io_emu_iccb *iccb, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
     struct ac_io_iccb_state *body;
@@ -178,10 +173,8 @@ static void ac_io_emu_iccb_send_state(
 
     if (sensor != iccb->last_sensor) {
         if (sensor) {
-            iccb->card_result = eam_io_read_card(
-                    iccb->unit_no,
-                    iccb->uid,
-                    sizeof(iccb->uid));
+            iccb->card_result =
+                eam_io_read_card(iccb->unit_no, iccb->uid, sizeof(iccb->uid));
 
             // fault if sensor says to read but we got no card
             iccb->fault = (iccb->card_result == EAM_IO_CARD_NONE);
@@ -224,4 +217,3 @@ static void ac_io_emu_iccb_send_state(
 
     ac_io_emu_response_push(iccb->emu, &resp, 0);
 }
-

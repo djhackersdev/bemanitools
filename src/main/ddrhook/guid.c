@@ -1,4 +1,4 @@
-#include <windows.h>
 #include <initguid.h>
+#include <windows.h>
 
 #include "ddrhook/monitor.h"

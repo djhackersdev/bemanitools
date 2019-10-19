@@ -10,5 +10,4 @@ enum ezusb_iidx_16seg_command_status {
     EZUSB_IIDX_16SEG_CMD_STATUS_FAULT = 0xFE
 };
 
-
 #endif

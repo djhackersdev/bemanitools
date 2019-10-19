@@ -11,95 +11,125 @@
 #include "util/log.h"
 #include "util/str.h"
 
-static LONG (STDCALL *real_ChangeDisplaySettingsExA)(
-       char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
-static LRESULT (STDCALL *real_SendMessageW)(
-        HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-static HWND (STDCALL *real_CreateWindowExW)(DWORD dwExStyle, LPCWSTR lpClassName,
-    LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth,
-    int nHeight, HWND hWndParent, HMENU hMenu,
-    HINSTANCE hInstance, LPVOID lpParam);
-static LONG (STDCALL *real_SetWindowLongW)(HWND hWnd, int nIndex, LONG dwNewLong);
-static BOOL (STDCALL *real_SetWindowPos)(HWND hWnd, HWND hWndInsertAfter,
-    int  X, int  Y, int  cx, int  cy, UINT uFlags);
+static LONG(STDCALL *real_ChangeDisplaySettingsExA)(
+    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
+static LRESULT(STDCALL *real_SendMessageW)(
+    HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static HWND(STDCALL *real_CreateWindowExW)(
+    DWORD dwExStyle,
+    LPCWSTR lpClassName,
+    LPCWSTR lpWindowName,
+    DWORD dwStyle,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam);
+static LONG(STDCALL *real_SetWindowLongW)(
+    HWND hWnd, int nIndex, LONG dwNewLong);
+static BOOL(STDCALL *real_SetWindowPos)(
+    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
 static LONG STDCALL my_ChangeDisplaySettingsExA(
-       char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
+    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
 static SHORT STDCALL my_GetKeyState(int vk);
-static LRESULT STDCALL my_SendMessageW(
-        HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static LRESULT STDCALL
+my_SendMessageW(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static HWND STDCALL my_CreateWindowExA(
-        DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle,
-        int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu,
-        HINSTANCE hInstance, LPVOID lpParam);
-static HWND STDCALL my_CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
-    LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth,
-    int nHeight, HWND hWndParent, HMENU hMenu,
-    HINSTANCE hInstance, LPVOID lpParam);
+    DWORD dwExStyle,
+    LPCSTR lpClassName,
+    LPCSTR lpWindowName,
+    DWORD dwStyle,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam);
+static HWND STDCALL my_CreateWindowExW(
+    DWORD dwExStyle,
+    LPCWSTR lpClassName,
+    LPCWSTR lpWindowName,
+    DWORD dwStyle,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam);
 static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong);
-static BOOL STDCALL my_SetWindowPos(HWND hWnd, HWND hWndInsertAfter,
-    int  X, int  Y, int  cx, int  cy, UINT uFlags);
+static BOOL STDCALL my_SetWindowPos(
+    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
 static const struct hook_symbol misc_user32_syms[] = {
     {
-        .name       = "ChangeDisplaySettingsExA",
-        .patch      = my_ChangeDisplaySettingsExA,
-        .link       = (void **) &real_ChangeDisplaySettingsExA,
+        .name = "ChangeDisplaySettingsExA",
+        .patch = my_ChangeDisplaySettingsExA,
+        .link = (void **) &real_ChangeDisplaySettingsExA,
     },
     {
-        .name       = "SendMessageW",
-        .patch      = my_SendMessageW,
-        .link       = (void **) &real_SendMessageW,
+        .name = "SendMessageW",
+        .patch = my_SendMessageW,
+        .link = (void **) &real_SendMessageW,
     },
     {
-        .name       = "GetKeyState",
-        .patch      = my_GetKeyState,
+        .name = "GetKeyState",
+        .patch = my_GetKeyState,
     },
     {
-        .name       = "CreateWindowExA",
-        .patch      = my_CreateWindowExA,
+        .name = "CreateWindowExA",
+        .patch = my_CreateWindowExA,
     },
     {
-        .name       = "CreateWindowExW",
-        .patch      = my_CreateWindowExW,
-        .link       = (void **) &real_CreateWindowExW,
+        .name = "CreateWindowExW",
+        .patch = my_CreateWindowExW,
+        .link = (void **) &real_CreateWindowExW,
     },
     {
-        .name       = "SetWindowLongW",
-        .patch      = my_SetWindowLongW,
-        .link       = (void **) &real_SetWindowLongW,
+        .name = "SetWindowLongW",
+        .patch = my_SetWindowLongW,
+        .link = (void **) &real_SetWindowLongW,
     },
     {
-        .name       = "SetWindowPos",
-        .patch      = my_SetWindowPos,
-        .link       = (void **) &real_SetWindowPos,
+        .name = "SetWindowPos",
+        .patch = my_SetWindowPos,
+        .link = (void **) &real_SetWindowPos,
     },
 };
 
-static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong) {
-    if(nIndex == GWL_STYLE)
+static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
+{
+    if (nIndex == GWL_STYLE)
         dwNewLong |= WS_OVERLAPPEDWINDOW;
     return real_SetWindowLongW(hWnd, nIndex, dwNewLong);
 }
 
-static BOOL STDCALL my_SetWindowPos(HWND hWnd, HWND hWndInsertAfter,
-    int  X, int  Y, int  cx, int  cy, UINT uFlags) {
+static BOOL STDCALL my_SetWindowPos(
+    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
+{
     return true;
 }
 
 static LONG STDCALL my_ChangeDisplaySettingsExA(
-       char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param)
+    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param)
 {
     if (gfx_get_windowed()) {
         return DISP_CHANGE_SUCCESSFUL;
     } else {
-        return real_ChangeDisplaySettingsExA(dev_name, dev_mode, hwnd, flags,
-                param);
+        return real_ChangeDisplaySettingsExA(
+            dev_name, dev_mode, hwnd, flags, param);
     }
 }
 
-static void calc_win_size_with_framed(HWND hwnd, DWORD x, DWORD y, DWORD width,
-        DWORD height, LPWINDOWPOS wp)
+static void calc_win_size_with_framed(
+    HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, LPWINDOWPOS wp)
 {
     /* taken from dxwnd */
     RECT rect;
@@ -138,10 +168,19 @@ static void calc_win_size_with_framed(HWND hwnd, DWORD x, DWORD y, DWORD width,
     wp->cy = rect.bottom - rect.top;
 }
 
-static HWND STDCALL my_CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
-    LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth,
-    int nHeight, HWND hWndParent, HMENU hMenu,
-    HINSTANCE hInstance, LPVOID lpParam)
+static HWND STDCALL my_CreateWindowExW(
+    DWORD dwExStyle,
+    LPCWSTR lpClassName,
+    LPCWSTR lpWindowName,
+    DWORD dwStyle,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam)
 {
     if (gfx_get_windowed()) {
         /* use a different style */
@@ -150,12 +189,22 @@ static HWND STDCALL my_CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
         ShowCursor(TRUE);
     }
 
-    if(!lpWindowName)
+    if (!lpWindowName)
         lpWindowName = L"Dance Dance Revolution";
 
-    HWND hwnd = real_CreateWindowExW(dwExStyle, lpClassName, lpWindowName,
-            dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance,
-            lpParam);
+    HWND hwnd = real_CreateWindowExW(
+        dwExStyle,
+        lpClassName,
+        lpWindowName,
+        dwStyle,
+        X,
+        Y,
+        nWidth,
+        nHeight,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam);
 
     if (hwnd == INVALID_HANDLE_VALUE) {
         return hwnd;
@@ -178,23 +227,43 @@ static HWND STDCALL my_CreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
 }
 
 static HWND STDCALL my_CreateWindowExA(
-        DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle,
-        int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu,
-        HINSTANCE hInstance, LPVOID lpParam)
+    DWORD dwExStyle,
+    LPCSTR lpClassName,
+    LPCSTR lpWindowName,
+    DWORD dwStyle,
+    int X,
+    int Y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam)
 {
     LPWSTR longWindowName = NULL;
     LPWSTR longClassName = NULL;
-    if(lpWindowName)
+    if (lpWindowName)
         longWindowName = str_widen(lpWindowName);
-    if(lpClassName)
+    if (lpClassName)
         longClassName = str_widen(lpClassName);
 
-    HWND ret = my_CreateWindowExW(dwExStyle, longClassName, longWindowName,
-        dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+    HWND ret = my_CreateWindowExW(
+        dwExStyle,
+        longClassName,
+        longWindowName,
+        dwStyle,
+        X,
+        Y,
+        nWidth,
+        nHeight,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam);
 
-    if(longWindowName)
+    if (longWindowName)
         free(longWindowName);
-    if(longClassName)
+    if (longClassName)
         free(longClassName);
 
     return ret;
@@ -206,8 +275,8 @@ static SHORT STDCALL my_GetKeyState(int vk)
     return 0;
 }
 
-static LRESULT STDCALL my_SendMessageW(
-        HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT STDCALL
+my_SendMessageW(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     if (hwnd == HWND_BROADCAST) {
         /* OK COOL STORY BRO */
@@ -222,11 +291,7 @@ static LRESULT STDCALL my_SendMessageW(
 void misc_insert_hooks(HMODULE target)
 {
     hook_table_apply(
-            target,
-            "user32.dll",
-            misc_user32_syms,
-            lengthof(misc_user32_syms));
+        target, "user32.dll", misc_user32_syms, lengthof(misc_user32_syms));
 
     log_info("Inserted miscellaneous hooks into %p", target);
 }
-

@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "util/cmdline.h"
 #include "util/defs.h"
@@ -12,7 +12,7 @@
 #include "util/log.h"
 #include "util/str.h"
 
-void options_init_from_cmdline(struct options* options)
+void options_init_from_cmdline(struct options *options)
 {
     int argc;
     char **argv;
@@ -22,7 +22,7 @@ void options_init_from_cmdline(struct options* options)
 
     options_init(options);
 
-    ok = options_read_cmdline(options, argc, (const char**) argv);
+    ok = options_read_cmdline(options, argc, (const char **) argv);
 
     args_free(argc, argv);
 
@@ -31,7 +31,7 @@ void options_init_from_cmdline(struct options* options)
     }
 }
 
-void options_init(struct options* options)
+void options_init(struct options *options)
 {
     options->windowed = false;
     options->window_framed = false;
@@ -39,44 +39,37 @@ void options_init(struct options* options)
     options->disable_cardemu = false;
 }
 
-bool options_read_cmdline(struct options* options, int argc,
-        const char **argv)
+bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
     int i;
 
     for (i = 0; i < argc; i++) {
-
         if (argv[i][0] != '-') {
             continue;
         }
 
         switch (argv[i][1]) {
-            case 'h':
-            {
+            case 'h': {
                 options_print_usage();
                 return false;
             }
 
-            case 'w':
-            {
+            case 'w': {
                 options->windowed = true;
                 break;
             }
 
-            case 'f':
-            {
+            case 'f': {
                 options->window_framed = true;
                 break;
             }
 
-            case 'c':
-            {
+            case 'c': {
                 options->disable_cardemu = true;
                 break;
             }
 
-            case 'p':
-            {
+            case 'p': {
                 options->disable_p4ioemu = true;
                 break;
             }
@@ -88,22 +81,22 @@ bool options_read_cmdline(struct options* options, int argc,
 
 void options_print_usage(void)
 {
-    OutputDebugStringA(
-"jbhook for jubeat, build " __DATE__ " " __TIME__ ", gitrev "
-STRINGIFY(GITREV) "\n"
-"Usage: launcher.exe -K jbhook.dll [game exec] <options> \n"
-"\n"
-"       The following options can be specified after the game exec path:\n"
-"\n"
-"       -h                  Print this usage message\n"
-"       -w                  Run the game windowed\n"
-"       -f                  Run the game in a framed window (needs -w option)\n"
-"       -c                  Disable card emulation (e.g. when running on a real cab)\n"
-"       -p                  Disable p4io emulation (e.g. when running on a real cab or on a bare p4io)\n"
-    );
+    OutputDebugStringA("jbhook for jubeat, build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(
+        GITREV) "\n"
+                "Usage: launcher.exe -K jbhook.dll [game exec] <options> \n"
+                "\n"
+                "       The following options can be specified after the game exec path:\n"
+                "\n"
+                "       -h                  Print this usage message\n"
+                "       -w                  Run the game windowed\n"
+                "       -f                  Run the game in a framed window (needs -w option)\n"
+                "       -c                  Disable card emulation (e.g. when running on a "
+                "real cab)\n"
+                "       -p                  Disable p4io emulation (e.g. when running on a "
+                "real cab or on a bare "
+                "p4io)\n");
 }
 
-void options_fini(struct options* options)
+void options_fini(struct options *options)
 {
-
 }

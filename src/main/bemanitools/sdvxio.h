@@ -43,8 +43,11 @@ enum sdvx_io_out_gpio_bit {
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
 
-void sdvx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
-        log_formatter_t warning, log_formatter_t fatal);
+void sdvx_io_set_loggers(
+    log_formatter_t misc,
+    log_formatter_t info,
+    log_formatter_t warning,
+    log_formatter_t fatal);
 
 /* Initialize your SDVX IO emulation DLL. Thread management functions are
    provided to you; you must use these functions to create your own threads if
@@ -54,8 +57,10 @@ void sdvx_io_set_loggers(log_formatter_t misc, log_formatter_t info,
 
    See glue.h and geninput.h for further details. */
 
-bool sdvx_io_init(thread_create_t thread_create, thread_join_t thread_join,
-        thread_destroy_t thread_destroy);
+bool sdvx_io_init(
+    thread_create_t thread_create,
+    thread_join_t thread_join,
+    thread_destroy_t thread_destroy);
 
 /* Shut down your SDVX IO emulation DLL */
 

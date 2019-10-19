@@ -1,8 +1,8 @@
 #include <windows.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "bemanitools/eamio.h"
@@ -29,7 +29,6 @@
 #include "iidxhook8/cam.h"
 #include "iidxhook8/config-cam.h"
 #include "iidxhook8/config-io.h"
-#include "iidxhook8/cam.h"
 
 #include "imports/avs.h"
 
@@ -37,7 +36,7 @@
 #include "util/str.h"
 #include "util/thread.h"
 
-#define IIDXHOOK8_INFO_HEADER \
+#define IIDXHOOK8_INFO_HEADER     \
     "iidxhook for Cannon Ballers" \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
 #define IIDXHOOK8_CMD_USAGE \
@@ -52,7 +51,8 @@ static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
 
-static void iidxhook8_setup_d3d9_hooks(const struct iidxhook_config_gfx* config_gfx)
+static void
+iidxhook8_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 {
     struct iidxhook_util_d3d9_config d3d9_config;
 
@@ -84,8 +84,8 @@ static struct bio2emu_port bio2_emu = {
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
-    struct cconfig* config;
-    
+    struct cconfig *config;
+
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook8_config_cam config_cam;
 
@@ -102,7 +102,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     iidxhook8_config_cam_init(config);
     iidxhook8_config_io_init(config);
 
-    if (!cconfig_hook_config_init(config, IIDXHOOK8_INFO_HEADER "\n" IIDXHOOK8_CMD_USAGE, CCONFIG_CMD_USAGE_OUT_DBG)) {
+    if (!cconfig_hook_config_init(
+            config,
+            IIDXHOOK8_INFO_HEADER "\n" IIDXHOOK8_CMD_USAGE,
+            CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
         log_server_fini();
         exit(EXIT_FAILURE);
@@ -122,10 +125,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up IIDXIO.DLL */
     if (!iidxhook8_config_io.disable_bio2_emu) {
         log_info("Starting IIDX IO backend");
-        iidx_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-                log_impl_fatal);
+        iidx_io_set_loggers(
+            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!iidx_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     }
@@ -133,15 +137,17 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up EAMIO.DLL */
     if (!iidxhook8_config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        eam_io_set_loggers(log_impl_misc, log_impl_info, log_impl_warning,
-                log_impl_fatal);
+        eam_io_set_loggers(
+            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!eam_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing card reader backend failed");
         }
     }
 
-    /* iohooks are okay, even if emu is diabled since the fake handlers won't be used */
+    /* iohooks are okay, even if emu is diabled since the fake handlers won't be
+     * used */
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
     iohook_init(iidxhook_handlers, lengthof(iidxhook_handlers));
@@ -200,10 +206,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     }
 
     log_to_external(
-            log_body_misc,
-            log_body_info,
-            log_body_warning,
-            log_body_fatal);
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 
@@ -213,4 +216,3 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 end:
     return TRUE;
 }
-

@@ -1,5 +1,5 @@
-#include <windows.h>
 #include <d3d9.h>
+#include <windows.h>
 
 #include <stdbool.h>
 
@@ -13,25 +13,33 @@
 #include "util/log.h"
 
 static HRESULT STDCALL my_CreateDevice(
-        IDirect3D9 *self, UINT adapter, D3DDEVTYPE type, HWND hwnd, DWORD flags,
-        D3DPRESENT_PARAMETERS *pp, IDirect3DDevice9 **pdev);
+    IDirect3D9 *self,
+    UINT adapter,
+    D3DDEVTYPE type,
+    HWND hwnd,
+    DWORD flags,
+    D3DPRESENT_PARAMETERS *pp,
+    IDirect3DDevice9 **pdev);
 static IDirect3D9 *STDCALL my_Direct3DCreate9(UINT sdk_ver);
 
-static IDirect3D9 * (STDCALL *real_Direct3DCreate9)(UINT sdk_ver);
+static IDirect3D9 *(STDCALL *real_Direct3DCreate9)(UINT sdk_ver);
 
 static const struct hook_symbol gfx_hook_syms[] = {
-    {
-        .name       = "Direct3DCreate9",
-        .patch      = my_Direct3DCreate9,
-        .link       = (void **) &real_Direct3DCreate9
-    },
+    {.name = "Direct3DCreate9",
+     .patch = my_Direct3DCreate9,
+     .link = (void **) &real_Direct3DCreate9},
 };
 
 static bool gfx_windowed;
 
 static HRESULT STDCALL my_CreateDevice(
-        IDirect3D9 *self, UINT adapter, D3DDEVTYPE type, HWND hwnd, DWORD flags,
-        D3DPRESENT_PARAMETERS *pp, IDirect3DDevice9 **pdev)
+    IDirect3D9 *self,
+    UINT adapter,
+    D3DDEVTYPE type,
+    HWND hwnd,
+    DWORD flags,
+    D3DPRESENT_PARAMETERS *pp,
+    IDirect3DDevice9 **pdev)
 {
     IDirect3D9 *real = COM_PROXY_UNWRAP(self);
     HRESULT hr;
@@ -67,11 +75,7 @@ static IDirect3D9 *STDCALL my_Direct3DCreate9(UINT sdk_ver)
 
 void gfx_init(void)
 {
-    hook_table_apply(
-            NULL,
-            "d3d9.dll",
-            gfx_hook_syms,
-            lengthof(gfx_hook_syms));
+    hook_table_apply(NULL, "d3d9.dll", gfx_hook_syms, lengthof(gfx_hook_syms));
 
     log_info("Inserted graphics hooks");
 }
@@ -80,4 +84,3 @@ void gfx_set_windowed(void)
 {
     gfx_windowed = true;
 }
-

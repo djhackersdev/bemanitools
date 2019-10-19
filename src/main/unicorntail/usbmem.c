@@ -41,7 +41,8 @@ void usbmem_fini(void)
     DeleteCriticalSection(&usbmem_lock);
 }
 
-HRESULT usbmem_dispatch_irp(struct irp *irp)
+HRESULT
+usbmem_dispatch_irp(struct irp *irp)
 {
     HRESULT hr;
 
@@ -76,11 +77,16 @@ static bool usbmem_match_irp(const struct irp *irp)
 static HRESULT usbmem_dispatch_irp_locked(struct irp *irp)
 {
     switch (irp->op) {
-    case IRP_OP_OPEN:   return usbmem_handle_open(irp);
-    case IRP_OP_CLOSE:  return usbmem_handle_close(irp);
-    case IRP_OP_WRITE:  return usbmem_handle_write(irp);
-    case IRP_OP_READ:   return usbmem_handle_read(irp);
-    default:            return E_NOTIMPL;
+        case IRP_OP_OPEN:
+            return usbmem_handle_open(irp);
+        case IRP_OP_CLOSE:
+            return usbmem_handle_close(irp);
+        case IRP_OP_WRITE:
+            return usbmem_handle_write(irp);
+        case IRP_OP_READ:
+            return usbmem_handle_read(irp);
+        default:
+            return E_NOTIMPL;
     }
 }
 
@@ -134,23 +140,22 @@ static HRESULT usbmem_handle_write(struct irp *irp)
     if (nbytes > 0) {
         request[nbytes - 1] = '\0'; /* This is always a CR. */
     } else {
-        request[0] = '\0';          /* Shouldn't ever happen but w/e */
+        request[0] = '\0'; /* Shouldn't ever happen but w/e */
     }
 
     log_misc(">%s", request);
 
     if (request[0] != '\0') {
         if (str_eq(request, "sver")) {
-            str_cpy(usbmem_response,
-                    sizeof(usbmem_response),
-                    "done GQHDXJAA UNKNOWN");
+            str_cpy(
+                usbmem_response,
+                sizeof(usbmem_response),
+                "done GQHDXJAA UNKNOWN");
         } else if (
-                str_eq(request, "on_a") ||
-                str_eq(request, "on_b") ||
-                str_eq(request, "offa") ||
-                str_eq(request, "offb") ||
-                strncmp(request, "lma ", 4) == 0 ||
-                strncmp(request, "lmb ", 4) == 0 ) {
+            str_eq(request, "on_a") || str_eq(request, "on_b") ||
+            str_eq(request, "offa") || str_eq(request, "offb") ||
+            strncmp(request, "lma ", 4) == 0 ||
+            strncmp(request, "lmb ", 4) == 0) {
             str_cpy(usbmem_response, sizeof(usbmem_response), "done");
         } else {
             str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
