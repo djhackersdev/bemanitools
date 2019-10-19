@@ -3,6 +3,8 @@
 The following games are compatible with this version of iidxhook:
 * Tricoro
 
+The games must be bootstrapped using [launcher](../launcher.md).
+
 # Data setup and running the game
 
 We assume that you are using a clean/vanilla data dump. Ensure your ("concents")

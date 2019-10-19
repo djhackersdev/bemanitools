@@ -6,6 +6,8 @@ The following games are compatible with this version of iidxhook:
 * RED
 * HAPPY SKY
 
+The games must be bootstrapped using [inject](../inject.md).
+
 # Data setup and running the game
 
 Ensure your folder with your unpacked data looks like this:

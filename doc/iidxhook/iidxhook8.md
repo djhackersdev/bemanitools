@@ -3,6 +3,8 @@
 The following games are compatible with this version of iidxhook:
 * CANNON BALLERS
 
+The games must be bootstrapped using [launcher](../launcher.md).
+
 # Data setup and running the game
 
 ## Supported versions of Windows

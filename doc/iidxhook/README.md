@@ -4,6 +4,11 @@ iidxhook is a collection of hook libraries for BeatmaniaIIDX providing
 emulation and various patches to run these games on non BemaniPC hardware and
 newer Windows versions.
 
+The hook libraries must be bootstrapped either using [inject](../inject.md) or
+[launcher](../launcher.md) depending on the version you want to run. Further
+instructions are given in dedicated readme files for each iidxhook version
+(see below).
+
 # Versions
 
 iidxhook comes in a few different flavors. The game and its engine changed over
