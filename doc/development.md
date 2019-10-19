@@ -160,6 +160,26 @@ if (var == 2) {
 printf("%d\n", var);
 ```
 
+#### Empty line at the start of blocks
+There are situations when you want to have an empty line at the start of the block to enhance readability, for example:
+```
+if (a && 
+    b && 
+    c) {
+    d = 5;
+}
+```
+
+Here the assignment aligns with the conditions of the if-black making it hard to read. Better:
+```
+if (a && 
+    b && 
+    c) {
+
+    d = 5;
+}
+```
+
 #### Includes
 * Always keep all includes at the top of a header and source file. Exception: Documentation before include guards on
 header file.
@@ -309,6 +329,20 @@ Upper-case with underscore as spacing, proper namespacing to namespace and modul
 ```
 // For namespace "ezusb", module "device" vid
 #define EZUSB_DEVICE_VID 0xFFFF
+```
+
+#### Multiple variable declarations
+Only one declaration per line which also avoids various errors, for example:
+```
+// Nope
+char a, b, b;
+```
+
+```
+// Ok
+char a;
+char b;
+char c;
 ```
 
 ### Testing
