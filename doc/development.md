@@ -44,10 +44,30 @@ make
 
 All output is located in the *build* folder including the final *bemanitools.zip* package.
 
+### Release building
+A release build is a clean build including code formatting and testing. This can be executed by running the following
+command:
+```
+make release
+```
+
+## Code formatting
+To apply our code style using clang-format, simply run the following command:
+```
+make code-format
+```
+
+Please also refer to the [section about](###Additional-code-style-guidelines) which cannot be covered using
+clang-format.
+
 ## Testing
 This still needs to be improved/implemented properly to run the unit-tests easily. Currently, you have to be on either
-a Linux/MacOSX system to run *run-test-wine.sh* from the root folder. This executes all currently available unit-tests
-and reports to the terminal any errors. This requires wine to be installed.
+a Linux/MacOSX system and run
+```
+make run-tests
+```
+This executes all currently available unit-tests and reports to the terminal any errors. This requires wine to be
+installed.
 
 ## Project structure
 Now that your setup is ready to go, here is brief big picture of what you find in this project.

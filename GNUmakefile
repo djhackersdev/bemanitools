@@ -29,16 +29,34 @@ ldflags		:= -Wl,--gc-sections -static-libgcc
 # Define our ultimate target (`all') here, and also some helpers
 #
 
-all:
+all: print-building
+
+.PHONY: clean release code-format print-building
+
+print-building:
+	@echo "Building gitrev "$(gitrev)"..."
+
+print-release:
+	@echo "Release build started"
+
+release: print-release clean code-format run-tests
+
+clean:
+	@echo "Cleaning up..."
+	$(V)rm -rf $(BUILDDIR)
+
+code-format:
+	@echo "Applying clang-format..."
+# -style=file enables reading .clang-format
+	@find src/ -iname *.h -o -iname *.c | xargs clang-format -i -style=file 
+
+run-tests:
+	@echo "Running tests..."
+	@./run-tests-wine.sh
 
 # Generate a version file to identify the build
 version:
 	@echo "$(gitrev)" > version
-
-.PHONY: clean
-
-clean:
-	$(V)rm -rf $(BUILDDIR)
 
 #
 # Pull in module definitions
