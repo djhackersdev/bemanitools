@@ -1,8 +1,11 @@
 #ifndef UTIL_CRYPTO_H
 #define UTIL_CRYPTO_H
 
-#include <wincrypt.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <wincrypt.h>
+// clang-format on
 
 #include <stddef.h>
 #include <stdint.h>

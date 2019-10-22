@@ -1,5 +1,8 @@
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
 #include <windowsx.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdint.h>

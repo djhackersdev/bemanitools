@@ -1,7 +1,10 @@
+// clang-format off
+// Don't format because the order is important here
+#include <windows.h>
 #include <commctrl.h>
 #include <wchar.h>
-#include <windows.h>
 #include <windowsx.h>
+// clang-format on
 
 #include <stdint.h>
 #include <stdlib.h>

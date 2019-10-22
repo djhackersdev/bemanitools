@@ -1,7 +1,10 @@
 #define LOG_MODULE "mouse"
 
-#include <initguid.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <initguid.h>
+// clang-format on
 
 #include <malloc.h>
 #include <stddef.h>

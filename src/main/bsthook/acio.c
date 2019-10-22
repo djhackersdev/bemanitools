@@ -1,8 +1,11 @@
 #include <windows.h>
 
+// clang-format off
+// Don't format because the order is important here
+#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
-#include <ntdef.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdint.h>

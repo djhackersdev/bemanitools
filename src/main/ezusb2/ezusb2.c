@@ -1,5 +1,8 @@
-#include <setupapi.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <setupapi.h>
+// clang-format on
 
 #include "ezusb/ezusb.h"
 

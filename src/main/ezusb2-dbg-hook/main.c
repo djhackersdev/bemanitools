@@ -1,7 +1,10 @@
 #define LOG_MODULE "ezusb2-dbg"
 
-#include <usb100.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <usb100.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdio.h>

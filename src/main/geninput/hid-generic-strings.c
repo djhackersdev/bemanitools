@@ -1,5 +1,8 @@
-#include <hidsdi.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <hidsdi.h>
+// clang-format on
 
 #include <stdlib.h>
 

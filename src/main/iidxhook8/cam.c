@@ -1,7 +1,10 @@
 #define LOG_MODULE "cam-hook"
 
-#include <initguid.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <initguid.h>
+// clang-format on
 
 #include <mfapi.h>
 #include <mfidl.h>
@@ -513,8 +516,7 @@ char *grab_next_camera_id(char *buffer, size_t bsz)
         pAttributes,
         &MY_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
         &MY_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-    i f(FAILED(hr))
-    {
+    if (FAILED(hr)) {
         log_info("SetGUID failed: %ld", hr);
         goto done;
     }

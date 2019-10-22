@@ -1,7 +1,10 @@
 #define LOG_MODULE "hid-generic"
 
-#include <hidsdi.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <hidsdi.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stddef.h>

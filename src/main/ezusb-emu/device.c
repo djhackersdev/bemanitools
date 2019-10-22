@@ -1,8 +1,11 @@
 #define LOG_MODULE "ezusb-emu-device"
 
+// clang-format off
+// Don't format because the order is important here
+#include <windows.h>
 #include <setupapi.h>
 #include <usb100.h>
-#include <windows.h>
+// clang-format on
 
 #include <string.h>
 

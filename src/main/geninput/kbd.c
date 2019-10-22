@@ -1,8 +1,11 @@
 #define LOG_MODULE "kbd"
 
+// clang-format off
+// Don't format because the order is important here
+#include <windows.h>
 #include <hidsdi.h>
 #include <initguid.h>
-#include <windows.h>
+// clang-format on
 
 #include <stddef.h>
 #include <stdint.h>

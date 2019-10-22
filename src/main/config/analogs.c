@@ -1,5 +1,8 @@
-#include <commctrl.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <commctrl.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdlib.h>

@@ -124,7 +124,7 @@ static void iidxhook_util_d3d9_patch_gpu_vid_pid(struct hook_d3d9_irp *irp)
 
     if (iidxhook_util_d3d9_config.pci_vid > 0 &&
         iidxhook_util_d3d9_config.pci_pid > 0) {
-            
+
         str_format(
             pci_id,
             sizeof(pci_id),

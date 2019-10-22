@@ -1,10 +1,12 @@
 #define LOG_MODULE "lcd"
 
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
-
+#include <ntdef.h>
 #include <devioctl.h>
 #include <ntddser.h>
-#include <ntdef.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <string.h>

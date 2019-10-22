@@ -8,8 +8,11 @@
    the "bemanitools" header files included by this source file for detailed
    information about the API you'll need to implement. */
 
-#include <mmsystem.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <mmsystem.h>
+// clang-format on
 
 #include "bemanitools/input.h"
 #include "bemanitools/jbio.h"

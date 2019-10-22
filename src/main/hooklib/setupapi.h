@@ -1,8 +1,11 @@
 #ifndef HOOKLIB_SETUPAPI_H
 #define HOOKLIB_SETUPAPI_H
 
-#include <setupapi.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <setupapi.h>
+// clang-format on
 
 struct hook_setupapi_data {
     GUID device_guid;

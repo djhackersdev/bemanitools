@@ -9,8 +9,11 @@
    provides all of the inputs for IIDX then you should replace IIDXIO.DLL
    instead and not call into this DLL at all. */
 
-#include <mmsystem.h>
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <mmsystem.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdint.h>

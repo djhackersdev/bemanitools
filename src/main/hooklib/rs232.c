@@ -1,5 +1,12 @@
 #include <windows.h> /* Usermode API */
 
+// clang-format off
+// Don't format because the order is important here
+#include <ntdef.h>
+#include <devioctl.h>
+#include <ntddser.h>
+// clang-format on
+
 #include <devioctl.h>
 #include <ntddser.h>
 #include <ntdef.h> /* Kernel-mode API for ioctls */
