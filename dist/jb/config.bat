@@ -1,1 +1,1 @@
-@start config jb
+@start config.exe jb

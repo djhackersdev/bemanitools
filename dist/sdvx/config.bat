@@ -1,1 +1,1 @@
-@start config sdvx
+@start config.exe sdvx

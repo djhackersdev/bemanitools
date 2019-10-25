@@ -1,1 +1,1 @@
-@start config dm
+@start config.exe dm

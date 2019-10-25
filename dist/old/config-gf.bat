@@ -1,1 +1,1 @@
-@start config gf
+@start config.exe gf

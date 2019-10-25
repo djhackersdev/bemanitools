@@ -1,1 +1,1 @@
-@start config pnm
+@start config.exe pnm

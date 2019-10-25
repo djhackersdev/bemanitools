@@ -1,1 +1,1 @@
-@start config bst
+@start config.exe bst

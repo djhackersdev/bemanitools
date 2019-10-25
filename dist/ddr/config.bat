@@ -1,1 +1,1 @@
-@start config ddr
+@start config.exe ddr

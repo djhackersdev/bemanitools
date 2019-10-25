@@ -1,1 +1,1 @@
-@start config iidx
+@start config.exe iidx
