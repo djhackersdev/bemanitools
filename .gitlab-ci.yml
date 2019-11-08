@@ -4,6 +4,7 @@ stages:
   - build
   - test
   - release
+  - releasetag
 
 build:
   stage: build
