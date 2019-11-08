@@ -54,3 +54,19 @@ release:
   only:
     refs:
       - master
+      
+releasetag:
+  stage: releasetag
+  dependencies: []
+  before_script:
+    - apt-get update && apt-get -qq install curl > /dev/null
+  script:
+    - |
+      curl --silent --show-error \
+        --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_PROJECT_NAME}-${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\"}" \
+        --header "Content-Type: application/json" \
+        --header "Private-Token: ${CI_PRIVATE_TOKEN}" \
+        --request POST \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+  only:
+    - tags
