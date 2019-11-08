@@ -1,4 +1,6 @@
 # Bemanitools 5
+[![pipeline status](https://dev.s-ul.eu/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.eu/djhackers/bemanitools/commits/master)
+
 Version: 5.28</br>
 [Release history](CHANGELOG.md)
 
