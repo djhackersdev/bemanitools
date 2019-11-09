@@ -22,24 +22,40 @@ gitrev          := $(shell git rev-parse HEAD)
 cppflags        := -I src -I src/main -I src/test -DGITREV=$(gitrev)
 cflags          := -O2 -pipe -ffunction-sections -fdata-sections \
                     -Wall -std=c99
-ldflags		:= -Wl,--gc-sections -static-libgcc
+cflags_release  := -Werror
+ldflags		    := -Wl,--gc-sections -static-libgcc
 
 #
 # The first target that GNU Make encounters becomes the default target.
 # Define our ultimate target (`all') here, and also some helpers
 #
 
-all: print-building
+all: build
 
-.PHONY: clean release code-format print-building
+.PHONY: \
+clean \
+code-format \
+print-building \
+print-release \
+run-tests \
+version
+
+release: \
+print-release \
+clean \
+code-format \
+all \
+run-tests
+
+build: \
+print-building \
+version
 
 print-building:
-	@echo "Building gitrev "$(gitrev)"..."
+	@echo "Build gitrev "$(gitrev)"..."
 
 print-release:
-	@echo "Release build started"
-
-release: print-release clean code-format run-tests
+	@echo "Starting release build..."
 
 clean:
 	@echo "Cleaning up..."
@@ -89,6 +105,7 @@ define t_moddefs
 
 cppflags_$3	+= $(cppflags) -DBUILD_MODULE=$3
 cflags_$3	+= $(cflags)
+release: cflags_$3	+= $(cflags_release)
 ldflags_$3	+= $(ldflags)
 srcdir_$3	?= src/main/$3
 
