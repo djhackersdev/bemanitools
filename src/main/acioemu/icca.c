@@ -31,7 +31,8 @@ enum ac_io_icca_flag {
 enum ac_io_icca_status_code {
     AC_IO_ICCA_STATUS_FAULT = 0x00,
     AC_IO_ICCA_STATUS_IDLE = 0x01,
-    AC_IO_ICCA_STATUS_GOT_UID = 0x02
+    AC_IO_ICCA_STATUS_GOT_UID = 0x02,
+    AC_IO_ICCA_STATUS_IDLE_NEW = 0x04
 };
 
 static void ac_io_emu_icca_cmd_send_version(
@@ -318,7 +319,11 @@ static void ac_io_emu_icca_send_state(
     } else if (card_full_insert) {
         body->status_code = AC_IO_ICCA_STATUS_GOT_UID;
     } else {
-        body->status_code = AC_IO_ICCA_STATUS_IDLE;
+        if (icca->detected_new_reader) {
+            body->status_code = AC_IO_ICCA_STATUS_IDLE_NEW;
+        } else {
+            body->status_code = AC_IO_ICCA_STATUS_IDLE;
+        }
     }
 
     body->sensor_state = 0;
@@ -363,7 +368,8 @@ static void ac_io_emu_icca_send_state(
 
     // this doesn't seem to be an error code. If this is not set to 0x03
     // on slotted readers (only?), the game throws an unknown status error
-    if (icca->keypad_started) {
+    // and on SDVX4 it hangs on the thank you screen
+    if (icca->keypad_started || icca->detected_new_reader) {
         body->keypad_started = 0x03;
     } else {
         body->keypad_started = 0x00;
