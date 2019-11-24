@@ -15,6 +15,7 @@ libs_iidxhook8      := \
     iidxhook-util \
     acioemu \
     bio2emu \
+    camhook \
     iidxio \
     hook \
     hooklib \
@@ -24,7 +25,5 @@ libs_iidxhook8      := \
     
 src_iidxhook8       := \
     bi2a.c \
-    cam.c \
-    config-cam.c \
     config-io.c \
     dllmain.c \

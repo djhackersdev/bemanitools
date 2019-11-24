@@ -226,7 +226,8 @@ void property_node_datasize(struct property_node *node);
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
 
-int avs_fs_addfs(void* filesys_struct);
-int avs_fs_mount (const char* mountpoint, const char* fsroot, const char* fstype, void* data);
+int avs_fs_addfs(void *filesys_struct);
+int avs_fs_mount(
+    const char *mountpoint, const char *fsroot, const char *fstype, void *data);
 
 #endif
