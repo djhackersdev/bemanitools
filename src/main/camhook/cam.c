@@ -18,7 +18,7 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "iidxhook8/cam.h"
+#include "camhook/cam.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -78,9 +78,21 @@ struct CameraData {
     char parent_name[CAMERA_DATA_STRING_SIZE];
     char parent_deviceInstancePath[CAMERA_DATA_STRING_SIZE];
     int parent_address;
+
+    bool fake_addressed;
+    int fake_address;
+
+    bool fake_located;
+    size_t fake_located_node;
 };
 
-static struct CameraData camData[2];
+static struct CameraData camData[CAMHOOK_CONFIG_CAM_MAX];
+int camAddresses[CAMHOOK_CONFIG_CAM_MAX] = {
+    1,
+    7,
+};
+static size_t num_addressed_cams = 0;
+static size_t num_located_cams = 0;
 
 static CONFIGRET my_CM_Locate_DevNodeA(
     PDEVINST pdnDevInst, DEVINSTID_A pDeviceID, ULONG ulFlags);
@@ -144,7 +156,7 @@ static HDEVINFO my_SetupDiGetClassDevsA(
 static HDEVINFO (*real_SetupDiGetClassDevsA)(
     CONST GUID *ClassGuid, PCSTR Enumerator, HWND hwndParent, DWORD Flags);
 
-static const struct hook_symbol iidxhook5_cfgmgr32_syms[] = {
+static const struct hook_symbol camhook_cfgmgr32_syms[] = {
     {.name = "CM_Locate_DevNodeA",
      .patch = my_CM_Locate_DevNodeA,
      .link = (void **) &real_CM_Locate_DevNodeA},
@@ -168,58 +180,54 @@ static const struct hook_symbol iidxhook5_cfgmgr32_syms[] = {
      .link = (void **) &real_SetupDiGetClassDevsA},
 };
 
-static const struct hook_symbol iidxhook5_mf_syms[] = {
+static const struct hook_symbol camhook_mf_syms[] = {
     {.name = "MFEnumDeviceSources",
      .patch = my_MFEnumDeviceSources,
      .link = (void **) &real_MFEnumDeviceSources},
 };
 
-#define CUSTOM_DEV_NODE1 0x04040004
-#define CUSTOM_DEV_NODE2 0x04040008
-
-#define CUSTOM_DEV_PARENT_NODE1 0x04040014
-#define CUSTOM_DEV_PARENT_NODE2 0x04040018
+DEVINST camhook_custom_nodes[CAMHOOK_CONFIG_CAM_MAX] = {
+    0x04040004,
+    0x04040008,
+};
+DEVINST camhook_custom_parent_nodes[CAMHOOK_CONFIG_CAM_MAX] = {
+    0x04040014,
+    0x04040018,
+};
+const char *camhook_custom_parent_device_id[CAMHOOK_CONFIG_CAM_MAX] = {
+    "USB\\VEN_1022&DEV_7908",
+    "USB\\VEN_1022&DEV_7914",
+};
 
 static CONFIGRET
 my_CM_Locate_DevNodeA(PDEVINST pdnDevInst, DEVINSTID_A pDeviceID, ULONG ulFlags)
 {
     log_info("Inside: %s", __FUNCTION__);
-    char builtString1[CAMERA_DATA_STRING_SIZE] = {0};
-    char builtString2[CAMERA_DATA_STRING_SIZE] = {0};
 
-    if (camData[0].setup) {
-        snprintf(
-            builtString1,
-            CAMERA_DATA_STRING_SIZE,
-            "USB\\VID_288C&PID_0002&MI_00\\%s",
-            camData[0].extra_upper);
-
-        if (camData[1].setup) {
-            snprintf(
-                builtString2,
-                CAMERA_DATA_STRING_SIZE,
-                "USB\\VID_288C&PID_0002&MI_00\\%s",
-                camData[1].extra_upper);
-        }
-    } else if (camData[1].setup) {
-        snprintf(
-            builtString1,
-            CAMERA_DATA_STRING_SIZE,
-            "USB\\VID_288C&PID_0002&MI_00\\%s",
-            camData[1].extra_upper);
-    }
-
+    char builtString[CAMERA_DATA_STRING_SIZE] = {0};
     if (pdnDevInst) {
-        if (strcmp(pDeviceID, builtString1) == 0) {
-            log_info("Injecting custom device 1");
-            *pdnDevInst = CUSTOM_DEV_NODE1;
-            return CR_SUCCESS;
-        }
-
-        if (strcmp(pDeviceID, builtString2) == 0) {
-            log_info("Injecting custom device 2");
-            *pdnDevInst = CUSTOM_DEV_NODE2;
-            return CR_SUCCESS;
+        for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
+            if (camData[i].setup) {
+                snprintf(
+                    builtString,
+                    CAMERA_DATA_STRING_SIZE,
+                    "USB\\VID_288C&PID_0002&MI_00\\%s",
+                    camData[i].extra_upper);
+                if (strcmp(pDeviceID, builtString) == 0) {
+                    if (!camData[i].fake_located) {
+                        camData[i].fake_located_node = num_located_cams;
+                        camData[i].fake_located = true;
+                        ++num_located_cams;
+                    }
+                    log_info(
+                        "Injecting custom device %d to node %x",
+                        (int) i,
+                        (int) camData[i].fake_located_node);
+                    *pdnDevInst =
+                        camhook_custom_nodes[camData[i].fake_located_node];
+                    return CR_SUCCESS;
+                }
+            }
         }
     }
     return real_CM_Locate_DevNodeA(pdnDevInst, pDeviceID, ulFlags);
@@ -231,15 +239,12 @@ my_CM_Get_Parent(PDEVINST pdnDevInst, DEVINST dnDevInst, ULONG ulFlags)
     log_info("Inside: %s", __FUNCTION__);
 
     if (pdnDevInst) {
-        if (dnDevInst == CUSTOM_DEV_NODE1) {
-            log_info("Injecting custom parent 1");
-            *pdnDevInst = CUSTOM_DEV_PARENT_NODE1;
-            return CR_SUCCESS;
-        }
-        if (dnDevInst == CUSTOM_DEV_NODE2) {
-            log_info("Injecting custom parent 2");
-            *pdnDevInst = CUSTOM_DEV_PARENT_NODE2;
-            return CR_SUCCESS;
+        for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
+            if (dnDevInst == camhook_custom_nodes[i]) {
+                log_info("Injecting custom parent %d", (int) i);
+                *pdnDevInst = camhook_custom_parent_nodes[i];
+                return CR_SUCCESS;
+            }
         }
     }
 
@@ -250,22 +255,15 @@ static CONFIGRET my_CM_Get_Device_IDA(
     DEVINST dnDevInst, PSTR Buffer, ULONG BufferLen, ULONG ulFlags)
 {
     log_info("Inside: %s", __FUNCTION__);
-
     if (Buffer) {
-        if (dnDevInst == CUSTOM_DEV_PARENT_NODE1) {
-            log_info("Injecting custom parent 1 ID");
-            strncpy(Buffer, "USB\\VEN_1022&DEV_7908", BufferLen);
-            Buffer[BufferLen - 1] = '\0';
-            log_info("%s", Buffer);
-            return CR_SUCCESS;
-        }
-
-        if (dnDevInst == CUSTOM_DEV_PARENT_NODE2) {
-            log_info("Injecting custom parent 2 ID");
-            strncpy(Buffer, "USB\\VEN_1022&DEV_7914", BufferLen);
-            Buffer[BufferLen - 1] = '\0';
-            log_info("%s", Buffer);
-            return CR_SUCCESS;
+        for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
+            if (dnDevInst == camhook_custom_parent_nodes[i]) {
+                log_info("Injecting custom parent %d ID", (int) i);
+                strncpy(Buffer, camhook_custom_parent_device_id[i], BufferLen);
+                Buffer[BufferLen - 1] = '\0';
+                log_info("%s", Buffer);
+                return CR_SUCCESS;
+            }
         }
     }
     return real_CM_Get_Device_IDA(dnDevInst, Buffer, BufferLen, ulFlags);
@@ -274,8 +272,7 @@ static CONFIGRET my_CM_Get_Device_IDA(
 static HRESULT(STDCALL *real_GetAllocatedString)(
     IMFActivate *self, REFGUID guidKey, LPWSTR *ppwszValue, UINT32 *pcchLength);
 
-HRESULT
-my_GetAllocatedString(
+HRESULT my_GetAllocatedString(
     IMFActivate *self, REFGUID guidKey, LPWSTR *ppwszValue, UINT32 *pcchLength)
 {
     HRESULT ret;
@@ -287,16 +284,16 @@ my_GetAllocatedString(
 
     wchar_t *pwc = NULL;
 
-    if (camData[0].setup) {
-        pwc = wcsstr(*ppwszValue, camData[0].deviceSymbolicLink);
-    }
-
-    if (camData[1].setup) {
+    // look for a matching deviceSymbolicLink
+    for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
         if (!pwc) {
-            pwc = wcsstr(*ppwszValue, camData[1].deviceSymbolicLink);
+            if (camData[i].setup) {
+                pwc = wcsstr(*ppwszValue, camData[i].deviceSymbolicLink);
+            }
         }
     }
 
+    // if matches, replace with target device ID
     if (pwc) {
         // \\?\usb#vid_288c&pid_0002&mi_00
         pwc[12] = L'2';
@@ -399,33 +396,21 @@ static BOOL my_SetupDiGetDeviceRegistryPropertyA(
 
         if (Property == SPDRP_DEVICEDESC) {
             if (PropertyBuffer) {
-                if (camData[0].setup) {
-                    if (strcmp(
-                            (char *) PropertyBuffer, camData[0].parent_name) ==
-                        0) {
-                        log_info(
-                            "%s: replacing %s",
-                            __FUNCTION__,
-                            camData[0].parent_name);
-                        strncpy(
-                            (char *) PropertyBuffer,
-                            "USB Composite Device",
-                            PropertyBufferSize);
-                    }
-                }
-
-                if (camData[1].setup) {
-                    if (strcmp(
-                            (char *) PropertyBuffer, camData[1].parent_name) ==
-                        0) {
-                        log_info(
-                            "%s: replacing %s",
-                            __FUNCTION__,
-                            camData[1].parent_name);
-                        strncpy(
-                            (char *) PropertyBuffer,
-                            "USB Composite Device",
-                            PropertyBufferSize);
+                char *PropertyBufferChar = (char *) PropertyBuffer;
+                for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
+                    if (camData[i].setup) {
+                        if (strcmp(
+                                PropertyBufferChar, camData[i].parent_name) ==
+                            0) {
+                            log_info(
+                                "%s: replacing %s",
+                                __FUNCTION__,
+                                camData[i].parent_name);
+                            strncpy(
+                                PropertyBufferChar,
+                                "USB Composite Device",
+                                PropertyBufferSize);
+                        }
                     }
                 }
             }
@@ -434,21 +419,22 @@ static BOOL my_SetupDiGetDeviceRegistryPropertyA(
         } else if (Property == SPDRP_ADDRESS) {
             if (PropertyBuffer) {
                 int addr = *(int *) PropertyBuffer;
-
-                if (camData[0].setup) {
-                    if (addr == camData[0].parent_address) {
-                        log_info("%s: replacing addr1", __FUNCTION__);
-                        *(int *) PropertyBuffer = 1;
-                    } else if (camData[1].setup) {
-                        if (addr == camData[1].parent_address) {
-                            log_info("%s: replacing addr7", __FUNCTION__);
-                            *(int *) PropertyBuffer = 7;
+                for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
+                    if (camData[i].setup) {
+                        if (addr == camData[i].parent_address) {
+                            if (!camData[i].fake_addressed) {
+                                camData[i].fake_address =
+                                    camAddresses[num_addressed_cams];
+                                camData[i].fake_addressed = true;
+                                ++num_addressed_cams;
+                            }
+                            log_info(
+                                "%s: assigning cam %d to addr %d",
+                                __FUNCTION__,
+                                (int) i,
+                                camData[i].fake_address);
+                            *(int *) PropertyBuffer = camData[i].fake_address;
                         }
-                    }
-                } else if (camData[1].setup) {
-                    if (addr == camData[1].parent_address) {
-                        log_info("%s: replacing addr1 (alt)", __FUNCTION__);
-                        *(int *) PropertyBuffer = 1;
                     }
                 }
             }
@@ -799,22 +785,30 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
     data->setup = true;
 }
 
-void cam_hook_init(const char *devID1, const char *devID2)
+void camhook_init(struct camhook_config_cam *config_cam)
 {
     // fill before applying hooks
-    fill_cam_struct(&camData[0], devID1);
-    fill_cam_struct(&camData[1], devID2);
+    for (size_t i = 0; i < config_cam->num_devices; ++i) {
+        fill_cam_struct(&camData[i], config_cam->device_id[i]);
+    }
 
-    if (camData[0].setup || camData[1].setup) {
+    size_t num_setup = 0;
+    for (size_t i = 0; i < config_cam->num_devices; ++i) {
+        if (camData[i].setup) {
+            num_setup++;
+        }
+    }
+
+    if (num_setup > 0) {
         hook_table_apply(
             NULL,
             "setupapi.dll",
-            iidxhook5_cfgmgr32_syms,
-            lengthof(iidxhook5_cfgmgr32_syms));
+            camhook_cfgmgr32_syms,
+            lengthof(camhook_cfgmgr32_syms));
         hook_table_apply(
-            NULL, "Mf.dll", iidxhook5_mf_syms, lengthof(iidxhook5_mf_syms));
+            NULL, "Mf.dll", camhook_mf_syms, lengthof(camhook_mf_syms));
 
-        log_info("Inserted cam hooks");
+        log_info("Inserted cam hooks for %d cams", (int) num_setup);
     } else {
         log_info("No cams detected, not hooking");
     }

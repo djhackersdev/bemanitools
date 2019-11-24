@@ -26,8 +26,8 @@
 #include "bio2emu/emu.h"
 #include "iidxhook8/bi2a.h"
 
-#include "iidxhook8/cam.h"
-#include "iidxhook8/config-cam.h"
+#include "camhook/cam.h"
+#include "camhook/config-cam.h"
 #include "iidxhook8/config-io.h"
 
 #include "imports/avs.h"
@@ -87,7 +87,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
-    struct iidxhook8_config_cam config_cam;
+    struct camhook_config_cam config_cam;
 
     // log_server_init is required due to IO occuring in a non avs_thread
     log_server_init();
@@ -99,8 +99,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     config = cconfig_init();
 
     iidxhook_config_gfx_init(config);
-    iidxhook8_config_cam_init(config);
     iidxhook8_config_io_init(config);
+    camhook_config_cam_init(config, 2);
 
     if (!cconfig_hook_config_init(
             config,
@@ -112,8 +112,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     iidxhook_config_gfx_get(&config_gfx, config);
-    iidxhook8_config_cam_get(&config_cam, config);
     iidxhook8_config_io_get(&iidxhook8_config_io, config);
+    camhook_config_cam_get(&config_cam, config, 2);
 
     cconfig_finit(config);
 
@@ -165,7 +165,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     // camera hooks
     if (!config_cam.disable_emu) {
-        cam_hook_init(config_cam.device_id1, config_cam.device_id2);
+        camhook_init(&config_cam);
     }
 
     log_info("-------------------------------------------------------------");
