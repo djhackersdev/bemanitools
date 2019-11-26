@@ -793,6 +793,7 @@ void camhook_init(struct camhook_config_cam *config_cam)
     }
 
     size_t num_setup = 0;
+
     for (size_t i = 0; i < config_cam->num_devices; ++i) {
         if (camData[i].setup) {
             num_setup++;

@@ -3,6 +3,7 @@ testexes            += iidxhook8-config-cam-test
 srcdir_iidxhook8-config-cam-test := src/test/iidxhook8
 
 libs_iidxhook8-config-cam-test     := \
+    camhook \
     cconfig \
     test \
     util \
