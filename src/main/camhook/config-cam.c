@@ -7,6 +7,8 @@
 #define CAMHOOK_CONFIG_CAM_DISABLE_EMU_KEY "cam.disable_emu"
 #define CAMHOOK_CONFIG_CAM_DEFAULT_DISABLE_EMU_VALUE false
 
+// the following two arrays are based on CAMHOOK_CONFIG_CAM_MAX
+// please insert more elements if more cams are added
 const char *camhook_config_device_id_keys[CAMHOOK_CONFIG_CAM_MAX] = {
     "cam.device_id1",
     "cam.device_id2",

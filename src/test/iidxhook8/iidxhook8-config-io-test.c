@@ -45,7 +45,7 @@ static void test_config_io()
     check_bool_true(config_io.disable_poll_limiter);
 }
 
-static void test_config_invalid_values()
+static void test_config_io_invalid_values()
 {
     struct cconfig *config;
     struct iidxhook8_config_io config_io;

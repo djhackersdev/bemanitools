@@ -147,6 +147,7 @@ include src/test/iidxhook-util/Module.mk
 include src/test/security/Module.mk
 include src/test/test/Module.mk
 include src/test/util/Module.mk
+include src/test/iidxhook8/Module.mk
 
 #
 # Distribution build rules
@@ -480,6 +481,7 @@ $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/security-rp3-test.exe \
 		build/bin/indep-32/security-util-test.exe \
 		build/bin/indep-32/util-net-test.exe \
+		build/bin/indep-64/iidxhook8-config-cam-test.exe \
 		dist/test/run-tests.sh \
 		| $(zipdir)/
 	$(V)echo ... $@
