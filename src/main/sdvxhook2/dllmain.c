@@ -19,12 +19,13 @@
 
 #include "sdvxhook2/acio.h"
 #include "sdvxhook2/bi2a.h"
-#include "sdvxhook2/config-gfx.h"
 #include "sdvxhook2/config-io.h"
-#include "sdvxhook2/d3d9.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
+
+#include "d3d9exhook/config-gfx.h"
+#include "d3d9exhook/d3d9ex.h"
 
 #include "imports/avs.h"
 
@@ -45,7 +46,7 @@ static const irp_handler_t sdvxhook_handlers[] = {
 
 struct sdvxhook2_config_io config_io;
 struct camhook_config_cam config_cam;
-struct sdvxhook2_config_gfx config_gfx;
+struct d3d9exhook_config_gfx config_gfx;
 
 static struct bio2emu_port bio2_emu = {
     .port = "COM4",
@@ -62,7 +63,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     config = cconfig_init();
 
     sdvxhook2_config_io_init(config);
-    sdvxhook2_config_gfx_init(config);
+    d3d9exhook_config_gfx_init(config);
     camhook_config_cam_init(config, 1);
 
     if (!cconfig_hook_config_init(
@@ -74,20 +75,15 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     sdvxhook2_config_io_get(&config_io, config);
-    sdvxhook2_config_gfx_get(&config_gfx, config);
     camhook_config_cam_get(&config_cam, config, 1);
+    d3d9exhook_config_gfx_get(&config_gfx, config);
 
     cconfig_finit(config);
 
     log_info(SDVXHOOK2_INFO_HEADER);
     log_info("Initializing sdvxhook2...");
 
-    if (config_gfx.windowed) {
-        d3d9_set_windowed(
-            config_gfx.framed,
-            config_gfx.window_width,
-            config_gfx.window_height);
-    }
+    d3d9ex_configure(&config_gfx);
 
     /* Start up sdvxio.DLL */
     if (!config_io.disable_bio2_emu) {
@@ -173,7 +169,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     acp_hook_init();
     adapter_hook_init();
-    d3d9_hook_init();
+    d3d9ex_hook_init();
 
 end:
     return TRUE;

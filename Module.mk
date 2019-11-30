@@ -83,6 +83,7 @@ include src/main/bstio/Module.mk
 include src/main/camhook/Module.mk
 include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
+include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook/Module.mk
 include src/main/ddrio/Module.mk
 include src/main/ddrio-smx/Module.mk
@@ -430,7 +431,7 @@ $(zipdir)/sdvx5.zip: \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
-		dist/sdvx5/sdvxhook.conf \
+		dist/sdvx5/sdvxhook2.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
