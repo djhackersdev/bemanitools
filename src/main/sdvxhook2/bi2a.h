@@ -46,11 +46,11 @@ struct bio2_bi2a_state {
     union {
         uint16_t raw[8];
         struct {
-            struct bi2a_sdvx_analog ANALOGS[4];
-            uint8_t UNK; // coin mech?
-            struct bi2a_sdvx_buttons1 BUTTONS1;
-            struct bi2a_sdvx_buttons2 BUTTONS2;
-            uint8_t UNK2[5];
+            struct bi2a_sdvx_analog analogs[4];
+            uint8_t unk_1; // coin mech?
+            struct bi2a_sdvx_buttons1 buttons_1;
+            struct bi2a_sdvx_buttons2 buttons_2;
+            uint8_t unk_2[5];
         };
     };
 };

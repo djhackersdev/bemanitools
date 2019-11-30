@@ -1,8 +1,5 @@
 #define LOG_MODULE "sdvxhook2-bi2a"
 
-#include "sdvxhook2/bi2a.h"
-#include "bio2emu/emu.h"
-
 #include <windows.h> /* for _BitScanForward */
 
 #include <stdint.h>
@@ -10,6 +7,8 @@
 #include <string.h>
 
 #include "acioemu/emu.h"
+#include "bio2emu/emu.h"
+#include "sdvxhook2/bi2a.h"
 
 #include "bemanitools/sdvxio.h"
 
@@ -32,6 +31,7 @@ void bio2_emu_bi2a_init(
     bio2emu_port_init(bio2_emu);
 
     poll_delay = !disable_poll_limiter;
+
     if (!poll_delay) {
         log_warning("bio2_emu_bi2a_init: poll_delay has been disabled");
     }
@@ -162,7 +162,7 @@ static uint8_t check_pin(uint16_t value, uint8_t pin)
     return (value >> pin) & 1;
 }
 
-static uint32_t _assign_light(uint32_t shift, uint32_t value)
+static uint32_t assign_light(uint32_t shift, uint32_t value)
 {
     if (!value) {
         return 0;
@@ -188,13 +188,13 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     memset(pin, 0, sizeof(*pin));
 
     uint32_t gpio = 0;
-    gpio |= _assign_light(0x0C, pout->gpio[0]);
-    gpio |= _assign_light(0x0D, pout->gpio[1]);
-    gpio |= _assign_light(0x0E, pout->gpio[2]);
-    gpio |= _assign_light(0x0F, pout->gpio[3]);
-    gpio |= _assign_light(0x00, pout->gpio[4]);
-    gpio |= _assign_light(0x01, pout->gpio[5]);
-    gpio |= _assign_light(0x02, pout->gpio[6]);
+    gpio |= assign_light(0x0C, pout->gpio[0]);
+    gpio |= assign_light(0x0D, pout->gpio[1]);
+    gpio |= assign_light(0x0E, pout->gpio[2]);
+    gpio |= assign_light(0x0F, pout->gpio[3]);
+    gpio |= assign_light(0x00, pout->gpio[4]);
+    gpio |= assign_light(0x01, pout->gpio[5]);
+    gpio |= assign_light(0x02, pout->gpio[6]);
 
     sdvx_io_set_gpio_lights(gpio);
 
@@ -228,24 +228,24 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     uint16_t gpio1 = sdvx_io_get_input_gpio(1);
 
     // TODO: Make a counter or smth to counteract the accuracy lost in *4
-    pin->ANALOGS[0].a_val = sdvx_io_get_spinner_pos(0);
-    pin->ANALOGS[1].a_val = sdvx_io_get_spinner_pos(1);
+    pin->analogs[0].a_val = sdvx_io_get_spinner_pos(0);
+    pin->analogs[1].a_val = sdvx_io_get_spinner_pos(1);
 
-    pin->ANALOGS[0].a_coin = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
-    pin->ANALOGS[0].a_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
-    pin->ANALOGS[0].a_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE) ||
+    pin->analogs[0].a_coin = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+    pin->analogs[0].a_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
+    pin->analogs[0].a_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE) ||
         check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
     pin->raw[0] = ac_io_u16(pin->raw[0]);
     pin->raw[1] = ac_io_u16(pin->raw[1]);
 
-    pin->BUTTONS1.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
-    pin->BUTTONS1.b_headphone = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
-    pin->BUTTONS1.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
-    pin->BUTTONS1.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
-    pin->BUTTONS1.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
-    pin->BUTTONS1.b_d = check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
-    pin->BUTTONS1.b_fxl = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
-    pin->BUTTONS2.b_fxr = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
+    pin->buttons_1.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
+    pin->buttons_1.b_headphone = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+    pin->buttons_1.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
+    pin->buttons_1.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
+    pin->buttons_1.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
+    pin->buttons_1.b_d = check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
+    pin->buttons_1.b_fxl = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
+    pin->buttons_2.b_fxr = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
 
     ac_io_emu_response_push(emu, &resp, 0);
 }

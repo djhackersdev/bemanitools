@@ -16,12 +16,12 @@
 #include "hooklib/rs232.h"
 
 #include "bio2emu/emu.h"
-#include "sdvxhook2/bi2a.h"
 
 #include "sdvxhook2/acio.h"
-#include "sdvxhook2/d3d9.h"
+#include "sdvxhook2/bi2a.h"
 #include "sdvxhook2/config-gfx.h"
 #include "sdvxhook2/config-io.h"
+#include "sdvxhook2/d3d9.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -87,10 +87,6 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
             config_gfx.framed,
             config_gfx.window_width,
             config_gfx.window_height);
-    }
-
-    if (config_gfx.pci_id_pid != 0 && config_gfx.pci_id_vid != 0) {
-        d3d9_set_pci_id(config_gfx.pci_id_pid, config_gfx.pci_id_vid);
     }
 
     /* Start up sdvxio.DLL */
