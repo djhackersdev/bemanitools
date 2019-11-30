@@ -15,6 +15,7 @@ libs_sdvxhook2      := \
     acioemu \
     bio2emu \
     camhook \
+    d3d9exhook \
     sdvxio \
     hook \
     hooklib \
@@ -26,6 +27,4 @@ src_sdvxhook2       := \
     acio.c \
     bi2a.c \
     dllmain.c \
-    d3d9.c \
-    config-gfx.c \
     config-io.c \

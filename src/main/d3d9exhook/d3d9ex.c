@@ -1,4 +1,4 @@
-#define LOG_MODULE "d3d9-hook"
+#define LOG_MODULE "d3d9ex-hook"
 
 #include <d3d9.h>
 #include <d3dx9core.h>
@@ -12,7 +12,7 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "sdvxhook2/d3d9.h"
+#include "d3d9exhook/d3d9ex.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -20,8 +20,6 @@
 #include "util/time.h"
 
 /* ------------------------------------------------------------------------- */
-
-// thanks to Felix for reminding Xyen to hook 9Ex instead of 9
 
 static HWND STDCALL my_CreateWindowExA(
     DWORD dwExStyle,
@@ -83,21 +81,21 @@ static BOOL(STDCALL *real_MoveWindow)(
 
 /* ------------------------------------------------------------------------- */
 
-static char d3d9_pci_id[32];
-static bool d3d9_windowed;
-static int32_t d3d9_window_width = -1;
-static int32_t d3d9_window_height = -1;
-static bool d3d9_window_framed;
+static bool d3d9ex_windowed;
+static int32_t d3d9ex_force_refresh_rate = -1;
+static int32_t d3d9ex_window_width = -1;
+static int32_t d3d9ex_window_height = -1;
+static bool d3d9ex_window_framed;
 
 /* ------------------------------------------------------------------------- */
 
-static const struct hook_symbol d3d9_hook_syms[] = {
+static const struct hook_symbol d3d9ex_hook_syms[] = {
     {.name = "Direct3DCreate9Ex",
      .patch = my_Direct3DCreate9Ex,
      .link = (void **) &real_Direct3DCreate9Ex},
 };
 
-static const struct hook_symbol d3d9_hook_user32_syms[] = {
+static const struct hook_symbol d3d9ex_hook_user32_syms[] = {
     {.name = "EnumDisplayDevicesA",
      .patch = my_EnumDisplayDevicesA,
      .link = (void **) &real_EnumDisplayDevicesA},
@@ -125,7 +123,7 @@ static HWND STDCALL my_CreateWindowExA(
     HINSTANCE hInstance,
     LPVOID lpParam)
 {
-    if (d3d9_windowed && d3d9_window_framed) {
+    if (d3d9ex_windowed && d3d9ex_window_framed) {
         /* use a different style */
         dwStyle |= WS_OVERLAPPEDWINDOW;
         /* also show mouse cursor */
@@ -152,21 +150,21 @@ static HWND STDCALL my_CreateWindowExA(
 static BOOL STDCALL
 my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 {
-    if (d3d9_windowed && d3d9_window_framed) {
+    if (d3d9ex_windowed && d3d9ex_window_framed) {
         /* we have to adjust the window size, because the window needs to be a
            slightly bigger than the rendering resolution (window caption and
            stuff is included in the window size) */
 
-        if (d3d9_window_width != -1 && d3d9_window_height != -1) {
+        if (d3d9ex_window_width != -1 && d3d9ex_window_height != -1) {
             log_misc(
                 "Overriding window size from %dx%d with %dx%d",
                 nWidth,
                 nHeight,
-                d3d9_window_width,
-                d3d9_window_height);
+                d3d9ex_window_width,
+                d3d9ex_window_height);
 
-            nWidth = d3d9_window_width;
-            nHeight = d3d9_window_height;
+            nWidth = d3d9ex_window_width;
+            nHeight = d3d9ex_window_height;
         }
 
         WINDOWPOS wp;
@@ -196,10 +194,18 @@ static HRESULT STDCALL my_CreateDeviceEx(
     IDirect3D9Ex *real = COM_PROXY_UNWRAP(self);
     HRESULT hr;
 
-    if (d3d9_windowed) {
+    if (d3d9ex_windowed) {
         fdm = NULL;
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
+    } else {
+        if (d3d9ex_force_refresh_rate != -1) {
+            log_info("Forcing refresh rate %d -> %d", pp->FullScreen_RefreshRateInHz, d3d9ex_force_refresh_rate);
+            pp->FullScreen_RefreshRateInHz = d3d9ex_force_refresh_rate;
+            if (fdm) {
+                fdm->RefreshRate = pp->FullScreen_RefreshRateInHz;
+            }
+        }
     }
 
     hr = IDirect3D9Ex_CreateDeviceEx(
@@ -238,37 +244,33 @@ static BOOL STDCALL my_EnumDisplayDevicesA(
 
     ok = real_EnumDisplayDevicesA(dev_name, dev_num, info, flags);
 
-    if (ok && d3d9_pci_id[0] != '\0') {
-        /* Apparently Konami didn't read the "Not Used" message in the MSDN
-           docs for DISPLAY_DEVICE */
-        log_misc("Replacing device ID %s with %s", info->DeviceID, d3d9_pci_id);
-
-        str_cpy(info->DeviceID, sizeof(info->DeviceID), d3d9_pci_id);
-    }
+    // force 60Hz here?
 
     return ok;
 }
 
-void d3d9_hook_init(void)
+void d3d9ex_hook_init(void)
 {
     hook_table_apply(
-        NULL, "d3d9.dll", d3d9_hook_syms, lengthof(d3d9_hook_syms));
+        NULL, "d3d9.dll", d3d9ex_hook_syms, lengthof(d3d9ex_hook_syms));
 
     hook_table_apply(
         NULL,
         "user32.dll",
-        d3d9_hook_user32_syms,
-        lengthof(d3d9_hook_user32_syms));
+        d3d9ex_hook_user32_syms,
+        lengthof(d3d9ex_hook_user32_syms));
 
     log_info("Inserted graphics hooks");
 }
 
-void d3d9_set_windowed(bool framed, int32_t width, int32_t height)
+void d3d9ex_configure(struct d3d9exhook_config_gfx* gfx_config)
 {
-    d3d9_windowed = true;
-    d3d9_window_framed = framed;
-    d3d9_window_width = width;
-    d3d9_window_height = height;
+    d3d9ex_windowed = gfx_config->windowed;
+    d3d9ex_window_framed = gfx_config->framed;
+    d3d9ex_window_width = gfx_config->window_width;
+    d3d9ex_window_height = gfx_config->window_height;
+
+    d3d9ex_force_refresh_rate = gfx_config->forced_refresh_rate;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -13,4 +13,4 @@ for /R prop\defaults %%D in (*.*) do (
     if not exist dev\nvram\%%~nxD copy /y prop\defaults\%%~nxD dev\nvram
 )
 
-launcher -H 268435456 -K sdvxhook2.dll soundvoltex.dll --options sdvxhook.conf %*
+launcher -H 268435456 -K sdvxhook2.dll soundvoltex.dll --options sdvxhook2.conf %*
