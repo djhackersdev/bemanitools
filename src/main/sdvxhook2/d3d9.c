@@ -177,6 +177,7 @@ my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
         nWidth = wp.cx;
         nHeight = wp.cy;
     }
+
     BOOL result = real_MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
 
     return result;
@@ -268,12 +269,6 @@ void d3d9_set_windowed(bool framed, int32_t width, int32_t height)
     d3d9_window_framed = framed;
     d3d9_window_width = width;
     d3d9_window_height = height;
-}
-
-void d3d9_set_pci_id(uint16_t vid, uint16_t pid)
-{
-    str_format(
-        d3d9_pci_id, sizeof(d3d9_pci_id), "PCI\\VEN_%04X&DEV_%04X", vid, pid);
 }
 
 /* ------------------------------------------------------------------------- */

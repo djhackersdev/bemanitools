@@ -5,8 +5,6 @@
 
 struct sdvxhook2_config_gfx {
     bool framed;
-    uint16_t pci_id_vid;
-    uint16_t pci_id_pid;
     bool windowed;
     int32_t window_width;
     int32_t window_height;

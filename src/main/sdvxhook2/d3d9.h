@@ -18,15 +18,6 @@ void d3d9_hook_init(void);
 void d3d9_set_windowed(bool framed, int32_t width, int32_t height);
 
 /**
- * Patch the GPU device ID detection to allow running the game with
- * other GPUs than the ones it is locked to.
- *
- * @param vid Vendor ID to patch.
- * @param pid Product ID to patch.
- */
-void d3d9_set_pci_id(uint16_t vid, uint16_t pid);
-
-/**
  * Set a framerate limit for the rendering loop.
  *
  * Use this if the game won't sync up properly with vsync enabled.

@@ -77,7 +77,7 @@ HRESULT ac_io_port_dispatch_irp(struct irp *irp)
                 break;
 
             case AC_IO_BROADCAST:
-                log_warning("Broadcast(?) message on IIDX ACIO bus?");
+                log_warning("Broadcast? (0x70) message on BIO2 bus");
 
                 break;
 
