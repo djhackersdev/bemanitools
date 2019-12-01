@@ -48,19 +48,47 @@ bool sdvx_io_init(
     thread_join_t thread_join,
     thread_destroy_t thread_destroy)
 {
-    if (!aciodrv_device_open("COM3", 57600)) {
-        log_info("Opening acio device failed\n");
+    const char* default_port = "COM3";
+    const char* selected_port = getenv("SDVXIO_KFCA_PORT");
+
+    if (!selected_port) {
+        selected_port = default_port;
+    }
+
+    if (!aciodrv_device_open(selected_port, 57600)) {
+        log_info("Opening acio device on [%s] failed", selected_port);
         return -1;
     }
 
-    log_info("Opening acio device successful\n");
+    log_info("Opening acio device successful");
 
     uint8_t node_count = aciodrv_device_get_node_count();
-    log_info("Enumerated %d nodes\n", node_count);
+    log_info("Enumerated %d nodes", node_count);
 
-    aciodrv_kfca_init(0);
+    int16_t kfca_node_id = -1;
 
-    running = true;
+    for (uint8_t i = 0; i < node_count; i++) {
+        char product[4];
+        aciodrv_device_get_node_product_ident(i, product);
+        log_info(
+            "> %d: %c%c%c%c\n",
+            i + 1,
+            product[0],
+            product[1],
+            product[2],
+            product[3]);
+
+        if (!memcmp(product, "KFCA", 4)) {
+            kfca_node_id = i;
+        }
+    }
+
+    if (kfca_node_id != -1) {
+        aciodrv_kfca_init(kfca_node_id);
+        running = true;
+    } else {
+        log_warning("No KFCA device found");
+    }
 
     return true;
 }
