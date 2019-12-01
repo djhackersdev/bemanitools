@@ -4,6 +4,12 @@
 #include "cconfig/cconfig.h"
 #include "cconfig/cmd.h"
 
+/**
+ * Init function for cconfig after all cconfig_util_set's have been called
+ * 
+ * will parse a config file first (if specified)
+ * then uses override config parameters from cmd
+ */
 bool cconfig_main_config_init(
     struct cconfig *config,
     const char *config_cmd_param_name,
