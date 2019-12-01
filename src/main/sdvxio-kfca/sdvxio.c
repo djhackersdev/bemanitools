@@ -6,8 +6,12 @@
 #include "bemanitools/glue.h"
 #include "bemanitools/sdvxio.h"
 
+#include "cconfig/cconfig-main.h"
+
 #include "aciodrv/device.h"
 #include "aciodrv/kfca.h"
+
+#include "sdvxio-kfca/config-kfca.h"
 
 #define LOG_MODULE "sdvxio-kfca"
 
@@ -48,16 +52,33 @@ bool sdvx_io_init(
     thread_join_t thread_join,
     thread_destroy_t thread_destroy)
 {
-    const char* default_port = "COM3";
-    const char* selected_port = getenv("SDVXIO_KFCA_PORT");
 
-    if (!selected_port) {
-        selected_port = default_port;
+    struct cconfig *config;
+    struct sdvxio_kfca_config_kfca config_kfca;
+
+    config = cconfig_init();
+
+    sdvxio_kfca_config_kfca_init(config);
+
+    if (!cconfig_main_config_init(
+            config,
+            "--kfca-config",
+            "sdvxio-kfca.conf",
+            "--help",
+            "-h",
+            "sdvxio-kfca",
+            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
+        cconfig_finit(config);
+        exit(EXIT_FAILURE);
     }
 
-    if (!aciodrv_device_open(selected_port, 57600)) {
-        log_info("Opening acio device on [%s] failed", selected_port);
-        return -1;
+    sdvxio_kfca_config_kfca_get(&config_kfca, config);
+
+    cconfig_finit(config);
+
+    if (!aciodrv_device_open(config_kfca.port, config_kfca.baud)) {
+        log_info("Opening acio device on [%s] failed", config_kfca.port);
+        return 0;
     }
 
     log_info("Opening acio device successful");
