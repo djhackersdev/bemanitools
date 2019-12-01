@@ -19,6 +19,7 @@ enum cconfig_conf_error cconfig_conf_load_from_file(
     char *ctx_key_val;
     char *data;
     size_t len;
+    bool use_crlf;
 
     if (!file_load(path, (void **) &data, &len, true)) {
         /* If file does not exist, create one with default configuration
@@ -30,7 +31,11 @@ enum cconfig_conf_error cconfig_conf_load_from_file(
         }
     }
 
-    pos_lines = strtok_r(data, "\n", &ctx_lines);
+    use_crlf = false;
+    if (strstr(data, "\r\n")) {
+        use_crlf = true;
+    }
+    pos_lines = strtok_r(data, use_crlf ? "\r\n" : "\n", &ctx_lines);
 
     while (pos_lines != NULL) {
         char *pos_line_dup;
@@ -90,7 +95,7 @@ enum cconfig_conf_error cconfig_conf_load_from_file(
             free(pos_line_dup);
         }
 
-        pos_lines = strtok_r(NULL, "\n", &ctx_lines);
+        pos_lines = strtok_r(NULL, use_crlf ? "\r\n" : "\n", &ctx_lines);
     }
 
     free(data);
