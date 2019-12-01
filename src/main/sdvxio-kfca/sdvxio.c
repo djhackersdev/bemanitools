@@ -72,25 +72,31 @@ bool sdvx_io_init(
         aciodrv_device_get_node_product_ident(i, product);
         log_info(
             "> %d: %c%c%c%c\n",
-            i + 1,
+            i,
             product[0],
             product[1],
             product[2],
             product[3]);
 
         if (!memcmp(product, "KFCA", 4)) {
+            if (kfca_node_id != -1) {
+                log_warning("Multiple KFCA found! Using highest node id.");
+            }
             kfca_node_id = i;
         }
     }
 
     if (kfca_node_id != -1) {
+        log_warning("Using KFCA on node: %d", kfca_node_id);
         aciodrv_kfca_init(kfca_node_id);
+
         running = true;
+        log_warning("sdvxio-kfca now running");
     } else {
         log_warning("No KFCA device found");
     }
 
-    return true;
+    return running;
 }
 
 void sdvx_io_fini(void)

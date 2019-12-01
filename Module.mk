@@ -472,6 +472,7 @@ $(zipdir)/bst.zip: \
 
 $(zipdir)/doc.zip: \
 		doc/iidxhook \
+		doc/sdvxhook \
 		doc/jbhook \
 		doc/tools \
 		| $(zipdir)/
