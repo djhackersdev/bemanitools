@@ -20,7 +20,7 @@ void sdvxhook2_config_io_init(struct cconfig *config)
         SDVXHOOK2_CONFIG_IO_DISABLE_CARD_READER_EMU_KEY,
         SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE,
         "Disable card reader emulation and enable usage of real card reader "
-        "hardware on COM0 (for games supporting slotted readers)");
+        "hardware on COM2");
 
     cconfig_util_set_bool(
         config,
