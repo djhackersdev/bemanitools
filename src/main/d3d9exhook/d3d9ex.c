@@ -244,8 +244,6 @@ static BOOL STDCALL my_EnumDisplayDevicesA(
 
     ok = real_EnumDisplayDevicesA(dev_name, dev_num, info, flags);
 
-    // force 60Hz here?
-
     return ok;
 }
 
