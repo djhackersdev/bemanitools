@@ -407,7 +407,7 @@ $(zipdir)/jb-08.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/sdvx.zip: \
+$(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/avs2_1508-32/sdvxhook.dll \
 		build/bin/indep-32/config.exe \
@@ -421,7 +421,7 @@ $(zipdir)/sdvx.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/sdvx5.zip: \
+$(zipdir)/sdvx-05.zip: \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/avs2_1700-64/sdvxhook2.dll \
 		build/bin/indep-64/config.exe \
@@ -521,8 +521,8 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
 		$(zipdir)/src.zip \
-		$(zipdir)/sdvx.zip \
-		$(zipdir)/sdvx5.zip \
+		$(zipdir)/sdvx-01-to-04.zip \
+		$(zipdir)/sdvx-05.zip \
 		$(zipdir)/tools.zip \
 		$(zipdir)/tools-x64.zip \
 		CHANGELOG.md \

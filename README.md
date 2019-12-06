@@ -47,11 +47,11 @@ authentic gameplay experience, and easier support for a broader range of release
     * jubeat Qubell (jb-05-to-07.zip) using jbhook
     * jubeat clan (jb-08.zip) using jbhook
 * SOUND VOLTEX
-    * SOUND VOLTEX BOOTH (sdvx.zip) using sdvxhook
-    * SOUND VOLTEX II -infinite infection- (sdvx.zip) using sdvxhook
-    * SOUND VOLTEX III GRAVITY WARS (sdvx.zip) using sdvxhook
-    * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx.zip) using sdvxhook
-    * SOUND VOLTEX Vivid Wave (sdvx2.zip) using sdvxhook2
+    * SOUND VOLTEX BOOTH (sdvx-01-to-04.zip) using sdvxhook
+    * SOUND VOLTEX II -infinite infection- (sdvx-01-to-04.zip) using sdvxhook
+    * SOUND VOLTEX III GRAVITY WARS (sdvx-01-to-04.zip) using sdvxhook
+    * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx-01-to-04.zip) using sdvxhook
+    * SOUND VOLTEX Vivid Wave (sdvx-05.zip) using sdvxhook2
 
 # Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
