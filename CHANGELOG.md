@@ -1,5 +1,12 @@
 # Release history
 ## 5.28
+* Improve documentation in various places
+* Automatic code formatting in build pipeline
+* Bugfix: Recursive config.bat script
+* Enable automatic building on pushes to master
+* Bugfix: Stop SDVX hanging on thankyou for playing
+* sdvx2: Support for Vivid Wave using sdvxhook2
+* sdvxio-kfca: Driver for real sdvx cabinet IO hardware
 
 ## 5.27
 * Various documentation updates regarding development and how to contribute
