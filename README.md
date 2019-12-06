@@ -51,6 +51,7 @@ authentic gameplay experience, and easier support for a broader range of release
     * SOUND VOLTEX II -infinite infection- (sdvx.zip) using sdvxhook
     * SOUND VOLTEX III GRAVITY WARS (sdvx.zip) using sdvxhook
     * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx.zip) using sdvxhook
+    * SOUND VOLTEX Vivid Wave (sdvx2.zip) using sdvxhook2
 
 # Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
