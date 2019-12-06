@@ -51,6 +51,39 @@ command:
 make release
 ```
 
+## Creating releases
+For developers to create official releases with major and minor versioning:
+1. Ensure that all everything you want to have for this release is merged into master.
+1. Create a [changelog](CHANGELOG.md) based on aggregating and summerizing commit messages of
+whatever got added starting from the tag of the current version to the current head of master.
+Commit that changelog and push to master.
+1. Create a tag with the next version number, e.g. for 5.28:
+```bash
+git tag v5.28
+```
+1. Push the tag upstream:
+```bash
+git push origin v5.28
+```
+1. Wait for the CI pipeline to finish building the release and check if everything's ok.
+1. On GitLab, go to "Tags" in the repository, click on the commit ID below the tag in the list you
+just created.
+1. Click on the "Pipelines" tab and click on the download button on the right and on "Download
+release artifacts".
+1. Rename the downloaded zip to "bemanitools-v5.28.zip" and the replace v5.28 with the version
+you want to release.
+1. Upload the release.
+1. For publishing the release, create a post with the following contents:
+```
+v5.28
+<insert link to uploaded zip here>
+
+<additional comments or things to point out for this release>
+
+Changelog copy-paste:
+<insert copy-pasted changelog you created previously here>
+```
+
 ## Code formatting
 To apply our code style using clang-format, simply run the following command:
 ```
