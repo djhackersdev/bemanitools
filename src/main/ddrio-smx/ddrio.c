@@ -41,24 +41,28 @@ static const struct ddr_io_smx_pad_map ddr_io_smx_pad_map[] = {
     {1, 1 << 7, 1 << DDR_P2_DOWN},
 };
 
+#define DDR_IO_SMX_LIGHT_VALUES_PER_PANEL 75
+#define DDR_IO_SMX_NUMBER_OF_PANELS 18
+#define DDR_IO_SMX_TOTAL_LIGHT_VALUES DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * DDR_IO_SMX_NUMBER_OF_PANELS
+
 static const struct ddr_io_smx_light_map ddr_io_smx_light_map[] = {
     /* Light L/R blue and U/D red to match DDR pad color scheme */
 
-    {1 << LIGHT_P1_UP, 48 * 1, 0xFF, 0x00, 0x00},
-    {1 << LIGHT_P1_LEFT, 48 * 3, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P1_RIGHT, 48 * 5, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P1_DOWN, 48 * 7, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P1_UP, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 1, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P1_LEFT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 3, 0x00, 0x00, 0xFF},
+    {1 << LIGHT_P1_RIGHT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 5, 0x00, 0x00, 0xFF},
+    {1 << LIGHT_P1_DOWN, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 7, 0xFF, 0x00, 0x00},
 
-    {1 << LIGHT_P2_UP, 48 * 10, 0xFF, 0x00, 0x00},
-    {1 << LIGHT_P2_LEFT, 48 * 12, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P2_RIGHT, 48 * 14, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P2_DOWN, 48 * 16, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P2_UP, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 10, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P2_LEFT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 12, 0x00, 0x00, 0xFF},
+    {1 << LIGHT_P2_RIGHT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 14, 0x00, 0x00, 0xFF},
+    {1 << LIGHT_P2_DOWN, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 16, 0xFF, 0x00, 0x00},
 };
 
 static _Atomic uint32_t ddr_io_smx_pad_state[2];
 static CRITICAL_SECTION ddr_io_smx_lights_lock;
 static uint8_t ddr_io_smx_lights_counter;
-static char ddr_io_smx_lights[864];
+static char ddr_io_smx_lights[DDR_IO_SMX_TOTAL_LIGHT_VALUES];
 
 void ddr_io_set_loggers(
     log_formatter_t misc,
@@ -109,7 +113,7 @@ uint32_t ddr_io_read_pad(void)
     EnterCriticalSection(&ddr_io_smx_lights_lock);
 
     if (ddr_io_smx_lights_counter == 0) {
-        SMX_SetLights(ddr_io_smx_lights);
+        SMX_SetLights2(ddr_io_smx_lights, lengthof(ddr_io_smx_lights));
     }
 
     ddr_io_smx_lights_counter++;
@@ -149,7 +153,7 @@ void ddr_io_set_lights_extio(uint32_t lights)
         if (lights & map->extio_bit) {
             offset = map->smx_light_offset;
 
-            for (j = 0; j < 48; j += 3) {
+            for (j = 0; j < DDR_IO_SMX_LIGHT_VALUES_PER_PANEL; j += 3) {
                 ddr_io_smx_lights[offset + j] = map->r;
                 ddr_io_smx_lights[offset + j + 1] = map->g;
                 ddr_io_smx_lights[offset + j + 2] = map->b;

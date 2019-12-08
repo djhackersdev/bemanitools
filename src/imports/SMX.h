@@ -61,14 +61,24 @@ SMX_EXTERN_C SMX_API void SMX_GetInfo(int pad, struct SMXInfo *info);
 // Get a mask of the currently pressed panels.
 SMX_EXTERN_C SMX_API uint16_t SMX_GetInputState(int pad);
 
-// Update the lights.  Both pads are always updated together.  lightsData is a
-// list of 8-bit RGB colors, one for each LED.  Each panel has lights in the
-// following order:
+// (deprecated) Equivalent to SMX_SetLights2(lightsData, 864).
+SMX_API void SMX_SetLights(const char lightData[864]);
+
+// Update the lights.  Both pads are always updated together.  lightData is a list of 8-bit RGB
+// colors, one for each LED.
 //
-// 0123
-// 4567
-// 89AB
-// CDEF
+// lightDataSize is the number of bytes in lightsData.  This should be 1350 (2 pads * 9 panels *
+// 25 lights * 3 RGB colors).  For backwards-compatibility, this can also be 864.
+//
+// Each panel has lights in the following order:
+//
+// 00  01  02  03
+//    16  17  18
+// 04  05  06  07
+//   19  20  21
+// 08  09  10  11
+//   22  23  24
+// 12  13  14  15
 //
 // Panels are in the following order:
 //
@@ -76,17 +86,17 @@ SMX_EXTERN_C SMX_API uint16_t SMX_GetInputState(int pad);
 // 345 CDE
 // 678 F01
 //
-// With 18 panels, 16 LEDs per panel and 3 bytes per LED, each light update has
-// 864 bytes of data.
+// With 18 panels, 25 LEDs per panel and 3 bytes per LED, each light update has 1350 bytes of data.
 //
-// Lights will update at up to 30 FPS.  If lights data is sent more quickly, a
-// best effort will be made to send the most recent lights data available, but
-// the panels won't update more quickly.
+// Lights will update at up to 30 FPS.  If lights data is sent more quickly, a best effort will be
+// made to send the most recent lights data available, but the panels won't update more quickly.
 //
-// The panels will return to automatic lighting if no lights are received for a
-// while, so applications controlling lights should send light updates
-// continually, even if the lights aren't changing.
-SMX_EXTERN_C SMX_API void SMX_SetLights(const char lightsData[864]);
+// The panels will return to automatic lighting if no lights are received for a while, so applications
+// controlling lights should send light updates continually, even if the lights aren't changing.
+//
+// For backwards compatibility, if lightDataSize is 864, the old 4x4-only order is used,
+// which simply omits lights 16-24.
+SMX_API void SMX_SetLights2(const char *lightData, int lightDataSize);
 
 // By default, the panels light automatically when stepped on.  If a lights
 // command is sent by the application, this stops happening to allow the

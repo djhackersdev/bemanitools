@@ -7,6 +7,7 @@ EXPORTS
     SMX_GetInfo
     SMX_GetInputState
     SMX_SetLights
+    SMX_SetLights2
     SMX_ReenableAutoLights
     SMX_GetConfig
     SMX_SetConfig
