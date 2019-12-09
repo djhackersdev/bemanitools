@@ -67,6 +67,16 @@ You will find *.md files in various sub-packages that give you further instructi
 or FAQ. We advice you to read them as your questions and concerns might already be answered by them. If not, let us
 know if there is any information that you consider helpful or important to know and should be added.
 
+# Setup and dependencies
+Most (older generation) games were developed for Windows XP Embedded but should run fine on any
+consumer version of Windows XP. Newer versions of Windows, e.g. Windows 7, 8 and 10, should be fine
+as well. Some hooks also include fixes required to run the games on a more recent version.
+
+Depending on the game, you also need the following dependencies installed:
+* DirectX 9 runtime
+* Microsoft Visual C++ Redistributables 2010 **and** 2013: Depends on the game and age but both
+should cover most if not all of the games so far
+
 # Contributions
 Please refer to the [dedicated documentation](CONTRIBUTING.md).
 
