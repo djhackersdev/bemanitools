@@ -36,6 +36,13 @@ development environment which we run on a Linux distribution of our choice:
     * C++ Intellisense
     * Clang-Format
 
+### Further tools for testing and debugging
+* Debugger: Can be part of your reverse engineering IDE of your choice or stand-along like
+[OllyDbg](http://www.ollydbg.de/).
+* [apitrace](https://apitrace.github.io/): Trace render calls to graphics APIs like D3D and OpenGL.
+This tool allows you to record and re-play render calls of an application with frame-by-frame 
+debugging. Very useful to analyze the render pipeline or debug graphicial glitches.
+
 ## Building
 Simply run make in the root folder:
 ```
