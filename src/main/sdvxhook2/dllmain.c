@@ -140,6 +140,10 @@ static bool my_dll_entry_main(void)
 
     result = app_hook_invoke_main();
 
+    if (!config_cam.disable_emu) {
+        camhook_fini();
+    }
+
     if (!config_io.disable_card_reader_emu) {
         log_misc("Shutting down card reader backend");
         eam_io_fini();

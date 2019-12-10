@@ -206,6 +206,7 @@ my_CM_Locate_DevNodeA(PDEVINST pdnDevInst, DEVINSTID_A pDeviceID, ULONG ulFlags)
 
     char builtString[CAMERA_DATA_STRING_SIZE] = {0};
     if (pdnDevInst) {
+        log_info("seeking: %s", pDeviceID);
         for (size_t i = 0; i < CAMHOOK_CONFIG_CAM_MAX; ++i) {
             if (camData[i].setup) {
                 snprintf(
@@ -213,6 +214,7 @@ my_CM_Locate_DevNodeA(PDEVINST pdnDevInst, DEVINSTID_A pDeviceID, ULONG ulFlags)
                     CAMERA_DATA_STRING_SIZE,
                     "USB\\VID_288C&PID_0002&MI_00\\%s",
                     camData[i].extra_upper);
+                log_info("built: %s", builtString);
                 if (strcmp(pDeviceID, builtString) == 0) {
                     if (!camData[i].fake_located) {
                         camData[i].fake_located_node = num_located_cams;
@@ -280,7 +282,9 @@ HRESULT my_GetAllocatedString(
 
     // should probably check GUID, oh well
     ret = real_GetAllocatedString(self, guidKey, ppwszValue, pcchLength);
-    log_info("Obtained: %ls", *ppwszValue);
+    char *pMBBuffer = (char *)malloc(0x100);
+    wcstombs(pMBBuffer, *ppwszValue, 0x100);
+    log_info("Obtained: %s", pMBBuffer);
 
     wchar_t *pwc = NULL;
 
@@ -308,8 +312,11 @@ HRESULT my_GetAllocatedString(
 
         pwc[29] = L'0';
         pwc[30] = L'0';
-        log_info("Replaced: %ls", *ppwszValue);
+
+        wcstombs(pMBBuffer, *ppwszValue, 0x100);
+        log_info("Replaced: %s", pMBBuffer);
     }
+    free(pMBBuffer);
 
     return ret;
 }
@@ -787,6 +794,8 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
 
 void camhook_init(struct camhook_config_cam *config_cam)
 {
+    MFStartup(0x20070u, 0);
+
     // fill before applying hooks
     for (size_t i = 0; i < config_cam->num_devices; ++i) {
         fill_cam_struct(&camData[i], config_cam->device_id[i]);
@@ -813,4 +822,9 @@ void camhook_init(struct camhook_config_cam *config_cam)
     } else {
         log_info("No cams detected, not hooking");
     }
+}
+
+void camhook_fini(void)
+{
+    MFShutdown();
 }
