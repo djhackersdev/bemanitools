@@ -75,6 +75,7 @@ iidxhook8_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 }
 
 struct iidxhook8_config_io iidxhook8_config_io;
+struct camhook_config_cam config_cam;
 
 static struct bio2emu_port bio2_emu = {
     .port = "COM4",
@@ -87,7 +88,6 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
-    struct camhook_config_cam config_cam;
 
     // log_server_init is required due to IO occuring in a non avs_thread
     log_server_init();
@@ -180,6 +180,10 @@ static bool my_dll_entry_main(void)
     bool result;
 
     result = app_hook_invoke_main();
+
+    if (!config_cam.disable_emu) {
+        camhook_fini();
+    }
 
     if (!iidxhook8_config_io.disable_card_reader_emu) {
         log_misc("Shutting down card reader backend");
