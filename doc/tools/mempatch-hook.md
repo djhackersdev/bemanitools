@@ -14,12 +14,12 @@ it to the list of libraries to inject:
 
 Example when using *inject.exe*:
 ```
-inject iidxhook3.dll mempatch-hook.dll bm2dx.exe --options iidxhook-16.conf --mempatch myPatch.mph %*
+inject iidxhook3.dll mempatch-hook.dll bm2dx.exe --config iidxhook-16.conf --mempatch myPatch.mph %*
 ```
 
 When using *launcher.exe*:
 ```
-launcher -K iidxhook4.dll -K mempatch-hook.dll bm2dx.dll --options iidxhook.conf --mempatch myPatch.mph %*
+launcher -K iidxhook4.dll -K mempatch-hook.dll bm2dx.dll --config iidxhook.conf --mempatch myPatch.mph %*
 ```
 
 To load a patch script, add the *--mempatch <path to patch script>* argument (as
