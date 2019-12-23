@@ -86,6 +86,7 @@ static int32_t d3d9ex_force_refresh_rate = -1;
 static int32_t d3d9ex_window_width = -1;
 static int32_t d3d9ex_window_height = -1;
 static bool d3d9ex_window_framed;
+static int32_t d3d9ex_device_adapter = D3DADAPTER_DEFAULT;
 
 /* ------------------------------------------------------------------------- */
 
@@ -208,6 +209,11 @@ static HRESULT STDCALL my_CreateDeviceEx(
         }
     }
 
+    if (d3d9ex_device_adapter != D3DADAPTER_DEFAULT) {
+        log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
+        adapter = d3d9ex_device_adapter;
+    }
+
     hr = IDirect3D9Ex_CreateDeviceEx(
         real, adapter, type, hwnd, flags, pp, fdm, pdev);
 
@@ -269,6 +275,7 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx* gfx_config)
     d3d9ex_window_height = gfx_config->window_height;
 
     d3d9ex_force_refresh_rate = gfx_config->forced_refresh_rate;
+    d3d9ex_device_adapter = gfx_config->device_adapter;
 }
 
 /* ------------------------------------------------------------------------- */
