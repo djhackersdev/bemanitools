@@ -15,6 +15,7 @@ struct d3d9exhook_config_gfx {
     int32_t window_width;
     int32_t window_height;
     int32_t forced_refresh_rate;
+    int32_t device_adapter;
 };
 
 /**
