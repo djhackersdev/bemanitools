@@ -20,6 +20,25 @@ static int boot_property_fread(uint32_t context, void *bytes, size_t nbytes)
     return fread(bytes, 1, nbytes, f);
 }
 
+struct cstring_read_handle {
+    const char * buffer;
+    size_t buffer_len;
+    size_t offset;
+};
+
+static int boot_property_cstring_read(uint32_t context, void *bytes, size_t nbytes)
+{
+    int result = 0;
+    struct cstring_read_handle* h = TlsGetValue(context);
+
+    if (h->offset < h->buffer_len){
+        result = min(nbytes, h->buffer_len - h->offset);
+        memcpy(bytes, (const void *)(h->buffer + h->offset), result);
+        h->offset += result;
+    }
+    return result;
+}
+
 struct property *boot_property_load(const char *filename)
 {
     struct property *prop;
@@ -62,6 +81,44 @@ struct property *boot_property_load(const char *filename)
     TlsFree(f_keyhole);
 
     fclose(f);
+
+    return prop;
+}
+struct property *boot_property_load_cstring(const char *cstring)
+{
+    struct property *prop;
+    void *buffer;
+    int nbytes;
+    uint32_t s_keyhole;
+
+    // see above
+    struct cstring_read_handle read_handle;
+    read_handle.buffer = cstring;
+    read_handle.buffer_len = strlen(cstring);
+    read_handle.offset = 0;
+
+    s_keyhole = TlsAlloc();
+    TlsSetValue(s_keyhole, &read_handle);
+
+    nbytes = property_read_query_memsize(boot_property_cstring_read, s_keyhole, 0, 0);
+
+    if (nbytes < 0) {
+        log_fatal("Error querying configuration string");
+    }
+
+    buffer = xmalloc(nbytes);
+    prop = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE | PROPERTY_FLAG_APPEND,
+        buffer,
+        nbytes
+    );
+
+    read_handle.offset = 0;
+    if (!property_insert_read(prop, 0, boot_property_cstring_read, s_keyhole)) {
+        log_fatal("Error inserting configuration string");
+    }
+
+    TlsFree(s_keyhole);
 
     return prop;
 }

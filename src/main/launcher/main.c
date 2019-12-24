@@ -17,6 +17,7 @@
 
 #include "util/codepage.h"
 #include "util/defs.h"
+#include "util/fs.h"
 #include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
@@ -243,7 +244,13 @@ int main(int argc, const char **argv)
 
     /* Invoke dll_entry_init */
 
-    app_config = boot_property_load(options.app_config_path);
+    if (path_exists(options.app_config_path)) {
+        app_config = boot_property_load(options.app_config_path);
+    } else {
+        log_warning("%s: app config file missing, using empty", options.app_config_path);
+        app_config = boot_property_load_cstring("<param>dummy</param>");
+    }
+
     app_config_root = property_search(app_config, 0, "/param");
 
     if (app_config_root == NULL) {
