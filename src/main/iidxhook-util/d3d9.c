@@ -262,10 +262,21 @@ static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
+    D3DPRESENT_PARAMETERS *pp = irp->args.ctx_create_device.pp;
 
     if (iidxhook_util_d3d9_config.windowed) {
-        irp->args.ctx_create_device.pp->Windowed = TRUE;
-        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz = 0;
+        pp->Windowed = TRUE;
+        pp->FullScreen_RefreshRateInHz = 0;
+    } else {
+        if (iidxhook_util_d3d9_config.forced_refresh_rate > 0) {
+            log_info("Forcing refresh rate %d -> %d", pp->FullScreen_RefreshRateInHz, iidxhook_util_d3d9_config.forced_refresh_rate);
+            pp->FullScreen_RefreshRateInHz = iidxhook_util_d3d9_config.forced_refresh_rate;
+        }
+    }
+
+    if (iidxhook_util_d3d9_config.device_adapter != D3DADAPTER_DEFAULT) {
+        log_info("Forcing adapter %d -> %d", irp->args.ctx_create_device.adapter, iidxhook_util_d3d9_config.device_adapter);
+        irp->args.ctx_create_device.adapter = iidxhook_util_d3d9_config.device_adapter;
     }
 }
 
@@ -904,7 +915,9 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         "iidx14_to_19_nvidia_fix: %d\n"
         "scale_back_buffer_width: %d\n"
         "scale_back_buffer_height: %d\n"
-        "scale_back_buffer_filter: %d",
+        "scale_back_buffer_filter: %d\n"
+        "forced_refresh_rate: %d\n"
+        "device_adapter: %d",
         config->windowed,
         config->framed,
         config->override_window_width,
@@ -919,7 +932,9 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         config->iidx14_to_19_nvidia_fix,
         config->scale_back_buffer_width,
         config->scale_back_buffer_height,
-        config->scale_back_buffer_filter);
+        config->scale_back_buffer_filter,
+        config->forced_refresh_rate,
+        config->device_adapter);
 }
 
 static void iidxhook_util_d3d9_validate_config(
@@ -983,6 +998,8 @@ void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config *config)
     config->scale_back_buffer_height = 0;
     config->scale_back_buffer_filter =
         IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
+    config->forced_refresh_rate = -1;
+    config->device_adapter = D3DADAPTER_DEFAULT;
 }
 
 void iidxhook_util_d3d9_configure(
@@ -1046,9 +1063,10 @@ iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
             hr = hook_d3d9_irp_invoke_next(irp);
 
             if (hr == S_OK) {
-                iidxhook_util_d3d9_log_result_create_device(hr);
                 iidxhook_util_d3d9_setup_back_buffer_scaling_post(irp);
                 iidxhook_util_d3d9_execute_monitor_check(irp);
+            } else {
+                iidxhook_util_d3d9_log_result_create_device(hr);
             }
 
             return hr;

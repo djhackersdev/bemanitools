@@ -70,6 +70,8 @@ iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
     d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
     d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
+    d3d9_config.forced_refresh_rate = config_gfx->forced_refresh_rate;
+    d3d9_config.device_adapter = config_gfx->device_adapter;
 
     iidxhook_util_d3d9_configure(&d3d9_config);
 

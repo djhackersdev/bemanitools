@@ -20,6 +20,8 @@
     "gfx.scale_back_buffer_height"
 #define IIDXHOOK_CONFIG_GFX_SCALE_BACK_BUFFER_FILTER_KEY \
     "gfx.scale_back_buffer_filter"
+#define IIDXHOOK_CONFIG_GFX_FORCED_RR_KEY "gfx.forced_refresh_rate"
+#define IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
 
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_BGVIDEO_UV_FIX_VALUE false
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
@@ -32,6 +34,8 @@
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_SCALE_BACK_BUFFER_WIDTH_VALUE 0
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_SCALE_BACK_BUFFER_HEIGHT_VALUE 0
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_SCALE_BACK_BUFFER_FILTER_VALUE "none"
+#define IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
+#define IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE D3DADAPTER_DEFAULT
 
 void iidxhook_config_gfx_init(struct cconfig *config)
 {
@@ -141,6 +145,18 @@ void iidxhook_config_gfx_init(struct cconfig *config)
         "linear, point (refer to "
         "D3DTEXTUREFILTERTYPE "
         " for explanation).");
+
+    cconfig_util_set_int(
+        config,
+        IIDXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+        IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE,
+        "Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors)");
+
+    cconfig_util_set_int(
+        config,
+        IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
+        IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
+        "D3D9 device adapter (monitor), 0 (D3DADAPTER_DEFAULT) to use default, 1, 2 etc. to use specified adapter");
 }
 
 void iidxhook_config_gfx_get(
@@ -324,5 +340,38 @@ void iidxhook_config_gfx_get(
             "to default '%s'",
             IIDXHOOK_CONFIG_GFX_SCALE_BACK_BUFFER_FILTER_KEY,
             IIDXHOOK_CONFIG_GFX_DEFAULT_SCALE_BACK_BUFFER_FILTER_VALUE);
+    }
+
+    if (!cconfig_util_get_int(
+            config,
+            IIDXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+            &config_gfx->forced_refresh_rate,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            IIDXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE);
+    }
+
+    if (!cconfig_util_get_int(
+            config,
+            IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
+            &config_gfx->device_adapter,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
+    }
+
+    if (config_gfx->device_adapter < 0) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
+        config_gfx->device_adapter = IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE;
     }
 }

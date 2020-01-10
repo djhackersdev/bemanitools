@@ -200,7 +200,7 @@ static HRESULT STDCALL my_CreateDeviceEx(
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
     } else {
-        if (d3d9ex_force_refresh_rate != -1) {
+        if (d3d9ex_force_refresh_rate > 0) {
             log_info("Forcing refresh rate %d -> %d", pp->FullScreen_RefreshRateInHz, d3d9ex_force_refresh_rate);
             pp->FullScreen_RefreshRateInHz = d3d9ex_force_refresh_rate;
             if (fdm) {
