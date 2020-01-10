@@ -29,7 +29,8 @@ bool cconfig_main_config_init(
     args_recover(&argc, &argv);
 
     for (int i = 0; i < argc; i++) {
-        if (!strcmp(argv[i], help_parameter_short_name) || !strcmp(argv[i], help_parameter_name)) {
+        if (!strcmp(argv[i], help_parameter_short_name) ||
+            !strcmp(argv[i], help_parameter_name)) {
             goto failure_usage;
         }
     }

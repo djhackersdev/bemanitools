@@ -162,13 +162,15 @@ struct iidxhook_util_d3d9_config {
 
     /**
      * Forced refresh rate
-     * -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors)
+     * -1 to not force any (try 59 or 60 if monitor check fails to lock on high
+     * refresh rate monitors)
      */
     int32_t forced_refresh_rate;
 
     /**
      * override device adapter (monitor)
-     * 0 (D3DADAPTER_DEFAULT) to use default (whatever the game sends), 1, 2 etc. to use specified adapter
+     * 0 (D3DADAPTER_DEFAULT) to use default (whatever the game sends), 1, 2
+     * etc. to use specified adapter
      */
     int32_t device_adapter;
 };

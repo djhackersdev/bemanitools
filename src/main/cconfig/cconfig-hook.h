@@ -6,7 +6,7 @@
 
 /**
  * Init function for cconfig for hooks
- * 
+ *
  * calls cconfig_main_config_init with some defaults for hook dlls
  * see: cconfig_main_config_init for more details
  */

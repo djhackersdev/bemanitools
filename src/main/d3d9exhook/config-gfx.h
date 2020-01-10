@@ -5,7 +5,7 @@
 
 /**
  * Config struct for d3d9exhook
- * 
+ *
  * Note: forced_refresh_rate sets the monitor's refresh rate
  * (it does not limit FPS or anything)
  */

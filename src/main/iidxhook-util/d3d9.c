@@ -269,14 +269,22 @@ static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(
         pp->FullScreen_RefreshRateInHz = 0;
     } else {
         if (iidxhook_util_d3d9_config.forced_refresh_rate > 0) {
-            log_info("Forcing refresh rate %d -> %d", pp->FullScreen_RefreshRateInHz, iidxhook_util_d3d9_config.forced_refresh_rate);
-            pp->FullScreen_RefreshRateInHz = iidxhook_util_d3d9_config.forced_refresh_rate;
+            log_info(
+                "Forcing refresh rate %d -> %d",
+                pp->FullScreen_RefreshRateInHz,
+                iidxhook_util_d3d9_config.forced_refresh_rate);
+            pp->FullScreen_RefreshRateInHz =
+                iidxhook_util_d3d9_config.forced_refresh_rate;
         }
     }
 
     if (iidxhook_util_d3d9_config.device_adapter != D3DADAPTER_DEFAULT) {
-        log_info("Forcing adapter %d -> %d", irp->args.ctx_create_device.adapter, iidxhook_util_d3d9_config.device_adapter);
-        irp->args.ctx_create_device.adapter = iidxhook_util_d3d9_config.device_adapter;
+        log_info(
+            "Forcing adapter %d -> %d",
+            irp->args.ctx_create_device.adapter,
+            iidxhook_util_d3d9_config.device_adapter);
+        irp->args.ctx_create_device.adapter =
+            iidxhook_util_d3d9_config.device_adapter;
     }
 }
 
