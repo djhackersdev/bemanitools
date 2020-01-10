@@ -282,7 +282,7 @@ HRESULT my_GetAllocatedString(
 
     // should probably check GUID, oh well
     ret = real_GetAllocatedString(self, guidKey, ppwszValue, pcchLength);
-    char *pMBBuffer = (char *)malloc(0x100);
+    char *pMBBuffer = (char *) malloc(0x100);
     wcstombs(pMBBuffer, *ppwszValue, 0x100);
     log_info("Obtained: %s", pMBBuffer);
 

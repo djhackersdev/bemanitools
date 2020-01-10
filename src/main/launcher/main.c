@@ -247,7 +247,9 @@ int main(int argc, const char **argv)
     if (path_exists(options.app_config_path)) {
         app_config = boot_property_load(options.app_config_path);
     } else {
-        log_warning("%s: app config file missing, using empty", options.app_config_path);
+        log_warning(
+            "%s: app config file missing, using empty",
+            options.app_config_path);
         app_config = boot_property_load_cstring("<param>dummy</param>");
     }
 

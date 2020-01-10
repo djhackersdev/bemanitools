@@ -16,6 +16,6 @@ void d3d9ex_hook_init(void);
  *
  * @param gfx_config Config to apply.
  */
-void d3d9ex_configure(struct d3d9exhook_config_gfx* gfx_config);
+void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config);
 
 #endif

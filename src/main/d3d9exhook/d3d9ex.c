@@ -201,7 +201,10 @@ static HRESULT STDCALL my_CreateDeviceEx(
         pp->FullScreen_RefreshRateInHz = 0;
     } else {
         if (d3d9ex_force_refresh_rate > 0) {
-            log_info("Forcing refresh rate %d -> %d", pp->FullScreen_RefreshRateInHz, d3d9ex_force_refresh_rate);
+            log_info(
+                "Forcing refresh rate %d -> %d",
+                pp->FullScreen_RefreshRateInHz,
+                d3d9ex_force_refresh_rate);
             pp->FullScreen_RefreshRateInHz = d3d9ex_force_refresh_rate;
             if (fdm) {
                 fdm->RefreshRate = pp->FullScreen_RefreshRateInHz;
@@ -267,7 +270,7 @@ void d3d9ex_hook_init(void)
     log_info("Inserted graphics hooks");
 }
 
-void d3d9ex_configure(struct d3d9exhook_config_gfx* gfx_config)
+void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
 {
     d3d9ex_windowed = gfx_config->windowed;
     d3d9ex_window_framed = gfx_config->framed;

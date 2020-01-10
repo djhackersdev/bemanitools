@@ -52,13 +52,15 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         config,
         D3D9EXHOOK_CONFIG_GFX_FORCED_RR_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE,
-        "Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors)");
+        "Forced refresh rate, -1 to not force any (try 59 or 60 if monitor "
+        "check fails to lock on high refresh rate monitors)");
 
     cconfig_util_set_int(
         config,
         D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
-        "D3D9ex device adapter (monitor), 0 (D3DADAPTER_DEFAULT) to use default, 1, 2 etc. to use specified adapter");
+        "D3D9ex device adapter (monitor), 0 (D3DADAPTER_DEFAULT) to use "
+        "default, 1, 2 etc. to use specified adapter");
 }
 
 void d3d9exhook_config_gfx_get(
@@ -142,6 +144,7 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
-        config_gfx->device_adapter = D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE;
+        config_gfx->device_adapter =
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE;
     }
 }
