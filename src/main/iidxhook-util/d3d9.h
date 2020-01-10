@@ -169,8 +169,8 @@ struct iidxhook_util_d3d9_config {
 
     /**
      * override device adapter (monitor)
-     * 0 (D3DADAPTER_DEFAULT) to use default (whatever the game sends), 1, 2
-     * etc. to use specified adapter
+     * -1 to use default (whatever the game sends)
+     * 0, 1, 2 etc. to use specified adapter
      */
     int32_t device_adapter;
 };

@@ -12,7 +12,7 @@
 #define D3D9EXHOOK_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOW_WIDTH_KEY "gfx.window_width"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOW_HEIGHT_KEY "gfx.window_height"
-#define D3D9EXHOOK_CONFIG_GFX_FORCED_RR_KEY "gfx.forced_refresh_rate"
+#define D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
 
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
@@ -20,7 +20,7 @@
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOW_WIDTH_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOW_HEIGHT_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
-#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE D3DADAPTER_DEFAULT
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE -1
 
 void d3d9exhook_config_gfx_init(struct cconfig *config)
 {
@@ -50,7 +50,7 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
 
     cconfig_util_set_int(
         config,
-        D3D9EXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+        D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE,
         "Forced refresh rate, -1 to not force any (try 59 or 60 if monitor "
         "check fails to lock on high refresh rate monitors)");
@@ -59,8 +59,8 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         config,
         D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
-        "D3D9ex device adapter (monitor), 0 (D3DADAPTER_DEFAULT) to use "
-        "default, 1, 2 etc. to use specified adapter");
+        "D3D9ex device adapter (monitor), -1 to use default,"
+        "0, 1, 2 etc. to use specified adapter");
 }
 
 void d3d9exhook_config_gfx_get(
@@ -116,13 +116,13 @@ void d3d9exhook_config_gfx_get(
 
     if (!cconfig_util_get_int(
             config,
-            D3D9EXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+            D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY,
             &config_gfx->forced_refresh_rate,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE)) {
         log_warning(
             "Invalid value for key '%s' specified, fallback "
             "to default '%d'",
-            D3D9EXHOOK_CONFIG_GFX_FORCED_RR_KEY,
+            D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE);
     }
 
@@ -136,15 +136,5 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
-    }
-
-    if (config_gfx->device_adapter < 0) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
-            D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
-            D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
-        config_gfx->device_adapter =
-            D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE;
     }
 }
