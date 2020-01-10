@@ -278,7 +278,7 @@ static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(
         }
     }
 
-    if (iidxhook_util_d3d9_config.device_adapter != D3DADAPTER_DEFAULT) {
+    if (iidxhook_util_d3d9_config.device_adapter >= 0) {
         log_info(
             "Forcing adapter %d -> %d",
             irp->args.ctx_create_device.adapter,
@@ -1007,7 +1007,7 @@ void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config *config)
     config->scale_back_buffer_filter =
         IIDXHOOK_UTIL_D3D9_BACK_BUFFER_SCALE_FILTER_NONE;
     config->forced_refresh_rate = -1;
-    config->device_adapter = D3DADAPTER_DEFAULT;
+    config->device_adapter = -1;
 }
 
 void iidxhook_util_d3d9_configure(

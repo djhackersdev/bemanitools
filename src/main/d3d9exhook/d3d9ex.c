@@ -86,7 +86,7 @@ static int32_t d3d9ex_force_refresh_rate = -1;
 static int32_t d3d9ex_window_width = -1;
 static int32_t d3d9ex_window_height = -1;
 static bool d3d9ex_window_framed;
-static int32_t d3d9ex_device_adapter = D3DADAPTER_DEFAULT;
+static int32_t d3d9ex_device_adapter = -1;
 
 /* ------------------------------------------------------------------------- */
 
@@ -212,7 +212,7 @@ static HRESULT STDCALL my_CreateDeviceEx(
         }
     }
 
-    if (d3d9ex_device_adapter != D3DADAPTER_DEFAULT) {
+    if (d3d9ex_device_adapter >= 0) {
         log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
         adapter = d3d9ex_device_adapter;
     }
