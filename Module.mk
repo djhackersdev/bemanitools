@@ -136,6 +136,7 @@ include src/main/p4ioemu/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2/Module.mk
+include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxio/Module.mk
 include src/main/sdvxio-kfca/Module.mk
 include src/main/security/Module.mk
@@ -436,6 +437,20 @@ $(zipdir)/sdvx-05.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/sdvx-05-cn.zip: \
+		build/bin/avs2_1700-64/launcher.exe \
+		build/bin/avs2_1700-64/sdvxhook2-cn.dll \
+		build/bin/indep-64/config.exe \
+		build/bin/indep-64/eamio.dll \
+		build/bin/indep-64/geninput.dll \
+		build/bin/indep-64/sdvxio.dll \
+		dist/sdvx5/config.bat \
+		dist/sdvx5/gamestart-cn.bat \
+		dist/sdvx5/sdvxhook2-cn.conf \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/ddr-12-to-16.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/avs2_1508-32/ddrhook.dll \
@@ -523,6 +538,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/src.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05.zip \
+		$(zipdir)/sdvx-05-cn.zip \
 		$(zipdir)/tools.zip \
 		$(zipdir)/tools-x64.zip \
 		CHANGELOG.md \
