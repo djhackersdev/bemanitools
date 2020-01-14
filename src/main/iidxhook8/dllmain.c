@@ -37,7 +37,7 @@
 #include "util/thread.h"
 
 #define IIDXHOOK8_INFO_HEADER     \
-    "iidxhook for Cannon Ballers" \
+    "iidxhook for Cannon Ballers/Rootage" \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
 #define IIDXHOOK8_CMD_USAGE \
     "Usage: launcher.exe -K iidxhook8.dll <bm2dx.dll> [options...]"
@@ -203,7 +203,7 @@ static bool my_dll_entry_main(void)
 }
 
 /**
- * Hook library Resort Anthem onwards
+ * Hook library CB/Rootage
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {

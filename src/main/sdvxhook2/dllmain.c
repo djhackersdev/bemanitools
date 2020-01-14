@@ -158,7 +158,7 @@ static bool my_dll_entry_main(void)
 }
 
 /**
- * Hook library Resort Anthem onwards
+ * Hook library SDVX5+
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
