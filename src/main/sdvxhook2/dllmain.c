@@ -13,6 +13,7 @@
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
+#include "hooklib/config-adapter.h"
 #include "hooklib/rs232.h"
 
 #include "bio2emu/emu.h"
@@ -47,6 +48,7 @@ static const irp_handler_t sdvxhook_handlers[] = {
 struct sdvxhook2_config_io config_io;
 struct camhook_config_cam config_cam;
 struct d3d9exhook_config_gfx config_gfx;
+struct hooklib_config_adapter config_adapter;
 
 static struct bio2emu_port bio2_emu = {
     .port = "COM4",
@@ -65,6 +67,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     sdvxhook2_config_io_init(config);
     d3d9exhook_config_gfx_init(config);
     camhook_config_cam_init(config, 1);
+    hooklib_config_adapter_init(config);
 
     if (!cconfig_hook_config_init(
             config,
@@ -77,6 +80,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     sdvxhook2_config_io_get(&config_io, config);
     camhook_config_cam_get(&config_cam, config, 1);
     d3d9exhook_config_gfx_get(&config_gfx, config);
+    hooklib_config_adapter_get(&config_adapter, config);
 
     cconfig_finit(config);
 
@@ -128,6 +132,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!config_cam.disable_emu) {
         camhook_init(&config_cam);
     }
+
+    adapter_hook_override(config_adapter.override_ip);
 
     log_info("--- End sdvxhook dll_entry_init ---");
 

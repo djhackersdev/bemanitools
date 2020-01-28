@@ -14,6 +14,7 @@
 #define D3D9EXHOOK_CONFIG_GFX_WINDOW_HEIGHT_KEY "gfx.window_height"
 #define D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
+#define D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY "gfx.force_orientation"
 
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE false
@@ -21,6 +22,7 @@
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOW_HEIGHT_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE -1
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE -1
 
 void d3d9exhook_config_gfx_init(struct cconfig *config)
 {
@@ -59,8 +61,15 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         config,
         D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
-        "D3D9ex device adapter (monitor), -1 to use default,"
+        "D3D9ex device adapter (monitor), -1 to use default, "
         "0, 1, 2 etc. to use specified adapter");
+
+    cconfig_util_set_int(
+        config,
+        D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY,
+        D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE,
+        "Orientation to force monitor into, -1 to use default, "
+        "0, 1, 2, 3 to do 0, 90, 180, 270 degrees");
 }
 
 void d3d9exhook_config_gfx_get(
@@ -136,5 +145,17 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
+    }
+
+    if (!cconfig_util_get_int(
+            config,
+            D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY,
+            &config_gfx->force_orientation,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE);
     }
 }
