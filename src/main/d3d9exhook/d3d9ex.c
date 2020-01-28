@@ -87,6 +87,7 @@ static int32_t d3d9ex_window_width = -1;
 static int32_t d3d9ex_window_height = -1;
 static bool d3d9ex_window_framed;
 static int32_t d3d9ex_device_adapter = -1;
+static int32_t d3d9ex_force_orientation = -1;
 
 /* ------------------------------------------------------------------------- */
 
@@ -195,6 +196,12 @@ static HRESULT STDCALL my_CreateDeviceEx(
     IDirect3D9Ex *real = COM_PROXY_UNWRAP(self);
     HRESULT hr;
 
+
+    if (d3d9ex_device_adapter >= 0) {
+        log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
+        adapter = d3d9ex_device_adapter;
+    }
+
     if (d3d9ex_windowed) {
         fdm = NULL;
         pp->Windowed = TRUE;
@@ -210,11 +217,38 @@ static HRESULT STDCALL my_CreateDeviceEx(
                 fdm->RefreshRate = pp->FullScreen_RefreshRateInHz;
             }
         }
-    }
 
-    if (d3d9ex_device_adapter >= 0) {
-        log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
-        adapter = d3d9ex_device_adapter;
+        if (d3d9ex_force_orientation >= DMDO_DEFAULT && d3d9ex_force_orientation <= DMDO_270) {
+            D3DADAPTER_IDENTIFIER9 adapter_ident;
+            if (IDirect3D9Ex_GetAdapterIdentifier(real, adapter, 0, &adapter_ident) == D3D_OK) {
+                // straight outta MSDN
+                DEVMODE dm;
+                // initialize the DEVMODE structure
+                ZeroMemory(&dm, sizeof(dm));
+                dm.dmSize = sizeof(dm);
+
+                if (0 != EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm))
+                {
+                    int32_t delta = d3d9ex_force_orientation - dm.dmDisplayOrientation;
+                    if (delta % 2 != 0) {
+                        // swap height and width
+                        DWORD dwTemp = dm.dmPelsHeight;
+                        dm.dmPelsHeight= dm.dmPelsWidth;
+                        dm.dmPelsWidth = dwTemp;
+                    }
+
+                    dm.dmDisplayOrientation = d3d9ex_force_orientation;
+
+                    long lRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+                    if (lRet == DISP_CHANGE_SUCCESSFUL) {
+                        log_info("Overriding rotation suceeded");
+                    } else {
+                        log_info("Overriding rotation failed");
+                    }
+                }
+            }
+        }
     }
 
     hr = IDirect3D9Ex_CreateDeviceEx(
@@ -279,6 +313,7 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
 
     d3d9ex_force_refresh_rate = gfx_config->forced_refresh_rate;
     d3d9ex_device_adapter = gfx_config->device_adapter;
+    d3d9ex_force_orientation = gfx_config->force_orientation;
 }
 
 /* ------------------------------------------------------------------------- */
