@@ -8,6 +8,6 @@ void adapter_hook_init(void);
  *
  * @param network ip to match
  */
-void adapter_hook_override(const char* adapter_address);
+void adapter_hook_override(const char *adapter_address);
 
 #endif

@@ -196,7 +196,6 @@ static HRESULT STDCALL my_CreateDeviceEx(
     IDirect3D9Ex *real = COM_PROXY_UNWRAP(self);
     HRESULT hr;
 
-
     if (d3d9ex_device_adapter >= 0) {
         log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
         adapter = d3d9ex_device_adapter;
@@ -218,22 +217,25 @@ static HRESULT STDCALL my_CreateDeviceEx(
             }
         }
 
-        if (d3d9ex_force_orientation >= DMDO_DEFAULT && d3d9ex_force_orientation <= DMDO_270) {
+        if (d3d9ex_force_orientation >= DMDO_DEFAULT &&
+            d3d9ex_force_orientation <= DMDO_270) {
             D3DADAPTER_IDENTIFIER9 adapter_ident;
-            if (IDirect3D9Ex_GetAdapterIdentifier(real, adapter, 0, &adapter_ident) == D3D_OK) {
+            if (IDirect3D9Ex_GetAdapterIdentifier(
+                    real, adapter, 0, &adapter_ident) == D3D_OK) {
                 // straight outta MSDN
                 DEVMODE dm;
                 // initialize the DEVMODE structure
                 ZeroMemory(&dm, sizeof(dm));
                 dm.dmSize = sizeof(dm);
 
-                if (0 != EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm))
-                {
-                    int32_t delta = d3d9ex_force_orientation - dm.dmDisplayOrientation;
+                if (0 !=
+                    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)) {
+                    int32_t delta =
+                        d3d9ex_force_orientation - dm.dmDisplayOrientation;
                     if (delta % 2 != 0) {
                         // swap height and width
                         DWORD dwTemp = dm.dmPelsHeight;
-                        dm.dmPelsHeight= dm.dmPelsWidth;
+                        dm.dmPelsHeight = dm.dmPelsWidth;
                         dm.dmPelsWidth = dwTemp;
                     }
 

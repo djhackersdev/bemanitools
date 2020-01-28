@@ -12,6 +12,7 @@ struct hooklib_config_adapter {
 
 void hooklib_config_adapter_init(struct cconfig *config);
 
-void hooklib_config_adapter_get(struct hooklib_config_adapter *config_adapter, struct cconfig *config);
+void hooklib_config_adapter_get(
+    struct hooklib_config_adapter *config_adapter, struct cconfig *config);
 
 #endif

@@ -49,9 +49,19 @@ my_GetAdaptersInfo(PIP_ADAPTER_INFO adapter_info, PULONG out_buf_len)
     if (use_address_override) {
         while (info) {
             // this is well defined to be at most sizeof(IP_ADDRESS_STRING)
-            // and NULL filled if shorter (hence the memset in adapter_hook_override)
-            if (!memcmp(info->IpAddressList.IpAddress.String, override_address.String, sizeof(IP_ADDRESS_STRING))) {
-                log_info("%s: using [override] adapter: %s, %s, %s, %s", __FUNCTION__, info->AdapterName, info->Description, info->IpAddressList.IpAddress.String, info->IpAddressList.IpMask.String);
+            // and NULL filled if shorter (hence the memset in
+            // adapter_hook_override)
+            if (!memcmp(
+                    info->IpAddressList.IpAddress.String,
+                    override_address.String,
+                    sizeof(IP_ADDRESS_STRING))) {
+                log_info(
+                    "%s: using [override] adapter: %s, %s, %s, %s",
+                    __FUNCTION__,
+                    info->AdapterName,
+                    info->Description,
+                    info->IpAddressList.IpAddress.String,
+                    info->IpAddressList.IpMask.String);
 
                 // copy only this adapter over
                 memcpy(adapter_info, info, sizeof(*info));
@@ -83,7 +93,13 @@ my_GetAdaptersInfo(PIP_ADAPTER_INFO adapter_info, PULONG out_buf_len)
 
     while (info) {
         if (info->Index == best_adapter) {
-            log_info("%s: using [best] adapter: %s, %s, %s, %s", __FUNCTION__, info->AdapterName, info->Description, info->IpAddressList.IpAddress.String, info->IpAddressList.IpMask.String);
+            log_info(
+                "%s: using [best] adapter: %s, %s, %s, %s",
+                __FUNCTION__,
+                info->AdapterName,
+                info->Description,
+                info->IpAddressList.IpAddress.String,
+                info->IpAddressList.IpMask.String);
 
             // copy only this adapter over
             memcpy(adapter_info, info, sizeof(*info));
@@ -102,7 +118,7 @@ void adapter_hook_init(void)
         NULL, "iphlpapi.dll", adapter_hook_syms, lengthof(adapter_hook_syms));
 }
 
-void adapter_hook_override(const char* adapter_address)
+void adapter_hook_override(const char *adapter_address)
 {
     // starts off false anyways due to static
     // but in case it gets called multiple times, set it anyways
@@ -113,7 +129,8 @@ void adapter_hook_override(const char* adapter_address)
         return;
     }
     if (strlen(adapter_address) > sizeof(IP_ADDRESS_STRING)) {
-        log_warning("%s: %s is not an ipv4 address", __FUNCTION__, adapter_address);
+        log_warning(
+            "%s: %s is not an ipv4 address", __FUNCTION__, adapter_address);
         return;
     }
 
