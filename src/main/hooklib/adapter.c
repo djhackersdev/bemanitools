@@ -128,6 +128,7 @@ void adapter_hook_override(const char *adapter_address)
         // empty, do nothing
         return;
     }
+
     if (strlen(adapter_address) > sizeof(IP_ADDRESS_STRING)) {
         log_warning(
             "%s: %s is not an ipv4 address", __FUNCTION__, adapter_address);
