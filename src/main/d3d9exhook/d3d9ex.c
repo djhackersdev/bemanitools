@@ -228,7 +228,8 @@ static HRESULT STDCALL my_CreateDeviceEx(
                 ZeroMemory(&dm, sizeof(dm));
                 dm.dmSize = sizeof(dm);
 
-                if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)) {
+                if (EnumDisplaySettings(
+                        adapter_ident.DeviceName, ENUM_CURRENT_SETTINGS, &dm)) {
 
                     int32_t delta =
                         d3d9ex_force_orientation - dm.dmDisplayOrientation;
@@ -242,12 +243,22 @@ static HRESULT STDCALL my_CreateDeviceEx(
 
                     dm.dmDisplayOrientation = d3d9ex_force_orientation;
 
-                    long cd_ret = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+                    long cd_ret = ChangeDisplaySettingsEx(
+                        adapter_ident.DeviceName,
+                        &dm,
+                        NULL,
+                        CDS_FULLSCREEN,
+                        NULL);
 
                     if (cd_ret == DISP_CHANGE_SUCCESSFUL) {
-                        log_info("Overriding rotation suceeded");
+                        log_info(
+                            "Overriding rotation suceeded: %s",
+                            adapter_ident.DeviceName);
                     } else {
-                        log_info("Overriding rotation failed");
+                        log_info(
+                            "Overriding rotation failed %s %ld",
+                            adapter_ident.DeviceName,
+                            cd_ret);
                     }
                 }
             }
