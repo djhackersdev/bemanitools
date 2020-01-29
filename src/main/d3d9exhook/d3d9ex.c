@@ -228,10 +228,11 @@ static HRESULT STDCALL my_CreateDeviceEx(
                 ZeroMemory(&dm, sizeof(dm));
                 dm.dmSize = sizeof(dm);
 
-                if (0 !=
-                    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)) {
+                if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)) {
+
                     int32_t delta =
                         d3d9ex_force_orientation - dm.dmDisplayOrientation;
+
                     if (delta % 2 != 0) {
                         // swap height and width
                         DWORD dwTemp = dm.dmPelsHeight;
@@ -241,9 +242,9 @@ static HRESULT STDCALL my_CreateDeviceEx(
 
                     dm.dmDisplayOrientation = d3d9ex_force_orientation;
 
-                    long lRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+                    long cd_ret = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
 
-                    if (lRet == DISP_CHANGE_SUCCESSFUL) {
+                    if (cd_ret == DISP_CHANGE_SUCCESSFUL) {
                         log_info("Overriding rotation suceeded");
                     } else {
                         log_info("Overriding rotation failed");
@@ -255,8 +256,6 @@ static HRESULT STDCALL my_CreateDeviceEx(
 
     hr = IDirect3D9Ex_CreateDeviceEx(
         real, adapter, type, hwnd, flags, pp, fdm, pdev);
-
-    // TODO stuff
 
     return hr;
 }
