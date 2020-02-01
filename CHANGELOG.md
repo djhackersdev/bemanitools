@@ -1,5 +1,10 @@
 # Release history
 ## 5.29
+* SDVX: Add option for monitor rotation
+* SDVX: Add option to allow overriding network adapter IP
+* IIDX: Add force display adapter and refresh rate configuration
+* SDVX: Allow specifying display adapter to open for d3d9ex hook
+* IIDX/SDVX camerahooks bugfix: Camera sometimes not detected on some older machines
 
 ## 5.28
 * Improve documentation in various places
