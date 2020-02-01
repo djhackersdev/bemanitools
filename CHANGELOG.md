@@ -1,4 +1,6 @@
 # Release history
+## 5.30
+
 ## 5.29
 * SDVX: Add option for monitor rotation
 * SDVX: Add option to allow overriding network adapter IP
