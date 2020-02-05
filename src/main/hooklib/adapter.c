@@ -124,7 +124,7 @@ void adapter_hook_override(const char *adapter_address)
     // but in case it gets called multiple times, set it anyways
     use_address_override = false;
 
-    if (adapter_address == NULL || *adapter_address == NULL) {
+    if (adapter_address == NULL || *adapter_address == '\0') {
         // empty, do nothing
         return;
     }
