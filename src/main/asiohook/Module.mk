@@ -7,3 +7,4 @@ libs_asiohook     := \
 
 src_asiohook     := \
     asio-reghook.c \
+    config-asio.c \
