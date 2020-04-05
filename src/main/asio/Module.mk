@@ -1,10 +1,10 @@
-libs            += asiohook
+libs            += asio
 
-libs_asiohook     := \
+libs_asio     := \
     hook \
     hooklib \
     util \
 
-src_asiohook     := \
+src_asio     := \
     asio-reghook.c \
     config-asio.c \
