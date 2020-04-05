@@ -89,6 +89,7 @@ include src/main/ddrhook/Module.mk
 include src/main/ddrio/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddrio-mm/Module.mk
+include src/main/dinputhook/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamio-icca/Module.mk
 include src/main/eamiotest/Module.mk
