@@ -3,8 +3,8 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
-#include "dinputhook/device_dinput8.h"
-#include "dinputhook/dinput.h"
+#include "dinput/device_dinput8.h"
+#include "dinput/dinput.h"
 
 #include <stdbool.h>
 
@@ -44,6 +44,7 @@ static HRESULT STDCALL my_CreateDevice(
     LPUNKNOWN pUnkOuter)
 {
     log_misc("IDirectInput8::CreateDevice hook hit");
+
     if (lplpDirectInputDevice == NULL) {
         return DIERR_INVALIDPARAM;
     }
@@ -89,9 +90,11 @@ static HRESULT STDCALL my_DirectInput8Create(
 
     res = real_DirectInput8Create(
         hinst, dwVersion, riidltf, (LPVOID *) &api, punkOuter);
+
     if (res != DI_OK) {
         return res;
     }
+
     api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
     api_vtbl = api_proxy->vptr;
 

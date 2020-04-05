@@ -77,7 +77,7 @@ imps            += avs avs-ea3
 include src/main/aciodrv/Module.mk
 include src/main/acioemu/Module.mk
 include src/main/aciotest/Module.mk
-include src/main/asiohook/Module.mk
+include src/main/asio/Module.mk
 include src/main/bio2emu/Module.mk
 include src/main/bsthook/Module.mk
 include src/main/bstio/Module.mk
@@ -89,7 +89,7 @@ include src/main/ddrhook/Module.mk
 include src/main/ddrio/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddrio-mm/Module.mk
-include src/main/dinputhook/Module.mk
+include src/main/dinput/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamio-icca/Module.mk
 include src/main/eamiotest/Module.mk

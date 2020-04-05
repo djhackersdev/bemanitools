@@ -13,7 +13,7 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "asiohook/asio-reghook.h"
+#include "asio/asio-reghook.h"
 
 #include "util/defs.h"
 #include "util/log.h"

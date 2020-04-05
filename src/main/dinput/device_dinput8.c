@@ -1,4 +1,4 @@
-#include "dinputhook/device_dinput8.h"
+#include "dinput/device_dinput8.h"
 
 static ULONG REF_COUNT = 0;
 
@@ -26,11 +26,13 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_QueryInterface(
 
     return E_NOINTERFACE;
 }
+
 static ULONG STDMETHODCALLTYPE
 IDirectInputDevice8W_AddRef(IDirectInputDevice8W FAR *This)
 {
     return ++REF_COUNT;
 }
+
 static ULONG STDMETHODCALLTYPE
 IDirectInputDevice8W_Release(IDirectInputDevice8W FAR *This)
 {
@@ -42,6 +44,7 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetCapabilities(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumObjects(
     IDirectInputDevice8W FAR *This,
     LPDIENUMDEVICEOBJECTSCALLBACKW lpCallback,
@@ -50,31 +53,37 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumObjects(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetProperty(
     IDirectInputDevice8W FAR *This, REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetProperty(
     IDirectInputDevice8W FAR *This, REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     return DI_OK;
 }
+
 static HRESULT STDMETHODCALLTYPE
 IDirectInputDevice8W_Acquire(IDirectInputDevice8W FAR *This)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE
 IDirectInputDevice8W_Unacquire(IDirectInputDevice8W FAR *This)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetDeviceState(
     IDirectInputDevice8W FAR *This, DWORD cbData, LPVOID lpvData)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetDeviceData(
     IDirectInputDevice8W FAR *This,
     DWORD cbObjectData,
@@ -84,21 +93,25 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetDeviceData(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetDataFormat(
     IDirectInputDevice8W FAR *This, LPCDIDATAFORMAT lpdf)
 {
     return DI_OK;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetEventNotification(
     IDirectInputDevice8W FAR *This, HANDLE hEvent)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetCooperativeLevel(
     IDirectInputDevice8W FAR *This, HWND hWnd, DWORD dwFlags)
 {
     return DI_OK;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetObjectInfo(
     IDirectInputDevice8W FAR *This,
     LPDIDEVICEOBJECTINSTANCEW pdidoi,
@@ -107,16 +120,19 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetObjectInfo(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetDeviceInfo(
     IDirectInputDevice8W FAR *This, LPDIDEVICEINSTANCEW pdidi)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_RunControlPanel(
     IDirectInputDevice8W FAR *This, HWND hwndOwner, DWORD dwFlags)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_Initialize(
     IDirectInputDevice8W FAR *This,
     HINSTANCE hinst,
@@ -135,6 +151,7 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_CreateEffect(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumEffects(
     IDirectInputDevice8W FAR *This,
     LPDIENUMEFFECTSCALLBACKW lpCallback,
@@ -143,21 +160,25 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumEffects(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetEffectInfo(
     IDirectInputDevice8W FAR *This, LPDIEFFECTINFOW pdei, REFGUID rguid)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetForceFeedbackState(
     IDirectInputDevice8W FAR *This, LPDWORD pdwOut)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SendForceFeedbackCommand(
     IDirectInputDevice8W FAR *This, DWORD dwFlags)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumCreatedEffectObjects(
     IDirectInputDevice8W FAR *This,
     LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback,
@@ -166,16 +187,19 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumCreatedEffectObjects(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE
 IDirectInputDevice8W_Escape(IDirectInputDevice8W FAR *This, LPDIEFFESCAPE pesc)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE
 IDirectInputDevice8W_Poll(IDirectInputDevice8W FAR *This)
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SendDeviceData(
     IDirectInputDevice8W FAR *This,
     DWORD cbObjectData,
@@ -195,6 +219,7 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_EnumEffectsInFile(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_WriteEffectToFile(
     IDirectInputDevice8W FAR *This,
     LPCWSTR lpszFileName,
@@ -213,6 +238,7 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_BuildActionMap(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetActionMap(
     IDirectInputDevice8W FAR *This,
     LPDIACTIONFORMATW lpdiaf,
@@ -221,6 +247,7 @@ static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_SetActionMap(
 {
     return DIERR_INVALIDPARAM;
 }
+
 static HRESULT STDMETHODCALLTYPE IDirectInputDevice8W_GetImageInfo(
     IDirectInputDevice8W FAR *This,
     LPDIDEVICEIMAGEINFOHEADERW lpdiDevImageInfoHeader)
