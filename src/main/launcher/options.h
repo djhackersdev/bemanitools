@@ -17,6 +17,7 @@ struct options {
     const char *module;
     const char *logfile;
     struct array hook_dlls;
+    struct array before_hook_dlls;
     bool remote_debugger;
 };
 
