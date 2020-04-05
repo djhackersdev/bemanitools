@@ -23,6 +23,7 @@ void options_init(struct options *options)
     options->logfile = NULL;
     options->remote_debugger = false;
     array_init(&options->hook_dlls);
+    array_init(&options->before_hook_dlls);
 }
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
@@ -115,6 +116,16 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     break;
 
+                case 'B':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    *array_append(const char *, &options->before_hook_dlls) =
+                        argv[++i];
+
+                    break;
+
                 case 'Y':
                     if (i + 1 >= argc) {
                         return false;
@@ -170,6 +181,8 @@ void options_print_usage(void)
         "       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
         "       -K [filename]   Load hook DLL (can be specified multiple "
         "times)\n"
+        "       -B [filename]   Load pre-hook DLL loaded before avs boot "
+        "(can be specified multiple times)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
         "       -D              Halt the launcher before bootstrapping AVS "
         "until a"
@@ -179,4 +192,5 @@ void options_print_usage(void)
 void options_fini(struct options *options)
 {
     array_fini(&options->hook_dlls);
+    array_fini(&options->before_hook_dlls);
 }

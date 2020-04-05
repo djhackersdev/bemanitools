@@ -93,10 +93,34 @@ static AVS_LOG_WRITER(log_callback, chars, nchars, ctx)
     free(utf16);
 }
 
+static void load_hook_dlls(struct array* hook_dlls) {
+    const char *hook_dll;
+
+    for (size_t i = 0; i < hook_dlls->nitems; i++) {
+        hook_dll = *array_item(char *, hook_dlls, i);
+
+        if (LoadLibraryA(hook_dll) == NULL) {
+            LPSTR buffer;
+
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPSTR) &buffer,
+                0,
+                NULL);
+
+            log_fatal("%s: Failed to load hook DLL: %s", hook_dll, buffer);
+
+            LocalFree(buffer);
+        }
+    }
+}
+
 int main(int argc, const char **argv)
 {
-    int i;
-    const char *hook_dll;
     bool ok;
     HANDLE logfile;
 
@@ -170,6 +194,8 @@ int main(int argc, const char **argv)
         log_fatal("%s: /config missing", options.avs_config_path);
     }
 
+    load_hook_dlls(&options.before_hook_dlls);
+
     avs_context_init(
         avs_config_root,
         options.avs_heap_size,
@@ -188,27 +214,7 @@ int main(int argc, const char **argv)
 
     /* Load hook DLLs */
 
-    for (i = 0; i < options.hook_dlls.nitems; i++) {
-        hook_dll = *array_item(char *, &options.hook_dlls, i);
-
-        if (LoadLibraryA(hook_dll) == NULL) {
-            LPSTR buffer;
-
-            FormatMessageA(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
-                GetLastError(),
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPSTR) &buffer,
-                0,
-                NULL);
-
-            log_fatal("%s: Failed to load hook DLL: %s", hook_dll, buffer);
-
-            LocalFree(buffer);
-        }
-    }
+    load_hook_dlls(&options.hook_dlls);
 
     /* Inject GetModuleHandle hooks */
 
