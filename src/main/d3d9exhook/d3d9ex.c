@@ -47,6 +47,8 @@ static HRESULT STDCALL my_CreateDeviceEx(
 
 static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api);
 
+static WNDPROC real_WndProc;
+
 static BOOL STDCALL my_EnumDisplayDevicesA(
     const char *dev_name, DWORD dev_num, DISPLAY_DEVICEA *info, DWORD flags);
 
@@ -82,6 +84,7 @@ static BOOL(STDCALL *real_MoveWindow)(
 /* ------------------------------------------------------------------------- */
 
 static bool d3d9ex_windowed;
+static bool d3d9ex_confined;
 static int32_t d3d9ex_force_refresh_rate = -1;
 static int32_t d3d9ex_window_width = -1;
 static int32_t d3d9ex_window_height = -1;
@@ -183,6 +186,52 @@ my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
     return result;
 }
 
+static LRESULT gfx_confine(HWND hwnd)
+{
+    POINT p;
+    RECT r;
+
+    log_misc("Confining mouse (ALT-TAB to release)");
+
+    p.x = 0;
+    p.y = 0;
+
+    ClientToScreen(hwnd, &p);
+
+    r.left = p.x;
+    r.top = p.y;
+    r.right = p.x + 100;
+    r.bottom = p.y + 100;
+
+    ClipCursor(&r);
+
+    return TRUE;
+}
+
+static LRESULT gfx_unconfine(HWND hwnd)
+{
+    log_misc("Un-confining mouse");
+
+    ClipCursor(NULL);
+
+    return TRUE;
+}
+
+static LRESULT CALLBACK
+my_WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg) {
+        case WM_SETFOCUS:
+            return gfx_confine(hwnd);
+
+        case WM_KILLFOCUS:
+            return gfx_unconfine(hwnd);
+
+        default:
+            return CallWindowProc(real_WndProc, hwnd, msg, wparam, lparam);
+    }
+}
+
 static HRESULT STDCALL my_CreateDeviceEx(
     IDirect3D9Ex *self,
     UINT adapter,
@@ -268,6 +317,12 @@ static HRESULT STDCALL my_CreateDeviceEx(
     hr = IDirect3D9Ex_CreateDeviceEx(
         real, adapter, type, hwnd, flags, pp, fdm, pdev);
 
+    if (SUCCEEDED(hr) && d3d9ex_confined) {
+        real_WndProc = (void *) GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+
+        SetWindowLongPtr(hwnd, GWLP_WNDPROC, (uintptr_t) my_WndProc);
+    }
+
     return hr;
 }
 
@@ -319,6 +374,7 @@ void d3d9ex_hook_init(void)
 void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
 {
     d3d9ex_windowed = gfx_config->windowed;
+    d3d9ex_confined = gfx_config->confined;
     d3d9ex_window_framed = gfx_config->framed;
     d3d9ex_window_width = gfx_config->window_width;
     d3d9ex_window_height = gfx_config->window_height;

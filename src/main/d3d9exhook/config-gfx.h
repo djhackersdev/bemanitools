@@ -12,6 +12,7 @@
 struct d3d9exhook_config_gfx {
     bool framed;
     bool windowed;
+    bool confined;
     int32_t window_width;
     int32_t window_height;
     int32_t forced_refresh_rate;
