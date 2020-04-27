@@ -1,7 +1,7 @@
 # Bemanitools 5
 [![pipeline status](https://dev.s-ul.eu/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.eu/djhackers/bemanitools/commits/master)
 
-Version: 5.30</br>
+Version: 5.31</br>
 [Release history](CHANGELOG.md)
 
 A collection of tools to run [various Bemani arcade games](#list-of-supported-games).
