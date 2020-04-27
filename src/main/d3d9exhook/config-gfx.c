@@ -10,6 +10,7 @@
 
 #define D3D9EXHOOK_CONFIG_GFX_FRAMED_KEY "gfx.framed"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"
+#define D3D9EXHOOK_CONFIG_GFX_CONFINED_KEY "gfx.confined"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOW_WIDTH_KEY "gfx.window_width"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOW_HEIGHT_KEY "gfx.window_height"
 #define D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
@@ -18,6 +19,7 @@
 
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE false
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_CONFINED_VALUE false
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOW_WIDTH_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOW_HEIGHT_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
@@ -37,6 +39,12 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         D3D9EXHOOK_CONFIG_GFX_WINDOWED_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE,
         "Run the game windowed");
+
+    cconfig_util_set_bool(
+        config,
+        D3D9EXHOOK_CONFIG_GFX_CONFINED_KEY,
+        D3D9EXHOOK_CONFIG_GFX_DEFAULT_CONFINED_VALUE,
+        "Confine mouse coursor to window");
 
     cconfig_util_set_int(
         config,
@@ -97,6 +105,18 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_WINDOWED_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE);
+    }
+
+    if (!cconfig_util_get_bool(
+            config,
+            D3D9EXHOOK_CONFIG_GFX_CONFINED_KEY,
+            &config_gfx->confined,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_CONFINED_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            D3D9EXHOOK_CONFIG_GFX_CONFINED_KEY,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_CONFINED_VALUE);
     }
 
     if (!cconfig_util_get_int(
