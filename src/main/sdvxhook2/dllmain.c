@@ -121,7 +121,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     if (!config_io.disable_bio2_emu) {
         bio2emu_init();
-        bio2_emu_bi2a_init(&bio2_emu, config_io.disable_poll_limiter);
+        bio2_emu_bi2a_init(&bio2_emu, config_io.disable_poll_limiter, config_io.force_headphones);
     }
 
     if (!config_io.disable_card_reader_emu) {

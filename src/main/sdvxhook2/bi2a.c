@@ -25,8 +25,10 @@ kfca_amp_control(struct ac_io_emu *emu, const struct ac_io_message *req);
 
 static bool poll_delay;
 
+static bool force_headphones_on;
+
 void bio2_emu_bi2a_init(
-    struct bio2emu_port *bio2_emu, bool disable_poll_limiter)
+    struct bio2emu_port *bio2_emu, bool disable_poll_limiter, bool force_headphones)
 {
     bio2emu_port_init(bio2_emu);
 
@@ -35,6 +37,8 @@ void bio2_emu_bi2a_init(
     if (!poll_delay) {
         log_warning("bio2_emu_bi2a_init: poll_delay has been disabled");
     }
+
+    force_headphones_on = force_headphones;
 }
 
 void bio2_emu_bi2a_dispatch_request(
@@ -240,6 +244,9 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 
     pin->buttons_1.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
     pin->buttons_1.b_headphone = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+    if (force_headphones_on) {
+        pin->buttons_1.b_headphone = 1;
+    }
     pin->buttons_1.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
     pin->buttons_1.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
     pin->buttons_1.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
