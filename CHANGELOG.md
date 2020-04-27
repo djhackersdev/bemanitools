@@ -1,4 +1,6 @@
 # Release history
+## 5.31
+
 ## 5.30
 * SDVX: sdvxhook2 headphone force and cursor confining config options
 * DDR: Add light support for SMX gen 4 pads
