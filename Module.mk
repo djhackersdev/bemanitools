@@ -191,10 +191,6 @@ $(zipdir)/tools-x64.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/src.zip: .git/HEAD  $(zipdir)/
-	$(V)echo ... $@
-	$(V)git archive -o $@ HEAD
-
 $(zipdir)/iidx-09-to-12.zip: \
 		build/bin/indep-32/iidxhook1.dll \
 		build/bin/indep-32/config.exe \
@@ -537,7 +533,6 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-01.zip \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
-		$(zipdir)/src.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05.zip \
 		$(zipdir)/sdvx-05-cn.zip \
