@@ -81,16 +81,15 @@ should cover most if not all of the games so far
 Please refer to the [dedicated documentation](CONTRIBUTING.md).
 
 # Development
+## Building
+See the [development document](doc/development).
+
 ## Architecture
 A dedicate [architecture document](doc/architecture.md) outlines the architecture of Bemanitools and points out the most
 important aspects you should know before you get started with development.
 
 ## API
 Please refer to the [API documentation](doc/api.md).
-
-## Source Code
-The source code is included with this distribution package (src.zip). Please refer to the
-[development document](doc/development.md) for further details.
 
 # License
 Source code license is the Unlicense; you are permitted to do with this as thou wilt. For details, please refer to the
