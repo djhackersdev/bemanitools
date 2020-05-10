@@ -206,8 +206,8 @@ void _Noreturn check_data_eq_failed(
         line,
         func,
         "\tIncorrect result: %s\n"
-        "\tReturn size was: %d\n"
-        "\tExected size: %d\n"
+        "\tReturn size was: %Iu\n"
+        "\tExected size: %Iu\n"
         "\tReturn value was \"%s\"\n"
         "\tExpected         \"%s\"\n\n",
         expr,
