@@ -11,19 +11,24 @@ BUILDDIR        ?= build
 # Internal variables
 #
 
-depdir          := $(BUILDDIR)/dep
-objdir          := $(BUILDDIR)/obj
-bindir          := $(BUILDDIR)/bin
+builddir_docker 	  := $(BUILDDIR)/docker
 
-toolchain_32    := i686-w64-mingw32-
-toolchain_64    := x86_64-w64-mingw32-
+docker_container_name := "bemanitools-build"
+docker_image_name     := "bemanitools:build"
 
-gitrev          := $(shell git rev-parse HEAD)
-cppflags        := -I src -I src/main -I src/test -DGITREV=$(gitrev)
-cflags          := -O2 -pipe -ffunction-sections -fdata-sections \
-                    -Wall -std=c99
-cflags_release  := -Werror
-ldflags		    := -Wl,--gc-sections -static-libgcc
+depdir                := $(BUILDDIR)/dep
+objdir                := $(BUILDDIR)/obj
+bindir                := $(BUILDDIR)/bin
+
+toolchain_32          := i686-w64-mingw32-
+toolchain_64          := x86_64-w64-mingw32-
+
+gitrev                := $(shell git rev-parse HEAD)
+cppflags              := -I src -I src/main -I src/test -DGITREV=$(gitrev)
+cflags                := -O2 -pipe -ffunction-sections -fdata-sections \
+                          -Wall -std=c99
+cflags_release        := -Werror
+ldflags		          := -Wl,--gc-sections -static-libgcc
 
 #
 # The first target that GNU Make encounters becomes the default target.
@@ -33,6 +38,7 @@ ldflags		    := -Wl,--gc-sections -static-libgcc
 all: build
 
 .PHONY: \
+build-docker \
 clean \
 code-format \
 print-building \
@@ -73,6 +79,16 @@ run-tests:
 # Generate a version file to identify the build
 version:
 	@echo "$(gitrev)" > version
+
+build-docker:
+	$(V)docker rm -f $(docker_container_name) 2> /dev/null || true
+	$(V)docker build -t $(docker_image_name) -f Dockerfile .
+	$(V)docker create --name $(docker_container_name) $(docker_image_name)
+	$(V)rm -rf $(builddir_docker)
+	$(V)mkdir -p $(builddir_docker)
+	$(V)docker cp $(docker_container_name):/bemanitools/build $(builddir_docker)
+	$(V)mv $(builddir_docker)/build/* $(builddir_docker)
+	$(V)rm -r $(builddir_docker)/build
 
 #
 # Pull in module definitions
