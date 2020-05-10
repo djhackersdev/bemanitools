@@ -58,6 +58,18 @@ command:
 make release
 ```
 
+## Building with docker
+You can also build bemanitools using docker which avoids having to setup a full development
+environment if you are just interested in building binaries for the latest changes. Naturally, this
+requires you to have the docker daemon installed. Then, run the following command from the root
+folder of the project:
+
+```bash
+make build-docker
+```
+
+Once completed successfully, the build output is located in the `build/docker` sub-folder.
+
 ## Creating releases
 For developers to create official releases with major and minor versioning:
 1. Ensure that all everything you want to have for this release is merged into master.
