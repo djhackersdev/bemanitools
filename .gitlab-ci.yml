@@ -1,17 +1,25 @@
-image: debian
+image: docker:stable
+
+variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:19.03.8-dind
+
+before_script:
+  - docker info
 
 stages:
   - build
-  - test
-  - release
+  - create-release-package
   - releasetag
 
 build:
   stage: build
   before_script:
-    - apt-get update && apt-get -qq install clang mingw-w64 git make zip > /dev/null
+    - apk update && apk add make > /dev/null
   script:
-    - make
+    - make build-docker
   artifacts:
     name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     paths:
@@ -20,31 +28,17 @@ build:
     refs:
       - master
 
-test:
-  allow_failure: true
-  stage: test
-  dependencies:
-    - build
-  before_script:
-    - apt-get update && apt-get -qq install make wine unzip > /dev/null
-    - dpkg --add-architecture i386 && apt-get update && apt-get -qq install wine32 > /dev/null
-  script:
-    - ls
-    - make run-tests
-  only:
-    refs:
-      - master
-
-release:
-  stage: release
+create-release-package:
+  stage: create-release-package
   variables:
     GIT_STRATEGY: none
   dependencies:
     - build
   before_script:
-    - apt-get update && apt-get -qq install zip > /dev/null
+    - apk update && apk add zip > /dev/null
   script:
-    - mv build/bemanitools.zip ./bemanitools.zip
+    - mv build/docker/bemanitools.zip ./bemanitools.zip
+    - rm -r build
     - find . -mindepth 1 ! -regex '^./bemanitools.zip' -delete
     - unzip bemanitools.zip
     - rm bemanitools.zip
@@ -55,12 +49,12 @@ release:
   only:
     refs:
       - master
-      
+    
 releasetag:
   stage: releasetag
   dependencies: []
   before_script:
-    - apt-get update && apt-get -qq install curl > /dev/null
+    - apk update && apk add curl > /dev/null
   script:
     - |
       curl --silent --show-error \
