@@ -19,6 +19,7 @@ static char aviodrv_device_node_products[16][4];
 static bool aciodrv_device_init(void)
 {
     uint8_t init_seq[1] = {AC_IO_SOF};
+    uint8_t read_buff[1] = {0x00};
 
     /* init/reset the device by sending 0xAA until 0xAA is returned */
     int read = 0;
@@ -27,17 +28,20 @@ static bool aciodrv_device_init(void)
             return false;
         }
 
-        read = aciodrv_port_read(init_seq, sizeof(init_seq));
-    } while (read == 0);
+        read = aciodrv_port_read(read_buff, sizeof(read_buff));
+    } while ((read <= 0) || (read_buff[0] != init_seq[0]));
 
     if (read > 0) {
+        log_warning("Obtained SOF, clearing out buffer now");
         /* empty buffer by reading all data */
         while (read > 0) {
             read = aciodrv_port_read(init_seq, sizeof(init_seq));
         }
+        log_warning("Cleared buffer, init done");
 
         return read == 0;
     } else {
+        log_warning("Read failure when trying to clear device state");
         return false;
     }
 }
@@ -314,15 +318,20 @@ bool aciodrv_device_get_node_product_ident(uint8_t node_id, char product[4])
 bool aciodrv_send_and_recv(struct ac_io_message *msg, int resp_size)
 {
     msg->cmd.seq_no = aciodrv_device_msg_counter++;
+    int send_size = offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes;
 
-    if (aciodrv_device_send(
-            (uint8_t *) msg,
-            offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes) <= 0) {
+#ifdef AC_IO_MSG_LOG
+    log_info("Beginning send on %d: %04x (%d b)", msg->addr, msg->cmd.code, send_size);
+#endif
+    if (aciodrv_device_send((uint8_t *) msg, send_size) <= 0) {
         return false;
     }
 
     uint16_t req_code = msg->cmd.code;
 
+#ifdef AC_IO_MSG_LOG
+    log_info("Beginning recv: (%d b)", resp_size);
+#endif
     if (aciodrv_device_receive((uint8_t *) msg, resp_size) <= 0) {
         return false;
     }
