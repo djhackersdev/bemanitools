@@ -183,6 +183,7 @@ $(zipdir)/tools.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/tools-x64.zip: \
+		build/bin/indep-64/aciotest.exe \
 		build/bin/indep-64/eamiotest.exe \
 		build/bin/indep-64/iidxiotest.exe \
 		build/bin/indep-64/iidx-ezusb-exit-hook.dll \
