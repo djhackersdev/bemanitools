@@ -165,6 +165,15 @@ static const struct light_def pnm_lights[] = {
     {0x1D, IDS_PNM_BTN7},
     {0x1E, IDS_PNM_BTN8},
     {0x1F, IDS_PNM_BTN9},
+    {0x20, IDS_PNM_TOP1},
+    {0x21, IDS_PNM_TOP2},
+    {0x22, IDS_PNM_TOP3},
+    {0x23, IDS_PNM_TOP4},
+    {0x24, IDS_PNM_TOP5},
+    {0x25, IDS_PNM_LB},
+    {0x26, IDS_PNM_LR},
+    {0x27, IDS_PNM_RB},
+    {0x28, IDS_PNM_RR},
 };
 
 static const struct action_def jb_actions[] = {{0x10, IDS_GENERIC_TEST},
