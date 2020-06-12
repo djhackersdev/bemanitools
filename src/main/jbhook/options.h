@@ -9,6 +9,7 @@ struct options {
     bool window_framed;
     bool disable_p4ioemu;
     bool disable_cardemu;
+    bool disable_adapteremu;
 };
 
 void options_init_from_cmdline(struct options *options);
