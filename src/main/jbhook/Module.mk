@@ -5,6 +5,7 @@ deplibs_jbhook    := \
 
 ldflags_jbhook   := \
     -lws2_32 \
+    -liphlpapi \
 
 libs_jbhook       := \
     acioemu \

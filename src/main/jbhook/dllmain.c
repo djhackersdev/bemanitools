@@ -10,6 +10,7 @@
 
 #include "hook/iohook.h"
 
+#include "hooklib/adapter.h"
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
@@ -132,6 +133,10 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
     iohook_init(jbhook_handlers, lengthof(jbhook_handlers));
+
+    if (!options.disable_adapteremu) {
+        adapter_hook_init();
+    }
 
     if (!options.disable_cardemu) {
         rs232_hook_init();
