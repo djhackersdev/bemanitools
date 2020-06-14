@@ -14,6 +14,7 @@
 
 #include "bemanitools/eamio.h"
 
+#include "util/crc.h"
 #include "util/time.h"
 
 enum ac_io_icca_subcmd {
@@ -41,7 +42,8 @@ static void ac_io_emu_icca_cmd_send_version(
 static void ac_io_emu_icca_send_state(
     struct ac_io_emu_icca *icca,
     const struct ac_io_message *req,
-    uint64_t delay_us);
+    uint64_t delay_us,
+    bool encrypted);
 
 static void ac_io_emu_icca_send_empty(
     struct ac_io_emu_icca *icca, const struct ac_io_message *req);
@@ -51,6 +53,12 @@ static void ac_io_emu_icca_send_status(
     const struct ac_io_message *req,
     uint8_t status);
 
+static void ac_io_emu_icca_cipher(
+    struct ac_io_emu_icca *icca, uint8_t *data, size_t length);
+
+static void ac_io_emu_icca_cipher_set_key(
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req);
+
 void ac_io_emu_icca_init(
     struct ac_io_emu_icca *icca, struct ac_io_emu *emu, uint8_t unit_no)
 {
@@ -59,6 +67,15 @@ void ac_io_emu_icca_init(
     icca->unit_no = unit_no;
     // queue must be started
     icca->fault = true;
+
+    // default to 1.6.0
+    icca->version = v160;
+}
+
+void ac_io_emu_icca_set_version(
+    struct ac_io_emu_icca *icca, enum ac_io_emu_icca_version version)
+{
+    icca->version = version;
 }
 
 void ac_io_emu_icca_dispatch_request(
@@ -123,7 +140,7 @@ void ac_io_emu_icca_dispatch_request(
             break;
 
         case AC_IO_ICCA_CMD_ENGAGE:
-            ac_io_emu_icca_send_state(icca, req, 0);
+            ac_io_emu_icca_send_state(icca, req, 0, false);
 
             break;
 
@@ -174,6 +191,7 @@ void ac_io_emu_icca_dispatch_request(
             break;
         }
 
+        case AC_IO_ICCA_CMD_POLL_ENCRYPTED:
         case AC_IO_ICCA_CMD_POLL:
             delay_us = time_get_elapsed_us(
                 time_get_counter() - icca->time_counter_last_poll);
@@ -185,13 +203,26 @@ void ac_io_emu_icca_dispatch_request(
             }
 
             icca->time_counter_last_poll = time_get_counter();
-            ac_io_emu_icca_send_state(icca, req, delay_us);
+            bool encrypted = cmd_code == AC_IO_ICCA_CMD_POLL_ENCRYPTED;
+            ac_io_emu_icca_send_state(icca, req, delay_us, encrypted);
 
             break;
 
         case AC_IO_ICCA_CMD_POLL_FELICA:
             icca->detected_new_reader = true;
-            ac_io_emu_icca_send_status(icca, req, 0x01);
+
+            if (icca->version == v170) {
+                ac_io_emu_icca_send_empty(icca, req);
+            } else {
+                ac_io_emu_icca_send_status(icca, req, 0x01);
+            }
+
+            break;
+
+        case AC_IO_ICCA_CMD_KEY_EXCHANGE:
+            icca->detected_new_reader = true;
+            log_misc("AC_IO_ICCA_CMD_KEY_EXCHANGE(%d)", req->addr);
+            ac_io_emu_icca_cipher_set_key(icca, req);
 
             break;
 
@@ -215,10 +246,27 @@ static void ac_io_emu_icca_cmd_send_version(
     resp.cmd.seq_no = req->cmd.seq_no;
     resp.cmd.nbytes = sizeof(resp.cmd.version);
     resp.cmd.version.type = ac_io_u32(AC_IO_NODE_TYPE_ICCA);
+
     resp.cmd.version.flag = 0x00;
     resp.cmd.version.major = 0x01;
-    resp.cmd.version.minor = 0x06;
+
+    if (icca->version == v150) {
+        log_warning(
+            "ICCA v1.5.0 emulation requested, please remove this log once implemented");
+        resp.cmd.version.minor = 0x05;
+    } else if (icca->version == v160) {
+        resp.cmd.version.minor = 0x06;
+    } else if (icca->version == v170) {
+        resp.cmd.version.minor = 0x07;
+    } else {
+        // probably log invalid version here
+        log_warning(
+            "Unknown ICCA version: %d emulation requested",
+            icca->version);
+    }
+
     resp.cmd.version.revision = 0x00;
+
     memcpy(
         resp.cmd.version.product_code,
         "ICCA",
@@ -261,7 +309,8 @@ static void ac_io_emu_icca_send_status(
 static void ac_io_emu_icca_send_state(
     struct ac_io_emu_icca *icca,
     const struct ac_io_message *req,
-    uint64_t delay_us)
+    uint64_t delay_us,
+    bool encrypted)
 {
     struct ac_io_message resp;
     struct ac_io_icca_state *body;
@@ -319,7 +368,10 @@ static void ac_io_emu_icca_send_state(
     } else if (card_full_insert) {
         body->status_code = AC_IO_ICCA_STATUS_GOT_UID;
     } else {
-        if (icca->detected_new_reader) {
+        if (icca->detected_new_reader && icca->version == v170) {
+            // else we get a power failure?
+            body->status_code = 0;
+        } else if (icca->detected_new_reader) {
             body->status_code = AC_IO_ICCA_STATUS_IDLE_NEW;
         } else {
             body->status_code = AC_IO_ICCA_STATUS_IDLE;
@@ -384,5 +436,88 @@ static void ac_io_emu_icca_send_state(
         body->status_code = AC_IO_ICCA_STATUS_FAULT;
     }
 
+    if (encrypted) {
+        size_t base_state_sz = sizeof(struct ac_io_icca_state);
+        resp.cmd.nbytes = base_state_sz + 2;
+
+        if (!icca->cipher_started) {
+            log_warning("No crypto keys set for unit %d", icca->unit_no);
+        } else {
+            uint16_t crc = crc16_msb(resp.cmd.raw, base_state_sz, 0);
+
+            resp.cmd.raw[base_state_sz + 0] = (crc >> 8) & 0xFF;
+            resp.cmd.raw[base_state_sz + 1] = crc & 0xFF;
+
+            ac_io_emu_icca_cipher(icca, resp.cmd.raw, 18);
+        }
+    }
+
     ac_io_emu_response_push(icca->emu, &resp, delay_us);
+}
+
+static void ac_io_emu_icca_cipher_shift_keys(struct ac_io_emu_icca *icca)
+{
+    uint32_t key4_old = icca->cipher_keys[3];
+    uint32_t key_new = (key4_old << 11) ^ key4_old;
+    uint32_t key1_old = icca->cipher_keys[0];
+
+    // shift keys up
+    icca->cipher_keys[3] = icca->cipher_keys[2];
+    icca->cipher_keys[2] = icca->cipher_keys[1];
+    icca->cipher_keys[1] = icca->cipher_keys[0];
+    icca->cipher_keys[0] =
+        ((((key1_old >> 11) ^ key_new) >> 8) ^ key_new ^ key1_old);
+}
+
+static void
+ac_io_emu_icca_cipher(struct ac_io_emu_icca *icca, uint8_t *data, size_t length)
+{
+    for (size_t i = 0; i < length; i++) {
+        uint8_t count4 = i % 4;
+        // shift keys every 4 bytes
+        if (count4 == 0) {
+            ac_io_emu_icca_cipher_shift_keys(icca);
+        }
+
+        // process data
+        data[i] =
+            (uint8_t)(icca->cipher_keys[0] >> (((3 - count4) << 3)) ^ data[i]);
+    }
+}
+
+static void ac_io_emu_icca_cipher_set_key(
+    struct ac_io_emu_icca *icca, const struct ac_io_message *req)
+{
+    struct ac_io_message resp;
+
+    resp.addr = req->addr | AC_IO_RESPONSE_FLAG;
+    resp.cmd.code = req->cmd.code;
+    resp.cmd.seq_no = req->cmd.seq_no;
+    resp.cmd.nbytes = 4; // 4 bytes, uint32_t
+
+    uint32_t host_key = 0x00000000;
+    host_key |= req->cmd.raw[0] << 24;
+    host_key |= req->cmd.raw[1] << 16;
+    host_key |= req->cmd.raw[2] << 8;
+    host_key |= req->cmd.raw[3];
+
+    // TODO: should probably RNG this
+    uint32_t reader_key = 0x14243444;
+    resp.cmd.raw[0] = (reader_key >> 24) & 0xFF;
+    resp.cmd.raw[1] = (reader_key >> 16) & 0xFF;
+    resp.cmd.raw[2] = (reader_key >> 8) & 0xFF;
+    resp.cmd.raw[3] = (reader_key) & 0xFF;
+
+    // so I looked these constants up, this isn't actually a secure key
+    // generator it's actually Marsaglia's "KISS" algorithm with different
+    // initial states
+    icca->cipher_keys[0] = reader_key ^ 0x5491333;
+    icca->cipher_keys[1] = host_key ^ 0x1F123BB5;
+    icca->cipher_keys[2] = reader_key ^ 0x159A55E5;
+    icca->cipher_keys[3] = host_key ^ 0x75BCD15;
+
+    log_misc("keys set to: H: %08x R: %08x", host_key, reader_key);
+
+    ac_io_emu_response_push(icca->emu, &resp, 0);
+    icca->cipher_started = true;
 }
