@@ -12,6 +12,8 @@ enum ac_io_icca_cmd {
     AC_IO_ICCA_CMD_SET_SLOT_STATE = 0x0135,
     AC_IO_ICCA_CMD_BEGIN_KEYPAD = 0x013A,
     AC_IO_ICCA_CMD_POLL_FELICA = 0x0161,
+    AC_IO_ICCA_CMD_KEY_EXCHANGE = 0x0160,
+    AC_IO_ICCA_CMD_POLL_ENCRYPTED = 0x0164,
 };
 
 enum ac_io_icca_slot_state {
