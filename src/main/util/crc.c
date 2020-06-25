@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "util/log.h"
+
 uint8_t crc8(const void *ptr, size_t nbytes, uint8_t in)
 {
     const uint8_t *bytes;
