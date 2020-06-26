@@ -423,12 +423,10 @@ static void p3io_cmd_get_cab_type_or_dipsw(
             if (hr == S_OK) {
                 switch (type) {
                     case P3IO_CAB_TYPE_SD:
-                        log_misc("%s: Returning cab type SD", __func__);
                         resp->status = 1;
                         break;
 
                     case P3IO_CAB_TYPE_HD:
-                        log_misc("%s: Returning cab type HD", __func__);
                         resp->status = 2;
                         break;
 
