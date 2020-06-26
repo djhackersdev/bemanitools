@@ -29,6 +29,12 @@ static const struct p3io_ops p3io_ddr_ops = {
 
 void p3io_ddr_init(void)
 {
+    /* COM4 isn't a real COM port, we configure the core P3IO emulator code to
+       generate IRPs addressed to COM4 and then we possibly intercept them in
+       _com4.c (or possibly don't, in which case the communications will be
+       sent to the real COM4 on your system) */
+
+    p3io_uart_set_path(0, L"COM4");
     p3io_emu_init(&p3io_ddr_ops, NULL);
 }
 
