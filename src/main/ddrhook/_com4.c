@@ -85,10 +85,6 @@ void com4_init(void)
 {
     uint8_t i;
 
-    /* This isn't a real COM port, we configure the core P3IO emulator code to
-       generate IRPs addressed to COM4 and then we intercept them. */
-
-    p3io_uart_set_path(0, L"COM4");
     ac_io_emu_init(&com4_ac_io_emu, L"COM4");
     ac_io_emu_hdxs_init(&com4_hdxs, &com4_ac_io_emu, lights_dispatcher);
 

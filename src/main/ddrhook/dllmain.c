@@ -32,7 +32,7 @@ static bool my_dll_entry_main(void);
 bool standard_def;
 bool _15khz;
 
-static const irp_handler_t ddrhook_handlers[] = {
+static const irp_handler_t ddrhook_com4_handlers[] = {
     p3io_emu_dispatch_irp,
     extio_dispatch_irp,
     spike_dispatch_irp,
@@ -40,15 +40,27 @@ static const irp_handler_t ddrhook_handlers[] = {
     com4_dispatch_irp,
 };
 
+static const irp_handler_t ddrhook_handlers[] = {
+    /* Same as above, but without COM4 emulation.
+       See ddrhook/p3io.c for details. */
+
+    p3io_emu_dispatch_irp,
+    extio_dispatch_irp,
+    spike_dispatch_irp,
+    usbmem_dispatch_irp,
+};
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     int argc;
     char **argv;
+    bool com4;
     bool ok;
     int i;
 
     log_info("--- Begin ddrhook dll_entry_init ---");
 
+    com4 = true;
     args_recover(&argc, &argv);
 
     for (i = 1; i < argc; i++) {
@@ -66,12 +78,24 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
                 gfx_set_windowed();
 
                 break;
+
+            case 'u':
+                /* Don't emulate P3IO COM4 and its downstream devices, use the
+                   Windows COM4 port instead. */
+                com4 = false;
+
+                break;
         }
     }
 
     args_free(argc, argv);
 
-    iohook_init(ddrhook_handlers, lengthof(ddrhook_handlers));
+    if (com4) {
+        iohook_init(ddrhook_com4_handlers, lengthof(ddrhook_com4_handlers));
+    } else {
+        iohook_init(ddrhook_handlers, lengthof(ddrhook_handlers));
+    }
+
     rs232_hook_init();
 
     master_insert_hooks(NULL);
@@ -92,15 +116,17 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         return false;
     }
 
-    log_info("Initializing card reader backend");
+    if (com4) {
+        log_info("Initializing card reader backend");
 
-    eam_io_set_loggers(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+        eam_io_set_loggers(
+            log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
-    ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
-    if (!ok) {
-        return false;
+        if (!ok) {
+            return false;
+        }
     }
 
     log_info("--- End ddrhook dll_entry_init ---");
