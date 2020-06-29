@@ -1,5 +1,6 @@
 #define LOG_MODULE "acioemu-hdxs"
 
+#include "acio/hdxs.h"
 #include "acio/acio.h"
 
 #include "acioemu/emu.h"
@@ -18,12 +19,20 @@ static void ac_io_emu_hdxs_send_status(
     const struct ac_io_message *req,
     uint8_t status);
 
-void ac_io_emu_hdxs_init(struct ac_io_emu_hdxs *hdxs, struct ac_io_emu *emu)
+void ac_io_emu_hdxs_init(
+    struct ac_io_emu_hdxs *hdxs,
+    struct ac_io_emu *emu,
+    acio_hdxs_dispatcher lights_dispatcher)
 {
     log_assert(hdxs != NULL);
     log_assert(emu != NULL);
 
+    if (lights_dispatcher == NULL) {
+        log_warning("passed in NULL lights_dispatcher");
+    }
+
     hdxs->emu = emu;
+    hdxs->lights_dispatcher = lights_dispatcher;
 }
 
 void ac_io_emu_hdxs_dispatch_request(
@@ -51,9 +60,19 @@ void ac_io_emu_hdxs_dispatch_request(
 
         case AC_IO_CMD_CLEAR:
             log_misc("AC_IO_CMD_CLEAR(%d)", req->addr);
+            ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
+
+            break;
+
+        case AC_IO_HDXS_CMD_SET_OUTPUTS:
+            if (hdxs->lights_dispatcher != NULL) {
+                hdxs->lights_dispatcher(hdxs, req);
+            }
+            ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
+
+            break;
 
         case 0x110:
-        case 0x112:
         case 0x128:
             ac_io_emu_hdxs_send_status(hdxs, req, 0x00);
 
