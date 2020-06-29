@@ -43,7 +43,7 @@ void ddr_io_set_lights_extio(uint32_t lights)
 {
     uint8_t i;
 
-    for (i = 0x00; i <= 0x07; i++) {
+    for (i = 0x0E; i <= 0x1E; i++) {
         mapper_write_light(i, lights & (1 << i) ? 255 : 0);
     }
 }
@@ -52,7 +52,7 @@ void ddr_io_set_lights_p3io(uint32_t lights)
 {
     uint8_t i;
 
-    for (i = 0x0E; i <= 0x1E; i++) {
+    for (i = 0x00; i <= 0x07; i++) {
         mapper_write_light(i, lights & (1 << i) ? 255 : 0);
     }
 }
