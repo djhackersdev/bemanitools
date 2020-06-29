@@ -36,6 +36,8 @@ EXPORTS
     mapper_get_analog_map
     mapper_get_analog_sensitivity
     mapper_get_npages
+    mapper_get_nanalogs
+    mapper_get_nlights
     mapper_is_analog_absolute
     mapper_iterate_lights
     mapper_iterate_actions

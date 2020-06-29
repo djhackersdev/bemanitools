@@ -16,6 +16,7 @@ bool mapper_get_action_map(
 bool mapper_get_analog_map(uint8_t analog, struct mapped_analog *ma);
 int32_t mapper_get_analog_sensitivity(uint8_t analog);
 uint8_t mapper_get_nanalogs(void);
+uint8_t mapper_get_nlights(void);
 uint8_t mapper_get_npages(void);
 bool mapper_is_analog_absolute(uint8_t analog);
 action_iter_t mapper_iterate_actions(void);
