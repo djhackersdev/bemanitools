@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "acio/hdxs.h"
 #include "acio/icca.h"
 #include "acio/kfca.h"
 
@@ -71,6 +72,8 @@ struct ac_io_message {
 
                 struct ac_io_kfca_poll_in kfca_poll_in;
                 struct ac_io_kfca_poll_out kfca_poll_out;
+
+                struct ac_io_hdxs_output hdxs_output;
             };
         } cmd;
 

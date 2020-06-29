@@ -11,9 +11,13 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "acio/hdxs.h"
+
 #include "acioemu/addr.h"
 #include "acioemu/hdxs.h"
 #include "acioemu/icca.h"
+
+#include "bemanitools/ddrio.h"
 
 #include "ddrhook/_com4.h"
 
@@ -29,6 +33,54 @@ static struct ac_io_emu com4_ac_io_emu;
 static struct ac_io_emu_hdxs com4_hdxs;
 static struct ac_io_emu_icca com4_icca[2];
 
+static uint32_t check_panel_light(
+    const struct ac_io_hdxs_output *output,
+    uint8_t panel_idx,
+    uint8_t out_idx)
+{
+    if (output->lights[panel_idx].bit) {
+        return 1 << out_idx;
+    } else {
+        return 0;
+    }
+}
+
+static uint8_t upscale_light(uint8_t in_7bit) {
+    if (in_7bit < 0x10) {
+        return in_7bit * 2;
+    } else {
+        // so we can actually reach 0xFF
+        return (in_7bit * 2) + 1;
+    }
+}
+
+static void lights_dispatcher(
+    struct ac_io_emu_hdxs *emu, const struct ac_io_message *req)
+{
+    const struct ac_io_hdxs_output *output = &req->cmd.hdxs_output;
+
+    uint32_t lights = 0;
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P1_START, LIGHT_HD_P1_START);
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P1_UP_DOWN, LIGHT_HD_P1_UP_DOWN);
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P1_LEFT_RIGHT, LIGHT_HD_P1_LEFT_RIGHT);
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P2_START, LIGHT_HD_P2_START);
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P2_UP_DOWN, LIGHT_HD_P2_UP_DOWN);
+    lights |= check_panel_light(output, AC_IO_HDXS_OUT_P2_LEFT_RIGHT, LIGHT_HD_P2_LEFT_RIGHT);
+
+    ddr_io_set_lights_hdxs_panel(lights);
+
+    for (uint8_t i = 0; i < 4; ++i) {
+        size_t light_idx = i * 3;
+
+        // these are 7 bit, upscale them to 8 bit
+        uint8_t r = upscale_light(output->lights[light_idx + AC_IO_HDXS_RED].analog);
+        uint8_t g = upscale_light(output->lights[light_idx + AC_IO_HDXS_GREEN].analog);
+        uint8_t b = upscale_light(output->lights[light_idx + AC_IO_HDXS_BLUE].analog);
+
+        ddr_io_set_lights_hdxs_rgb(i, r, g, b);
+    }
+}
+
 void com4_init(void)
 {
     uint8_t i;
@@ -38,7 +90,7 @@ void com4_init(void)
 
     p3io_uart_set_path(0, L"COM4");
     ac_io_emu_init(&com4_ac_io_emu, L"COM4");
-    ac_io_emu_hdxs_init(&com4_hdxs, &com4_ac_io_emu);
+    ac_io_emu_hdxs_init(&com4_hdxs, &com4_ac_io_emu, lights_dispatcher);
 
     for (i = 0; i < lengthof(com4_icca); i++) {
         ac_io_emu_icca_init(&com4_icca[i], &com4_ac_io_emu, i);
