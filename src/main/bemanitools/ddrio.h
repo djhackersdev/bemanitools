@@ -32,8 +32,7 @@ enum ddr_pad_bit {
     DDR_P1_MENU_DOWN = 0x01,
 };
 
-/* p3io controls menu btn and marquee lights
-   extio controls neons and stage lights. */
+// see the functions below for more information
 
 enum p3io_light_bit {
     LIGHT_P1_MENU = 0x00,
@@ -42,14 +41,18 @@ enum p3io_light_bit {
     LIGHT_P2_UPPER_LAMP = 0x05,
     LIGHT_P1_LOWER_LAMP = 0x06,
     LIGHT_P1_UPPER_LAMP = 0x07,
+};
 
+enum hdxs_light_bit {
     LIGHT_HD_P1_START = 0x08,
     LIGHT_HD_P1_UP_DOWN = 0x09,
     LIGHT_HD_P1_LEFT_RIGHT = 0x0A,
     LIGHT_HD_P2_START = 0x0B,
     LIGHT_HD_P2_UP_DOWN = 0x0C,
     LIGHT_HD_P2_LEFT_RIGHT = 0x0D,
+};
 
+enum hdxs_rgb_light_bit {
     LIGHT_HD_P1_SPEAKER_F_R = 0x20,
     LIGHT_HD_P1_SPEAKER_F_G = 0x21,
     LIGHT_HD_P1_SPEAKER_F_B = 0x22,
@@ -101,11 +104,26 @@ bool ddr_io_init(
     thread_join_t thread_join,
     thread_destroy_t thread_destroy);
 
+
+/* used to poll the IO for input, note that this is also where lights are
+   flushed to the device for geninput */
 uint32_t ddr_io_read_pad(void);
+
+/* The following are optional to implement, and allow lights to be set and
+   emulated as needed */
+
+/* used to set pad lights, as well as the bass neon on SD cabs */
 void ddr_io_set_lights_extio(uint32_t extio_lights);
+
+/* used to set SD panel lights, and HD spot lights */
 void ddr_io_set_lights_p3io(uint32_t p3io_lights);
+
+/* used to set HD cab front panel lights */
 void ddr_io_set_lights_hdxs_panel(uint32_t hdxs_lights);
+
+/* used to set HD cab speaker RGB lights */
 void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b);
+
 void ddr_io_fini(void);
 
 #endif
