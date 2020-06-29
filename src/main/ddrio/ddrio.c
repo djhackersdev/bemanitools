@@ -57,6 +57,25 @@ void ddr_io_set_lights_p3io(uint32_t lights)
     }
 }
 
+void ddr_io_set_lights_hdxs_panel(uint32_t lights)
+{
+    uint8_t i;
+
+    for (i = 0x08; i <= 0x0D; i++) {
+        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+    }
+}
+
+void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (idx < 4) {
+        uint8_t base = 0x20 + idx * 3;
+        mapper_write_light(base + 0, r);
+        mapper_write_light(base + 1, g);
+        mapper_write_light(base + 2, b);
+    }
+}
+
 void ddr_io_fini(void)
 {
     input_fini();

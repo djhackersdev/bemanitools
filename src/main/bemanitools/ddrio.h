@@ -41,7 +41,27 @@ enum p3io_light_bit {
     LIGHT_P2_LOWER_LAMP = 0x04,
     LIGHT_P2_UPPER_LAMP = 0x05,
     LIGHT_P1_LOWER_LAMP = 0x06,
-    LIGHT_P1_UPPER_LAMP = 0x07
+    LIGHT_P1_UPPER_LAMP = 0x07,
+
+    LIGHT_HD_P1_START = 0x08,
+    LIGHT_HD_P1_UP_DOWN = 0x09,
+    LIGHT_HD_P1_LEFT_RIGHT = 0x0A,
+    LIGHT_HD_P2_START = 0x0B,
+    LIGHT_HD_P2_UP_DOWN = 0x0C,
+    LIGHT_HD_P2_LEFT_RIGHT = 0x0D,
+
+    LIGHT_HD_P1_SPEAKER_F_R = 0x20,
+    LIGHT_HD_P1_SPEAKER_F_G = 0x21,
+    LIGHT_HD_P1_SPEAKER_F_B = 0x22,
+    LIGHT_HD_P2_SPEAKER_F_R = 0x23,
+    LIGHT_HD_P2_SPEAKER_F_G = 0x24,
+    LIGHT_HD_P2_SPEAKER_F_B = 0x25,
+    LIGHT_HD_P1_SPEAKER_W_R = 0x26,
+    LIGHT_HD_P1_SPEAKER_W_G = 0x27,
+    LIGHT_HD_P1_SPEAKER_W_B = 0x28,
+    LIGHT_HD_P2_SPEAKER_W_R = 0x29,
+    LIGHT_HD_P2_SPEAKER_W_G = 0x2A,
+    LIGHT_HD_P2_SPEAKER_W_B = 0x2B,
 };
 
 enum extio_light_bit {
@@ -84,6 +104,8 @@ bool ddr_io_init(
 uint32_t ddr_io_read_pad(void);
 void ddr_io_set_lights_extio(uint32_t extio_lights);
 void ddr_io_set_lights_p3io(uint32_t p3io_lights);
+void ddr_io_set_lights_hdxs_panel(uint32_t hdxs_lights);
+void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b);
 void ddr_io_fini(void);
 
 #endif

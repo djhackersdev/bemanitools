@@ -7,3 +7,5 @@ EXPORTS
     ddr_io_read_pad
     ddr_io_set_lights_extio
     ddr_io_set_lights_p3io
+    ddr_io_set_lights_hdxs_panel
+    ddr_io_set_lights_hdxs_rgb
