@@ -104,7 +104,7 @@ void p3io_uart_cmd_open_close(
     }
 
 end:
-    p3io_resp_init(&resp->hdr, sizeof(resp), &req->hdr);
+    p3io_resp_init(&resp->hdr, sizeof(*resp), &req->hdr);
     resp->status = 0;
     resp->u8 = FAILED(hr);
 }
@@ -167,7 +167,7 @@ void p3io_uart_cmd_write(
     hr = p3io_uart_write(p3io_uart_fds[req->port_no], &iobuf);
 
 end:
-    p3io_resp_init(&resp->hdr, sizeof(resp), &req->hdr);
+    p3io_resp_init(&resp->hdr, sizeof(*resp), &req->hdr);
     resp->status = FAILED(hr);
     resp->nbytes = iobuf.pos;
 }
