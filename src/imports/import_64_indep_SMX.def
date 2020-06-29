@@ -1,0 +1,18 @@
+LIBRARY SMX
+
+EXPORTS
+    SMX_Start
+    SMX_Stop
+    SMX_SetLogCallback
+    SMX_GetInfo
+    SMX_GetInputState
+    SMX_SetLights
+    SMX_SetLights2
+    SMX_ReenableAutoLights
+    SMX_GetConfig
+    SMX_SetConfig
+    SMX_FactoryReset
+    SMX_ForceRecalibration
+    SMX_SetTestMode
+    SMX_GetTestData
+    SMX_Version
