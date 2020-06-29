@@ -105,19 +105,32 @@ int main(int argc, char **argv)
     eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
     eam_io_config_api = eam_io_get_config_api();
 
+    // calculate these and check against the loaded config
+    max_light = -1;
+
+    for (i = 0; i < schema->nlights; i++) {
+        if (max_light < schema->lights[i].bit) {
+            max_light = schema->lights[i].bit;
+        }
+    }
+
     if (!mapper_config_load(schema->name)) {
         log_info("Initializing empty config for %s", schema->name);
 
-        max_light = -1;
-
-        for (i = 0; i < schema->nlights; i++) {
-            if (max_light < schema->lights[i].bit) {
-                max_light = schema->lights[i].bit;
-            }
-        }
-
         mapper_set_nlights((uint8_t)(max_light + 1));
         mapper_set_nanalogs((uint8_t) schema->nanalogs);
+    } else {
+        // make sure that these are right
+
+        if (mapper_get_nlights() != (max_light + 1)) {
+            log_info("Updating nlights for %s", schema->name);
+            mapper_set_nlights((uint8_t)(max_light + 1));
+        }
+
+        if (mapper_get_nanalogs() != schema->nanalogs) {
+            log_info("Updating nanalogs for %s", schema->name);
+            mapper_set_nanalogs((uint8_t) schema->nanalogs);
+        }
     }
 
     memset(&psh, 0, sizeof(psh));

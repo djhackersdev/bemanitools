@@ -149,6 +149,11 @@ uint8_t mapper_get_nanalogs(void)
     return mapper_impl_get_nanalogs(mapper_inst);
 }
 
+uint8_t mapper_get_nlights(void)
+{
+    return mapper_impl_get_nlights(mapper_inst);
+}
+
 uint8_t mapper_get_npages(void)
 {
     return mapper_impl_get_npages(mapper_inst);
