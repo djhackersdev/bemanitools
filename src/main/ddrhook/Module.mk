@@ -9,7 +9,6 @@ libs_ddrhook		:= \
 	p3io \
 	hook \
 	hooklib \
-	security \
 	util \
 	eamio \
 	ddrio \

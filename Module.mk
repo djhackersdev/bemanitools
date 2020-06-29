@@ -470,6 +470,22 @@ $(zipdir)/ddr-12-to-16.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/ddr-16-x64.zip: \
+		build/bin/avs2_1603-64/launcher.exe \
+		build/bin/avs2_1603-64/ddrhook.dll \
+		build/bin/avs2_1603-64/unicorntail.dll \
+		build/bin/indep-64/config.exe \
+		build/bin/indep-64/ddrio.dll \
+		build/bin/indep-64/ddrio-mm.dll \
+		build/bin/indep-64/ddrio-smx.dll \
+		build/bin/indep-64/eamio.dll \
+		build/bin/indep-64/geninput.dll \
+		dist/ddr/config.bat \
+		dist/ddr/gamestart-16.bat \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/bst.zip: \
 		build/bin/avs2_1603-64/bsthook.dll \
 		build/bin/avs2_1603-64/launcher.exe \
@@ -522,6 +538,7 @@ $(BUILDDIR)/tests.zip: \
 $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/bst.zip \
 		$(zipdir)/ddr-12-to-16.zip \
+		$(zipdir)/ddr-16-x64.zip \
 		$(zipdir)/doc.zip \
 		$(zipdir)/iidx-09-to-12.zip \
 		$(zipdir)/iidx-13.zip \
