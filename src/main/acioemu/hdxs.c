@@ -28,7 +28,7 @@ void ac_io_emu_hdxs_init(
     log_assert(emu != NULL);
 
     if (lights_dispatcher == NULL) {
-        log_warning("passed in NULL lights_dispatcher");
+        log_warning("NULL lights_dispatcher, HDXS light output won't work");
     }
 
     hdxs->emu = emu;

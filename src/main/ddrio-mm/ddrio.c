@@ -215,7 +215,6 @@ void ddr_io_set_lights_hdxs_panel(uint32_t lights)
 
 void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
 {
-
     (void) idx;
     (void) r;
     (void) g;
