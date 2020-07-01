@@ -1,5 +1,11 @@
 # Release history
 ## 5.31
+* DDR: Fix p3io and extio lights not working / being swapped when using geninput
+* DDR: Add HDXS light support
+* DDR: Add 64 bit support
+* DDR: Add option to use COM4 as the p3io rs232 port instead of emulating (for use with acrealio etc.)
+* Jubeat: Add network adapter hook
+* Misc: Fix aciodrv sometimes hanging on boot (eamio-icca and sdvxio-kfca) 
 
 ## 5.30
 * SDVX: sdvxhook2 headphone force and cursor confining config options
