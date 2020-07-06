@@ -17,16 +17,22 @@ void module_context_init(struct module_context *module, const char *path)
 
     if (module->dll == NULL) {
         LPSTR buffer;
+        DWORD err = GetLastError();
 
         FormatMessageA(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL,
-            GetLastError(),
+            err,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             (LPSTR) &buffer,
             0,
             NULL);
+
+        if (err == ERROR_MOD_NOT_FOUND) {
+            log_warning("%s is likely missing dependencies", path);
+            log_warning("Do you have vcredist/directx runtimes installed?");
+        }
 
         log_fatal("%s: Failed to load game DLL: %s", path, buffer);
 
