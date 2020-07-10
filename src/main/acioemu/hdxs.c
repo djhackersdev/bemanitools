@@ -105,11 +105,11 @@ static void ac_io_emu_hdxs_cmd_send_version(
     resp.cmd.version.type = ac_io_u32(AC_IO_NODE_TYPE_LED_STRIP);
     resp.cmd.version.flag = 0x00;
     resp.cmd.version.major = 0x01;
-    resp.cmd.version.minor = 0x06;
-    resp.cmd.version.revision = 0x00;
+    resp.cmd.version.minor = 0x00;
+    resp.cmd.version.revision = 0x01;
     memcpy(
         resp.cmd.version.product_code,
-        "HDXS",
+        "HDXB",
         sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));

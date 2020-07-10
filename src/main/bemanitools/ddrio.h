@@ -52,19 +52,20 @@ enum hdxs_light_bit {
     LIGHT_HD_P2_LEFT_RIGHT = 0x0D,
 };
 
-enum hdxs_rgb_light_bit {
-    LIGHT_HD_P1_SPEAKER_F_R = 0x20,
-    LIGHT_HD_P1_SPEAKER_F_G = 0x21,
-    LIGHT_HD_P1_SPEAKER_F_B = 0x22,
-    LIGHT_HD_P2_SPEAKER_F_R = 0x23,
-    LIGHT_HD_P2_SPEAKER_F_G = 0x24,
-    LIGHT_HD_P2_SPEAKER_F_B = 0x25,
-    LIGHT_HD_P1_SPEAKER_W_R = 0x26,
-    LIGHT_HD_P1_SPEAKER_W_G = 0x27,
-    LIGHT_HD_P1_SPEAKER_W_B = 0x28,
-    LIGHT_HD_P2_SPEAKER_W_R = 0x29,
-    LIGHT_HD_P2_SPEAKER_W_G = 0x2A,
-    LIGHT_HD_P2_SPEAKER_W_B = 0x2B,
+// the indexing starts from 0x20 if you're looking in geninput
+enum hdxs_rgb_light_idx {
+    LIGHT_HD_P1_SPEAKER_F_R = 0x00,
+    LIGHT_HD_P1_SPEAKER_F_G = 0x01,
+    LIGHT_HD_P1_SPEAKER_F_B = 0x02,
+    LIGHT_HD_P2_SPEAKER_F_R = 0x03,
+    LIGHT_HD_P2_SPEAKER_F_G = 0x04,
+    LIGHT_HD_P2_SPEAKER_F_B = 0x05,
+    LIGHT_HD_P1_SPEAKER_W_R = 0x06,
+    LIGHT_HD_P1_SPEAKER_W_G = 0x07,
+    LIGHT_HD_P1_SPEAKER_W_B = 0x08,
+    LIGHT_HD_P2_SPEAKER_W_R = 0x09,
+    LIGHT_HD_P2_SPEAKER_W_G = 0x0A,
+    LIGHT_HD_P2_SPEAKER_W_B = 0x0B,
 };
 
 enum extio_light_bit {
