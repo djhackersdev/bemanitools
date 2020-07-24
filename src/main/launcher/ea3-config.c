@@ -97,13 +97,29 @@ bool ea3_ident_invoke_module_init(
         ident->rev,
         ident->ext);
 
+    /* Set up long-form sidcode env var */
+
+    str_format(
+        sidcode_long,
+        lengthof(sidcode_long),
+        "%s:%s:%s:%s:%s",
+        ident->model,
+        ident->dest,
+        ident->spec,
+        ident->rev,
+        ident->ext);
+
+    /* Set this up beforehand, as certain games require it in dll_entry_init */
+
+    std_setenv("/env/profile/soft_id_code", sidcode_long);
+
     ok = module_context_invoke_init(module, sidcode_short, app_config);
 
     if (!ok) {
         return false;
     }
 
-    /* Back-propagate sidcode */
+    /* Back-propagate sidcode, as some games modify it during init */
 
     memcpy(ident->model, sidcode_short + 0, sizeof(ident->model) - 1);
     ident->dest[0] = sidcode_short[3];
@@ -111,7 +127,7 @@ bool ea3_ident_invoke_module_init(
     ident->rev[0] = sidcode_short[5];
     memcpy(ident->ext, sidcode_short + 6, sizeof(ident->ext));
 
-    /* Set up long-form sidcode env var */
+    /* Set up long-form sidcode env var again */
 
     str_format(
         sidcode_long,
