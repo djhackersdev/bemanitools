@@ -16,7 +16,7 @@ void *xcalloc(size_t nbytes)
     mem = calloc(nbytes, 1);
 
     if (mem == NULL) {
-        log_fatal("xmalloc(%u) failed", (uint32_t) nbytes);
+        log_fatal("xcalloc(%u) failed", (uint32_t) nbytes);
 
         return NULL;
     }
@@ -31,7 +31,7 @@ void *xmalloc(size_t nbytes)
     mem = malloc(nbytes);
 
     if (mem == NULL) {
-        log_fatal("xcalloc(%u) failed", (uint32_t) nbytes);
+        log_fatal("xmalloc(%u) failed", (uint32_t) nbytes);
 
         return NULL;
     }
