@@ -1,18 +1,7 @@
-#ifndef IIDXHOOK_BI2A_H
-#define IIDXHOOK_BI2A_H
+#ifndef BIO2_BI2A_IIDX
+#define BIO2_BI2A_IIDX
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "bio2emu/emu.h"
-
-enum bio2_iidx_cmd {
-    // Custom Stuff
-    BIO2_BI2A_CMD_UNK_0100 = 0x0100,
-    BIO2_BI2A_CMD_UNK_0120 = 0x0120,
-    BIO2_BI2A_CMD_POLL = 0x0152,
-};
+#include "bio2/bio2.h"
 
 #pragma pack(push, 1)
 struct bi2a_iidx_slider {
@@ -113,9 +102,5 @@ _Static_assert(
     sizeof(struct bi2a_iidx_state_out) == 46,
     "bi2a_iidx_state_out is the wrong size");
 #pragma pack(pop)
-
-void bio2_emu_bi2a_init(struct bio2emu_port *in, bool disable_poll_limiter);
-void bio2_emu_bi2a_dispatch_request(
-    struct bio2emu_port *bio2port, const struct ac_io_message *req);
 
 #endif

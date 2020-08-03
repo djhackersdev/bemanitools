@@ -24,7 +24,7 @@
 #include "iidxhook-util/log-server.h"
 
 #include "bio2emu/emu.h"
-#include "iidxhook8/bi2a.h"
+#include "bio2emu-iidx/bi2a.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
