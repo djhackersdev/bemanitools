@@ -30,6 +30,16 @@
 static struct ac_io_emu iidxhook_util_acio_emu;
 static struct ac_io_emu_icca iidxhook_util_acio_emu_icca[2];
 
+static bool iidxhook_util_icca_override_version;
+static enum ac_io_emu_icca_version iidxhook_util_icca_override_version_value;
+
+
+void iidxhook_util_acio_override_version(enum ac_io_emu_icca_version version)
+{
+    iidxhook_util_icca_override_version = true;
+    iidxhook_util_icca_override_version_value = version;
+}
+
 void iidxhook_util_acio_init(bool legacy_mode)
 {
     uint8_t i;
@@ -43,6 +53,12 @@ void iidxhook_util_acio_init(bool legacy_mode)
     for (i = 0; i < lengthof(iidxhook_util_acio_emu_icca); i++) {
         ac_io_emu_icca_init(
             &iidxhook_util_acio_emu_icca[i], &iidxhook_util_acio_emu, i);
+        if (iidxhook_util_icca_override_version) {
+            ac_io_emu_icca_set_version(
+                &iidxhook_util_acio_emu_icca[i],
+                iidxhook_util_icca_override_version_value
+            );
+        }
     }
 
     rs232_hook_add_fd(iidxhook_util_acio_emu.fd);
