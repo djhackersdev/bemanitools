@@ -1,7 +1,6 @@
-#define LOG_MODULE "bio2emu-bi2a"
+#define LOG_MODULE "bio2emu-iidx"
 
-#include "iidxhook8/bi2a.h"
-#include "bio2emu/emu.h"
+#include "bio2emu-iidx/bi2a.h"
 
 #include <windows.h> /* for _BitScanForward */
 

@@ -350,8 +350,8 @@ static CONFIGRET my_CM_Get_Device_IDA(
             log_info("%s: Injecting custom parent ID for BIO2", __FUNCTION__);
             strcpy(Buffer, devpath);
 
-            Buffer[devpathsize - 1] =
-                '\0' + (dnDevInst & CUSTOM_DEVICE_INSTANCE_IDXMASK);
+            Buffer[devpathsize - 2] =
+                '0' + (dnDevInst & CUSTOM_DEVICE_INSTANCE_IDXMASK);
             log_info("%s: %s", __FUNCTION__, Buffer);
             return CR_SUCCESS;
         }
