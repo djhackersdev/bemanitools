@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 
+#include "acioemu/icca.h"
 #include "hook/iohook.h"
 
 /**
@@ -18,6 +19,12 @@
  *        not set correctly.
  */
 void iidxhook_util_acio_init(bool legacy_mode);
+
+
+/**
+ * Use the specified ICCA emulation version
+ */
+void iidxhook_util_acio_override_version(enum ac_io_emu_icca_version version);
 
 /**
  * Cleanup the ACIO emulation layer.
