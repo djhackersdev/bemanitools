@@ -1,6 +1,8 @@
 #ifndef AC_IO_KFCA_H
 #define AC_IO_KFCA_H
 
+#include <stdint.h>
+
 #define AC_IO_CMD_KFCA_POLL 0x0113
 #define AC_IO_CMD_KFCA_WATCHDOG 0x0120
 #define AC_IO_CMD_KFCA_AMP_CONTROL 0x0128
