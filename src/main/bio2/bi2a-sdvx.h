@@ -31,7 +31,7 @@ struct bi2a_sdvx_buttons2 {
     uint8_t b_fxr : 1;
 };
 
-struct bio2_bi2a_state {
+struct bi2a_sdvx_state_in {
     union {
         uint16_t raw[8];
         struct {
@@ -44,7 +44,7 @@ struct bio2_bi2a_state {
     };
 };
 
-struct bio2_bi2a_state_out {
+struct bi2a_sdvx_state_out {
     uint8_t unk1[2];
     uint8_t c_block;
     uint8_t woof_r;
@@ -65,11 +65,11 @@ struct bio2_bi2a_state_out {
 };
 
 _Static_assert(
-    sizeof(struct bio2_bi2a_state) == 16,
-    "bio2_bi2a_state_in is the wrong size");
+    sizeof(struct bi2a_sdvx_state_in) == 16,
+    "bi2a_sdvx_state_in is the wrong size");
 _Static_assert(
-    sizeof(struct bio2_bi2a_state_out) == 40,
-    "bio2_bi2a_state_out is the wrong size");
+    sizeof(struct bi2a_sdvx_state_out) == 40,
+    "bi2a_sdvx_state_out is the wrong size");
 #pragma pack(pop)
 
 #endif
