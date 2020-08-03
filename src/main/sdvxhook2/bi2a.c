@@ -179,16 +179,16 @@ static void
 bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
     struct ac_io_message resp;
-    struct bio2_bi2a_state *pin;
-    struct bio2_bi2a_state_out *pout;
+    struct bi2a_sdvx_state_in *pin;
+    struct bi2a_sdvx_state_out *pout;
 
     resp.addr = req->addr | AC_IO_RESPONSE_FLAG;
     resp.cmd.code = req->cmd.code;
     resp.cmd.seq_no = req->cmd.seq_no;
     resp.cmd.nbytes = sizeof(*pin);
 
-    pout = (struct bio2_bi2a_state_out *) &req->cmd.raw;
-    pin = (struct bio2_bi2a_state *) &resp.cmd.raw;
+    pout = (struct bi2a_sdvx_state_out *) &req->cmd.raw;
+    pin = (struct bi2a_sdvx_state_in *) &resp.cmd.raw;
     memset(pin, 0, sizeof(*pin));
 
     uint32_t gpio = 0;
