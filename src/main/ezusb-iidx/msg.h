@@ -59,7 +59,9 @@ struct ezusb_iidx_msg_interrupt_read_packet {
       1: Not used
       2: Not used
       3: Not used
-      4: Not used
+      4: C02/D01 board identifier, 1 = C02, 0 = D01 (on active low). This defines how the game has
+         to flash the FPGA board since D01 needs a different firmware (see result of FPGA CHECK on
+         game bootup)
       5: Not used
       6: usb mute?
       7: Not used
