@@ -1,4 +1,4 @@
-This library drives a "legacy" ezusb IO board, also known as C02 IO, and 
+This library drives a "legacy" ezusb IO board, also known as C02/D01 IO, and 
 implements the iidxio API of BT5. Thus, it allows you to use this IO board with
 *any* version of IIDX that is supported by BT5.
 
@@ -24,5 +24,7 @@ the status LEDs on the side of the board should show a blinking pattern.
 dump to the FPGA.
 * There is a script called ezusb-boot.bat which combines the two steps above
 and can be integrated into the startup process of a dedicated setup.
+* If you are using a D01 IO board, use the `fpga-d01.bin` file instead of the
+`fpga.bin` file.
 * If you ignore these steps, you will either run into errors or parts of the
 IO board won't work (e.g. lights).
