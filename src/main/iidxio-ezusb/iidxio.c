@@ -192,7 +192,8 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
 
 uint8_t iidx_io_ep2_get_sys(void)
 {
-    return ((~iidx_io_ezusb_read_packet.inverted_pad) >> 28) & 0x03;
+    return (((~iidx_io_ezusb_read_packet.inverted_pad) >> 28) & 0x03) |
+        ((((~iidx_io_ezusb_read_packet.inverted_pad) >> 22) & 0x01) << 2);
 }
 
 uint8_t iidx_io_ep2_get_panel(void)
