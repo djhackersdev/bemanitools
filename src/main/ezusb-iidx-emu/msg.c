@@ -160,6 +160,10 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read)
     otherwise the game's fpga check will fail */
     msg_resp->fpga2_check_flag_unkn = 2;
 
+#ifdef EZUSB_IIDX_EMU_D01_BOARD
+    msg_resp->inverted_pad &= ~(1 << 4);
+#endif
+
     read->pos = sizeof(*msg_resp);
 
     return S_OK;
