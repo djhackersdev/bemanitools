@@ -30,4 +30,22 @@ bool aciodrv_kfca_poll(
     const struct ac_io_kfca_poll_out *pout,
     struct ac_io_kfca_poll_in *pin);
 
+/**
+ * Set the KFCA digital amp level
+ *
+ * @param node_id Id of the node to query (0 based).
+ * @param primary primary volume (96-0)
+ * @param headphone headphone volume (96-0)
+ * @param unused unknown volume (96-0) (unused)
+ * @param subwoofer subwoofer volume (96-0)
+ * @return True on success, false on error.
+ * @note Note 96 (or 100?) is lowest volume level, 0 is highest
+ */
+bool aciodrv_kfca_amp(
+    uint8_t node_id,
+    uint8_t primary,
+    uint8_t headphone,
+    uint8_t unused,
+    uint8_t subwoofer);
+
 #endif

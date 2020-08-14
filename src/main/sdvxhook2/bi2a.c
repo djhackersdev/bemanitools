@@ -104,8 +104,12 @@ kfca_amp_control(struct ac_io_emu *emu, const struct ac_io_message *req)
     resp.cmd.nbytes = req->cmd.nbytes;
     memcpy(resp.cmd.raw, req->cmd.raw, req->cmd.nbytes);
 
-    // log_misc("sz %d: %d, %d, %d, %d", req->cmd.nbytes, req->cmd.raw[0],
-    // req->cmd.raw[1], req->cmd.raw[2], req->cmd.raw[3]);
+    // so SDVX5 sets the amps to 0 aka ALL MAX and uses Windows instead
+    // let's leave it to the individual sdvxio to set on init instead
+    // this way if any sdvxio's want to use Windows APIs for SDVX1-4 comapt.
+    // they can do so without doubly affecting the volume
+
+    // sdvx_io_set_amp_volume(0, 0, 0, 0);
 
     ac_io_emu_response_push(emu, &resp, 0);
 }

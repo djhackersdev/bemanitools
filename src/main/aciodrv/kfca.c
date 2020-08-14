@@ -37,7 +37,12 @@ static bool aciodrv_kfca_watchdog_start(uint8_t node_id)
     */
 }
 
-static bool aciodrv_kfca_amp(uint8_t node_id)
+bool aciodrv_kfca_amp(
+    uint8_t node_id,
+    uint8_t primary,
+    uint8_t headphone,
+    uint8_t unused,
+    uint8_t subwoofer)
 {
     struct ac_io_message msg;
 
@@ -45,12 +50,10 @@ static bool aciodrv_kfca_amp(uint8_t node_id)
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_AMP_CONTROL);
     msg.cmd.nbytes = 4;
 
-    // yes this sets the amp to 100% volume
-    // TODO: expose this to sdvxio instead at some point
-    msg.cmd.raw[0] = 0;
-    msg.cmd.raw[1] = 0;
-    msg.cmd.raw[2] = 0;
-    msg.cmd.raw[3] = 0;
+    msg.cmd.raw[0] = primary;
+    msg.cmd.raw[1] = headphone;
+    msg.cmd.raw[2] = unused;
+    msg.cmd.raw[3] = subwoofer;
 
     if (!aciodrv_send_and_recv(
             &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
@@ -69,7 +72,7 @@ bool aciodrv_kfca_init(uint8_t node_id)
         return false;
     }
 
-    if (!aciodrv_kfca_amp(node_id)) {
+    if (!aciodrv_kfca_amp(node_id, 0, 0, 0, 0)) {
         return false;
     }
 
