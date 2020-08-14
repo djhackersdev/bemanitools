@@ -31,6 +31,7 @@ static uint16_t sdvx_io_analog[2];
 
 static bool running;
 static bool processing_io;
+static int16_t kfca_node_id;
 
 struct ac_io_kfca_poll_out pout_staging;
 struct ac_io_kfca_poll_out pout_ready;
@@ -86,7 +87,7 @@ bool sdvx_io_init(
     uint8_t node_count = aciodrv_device_get_node_count();
     log_info("Enumerated %d nodes", node_count);
 
-    int16_t kfca_node_id = -1;
+    kfca_node_id = -1;
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
@@ -109,7 +110,11 @@ bool sdvx_io_init(
 
     if (kfca_node_id != -1) {
         log_warning("Using KFCA on node: %d", kfca_node_id);
-        aciodrv_kfca_init(kfca_node_id);
+
+        if (!aciodrv_kfca_init(kfca_node_id)) {
+            log_warning("Unable to start KFCA on node: %d", kfca_node_id);
+            return false;
+        }
 
         running = true;
         log_warning("sdvxio-kfca now running");
@@ -155,7 +160,7 @@ bool sdvx_io_read_input(void)
     }
     processing_io = true;
 
-    if (!aciodrv_kfca_poll(0, &pout_ready, &pin)) {
+    if (!aciodrv_kfca_poll(kfca_node_id, &pout_ready, &pin)) {
         return false;
     }
 
@@ -198,4 +203,20 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
         return 0;
     }
     return sdvx_io_analog[spinner_no];
+}
+
+bool sdvx_io_set_amp_volume(
+    uint8_t primary,
+    uint8_t headphone,
+    uint8_t subwoofer)
+{
+    if (!running) {
+        return false;
+    }
+
+    if (!aciodrv_kfca_amp(kfca_node_id, primary, 96, headphone, subwoofer)) {
+        return false;
+    }
+
+    return true;
 }

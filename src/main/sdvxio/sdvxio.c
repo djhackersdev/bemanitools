@@ -88,3 +88,8 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
 {
     return mapper_read_analog(spinner_no) * 4;
 }
+
+bool sdvx_io_set_amp_volume(uint8_t primary, uint8_t headphone, uint8_t subwoofer)
+{
+    return true;
+}
