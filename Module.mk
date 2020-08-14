@@ -78,6 +78,7 @@ include src/main/aciodrv/Module.mk
 include src/main/acioemu/Module.mk
 include src/main/aciotest/Module.mk
 include src/main/asio/Module.mk
+include src/main/bio2drv/Module.mk
 include src/main/bio2emu/Module.mk
 include src/main/bio2emu-iidx/Module.mk
 include src/main/bsthook/Module.mk
@@ -142,6 +143,7 @@ include src/main/sdvxhook2/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxio/Module.mk
 include src/main/sdvxio-kfca/Module.mk
+include src/main/sdvxio-bio2/Module.mk
 include src/main/security/Module.mk
 include src/main/unicorntail/Module.mk
 include src/main/util/Module.mk
@@ -416,6 +418,7 @@ $(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/sdvxio.dll \
 		build/bin/indep-32/sdvxio-kfca.dll \
+		build/bin/indep-32/sdvxio-bio2.dll \
 		dist/sdvx/config.bat \
 		dist/sdvx/gamestart.bat \
 		| $(zipdir)/
@@ -430,6 +433,7 @@ $(zipdir)/sdvx-05.zip: \
 		build/bin/indep-64/geninput.dll \
 		build/bin/indep-64/sdvxio.dll \
 		build/bin/indep-64/sdvxio-kfca.dll \
+		build/bin/indep-64/sdvxio-bio2.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
 		dist/sdvx5/sdvxhook2.conf \
