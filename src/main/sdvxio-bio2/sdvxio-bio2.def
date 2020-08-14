@@ -1,0 +1,15 @@
+LIBRARY sdvxio-bio2
+
+EXPORTS
+    sdvx_io_fini
+    sdvx_io_get_input_gpio
+    sdvx_io_get_input_gpio_sys
+    sdvx_io_get_spinner_pos
+    sdvx_io_init
+    sdvx_io_read_input
+    sdvx_io_set_gpio_lights
+    sdvx_io_set_loggers
+    sdvx_io_set_pwm_light
+    sdvx_io_write_output
+    sdvx_io_set_amp_volume
+    _bio2_sdvx_io_poll

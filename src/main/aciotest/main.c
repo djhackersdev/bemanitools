@@ -9,10 +9,12 @@
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
+#include "aciotest/bi2a-sdvx.h"
 
 #include "util/log.h"
 
 static uint8_t aciotest_cnt = 0;
+static uint8_t bi2a_mode = 0;
 
 /**
  * Enumerate supported ACIO nodes based on their product id.
@@ -33,6 +35,17 @@ static bool aciotest_assign_handler(
         handler->update = aciotest_kfca_handler_update;
 
         return true;
+    }
+
+    if (!memcmp(product, "BI2A", 4)) {
+        if (bi2a_mode == 0) {
+            handler->init = aciotest_bi2a_sdvx_handler_init;
+            handler->update = aciotest_bi2a_sdvx_handler_update;
+
+            return true;
+        } else {
+            printf("Unknown BI2A device specified");
+        }
     }
 
     return false;
@@ -125,7 +138,7 @@ int main(int argc, char **argv)
         }
 
         /* avoid cpu banging */
-        Sleep(20);
+        Sleep(30);
     }
 
     return 0;
