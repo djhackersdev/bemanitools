@@ -15,7 +15,7 @@
 
 static void kfca_send_version(const struct ac_io_message *req);
 static void kfca_report_status(const struct ac_io_message *req, uint8_t status);
-static void kfca_report_0128(const struct ac_io_message *req);
+static void kfca_amp_control(const struct ac_io_message *req);
 static void kfca_poll(const struct ac_io_message *req);
 static void kfca_poll_thunk(void *ctx_ptr, struct ac_io_message *resp);
 
@@ -60,7 +60,7 @@ void kfca_dispatch_request(const struct ac_io_message *req)
 
         case AC_IO_CMD_KFCA_AMP_CONTROL:
             log_misc("AC_IO_CMD_KFCA_AMP_CONTROL(%d)", req->addr);
-            kfca_report_0128(req);
+            kfca_amp_control(req);
 
             break;
 
@@ -110,7 +110,7 @@ static void kfca_report_status(const struct ac_io_message *req, uint8_t status)
     ac_io_emu_response_push(kfca_ac_io_emu, &resp, 0);
 }
 
-static void kfca_report_0128(const struct ac_io_message *req)
+static void kfca_amp_control(const struct ac_io_message *req)
 {
     struct ac_io_message resp;
 
@@ -119,6 +119,12 @@ static void kfca_report_0128(const struct ac_io_message *req)
     resp.cmd.seq_no = req->cmd.seq_no;
     resp.cmd.nbytes = req->cmd.nbytes;
     memcpy(resp.cmd.raw, req->cmd.raw, req->cmd.nbytes);
+
+    // bytes 0-4: main, headphone, unused, subwoofer
+
+    if (!sdvx_io_set_amp_volume(req->cmd.raw[0], req->cmd.raw[1], req->cmd.raw[3])) {
+        log_warning("Unable to set amp volume?");
+    }
 
     ac_io_emu_response_push(kfca_ac_io_emu, &resp, 0);
 }
