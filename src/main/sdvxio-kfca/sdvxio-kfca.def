@@ -11,3 +11,4 @@ EXPORTS
     sdvx_io_set_loggers
     sdvx_io_set_pwm_light
     sdvx_io_write_output
+    sdvx_io_set_amp_volume
