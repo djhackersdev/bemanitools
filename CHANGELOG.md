@@ -1,4 +1,9 @@
 # Release history
+## 5.33
+
+## 5.32
+* Various bugfixes
+
 ## 5.31
 * DDR: Fix p3io and extio lights not working / being swapped when using geninput
 * DDR: Add HDXS light support
