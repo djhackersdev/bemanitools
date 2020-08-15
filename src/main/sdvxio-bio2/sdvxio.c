@@ -150,6 +150,8 @@ void sdvx_io_fini(void)
 {
     running = false;
     while (processing_io) {
+        // avoid banging
+        Sleep(1);
     }
 }
 
