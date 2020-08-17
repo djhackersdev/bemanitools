@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,8 +32,8 @@ static uint16_t sdvx_io_analog[2];
 
 static char autodetect_buffer[512];
 
-static bool running;
-static bool processing_io;
+static atomic_bool running;
+static atomic_bool processing_io;
 static int16_t bio2_node_id;
 
 uint8_t wing_staging[12];
