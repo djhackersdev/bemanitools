@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -29,8 +30,8 @@ static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
 static uint16_t sdvx_io_analog[2];
 
-static bool running;
-static bool processing_io;
+static atomic_bool running;
+static atomic_bool processing_io;
 static int16_t kfca_node_id;
 
 struct ac_io_kfca_poll_out pout_staging;
@@ -129,6 +130,8 @@ void sdvx_io_fini(void)
 {
     running = false;
     while (processing_io) {
+        // avoid banging
+        Sleep(1);
     }
 }
 
