@@ -14,6 +14,7 @@ src_util        := \
     mem.c \
     msg-thread.c \
     net.c \
+    signal.c \
     str.c \
     thread.c \
     time.c \
