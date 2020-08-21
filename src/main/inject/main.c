@@ -18,6 +18,7 @@
 #include "util/cmdline.h"
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/os.h"
 #include "util/signal.h"
 #include "util/str.h"
 
@@ -129,6 +130,8 @@ int main(int argc, char **argv)
     if (!logger_init(strlen(options.log_file) > 0 ? options.log_file : NULL)) {
         goto init_logger_fail;
     }
+
+    os_version_log();
 
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
