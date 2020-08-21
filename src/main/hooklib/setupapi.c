@@ -142,6 +142,9 @@ static HDEVINFO STDCALL my_SetupDiGetClassDevsA(
             && memcmp(class_guid, &hook_setupapi_data->device_guid,
             sizeof(hook_setupapi_data->device_guid)) == 0) {
     */
+
+   log_misc("my_SetupDiGetClassDevsA");
+
     if ((class_guid != NULL &&
          !memcmp(
              class_guid,
@@ -161,6 +164,8 @@ static HDEVINFO STDCALL my_SetupDiGetClassDevsA(
 static HDEVINFO STDCALL my_SetupDiGetClassDevsW(
     const GUID *class_guid, PCWSTR enumerator, HWND hwnd, DWORD flags)
 {
+    log_misc("my_SetupDiGetClassDevsW");
+
     if (class_guid != NULL &&
         memcmp(
             class_guid,
@@ -179,6 +184,8 @@ static HDEVINFO STDCALL my_SetupDiGetClassDevsW(
 static BOOL STDCALL my_SetupDiEnumDeviceInfo(
     HDEVINFO dev_info, DWORD index, SP_DEVINFO_DATA *info_data)
 {
+    log_misc("my_SetupDiEnumDeviceInfo");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         if (index == 0) {
             SetLastError(ERROR_SUCCESS);
@@ -203,6 +210,8 @@ static BOOL STDCALL my_SetupDiEnumDeviceInterfaces(
     DWORD index,
     SP_DEVICE_INTERFACE_DATA *ifd)
 {
+    log_misc("my_SetupDiEnumDeviceInterfaces");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         SetLastError(ERROR_SUCCESS);
 
@@ -224,6 +233,8 @@ static BOOL STDCALL my_SetupDiGetDeviceRegistryPropertyA(
     DWORD nbytes,
     DWORD *required_nbytes)
 {
+    log_misc("my_SetupDiGetDeviceRegistryPropertyA");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         if (prop_id != SPDRP_DEVICEDESC) {
             SetLastError(ERROR_BAD_ARGUMENTS);
@@ -271,6 +282,8 @@ static BOOL STDCALL my_SetupDiGetDeviceInterfaceDetailA(
     DWORD *required_size,
     SP_DEVINFO_DATA *info_data)
 {
+    log_misc("my_SetupDiGetDeviceInterfaceDetailA");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         if (size == 0) {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
@@ -307,6 +320,8 @@ static BOOL STDCALL my_SetupDiGetDeviceInterfaceDetailW(
     DWORD *required_size,
     SP_DEVINFO_DATA *info_data)
 {
+    log_misc("my_SetupDiGetDeviceInterfaceDetailW");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         if (size == 0) {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
@@ -342,6 +357,8 @@ static BOOL STDCALL my_SetupDiGetDeviceInterfaceDetailW(
 
 static BOOL STDCALL my_SetupDiDestroyDeviceInfoList(HDEVINFO dev_info)
 {
+    log_misc("my_SetupDiDestroyDeviceInfoList");
+
     if (dev_info == &hook_setupapi_fake_handle) {
         log_misc("SetupDiDestroyDeviceInfoList");
 
@@ -359,4 +376,6 @@ void hook_setupapi_init(const struct hook_setupapi_data *data)
     hook_setupapi_data = data;
     log_info(
         "Hooked setupapi for %s, %s", data->device_path, data->device_desc);
+
+    log_warning("SetupDiGetClassDevsA: real %p hook %p", real_SetupDiGetClassDevsA, my_SetupDiGetClassDevsA);
 }

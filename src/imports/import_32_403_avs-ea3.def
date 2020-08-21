@@ -1,0 +1,6 @@
+; This version (popn 15) has the ea3 modules merged into a single libavs-win32.dll
+LIBRARY libavs-win32
+
+EXPORTS
+    ea3_boot
+    ea3_shutdown

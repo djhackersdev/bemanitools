@@ -20,6 +20,7 @@
 #  1:   Patch 4:    beatmania IIDX 13 DistorteD
 #
 #  4:   Patch 2:    beatmania IIDX 14 GOLD
+#       Patch 3:    Pop'n Music 15
 #
 #  6:   Patch 5:    beatmania IIDX 15 DJ Troopers
 #
@@ -106,6 +107,7 @@ include src/main/ezusb-iidx-emu/Module.mk
 include src/main/ezusb-iidx-fpga-flash/Module.mk
 include src/main/ezusb-iidx-sram-flash/Module.mk
 include src/main/ezusb-iidx/Module.mk
+include src/main/ezusb-proxy/Module.mk
 include src/main/ezusb-tool/Module.mk
 include src/main/ezusb/Module.mk
 include src/main/ezusb2-dbg-hook/Module.mk
@@ -153,6 +155,8 @@ include src/main/p3ioemu/Module.mk
 include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
 include src/main/pcbidgen/Module.mk
+include src/main/pnmhook1/Module.mk
+include src/main/pnmhook2/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
@@ -174,6 +178,8 @@ include src/test/iidxhook8/Module.mk
 include src/test/security/Module.mk
 include src/test/test/Module.mk
 include src/test/util/Module.mk
+
+include src/main/libcomm-proxy/Module.mk
 
 #
 # Distribution build rules
@@ -615,6 +621,27 @@ $(zipdir)/bst.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/pnm-15.zip: \
+		build/bin/indep-32/ezusb-proxy.dll \
+		build/bin/avs2_803-32/pnmhook1.dll \
+		build/bin/indep-32/libcomm-proxy.dll \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/pnm-25.zip: \
+		build/bin/indep-32/ezusb-proxy.dll \
+		build/bin/avs2_1508-32/pnmhook2.dll \
+		build/bin/indep-32/libcomm-proxy.dll \
+		build/bin/avs2_1508-32/launcher.exe \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/geninput.dll \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/doc.zip: \
 		doc/ \
 		| $(zipdir)/
@@ -670,6 +697,8 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
 		$(zipdir)/jb-hwio.zip \
+		$(zipdir)/pnm-15.zip \
+		$(zipdir)/pnm-25.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05.zip \
 		$(zipdir)/sdvx-05-cn.zip \

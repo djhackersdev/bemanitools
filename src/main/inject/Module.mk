@@ -5,6 +5,8 @@ ldflags_inject  := \
     -lpsapi \
 
 libs_inject     := \
+    hook \
+    hooklib \
     util \
 
 src_inject      := \

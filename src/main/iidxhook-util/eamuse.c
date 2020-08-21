@@ -18,11 +18,13 @@
 
 /* ------------------------------------------------------------------------- */
 
+static int STDCALL my_bind(SOCKET s, const struct sockaddr* name, int namelen);
 static unsigned long STDCALL my_inet_addr(const char *cp);
 static int STDCALL
 my_connect(SOCKET s, const struct sockaddr *addr, int addrlen);
 static struct hostent FAR *STDCALL my_gethostbyname(const char *nameB);
 
+static int (STDCALL *real_bind)(SOCKET s, const struct sockaddr* name, int namelen);
 static unsigned long(STDCALL *real_inet_addr)(const char *cp);
 static int(STDCALL *real_connect)(
     SOCKET s, const struct sockaddr *addr, int addrlen);
@@ -33,6 +35,10 @@ static const struct hook_symbol eamuse_hook_syms[] = {
     /*  WS2_32.DLL's SDK import lib generates ordinal imports, so these
        ordinals are a frozen aspect of the Win32 ABI. */
 
+    {.name = "bind",
+     .ordinal = 2,
+     .patch = my_bind,
+     .link = (void **) &real_bind},
     {.name = "inet_addr",
      .ordinal = 11,
      .patch = my_inet_addr,
@@ -53,6 +59,22 @@ static struct net_addr eamuse_server_addr;
 static struct net_addr eamuse_server_addr_resolved;
 
 /* ------------------------------------------------------------------------- */
+
+static int STDCALL my_bind(SOCKET s, const struct sockaddr* name, int namelen)
+{
+    log_warning("?? %d %d", s, name->sa_family);
+
+    if (name->sa_family == AF_INET) {
+        /* check if we got our server's address */
+        struct sockaddr_in *addr_in = (struct sockaddr_in *) name;
+
+        log_warning(
+            "Patching port '%d'",
+            ntohs(addr_in->sin_port));
+    }
+
+    return real_bind(s, name, namelen);
+}
 
 static unsigned long STDCALL my_inet_addr(const char *cp)
 {

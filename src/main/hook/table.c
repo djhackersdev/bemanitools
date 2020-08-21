@@ -1,3 +1,5 @@
+#define LOG_MODULE "hook-table"
+
 #include <windows.h>
 
 #include <assert.h>
@@ -8,6 +10,8 @@
 #include "hook/pe.h"
 #include "hook/peb.h"
 #include "hook/table.h"
+
+#include "util/log.h"
 
 static const char apiset_prefix[] = "api-ms-win-core-";
 static const size_t apiset_prefix_len = sizeof(apiset_prefix) - 1;
@@ -45,6 +49,8 @@ static void hook_table_apply_to_all(
             dll = peb_dll_get_next(dll)) {
         pe = peb_dll_get_base(dll);
 
+        log_misc("pe: %p", pe);
+
         if (pe == NULL) {
             continue; /* ?? Happens sometimes. */
         }
@@ -69,12 +75,16 @@ void hook_table_apply(
         /*  Call out, which will then call us back repeatedly. Awkward, but
             viewed from the outside it's good for usability. */
 
+        // log_misc("Apply to all started");
+
         hook_table_apply_to_all(depname, syms, nsyms);
     } else {
         for (   iid = pe_iid_get_first(target) ;
                 iid != NULL ;
                 iid = pe_iid_get_next(target, iid)) {
             iid_name = pe_iid_get_name(target, iid);
+
+            // log_misc("Module: %s", iid_name);
 
             if (hook_table_match_module(target, iid_name, depname)) {
                 hook_table_apply_to_iid(target, iid, syms, nsyms);
@@ -97,6 +107,8 @@ static void hook_table_apply_to_iid(
     i = 0;
 
     while (pe_iid_get_iat_entry(target, iid, i++, &iate) == S_OK) {
+        // log_misc("IAT entry: %s %d", iate.name, iate.ordinal);
+
         for (j = 0 ; j < nsyms ; j++) {
             sym = &syms[j];
 
@@ -104,6 +116,8 @@ static void hook_table_apply_to_iid(
                 if (sym->link != NULL && *sym->link == NULL) {
                     *sym->link = *iate.ppointer;
                 }
+
+                // log_misc("patch");
 
                 pe_patch(iate.ppointer, &sym->patch, sizeof(sym->patch));
             }

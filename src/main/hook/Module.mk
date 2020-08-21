@@ -8,6 +8,7 @@ src_hook        := \
     iobuf.c \
     iohook.c \
     pe.c \
+    pe-loader.c \
     peb.c \
     process.c \
     table.c \

@@ -1,0 +1,11 @@
+LIBRARY ezusb-proxy
+
+EXPORTS
+    ?CommSetSendQueFwPort@@YAHHH@Z=CommSetSendQueFwPort
+    ?CommInitSendWait@@YAHXZ=CommInitSendWait
+    ?CommInit@@YAHPADHHHH@Z=CommInit
+    ?CommPolling@@YAXXZ=CommPolling
+    ?CommReadBroadCast@@YAXPAUT_COMM_ADDR@@@Z=CommReadBroadCast
+    ?CommReadMyAddr@@YAXPAUT_COMM_ADDR@@@Z=CommReadMyAddr
+    ?CommRegistRecvFunc@@YAXHP6AXPAUT_COMM_ADDR@@PADHPAX@Z2@Z=CommRegistRecvFunc
+    ?CommSetSendQueData@@YAHPAUT_COMM_ADDR@@HPADHH@Z=CommSetSendQueData

@@ -114,10 +114,10 @@ void eam_io_set_loggers(
 bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
-    input_init(create, join, destroy);
-    thread_api_init(create, join, destroy);
-    eam_io_config_load();
-    msg_thread_init(eam_hinst);
+    // input_init(create, join, destroy);
+    // thread_api_init(create, join, destroy);
+    // eam_io_config_load();
+    // msg_thread_init(eam_hinst);
 
     return true;
 }
@@ -158,9 +158,9 @@ open_fail:
 
 void eam_io_fini(void)
 {
-    msg_thread_fini();
-    eam_impl_destroy(eam_inst);
-    input_fini();
+    // msg_thread_fini();
+    // eam_impl_destroy(eam_inst);
+    // input_fini();
 }
 
 const struct eam_io_config_api *eam_io_get_config_api(void)
@@ -224,21 +224,24 @@ static void eam_io_set_card_path(uint8_t unit_no, const char *path)
 
 uint16_t eam_io_get_keypad_state(uint8_t unit_no)
 {
-    return eam_impl_get_keypad_state(eam_inst, unit_no);
+    // return eam_impl_get_keypad_state(eam_inst, unit_no);
+    return 0;
 }
 
 uint8_t eam_io_get_sensor_state(uint8_t unit_no)
 {
-    if (eam_impl_get_sensor_state(eam_inst, unit_no)) {
-        return (1 << EAM_IO_SENSOR_FRONT) | (1 << EAM_IO_SENSOR_BACK);
-    } else {
-        return 0x00;
-    }
+    // if (eam_impl_get_sensor_state(eam_inst, unit_no)) {
+    //     return (1 << EAM_IO_SENSOR_FRONT) | (1 << EAM_IO_SENSOR_BACK);
+    // } else {
+    //     return 0x00;
+    // }
+    return 0;
 }
 
 uint8_t eam_io_read_card(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 {
-    return eam_impl_read_card(eam_inst, unit_no, card_id, nbytes);
+    // return eam_impl_read_card(eam_inst, unit_no, card_id, nbytes);
+    return 0;
 }
 
 bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)

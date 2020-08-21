@@ -101,6 +101,8 @@ static void load_hook_dlls(struct array *hook_dlls)
     for (size_t i = 0; i < hook_dlls->nitems; i++) {
         hook_dll = *array_item(char *, hook_dlls, i);
 
+        log_info("Loading hook dll: %s", hook_dll);
+
         if (LoadLibraryA(hook_dll) == NULL) {
             LPSTR buffer;
 

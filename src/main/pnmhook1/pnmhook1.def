@@ -1,0 +1,5 @@
+LIBRARY pnmhook1
+
+EXPORTS
+    DllMain@12 @1 NONAME
+    

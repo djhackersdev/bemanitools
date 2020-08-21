@@ -10,6 +10,8 @@
 #include "cconfig/cconfig-util.h"
 #include "cconfig/cmd.h"
 
+#include "hook/pe-loader.h"
+
 #include "inject/debugger.h"
 #include "inject/logger.h"
 #include "inject/options.h"
@@ -122,6 +124,21 @@ int main(int argc, char **argv)
     uint32_t exec_arg_pos;
     char *cmd_line;
     bool local_debugger;
+
+    // // =====================================================
+
+    // printf("!!!!!!!!!!!!!\n");
+
+    // HMODULE hmodule;
+
+    // pe_loader_load_from_file("ezusb.dll", &hmodule);
+
+
+    // // =====================================================
+
+    // while (true) {
+
+    // }
 
     if (!init_options(argc, argv, &options)) {
         goto init_options_fail;

@@ -1,0 +1,27 @@
+LIBRARY ezusb-proxy
+
+EXPORTS
+    DllMain@12 @1 NONAME
+    ?usbCheckAlive@@YAHXZ=usbCheckAlive
+    ?usbCheckSecurityNew@@YAHH@Z=usbCheckSecurityNew
+    ?usbCoinGet@@YAHH@Z=usbCoinGet
+    ?usbCoinMode@@YAHH@Z=usbCoinMode
+    ?usbEnd@@YAHXZ=usbEnd
+    ?usbFirmResult@@YAHXZ=usbFirmResult
+    ?usbGetKEYID@@YAHPAEH@Z=usbGetKEYID
+    ?usbGetSecurity@@YAHHPAE@Z=usbGetSecurity
+    ?usbLamp@@YAHH@Z=usbLamp
+    ?usbPadRead@@YAHPAK@Z=usbPadRead
+    ?usbPadReadLast@@YAHPAE@Z=usbPadReadLast
+    ?usbSecurityInit@@YAHXZ=usbSecurityInit
+    ?usbSecurityInitDone@@YAHXZ=usbSecurityInitDone
+    ?usbSecuritySearch@@YAHXZ=usbSecuritySearch
+    ?usbSecuritySearchDone@@YAHXZ=usbSecuritySearchDone
+    ?usbSecuritySelect@@YAHH@Z=usbSecuritySelect
+    ?usbSecuritySelectDone@@YAHXZ=usbSecuritySelectDone
+    ?usbSetExtIo@@YAHH@Z=usbSetExtIo
+    ?usbStart@@YAHH@Z=usbStart
+    ?usbWdtReset@@YAHXZ=usbWdtReset
+    ?usbWdtStart@@YAHH@Z=usbWdtStart
+    ?usbWdtStartDone@@YAHXZ=usbWdtStartDone
+    

@@ -230,6 +230,9 @@ static void iohook_init(void)
        get caught by the critical section. */
     iohook_initted = true;
 
+    InitializeCriticalSection(&iohook_lock);
+    EnterCriticalSection(&iohook_lock);
+
     /* Splice iohook into IAT entries referencing Win32 I/O APIs */
 
     hook_table_apply(
@@ -279,6 +282,11 @@ static void iohook_init(void)
                 "SetFilePointerEx");
     }
 
+<<<<<<< HEAD
+=======
+    iohook_initted = true;
+
+>>>>>>> b1cdef2 (wip pnm)
     LeaveCriticalSection(&iohook_lock);
 }
 
@@ -383,10 +391,10 @@ HRESULT iohook_invoke_next(struct irp *irp)
     HRESULT hr;
 
     assert(irp != NULL);
-    assert(iohook_initted);
 
     EnterCriticalSection(&iohook_lock);
 
+    assert(iohook_initted);
     assert(irp->next_handler <= iohook_nhandlers);
 
     if (irp->next_handler < iohook_nhandlers) {
