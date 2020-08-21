@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <windows.h>
 
 #include "inject/logger.h"
@@ -13,6 +14,20 @@
 
 static FILE *log_file;
 static HANDLE log_mutex;
+
+static const char* logger_get_formatted_timestamp(void)
+{
+    static char buffer[64];
+    time_t cur = 0;
+    struct tm* tm = NULL;
+
+    cur = time(NULL);
+    tm = localtime(&cur);
+
+    strftime(buffer, sizeof(buffer), "[%Y/%m/%d %H:%M:%S] ", tm);
+
+    return buffer;
+}
 
 static char logger_console_determine_color(const char *str)
 {
@@ -79,7 +94,7 @@ static size_t logger_msg_coloring_len(const char *str)
     return 0;
 }
 
-static void logger_console(void *ctx, const char *chars, size_t nchars)
+static void logger_console(void *ctx, const char *chars, size_t nchars, const char* timestamp_str)
 {
     char color;
     size_t color_len;
@@ -100,6 +115,7 @@ static void logger_console(void *ctx, const char *chars, size_t nchars)
         tmp = buffer[color_len];
         buffer[color_len] = '\0';
 
+        printf("%s", timestamp_str);
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
         printf("%s", buffer);
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
@@ -112,9 +128,10 @@ static void logger_console(void *ctx, const char *chars, size_t nchars)
     }
 }
 
-static void logger_file(void *ctx, const char *chars, size_t nchars)
+static void logger_file(void *ctx, const char *chars, size_t nchars, const char* timestamp_str)
 {
     if (ctx) {
+        fwrite(timestamp_str, 1, strlen(timestamp_str), (FILE*) ctx);
         fwrite(chars, 1, nchars, (FILE *) ctx);
         fflush((FILE *) ctx);
     }
@@ -122,13 +139,17 @@ static void logger_file(void *ctx, const char *chars, size_t nchars)
 
 static void logger_writer(void *ctx, const char *chars, size_t nchars)
 {
+    const char* timestamp_str;
+
     // Different threads logging the same destination, e.g. debugger thread,
     // main thread
 
     WaitForSingleObject(log_mutex, INFINITE);
 
-    logger_console(ctx, chars, nchars);
-    logger_file(ctx, chars, nchars);
+    timestamp_str = logger_get_formatted_timestamp();
+
+    logger_console(ctx, chars, nchars, timestamp_str);
+    logger_file(ctx, chars, nchars, timestamp_str);
 
     ReleaseMutex(log_mutex);
 }
