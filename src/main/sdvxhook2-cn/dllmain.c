@@ -37,10 +37,6 @@
 #define SDVXHOOK2_CN_CMD_USAGE \
     "Usage: launcher.exe -K sdvxhook2.dll <soundvoltex.dll> [options...]"
 
-static const irp_handler_t sdvxhook_handlers[] = {
-    ac_io_port_dispatch_irp,
-};
-
 struct sdvxhook2_cn_config config_cn;
 struct camhook_config_cam config_cam;
 struct d3d9exhook_config_gfx config_gfx;
@@ -90,7 +86,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     /* iohooks are okay, even if emu is diabled since the fake handlers won't be
      * used */
-    iohook_init(sdvxhook_handlers, lengthof(sdvxhook_handlers));
+    iohook_push_handler(ac_io_port_dispatch_irp);
+
     rs232_hook_init();
     rs232_hook_limit_hooks();
 

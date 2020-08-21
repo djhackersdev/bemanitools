@@ -43,7 +43,7 @@ static HRESULT STDCALL my_CreateDevice(
 {
     IDirect3D9 *real;
 
-    real = COM_PROXY_UNWRAP(self);
+    real = com_proxy_downcast(self)->real;
 
     if (gfx_windowed) {
         pp->Windowed = TRUE;
@@ -58,11 +58,18 @@ static IDirect3D9 *STDCALL my_Direct3DCreate9(UINT sdk_ver)
     IDirect3D9 *api;
     IDirect3D9Vtbl *api_vtbl;
     struct com_proxy *api_proxy;
+    HRESULT hr;
 
     log_info("Direct3DCreate9 hook hit");
 
     api = real_Direct3DCreate9(sdk_ver);
-    api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
+    
+    hr = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
+
+    if (hr != S_OK) {
+        log_fatal("Wrapping com proxy failed: %08lx", hr);
+    }
+
     api_vtbl = api_proxy->vptr;
 
     api_vtbl->CreateDevice = my_CreateDevice;

@@ -97,8 +97,8 @@ settings_hook_dispatch_irp(struct irp *irp)
             }
         }
 
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
-    return irp_invoke_next(irp);
+    return iohook_invoke_next(irp);
 }

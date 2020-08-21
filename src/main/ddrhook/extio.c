@@ -33,7 +33,13 @@ void extio_init(void)
 {
     log_assert(extio_fd == NULL);
 
-    extio_fd = iohook_open_dummy_fd();
+    HRESULT hr;
+
+    hr = iohook_open_nul_fd(&extio_fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
 }
 
 void extio_fini(void)
@@ -51,7 +57,7 @@ extio_dispatch_irp(struct irp *irp)
     log_assert(irp != NULL);
 
     if (irp->op != IRP_OP_OPEN && irp->fd != extio_fd) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     switch (irp->op) {
@@ -75,7 +81,7 @@ static HRESULT extio_open(struct irp *irp)
     log_assert(irp != NULL);
 
     if (!wstr_eq(irp->open_filename, L"COM1")) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     log_info("EXTIO RS232 port opened");

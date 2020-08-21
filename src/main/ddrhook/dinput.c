@@ -72,10 +72,18 @@ static HRESULT STDCALL my_DirectInput8Create(
 
     res = real_DirectInput8Create(
         hinst, dwVersion, riidltf, (LPVOID *) &api, punkOuter);
+    
     if (res != DI_OK) {
         return res;
     }
-    api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
+    
+    res = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
+
+    if (res != S_OK) {
+        log_warning("Wrapping com proxy failed: %08lx", res);
+        return res;
+    }
+
     api_vtbl = api_proxy->vptr;
 
     api_vtbl->EnumDevices = my_EnumDevices;

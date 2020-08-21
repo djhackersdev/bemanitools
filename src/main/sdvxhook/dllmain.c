@@ -22,11 +22,6 @@
 static bool my_dll_entry_init(char *sidcode, struct property_node *config);
 static bool my_dll_entry_main(void);
 
-static const irp_handler_t sdvxhook_handlers[] = {
-    ac_io_bus_dispatch_irp,
-    lcd_dispatch_irp,
-};
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 {
     bool ok;
@@ -123,7 +118,10 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     args_free(argc, argv);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
-    iohook_init(sdvxhook_handlers, lengthof(sdvxhook_handlers));
+
+    iohook_push_handler(ac_io_bus_dispatch_irp);
+    iohook_push_handler(lcd_dispatch_irp);
+
     rs232_hook_init();
 
     gfx_init();

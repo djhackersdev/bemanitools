@@ -37,11 +37,6 @@
 #define JBHOOK1_CMD_USAGE \
     "Usage: inject.exe jbhook1.dll <jubeat.exe> [options...]"
 
-static const irp_handler_t jbhook1_handlers[] = {
-    p3io_emu_dispatch_irp,
-    ac_io_port_dispatch_irp,
-};
-
 static HWND CDECL
 my_mwindow_create(HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
 static HWND(CDECL *real_mwindow_create)(
@@ -124,7 +119,8 @@ static HWND CDECL my_mwindow_create(
         log_fatal("Initializing card reader backend failed");
     }
 
-    iohook_init(jbhook1_handlers, lengthof(jbhook1_handlers));
+    iohook_push_handler(p3io_emu_dispatch_irp);
+    iohook_push_handler(ac_io_port_dispatch_irp);
 
     rs232_hook_init();
     ac_io_port_init();

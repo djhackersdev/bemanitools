@@ -201,7 +201,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     irp.open_flags = 0;
     irp.open_tmpl = NULL;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -217,7 +217,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     irp.write.nbytes = sizeof(comm_mask);
     comm_mask = EV_RXCHAR;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -232,7 +232,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     qs.InSize = 0x4000;
     qs.OutSize = 0x4000;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -246,7 +246,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     irp.write.nbytes = sizeof(flags);
     flags = PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -264,7 +264,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     timeouts.WriteTotalTimeoutMultiplier = 100;
     timeouts.WriteTotalTimeoutConstant = 0;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -280,7 +280,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     lc.Parity = NO_PARITY;
     lc.StopBits = STOP_BIT_1;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -294,7 +294,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     irp.write.nbytes = sizeof(baud);
     baud.BaudRate = baud_rate;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -311,7 +311,7 @@ p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd)
     handflow.XonLimit = 0;
     handflow.XoffLimit = 0;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         goto fail;
@@ -324,7 +324,7 @@ fail:
         irp.op = IRP_OP_CLOSE;
         irp.fd = *fd;
 
-        irp_invoke_next(&irp);
+        iohook_invoke_next(&irp);
 
         *fd = NULL;
     }
@@ -342,7 +342,7 @@ static HRESULT p3io_uart_close(HANDLE fd)
         irp.op = IRP_OP_CLOSE;
         irp.fd = fd;
 
-        hr = irp_invoke_next(&irp);
+        hr = iohook_invoke_next(&irp);
 
         if (FAILED(hr)) {
             log_warning("Error closing port: %x", (int) hr);
@@ -376,7 +376,7 @@ static HRESULT p3io_uart_read(HANDLE fd, struct iobuf *iobuf)
     irp.read.bytes = (uint8_t *) &status;
     irp.read.nbytes = sizeof(status);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("UART FIFO peek failed: %x", (int) hr);
@@ -397,7 +397,7 @@ static HRESULT p3io_uart_read(HANDLE fd, struct iobuf *iobuf)
     irp.fd = fd;
     memcpy(&irp.read, iobuf, sizeof(*iobuf));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("Read error: %x", (int) hr);
@@ -426,7 +426,7 @@ static HRESULT p3io_uart_write(HANDLE fd, struct const_iobuf *iobuf)
     irp.fd = fd;
     memcpy(&irp.write, iobuf, sizeof(*iobuf));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (SUCCEEDED(hr)) {
         memcpy(iobuf, &irp.write, sizeof(*iobuf));

@@ -31,7 +31,13 @@ void lcd_init(void)
 {
     log_assert(lcd_fd == NULL);
 
-    lcd_fd = iohook_open_dummy_fd();
+    HRESULT hr;
+    
+    hr = iohook_open_nul_fd(&lcd_fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
 }
 
 void lcd_fini(void)
@@ -49,7 +55,7 @@ lcd_dispatch_irp(struct irp *irp)
     log_assert(irp != NULL);
 
     if (irp->op != IRP_OP_OPEN && irp->fd != lcd_fd) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     switch (irp->op) {
@@ -73,7 +79,7 @@ static HRESULT lcd_open(struct irp *irp)
     log_assert(irp != NULL);
 
     if (!wstr_eq(irp->open_filename, L"COM1")) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     irp->fd = lcd_fd;

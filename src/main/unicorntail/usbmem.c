@@ -35,7 +35,7 @@ void usbmem_fini(void)
         irp.op = IRP_OP_CLOSE;
         irp.fd = usbmem_fd;
 
-        irp_invoke_next(&irp);
+        iohook_invoke_next(&irp);
     }
 
     DeleteCriticalSection(&usbmem_lock);
@@ -54,7 +54,7 @@ usbmem_dispatch_irp(struct irp *irp)
     if (!usbmem_match_irp(irp)) {
         LeaveCriticalSection(&usbmem_lock);
 
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     } else {
         hr = usbmem_dispatch_irp_locked(irp);
         LeaveCriticalSection(&usbmem_lock);
@@ -94,7 +94,7 @@ static HRESULT usbmem_handle_open(struct irp *irp)
 {
     HRESULT hr;
 
-    hr = irp_invoke_next(irp);
+    hr = iohook_invoke_next(irp);
 
     if (SUCCEEDED(hr)) {
         log_info("Opened a real usbmem port");
@@ -108,7 +108,11 @@ static HRESULT usbmem_handle_open(struct irp *irp)
        start emulating a usbmem unit. */
 
     if (usbmem_fd == NULL || usbmem_fd == INVALID_HANDLE_VALUE) {
-        usbmem_fd = iohook_open_dummy_fd();
+        hr = iohook_open_nul_fd(&usbmem_fd);
+
+        if (hr != S_OK) {
+            log_fatal("Opening nul fd failed: %08lx", hr);
+        }
     }
 
     irp->fd = usbmem_fd;
@@ -120,7 +124,7 @@ static HRESULT usbmem_handle_close(struct irp *irp)
 {
     usbmem_fd = NULL;
 
-    return irp_invoke_next(irp);
+    return iohook_invoke_next(irp);
 }
 
 static HRESULT usbmem_handle_write(struct irp *irp)

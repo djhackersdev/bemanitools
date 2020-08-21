@@ -48,13 +48,6 @@
 #define IIDXHOOK3_CMD_USAGE \
     "Usage: inject.exe iidxhook3.dll <bm2dx.exe> [options...]"
 
-static const irp_handler_t iidxhook_handlers[] = {
-    ezusb2_emu_device_dispatch_irp,
-    iidxhook_util_acio_dispatch_irp,
-    iidxhook_util_chart_patch_dispatch_irp,
-    settings_hook_dispatch_irp,
-};
-
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
@@ -214,7 +207,10 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
-    iohook_init(iidxhook_handlers, lengthof(iidxhook_handlers));
+    iohook_push_handler(ezusb2_emu_device_dispatch_irp);
+    iohook_push_handler(iidxhook_util_acio_dispatch_irp);
+    iohook_push_handler(iidxhook_util_chart_patch_dispatch_irp);
+    iohook_push_handler(settings_hook_dispatch_irp);
 
     hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
     ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());

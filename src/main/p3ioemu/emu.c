@@ -70,6 +70,8 @@ void p3io_emu_init(const struct p3io_ops *ops, void *ctx)
     log_assert(p3io_emu_fd == NULL);
     log_assert(ops != NULL);
 
+    HRESULT hr;
+
     p3io_emu_resp.bytes = p3io_emu_resp_bytes;
     p3io_emu_resp.nbytes = sizeof(p3io_emu_resp_bytes);
     p3io_emu_resp.pos = 0;
@@ -77,7 +79,11 @@ void p3io_emu_init(const struct p3io_ops *ops, void *ctx)
     p3io_ops = ops;
     p3io_ops_ctx = ctx;
 
-    p3io_emu_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&p3io_emu_fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
 }
 
 void p3io_emu_fini(void)
@@ -100,7 +106,7 @@ p3io_emu_dispatch_irp(struct irp *irp)
     log_assert(irp != NULL);
 
     if (irp->op != IRP_OP_OPEN && irp->fd != p3io_emu_fd) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     switch (irp->op) {
@@ -122,7 +128,7 @@ p3io_emu_dispatch_irp(struct irp *irp)
 static HRESULT p3io_emu_handle_open(struct irp *irp)
 {
     if (!p3io_setupapi_match_path(irp->open_filename)) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     log_info("P3IO device opened");

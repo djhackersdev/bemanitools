@@ -69,7 +69,7 @@ bio2emu_port_dispatch_irp(struct irp *irp)
     }
 
     if (!selected_emu) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     struct ac_io_emu *emu = &selected_emu->acio;

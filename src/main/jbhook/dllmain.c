@@ -32,11 +32,6 @@
 
 static struct options options;
 
-static const irp_handler_t jbhook_handlers[] = {
-    p4ioemu_dispatch_irp,
-    ac_io_port_dispatch_irp,
-};
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     bool eam_io_ok;
@@ -132,7 +127,9 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     options_init_from_cmdline(&options);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
-    iohook_init(jbhook_handlers, lengthof(jbhook_handlers));
+
+    iohook_push_handler(p4ioemu_dispatch_irp);
+    iohook_push_handler(ac_io_port_dispatch_irp);
 
     if (!options.disable_adapteremu) {
         adapter_hook_init();

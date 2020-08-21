@@ -78,7 +78,7 @@ iidxhook_util_acio_dispatch_irp(struct irp *irp)
     log_assert(irp != NULL);
 
     if (!ac_io_emu_match_irp(&iidxhook_util_acio_emu, irp)) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     for (;;) {

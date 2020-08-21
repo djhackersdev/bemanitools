@@ -42,11 +42,6 @@
 #define IIDXHOOK8_CMD_USAGE \
     "Usage: launcher.exe -K iidxhook8.dll <bm2dx.dll> [options...]"
 
-static const irp_handler_t iidxhook_handlers[] = {
-    iidxhook_util_acio_dispatch_irp,
-    bio2emu_port_dispatch_irp,
-};
-
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
@@ -152,7 +147,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
      * used */
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
-    iohook_init(iidxhook_handlers, lengthof(iidxhook_handlers));
+    iohook_push_handler(iidxhook_util_acio_dispatch_irp);
+    iohook_push_handler(bio2emu_port_dispatch_irp);
+
     rs232_hook_init();
     rs232_hook_limit_hooks();
 
