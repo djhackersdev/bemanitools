@@ -8,7 +8,8 @@
 <!--- Tell us what happens instead of the expected behavior -->
 
 ## Detailed Description
-<!--- Provide a detailed description of the issue. Include links to screenshots or videos if necessary -->
+<!--- Provide a detailed description of the issue. Include links to screenshots or videos if
+necessary -->
 
 ## Steps to reproduce
 <!--- Provide a detailed step by step description how to reproduce this issue -->
@@ -29,16 +30,43 @@
 
 ### Log output
 See attachment.
-<!--- Provide log output as attachment. Make sure to censor sensitive data like PCBIDs or device names if necessary -->
+<!---
+Provide FULL log output, e.g. inject.log or launcher.log. Please do not guess which things
+are relevant or not. Without knowing, you might leave out things that are relevant for the developers. You have to enable log output explicitly if not done already. 
+
+For inject.exe and launcher.exe, add `-Y logfile.log` to the command line args to output to a file, e.g. `gamestart.bat -Y logfile.log`.
+
+!!!!!!
+REMOVE ANY SENSITIVE DATA LIKE PCBIDS OR DEVICE NAMES BY REPLACING IT THEM WITH
+
+[REDACTED]
+
+BEFORE UPLOADING/POSTING ANY LOG DATA!!!
+
+Use the search and replace feature of any kind of text editor.
+!!!!!!
+-->
 
 ### Configuration files
 See attachment.
-<!--- Provide any configuration files that you used, e.g. iidxhook-XX.conf. Make sure to censor sensitive data like
-PCBIDs -->
+<!--- Provide any configuration files that you used, e.g. iidxhook-XX.conf. This file is located in
+the same directory as launcher.exe or inject.exe. 
+
+!!!!!!
+REMOVE ANY SENSITIVE DATA LIKE PCBIDS OR DEVICE NAMES BY REPLACING IT THEM WITH
+
+[REDACTED]
+
+BEFORE UPLOADING/POSTING ANY LOG DATA!!!
+
+Use the search and replace feature of any kind of text editor.
+!!!!!!
+-->
 
 ### Command line arguments
-<!--- Provide how you run the game from the command line, e.g. which gamestart.bat you used and any additional arguments
-that you provided to it. Also provide the contents of the gamestart.bat you used if you altered it. -->
+<!--- Provide how you run the game from the command line, e.g. which gamestart.bat you used and any
+additional arguments that you provided to it. Also provide the contents of the gamestart.bat you
+used if you altered it. -->
 
 ### APIs used
 * <!--- List all APIs you used as a bullet list, e.g. iidxio-keyboard, eamio-keyboard -->
