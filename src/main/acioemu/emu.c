@@ -30,8 +30,16 @@ void ac_io_emu_init(struct ac_io_emu *emu, const wchar_t *filename)
     log_assert(emu != NULL);
     log_assert(filename != NULL);
 
+    HRESULT hr;
+
     memset(emu, 0, sizeof(*emu));
-    emu->fd = iohook_open_dummy_fd();
+
+    hr = iohook_open_nul_fd(&emu->fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
+
     emu->wfilename = wstr_dup(filename);
     wstr_narrow(filename, &emu->filename);
     ac_io_in_init(&emu->in);

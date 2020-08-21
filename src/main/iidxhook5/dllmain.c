@@ -43,12 +43,6 @@
 #define IIDXHOOK5_CMD_USAGE \
     "Usage: launcher.exe -K iidxhook5.dll <bm2dx.dll> [options...]"
 
-static const irp_handler_t iidxhook_handlers[] = {
-    ezusb2_emu_device_dispatch_irp,
-    iidxhook_util_acio_dispatch_irp,
-    settings_hook_dispatch_irp,
-};
-
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
@@ -131,7 +125,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
-    iohook_init(iidxhook_handlers, lengthof(iidxhook_handlers));
+    iohook_push_handler(ezusb2_emu_device_dispatch_irp);
+    iohook_push_handler(iidxhook_util_acio_dispatch_irp);
+    iohook_push_handler(settings_hook_dispatch_irp);
 
     hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
     ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());

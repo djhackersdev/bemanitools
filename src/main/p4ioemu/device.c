@@ -344,7 +344,7 @@ static HRESULT p4ioemu_device_open(struct irp *irp)
        game also adds the node \\p4io to that -> result: \\p4io\\p4io */
 
     if (!wstr_eq(irp->open_filename, L"\\p4io\\p4io")) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     irp->fd = p4ioemu_p4io_fd;
@@ -466,7 +466,14 @@ void p4ioemu_init(const struct p4ioemu_device_msg_hook *msg_hook)
 {
     log_assert(p4ioemu_p4io_fd == NULL);
 
-    p4ioemu_p4io_fd = iohook_open_dummy_fd();
+    HRESULT hr;
+
+    hr = iohook_open_nul_fd(&p4ioemu_p4io_fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
+
     p4ioemu_device_msg_hook = msg_hook;
 }
 
@@ -485,7 +492,7 @@ p4ioemu_dispatch_irp(struct irp *irp)
     log_assert(irp != NULL);
 
     if (irp->op != IRP_OP_OPEN && irp->fd != p4ioemu_p4io_fd) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     switch (irp->op) {

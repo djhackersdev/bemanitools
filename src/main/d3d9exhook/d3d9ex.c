@@ -242,7 +242,7 @@ static HRESULT STDCALL my_CreateDeviceEx(
     D3DDISPLAYMODEEX *fdm,
     IDirect3DDevice9Ex **pdev)
 {
-    IDirect3D9Ex *real = COM_PROXY_UNWRAP(self);
+    IDirect3D9Ex *real = com_proxy_downcast(self)->real;
     HRESULT hr;
 
     if (d3d9ex_device_adapter >= 0) {
@@ -337,7 +337,14 @@ static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api)
 
     hr = real_Direct3DCreate9Ex(sdk_ver, api);
     api_ = *api;
-    api_proxy = com_proxy_wrap(api_, sizeof(*api_->lpVtbl));
+    
+    hr = com_proxy_wrap(&api_proxy, api_, sizeof(*api_->lpVtbl));
+    
+    if (hr != S_OK) {
+        log_warning("Wrapping com proxy failed: %08lx", hr);
+        return hr;
+    }
+    
     api_vtbl = api_proxy->vptr;
 
     api_vtbl->CreateDeviceEx = my_CreateDeviceEx;

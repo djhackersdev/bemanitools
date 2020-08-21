@@ -81,7 +81,7 @@ static bool chart_patch_file_load(
     irp.open_access = GENERIC_READ;
     irp.open_creation = OPEN_EXISTING;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         return false;
@@ -95,7 +95,7 @@ static bool chart_patch_file_load(
     irp.seek_origin = FILE_END;
     irp.seek_offset = 0;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_fatal("Seeking end failed");
@@ -110,7 +110,7 @@ static bool chart_patch_file_load(
     irp.seek_origin = FILE_BEGIN;
     irp.seek_offset = 0;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_fatal("Seeking begin failed");
@@ -123,7 +123,7 @@ static bool chart_patch_file_load(
     irp.read.nbytes = nbytes;
     irp.read.pos = 0;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_fatal("Reading failed");
@@ -139,13 +139,18 @@ static bool chart_patch_file_load(
     irp.op = IRP_OP_CLOSE;
     irp.fd = fd;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_fatal("Closing failed");
     }
 
-    file->fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&file->fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
+
     memset(&file->state, 0, sizeof(struct const_iobuf));
     file->state.bytes = bytes;
     file->state.nbytes = nbytes;
@@ -383,7 +388,7 @@ chart_patch_file_close_irp(struct chart_patch_file *file, struct irp *irp_close)
             memcpy(&irp, irp_close, sizeof(struct irp));
             irp.fd = chart_patch_file_1.fd;
 
-            hr = irp_invoke_next(&irp);
+            hr = iohook_invoke_next(&irp);
 
             if (hr != S_OK) {
                 log_warning("Closing dummy .1 file handle failed");
@@ -397,7 +402,7 @@ chart_patch_file_close_irp(struct chart_patch_file *file, struct irp *irp_close)
             memcpy(&irp, irp_close, sizeof(struct irp));
             irp.fd = chart_patch_file_checksum.fd;
 
-            hr = irp_invoke_next(&irp);
+            hr = iohook_invoke_next(&irp);
 
             if (hr != S_OK) {
                 log_warning("Closing dummy checksum file handle failed");
@@ -525,7 +530,7 @@ iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
             if (chart_patch_file_trap(irp)) {
                 hr = S_OK;
             } else {
-                hr = irp_invoke_next(irp);
+                hr = iohook_invoke_next(irp);
             }
         } else {
             if (irp->fd != INVALID_HANDLE_VALUE && irp->fd != NULL) {
@@ -536,7 +541,7 @@ iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
                     hr = chart_patch_file_dispatch_irp(
                         &chart_patch_file_checksum, irp);
                 } else {
-                    hr = irp_invoke_next(irp);
+                    hr = iohook_invoke_next(irp);
                 }
             }
         }
@@ -545,6 +550,6 @@ iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
 
         return hr;
     } else {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 }

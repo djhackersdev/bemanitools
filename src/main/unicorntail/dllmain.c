@@ -20,16 +20,13 @@
 static bool my_dll_entry_init(char *sidcode, struct property_node *param);
 static bool my_dll_entry_main(void);
 
-static const irp_handler_t unicorntail_handlers[] = {
-    p3io_filter_dispatch_irp,
-    usbmem_dispatch_irp,
-};
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     log_info("--- Begin unicorntail dll_entry_init ---");
 
-    iohook_init(unicorntail_handlers, lengthof(unicorntail_handlers));
+    iohook_push_handler(p3io_filter_dispatch_irp);
+    iohook_push_handler(usbmem_dispatch_irp);
+
     p3io_filter_init();
     usbmem_init();
 

@@ -341,7 +341,14 @@ static HRESULT my_MFEnumDeviceSources(
 
     for (UINT32 i = 0; i < nsrcs; ++i) {
         api = (*pppSourceActivate)[i];
-        api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
+        
+        ret = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
+        
+        if (ret != S_OK) {
+            log_warning("Wrapping com proxy failed: %08lx", ret);
+            return ret;
+        }
+        
         api_vtbl = api_proxy->vptr;
 
         real_GetAllocatedString = api_vtbl->GetAllocatedString;

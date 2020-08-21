@@ -517,6 +517,7 @@ static HRESULT hook_d3d9_irp_handler_real_ctx_create(struct hook_d3d9_irp *irp)
     IDirect3D9 *api;
     IDirect3D9Vtbl *api_vtbl;
     struct com_proxy *api_proxy;
+    HRESULT res;
 
     log_assert(irp);
 
@@ -526,7 +527,12 @@ static HRESULT hook_d3d9_irp_handler_real_ctx_create(struct hook_d3d9_irp *irp)
         return E_FAIL;
     }
 
-    api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
+    res = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
+    
+    if (res != S_OK) {
+        log_fatal("Wrapping com proxy failed: %08lx", res);
+    }
+
     api_vtbl = api_proxy->vptr;
 
     real_CreateDevice = api_vtbl->CreateDevice;
@@ -624,7 +630,13 @@ hook_d3d9_irp_handler_real_dev_create_device(struct hook_d3d9_irp *irp)
     }
 
     api = *irp->args.ctx_create_device.pdev;
-    api_proxy = com_proxy_wrap(api, sizeof(*api->lpVtbl));
+    hr = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
+
+    if (hr != S_OK) {
+        log_warning("Wrapping com proxy failed: %08lx", hr);
+        return hr;
+    }
+
     api_vtbl = api_proxy->vptr;
 
     real_CreateTexture = api_vtbl->CreateTexture;

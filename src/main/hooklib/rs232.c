@@ -14,11 +14,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "hook/hr.h"
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "util/array.h"
-#include "util/hr.h"
 #include "util/log.h"
 
 /* RS232 API hooks */
@@ -178,7 +178,7 @@ my_ClearCommError(HANDLE fd, uint32_t *errors, COMSTAT *status)
     irp.read.bytes = (uint8_t *) &llstatus;
     irp.read.nbytes = sizeof(llstatus);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning(
@@ -303,7 +303,7 @@ static BOOL STDCALL my_EscapeCommFunction(HANDLE fd, uint32_t cmd)
     irp.fd = fd;
     irp.ioctl = ioctl;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: ioctl failed: %lx", __func__, hr);
@@ -364,7 +364,7 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
     irp.read.nbytes = sizeof(baud);
     memset(&baud, 0, sizeof(baud));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_GET_BAUD_RATE failed: %lx", __func__, hr);
@@ -380,7 +380,7 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
     irp.read.nbytes = sizeof(handflow);
     memset(&handflow, 0, sizeof(handflow));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_GET_HANDFLOW failed: %lx", __func__, hr);
@@ -396,7 +396,7 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
     irp.read.nbytes = sizeof(line_control);
     memset(&line_control, 0, sizeof(line_control));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning(
@@ -413,7 +413,7 @@ static BOOL STDCALL my_GetCommState(HANDLE fd, DCB *dcb)
     irp.read.nbytes = sizeof(chars);
     memset(&chars, 0, sizeof(chars));
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_GET_CHARS failed: %lx", __func__, hr);
@@ -508,7 +508,7 @@ static BOOL STDCALL my_PurgeComm(HANDLE fd, uint32_t flags)
     irp.write.bytes = (uint8_t *) &flags;
     irp.write.nbytes = sizeof(flags);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_PURGE failed: %lx", __func__, hr);
@@ -533,7 +533,7 @@ static BOOL STDCALL my_SetCommMask(HANDLE fd, uint32_t mask)
     irp.write.bytes = (uint8_t *) &mask;
     irp.write.nbytes = sizeof(mask);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_WAIT_MASK failed: %lx", __func__, hr);
@@ -666,7 +666,7 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
     irp.write.bytes = (uint8_t *) &baud;
     irp.write.nbytes = sizeof(baud);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_BAUD_RATE failed: %lx", __func__, hr);
@@ -681,7 +681,7 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
     irp.write.bytes = (uint8_t *) &handflow;
     irp.write.nbytes = sizeof(handflow);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_HANDFLOW failed: %lx", __func__, hr);
@@ -696,7 +696,7 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
     irp.write.bytes = (uint8_t *) &line_control;
     irp.write.nbytes = sizeof(line_control);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning(
@@ -712,7 +712,7 @@ static BOOL STDCALL my_SetCommState(HANDLE fd, const DCB *dcb)
     irp.write.bytes = (uint8_t *) &chars;
     irp.write.nbytes = sizeof(chars);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_CHARS failed: %lx", __func__, hr);
@@ -748,7 +748,7 @@ static BOOL STDCALL my_SetCommTimeouts(HANDLE fd, COMMTIMEOUTS *src)
     irp.write.bytes = (uint8_t *) &dest;
     irp.write.nbytes = sizeof(dest);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_TIMEOUTS failed: %lx", __func__, hr);
@@ -777,7 +777,7 @@ static BOOL STDCALL my_SetupComm(HANDLE fd, uint32_t in_q, uint32_t out_q)
     irp.write.bytes = (uint8_t *) &qs;
     irp.write.nbytes = sizeof(qs);
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning(
@@ -801,7 +801,7 @@ static BOOL STDCALL my_SetCommBreak(HANDLE fd)
     irp.fd = fd;
     irp.ioctl = IOCTL_SERIAL_SET_BREAK_ON;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_BREAK_ON failed: %lx", __func__, hr);
@@ -824,7 +824,7 @@ static BOOL STDCALL my_ClearCommBreak(HANDLE fd)
     irp.fd = fd;
     irp.ioctl = IOCTL_SERIAL_SET_BREAK_OFF;
 
-    hr = irp_invoke_next(&irp);
+    hr = iohook_invoke_next(&irp);
 
     if (FAILED(hr)) {
         log_warning("%s: IOCTL_SERIAL_SET_BREAK_OFF failed: %lx", __func__, hr);

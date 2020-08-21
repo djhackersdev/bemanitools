@@ -7,7 +7,6 @@ src_util        := \
     crypto.c \
     fs.c \
     hex.c \
-    hr.c \
     iobuf.c \
     list.c \
     log.c \

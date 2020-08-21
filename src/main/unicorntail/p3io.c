@@ -55,7 +55,7 @@ p3io_filter_dispatch_irp(struct irp *irp)
     LeaveCriticalSection(&p3io_handle_lock);
 
     if (!match) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     switch (irp->op) {
@@ -68,7 +68,7 @@ p3io_filter_dispatch_irp(struct irp *irp)
         case IRP_OP_READ:
             return p3io_handle_read(irp);
         default:
-            return irp_invoke_next(irp);
+            return iohook_invoke_next(irp);
     }
 }
 
@@ -93,7 +93,7 @@ static HRESULT p3io_handle_open(struct irp *irp)
 {
     HRESULT hr;
 
-    hr = irp_invoke_next(irp);
+    hr = iohook_invoke_next(irp);
 
     if (FAILED(hr)) {
         return hr;
@@ -169,7 +169,7 @@ static HRESULT p3io_handle_write(struct irp *irp)
             /* Non-UART command, break out here. */
             irp->write.pos = 0;
 
-            return irp_invoke_next(irp);
+            return iohook_invoke_next(irp);
     }
 
     /* Frame up and queue a response packet */
@@ -189,7 +189,7 @@ static HRESULT p3io_handle_read(struct irp *irp)
     if (p3io_resp.pos == 0) {
         LeaveCriticalSection(&p3io_cmd_lock);
 
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     } else {
         iobuf_flip(&tmp, &p3io_resp);
         iobuf_move(&irp->read, &tmp);

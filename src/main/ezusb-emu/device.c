@@ -53,7 +53,14 @@ void ezusb_emu_device_hook_init(struct ezusb_emu_msg_hook *msg_hook)
 {
     log_assert(ezusb_emu_fd == NULL);
 
-    ezusb_emu_fd = iohook_open_dummy_fd();
+    HRESULT hr;
+
+    hr = iohook_open_nul_fd(&ezusb_emu_fd);
+
+    if (hr != S_OK) {
+        log_fatal("Opening nul fd failed: %08lx", hr);
+    }
+
     ezusb_emu_dev_fx_msg_hook = msg_hook;
 }
 
@@ -70,7 +77,7 @@ HRESULT
 ezusb_emu_device_dispatch_irp(struct irp *irp)
 {
     if (irp->op != IRP_OP_OPEN && irp->fd != ezusb_emu_fd) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     /* read/write are not supported, and the game-side EZUSB code constantly
@@ -98,7 +105,7 @@ static HRESULT ezusb_open(struct irp *irp)
     log_assert(irp != NULL);
 
     if (!wstr_eq(irp->open_filename, L"\\\\.\\Ezusb-0")) {
-        return irp_invoke_next(irp);
+        return iohook_invoke_next(irp);
     }
 
     irp->fd = ezusb_emu_fd;
