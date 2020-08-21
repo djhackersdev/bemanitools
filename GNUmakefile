@@ -58,13 +58,13 @@ print-building \
 version
 
 print-building:
-	@echo "Build gitrev "$(gitrev)"..."
+	$(V)echo "Build gitrev "$(gitrev)"..."
 
 print-release:
-	@echo "Starting release build..."
+	$(V)echo "Starting release build..."
 
 clean:
-	@echo "Cleaning up..."
+	$(V)echo "Cleaning up..."
 	$(V)rm -rf $(BUILDDIR)
 
 code-format:
@@ -72,12 +72,12 @@ code-format:
 	$(V)find src/ -name '*.c' -o -name '*.h' | xargs clang-format -i -style=file
 
 run-tests:
-	@echo "Running tests..."
-	@./run-tests-wine.sh
+	$(V)echo "Running tests..."
+	$(V)./run-tests-wine.sh
 
 # Generate a version file to identify the build
 version:
-	@echo "$(gitrev)" > version
+	$(V)echo "$(gitrev)" > version
 
 build-docker:
 	$(V)docker rm -f $(docker_container_name) 2> /dev/null || true
