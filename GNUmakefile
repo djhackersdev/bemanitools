@@ -68,9 +68,8 @@ clean:
 	$(V)rm -rf $(BUILDDIR)
 
 code-format:
-	@echo "Applying clang-format..."
-# -style=file enables reading .clang-format
-	@find src/ -iname *.h -o -iname *.c | xargs clang-format -i -style=file 
+	$(V)echo "Applying clang-format..."
+	$(V)find src/ -name '*.c' -o -name '*.h' | xargs clang-format -i -style=file
 
 run-tests:
 	@echo "Running tests..."
