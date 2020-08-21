@@ -234,12 +234,8 @@ skip:
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-#ifdef DEBUG_HOOKING
-        FILE *file = fopen("iidxhook.dllmain.log", "w+");
-        log_to_writer(log_writer_file, file);
-#else
-        log_to_writer(log_writer_null, NULL);
-#endif
+        log_to_writer(log_writer_debug, NULL);
+        
         /* Bootstrap hook for further init tasks (see above) */
 
         hook_table_apply(
@@ -253,14 +249,6 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         adapter_hook_init();
         eamuse_hook_init();
         settings_hook_init();
-
-#ifdef DEBUG_HOOKING
-        fflush(file);
-        fclose(file);
-#endif
-
-        /* Logging to file and other destinations is handled by inject */
-        log_to_writer(log_writer_debug, NULL);
     }
 
     return TRUE;
