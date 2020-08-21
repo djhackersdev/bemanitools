@@ -1,5 +1,4 @@
-#ifndef HOOK_TABLE_H
-#define HOOK_TABLE_H
+#pragma once
 
 #include <windows.h>
 
@@ -14,9 +13,13 @@ struct hook_symbol {
 };
 
 void hook_table_apply(
-    HMODULE target,
-    const char *depname,
-    const struct hook_symbol *syms,
-    size_t nsyms);
+        HMODULE target,
+        const char *depname,
+        const struct hook_symbol *syms,
+        size_t nsyms);
 
-#endif
+void hook_table_revert(
+        HMODULE target,
+        const char *depname,
+        const struct hook_symbol *syms,
+        size_t nsyms);

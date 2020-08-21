@@ -1,12 +1,11 @@
-#ifndef HOOK_IOHOOK_H
-#define HOOK_IOHOOK_H
+#pragma once
 
 #include <windows.h>
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "util/iobuf.h"
+#include "hook/iobuf.h"
 
 enum irp_op {
     IRP_OP_OPEN,
@@ -38,10 +37,14 @@ struct irp {
     uint64_t seek_pos;
 };
 
-typedef HRESULT (*irp_handler_t)(struct irp *irp);
+typedef HRESULT (*iohook_fn_t)(struct irp *irp);
 
-void iohook_init(const irp_handler_t *handlers, size_t nhandlers);
-HANDLE iohook_open_dummy_fd(void);
-HRESULT irp_invoke_next(struct irp *irp);
-
+HANDLE iohook_open_dummy_fd(void)
+#ifdef __GNUC__
+__attribute__((deprecated("Use iohook_open_nul_fd instead")))
 #endif
+;
+
+HRESULT iohook_open_nul_fd(HANDLE *fd);
+HRESULT iohook_push_handler(iohook_fn_t fn);
+HRESULT iohook_invoke_next(struct irp *irp);
