@@ -48,15 +48,15 @@ bool options_read_cmdline(struct options *options, int argc, char **argv)
 void options_print_usage(void)
 {
     fprintf(stderr,
-            "inject build " __DATE__ " " __TIME__
-            ", gitrev " STRINGIFY(GITREV) "\n"
-                                          "Usage: inject hook.dll... app.exe [hooks options...]\n"
-                                          "You can specify one or multiple hook.dll files, e.g. inject.exe "
-                                          "hook1.dll hook2.dll app.exe"
-                                          "\n"
-                                          "       The following options can be specified after the exe path:\n"
-                                          "\n"
-                                          "       -D Enable debugging output\n"
-                                          "       -R Halt the injected process until a debugger is attached\n"
-                                          "       -Y [filename]   Log to a file in addition to the console\n");
+        "inject build " __DATE__ " " __TIME__
+        ", gitrev " STRINGIFY(GITREV) "\n"
+        "Usage: inject hook.dll... app.exe [hooks options...]\n"
+        "You can specify one or multiple hook.dll files, e.g. inject.exe "
+        "hook1.dll hook2.dll app.exe"
+        "\n"
+        "       The following options can be specified after the exe path:\n"
+        "\n"
+        "       -D Enable debugging output\n"
+        "       -R Halt the injected process until a debugger is attached\n"
+        "       -Y [filename]   Log to a file in addition to the console\n");
 }

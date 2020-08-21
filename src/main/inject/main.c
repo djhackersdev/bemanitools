@@ -10,472 +10,185 @@
 #include "cconfig/cconfig-util.h"
 #include "cconfig/cmd.h"
 
+#include "inject/debugger.h"
+#include "inject/logger.h"
 #include "inject/options.h"
+#include "inject/version.h"
 
 #include "util/cmdline.h"
+#include "util/log.h"
 #include "util/mem.h"
+#include "util/signal.h"
 #include "util/str.h"
 
-static FILE *log_file = NULL;
-
-static bool inject_dll(PROCESS_INFORMATION pi, const char *arg_dll);
-static bool debug(HANDLE process, uint32_t pid);
-static bool debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi);
-static bool debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi);
-
-int main(int argc, char **argv)
+static bool init_options(int argc, char **argv, struct options *options)
 {
-    struct options options;
-    char *cmd_line;
-    char dll_path[MAX_PATH];
-    DWORD dll_path_length;
-    PROCESS_INFORMATION pi;
-    STARTUPINFO si;
-    BOOL ok;
-    BOOL debug_ok;
-    int hooks;
-    int exec_arg_pos;
+    options_init(options);
 
-    options_init(&options);
-
-    if (argc < 3 || !options_read_cmdline(&options, argc, argv)) {
+    if (argc < 3 || !options_read_cmdline(options, argc, argv)) {
         options_print_usage();
-        goto usage_fail;
+        return false;
     }
 
-    /* Open log file for logging if parameter specified */
+    return true;
+}
 
-    if (strlen(options.log_file) > 0) {
-        log_file = fopen(options.log_file, "w+");
+static bool verify_hook_dll_and_exec_args_and_count_hooks(
+    int argc, char **argv, uint32_t *hooks, uint32_t *exec_arg_pos)
+{
+    log_assert(argc >= 0);
+    log_assert(argv);
+    log_assert(hooks);
+    log_assert(exec_arg_pos);
 
-        if (!log_file) {
-            fprintf(
-                stderr,
-                "Opening log file %s failed: %s\n",
-                options.log_file,
-                strerror(errno));
-            goto log_file_open_fail;
-        }
-
-        printf("Log file: %s\n", options.log_file);
-    }
-
-    /* Count hook dlls */
-    hooks = 0;
-    exec_arg_pos = 0;
+    *hooks = 0;
+    *exec_arg_pos = 0;
 
     for (int i = 1; i < argc; i++) {
         if (str_ends_with(argv[i], "dll")) {
-            hooks++;
+            (*hooks)++;
         } else if (str_ends_with(argv[i], "exe")) {
-            exec_arg_pos = i;
+            *exec_arg_pos = i;
             break;
         }
     }
 
-    if (!hooks) {
-        fprintf(stderr, "No Hook DLL(s) specified before executable\n");
-
-        goto hook_count_fail;
+    if (!(*hooks)) {
+        log_error("No Hook DLL(s) specified before executable");
+        return false;
     }
 
-    if (!exec_arg_pos) {
-        fprintf(stderr, "No executable specified\n");
-
-        goto find_exec_fail;
+    if (!*exec_arg_pos) {
+        log_error("No executable specified");
+        return false;
     }
 
-    for (int i = 0; i < hooks; i++) {
+    log_misc("%d hook(s) dll detected", *hooks);
+    log_misc("Executable: %s", argv[*exec_arg_pos]);
+
+    return true;
+}
+
+static bool
+verify_hook_dlls_exist(int argc, char **argv, uint32_t hook_dll_count)
+{
+    log_assert(argc >= 0);
+    log_assert(argv);
+
+    char dll_path[MAX_PATH];
+    DWORD dll_path_length;
+
+    for (uint32_t i = 0; i < hook_dll_count; i++) {
         dll_path_length =
             SearchPath(NULL, argv[i + 1], NULL, MAX_PATH, dll_path, NULL);
 
         if (dll_path_length == 0) {
-            fprintf(
-                stderr,
-                "Hook DLL not found: %08x\n",
-                (unsigned int) GetLastError());
+            log_error(
+                "Hook DLL not found: %08x", (unsigned int) GetLastError());
 
-            goto search_fail;
+            return false;
         }
-    }
-
-    memset(&si, 0, sizeof(si));
-    si.cb = sizeof(si);
-
-    cmd_line = args_join(argc - exec_arg_pos, argv + exec_arg_pos);
-
-    ok = CreateProcess(
-        argv[exec_arg_pos],
-        cmd_line,
-        NULL,
-        NULL,
-        FALSE,
-        CREATE_SUSPENDED,
-        NULL,
-        NULL,
-        &si,
-        &pi);
-
-    if (!ok) {
-        fprintf(
-            stderr,
-            "Failed to launch hooked EXE: %08x\n",
-            (unsigned int) GetLastError());
-
-        goto start_fail;
-    }
-
-    free(cmd_line);
-    cmd_line = NULL;
-
-    for (int i = 0; i < hooks; i++) {
-        if (!inject_dll(pi, argv[i + 1])) {
-            goto inject_fail;
-        }
-    }
-
-    debug_ok = false;
-
-    if (options.debug && !options.remote_debugger) {
-        debug_ok = DebugActiveProcess(pi.dwProcessId);
-
-        if (!debug_ok) {
-            fprintf(
-                stderr,
-                "DebugActiveProcess failed: %08x\n",
-                (unsigned int) GetLastError());
-        } else {
-            printf("Debug active process\n");
-        }
-    }
-
-    if (options.remote_debugger) {
-        printf("Waiting until debugger attaches to remote process...\n");
-
-        while (true) {
-            BOOL res = FALSE;
-
-            if (!CheckRemoteDebuggerPresent(pi.hProcess, &res)) {
-                fprintf(
-                    stderr,
-                    "CheckRemoteDebuggerPresent failed: %08x\n",
-                    (unsigned int) GetLastError());
-            }
-
-            if (res) {
-                printf("Debugger attached, resuming\n");
-                break;
-            }
-
-            Sleep(1000);
-        }
-    }
-
-    printf("Resuming remote process...\n");
-
-    if (ResumeThread(pi.hThread) == -1) {
-        fprintf(
-            stderr,
-            "Error restarting hooked process: %08x\n",
-            (unsigned int) GetLastError());
-
-        goto restart_fail;
-    }
-
-    CloseHandle(pi.hThread);
-
-    if (options.debug) {
-        if (!debug_ok || !debug(pi.hProcess, pi.dwProcessId)) {
-            WaitForSingleObject(pi.hProcess, INFINITE);
-        }
-    }
-
-    CloseHandle(pi.hProcess);
-
-    return EXIT_SUCCESS;
-
-inject_fail:
-restart_fail:
-    TerminateProcess(pi.hProcess, EXIT_FAILURE);
-
-    CloseHandle(pi.hThread);
-    CloseHandle(pi.hProcess);
-
-start_fail:
-    if (cmd_line != NULL) {
-        free(cmd_line);
-    }
-
-hook_count_fail:
-find_exec_fail:
-search_fail:
-    if (log_file) {
-        fclose(log_file);
-    }
-
-log_file_open_fail:
-usage_fail:
-
-    return EXIT_FAILURE;
-}
-
-static bool inject_dll(PROCESS_INFORMATION pi, const char *arg_dll)
-{
-    char dll_path[MAX_PATH];
-    DWORD dll_path_length;
-    void *remote_addr;
-    BOOL ok;
-    HANDLE remote_thread;
-
-    printf("Injecting: %s\n", arg_dll);
-
-    dll_path_length = SearchPath(NULL, arg_dll, NULL, MAX_PATH, dll_path, NULL);
-
-    dll_path_length++;
-
-    remote_addr = VirtualAllocEx(
-        pi.hProcess,
-        NULL,
-        dll_path_length,
-        MEM_RESERVE | MEM_COMMIT,
-        PAGE_READWRITE);
-
-    if (!remote_addr) {
-        fprintf(
-            stderr,
-            "VirtualAllocEx failed: %08x\n",
-            (unsigned int) GetLastError());
-
-        goto alloc_fail;
-    }
-
-    ok = WriteProcessMemory(
-        pi.hProcess, remote_addr, dll_path, dll_path_length, NULL);
-
-    if (!ok) {
-        fprintf(
-            stderr,
-            "WriteProcessMemory failed: %08x\n",
-            (unsigned int) GetLastError());
-
-        goto write_fail;
-    }
-
-    remote_thread = CreateRemoteThread(
-        pi.hProcess,
-        NULL,
-        0,
-        (LPTHREAD_START_ROUTINE) LoadLibrary,
-        remote_addr,
-        0,
-        NULL);
-
-    if (remote_thread == NULL) {
-        fprintf(
-            stderr,
-            "CreateRemoteThread failed: %08x\n",
-            (unsigned int) GetLastError());
-
-        goto inject_fail;
-    }
-
-    WaitForSingleObject(remote_thread, INFINITE);
-    CloseHandle(remote_thread);
-
-    ok = VirtualFreeEx(pi.hProcess, remote_addr, 0, MEM_RELEASE);
-    remote_addr = NULL;
-
-    if (!ok) {
-        fprintf(
-            stderr,
-            "VirtualFreeEx failed: %08x\n",
-            (unsigned int) GetLastError());
     }
 
     return true;
-
-inject_fail:
-write_fail:
-    if (remote_addr != NULL) {
-        VirtualFreeEx(pi.hProcess, remote_addr, 0, MEM_RELEASE);
-    }
-
-alloc_fail:
-    return false;
 }
 
-static bool debug(HANDLE process, uint32_t pid)
+static bool inject_hook_dlls(uint32_t hooks, char **argv)
 {
-    DEBUG_EVENT de;
-    BOOL ok;
+    log_assert(argv);
 
-    for (;;) {
-        ok = WaitForDebugEvent(&de, INFINITE);
+    log_info("Injecting hook DLLs...");
 
-        if (!ok) {
-            fprintf(
-                stderr,
-                "WaitForDebugEvent failed: %08x\n",
-                (unsigned int) GetLastError());
-
-            return false;
-        }
-
-        switch (de.dwDebugEventCode) {
-            case CREATE_PROCESS_DEBUG_EVENT:
-                CloseHandle(de.u.CreateProcessInfo.hFile);
-
-                break;
-
-            case EXIT_PROCESS_DEBUG_EVENT:
-                if (de.dwProcessId == pid) {
-                    return true;
-                }
-
-                break;
-
-            case LOAD_DLL_DEBUG_EVENT:
-                CloseHandle(de.u.LoadDll.hFile);
-
-                break;
-
-            case OUTPUT_DEBUG_STRING_EVENT:
-                if (de.dwProcessId == pid) {
-                    if (de.u.DebugString.fUnicode) {
-                        if (!debug_wstr(process, &de.u.DebugString)) {
-                            return false;
-                        }
-                    } else {
-                        if (!debug_str(process, &de.u.DebugString)) {
-                            return false;
-                        }
-                    }
-                }
-
-                break;
-        }
-
-        if (de.dwDebugEventCode == OUTPUT_DEBUG_STRING_EVENT) {
-            ok =
-                ContinueDebugEvent(de.dwProcessId, de.dwThreadId, DBG_CONTINUE);
-        } else {
-            ok = ContinueDebugEvent(
-                de.dwProcessId, de.dwThreadId, DBG_EXCEPTION_NOT_HANDLED);
-        }
-
-        if (!ok) {
-            fprintf(
-                stderr,
-                "ContinueDebugEvent failed: %08x\n",
-                (unsigned int) GetLastError());
-
+    for (int i = 0; i < hooks; i++) {
+        if (!debugger_inject_dll(argv[i + 1])) {
             return false;
         }
     }
+
+    return true;
 }
 
-static char console_get_color(char *str)
+static void signal_shutdown_handler()
 {
-    /* Add some color to make spotting warnings/errors easier.
-        Based on debug output level identifier. */
-
-    /* Avoids colored output on strings like "Windows" */
-    if (str[1] != ':') {
-        return 15;
-    }
-
-    switch (str[0]) {
-        /* green */
-        case 'M':
-            return 10;
-        /* blue */
-        case 'I':
-            return 9;
-        /* yellow */
-        case 'W':
-            return 14;
-        /* red */
-        case 'F':
-            return 12;
-        /* default console color */
-        default:
-            return 15;
-    }
+    debugger_finit(true);
+    logger_finit();
 }
 
-static bool debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
+int main(int argc, char **argv)
 {
-    char *str;
-    wchar_t *wstr;
-    uint32_t nbytes;
-    BOOL ok;
+    struct options options;
+    uint32_t hooks;
+    uint32_t exec_arg_pos;
+    char *cmd_line;
+    bool local_debugger;
 
-    nbytes = odsi->nDebugStringLength * sizeof(wchar_t);
-    wstr = xmalloc(nbytes);
+    if (!init_options(argc, argv, &options)) {
+        goto init_options_fail;
+    }
 
-    ok =
-        ReadProcessMemory(process, odsi->lpDebugStringData, wstr, nbytes, NULL);
+    if (!logger_init(strlen(options.log_file) > 0 ? options.log_file : NULL)) {
+        goto init_logger_fail;
+    }
 
-    if (ok) {
-        if (wstr_narrow(wstr, &str)) {
-            str[odsi->nDebugStringLength - 1] = '\0';
+    signal_exception_handler_init();
+    // Cleanup remote process on CTRL+C
+    signal_register_shutdown_handler(signal_shutdown_handler);
 
-            SetConsoleTextAttribute(
-                GetStdHandle(STD_OUTPUT_HANDLE), console_get_color(str));
-            printf("%s", str);
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+    if (!verify_hook_dll_and_exec_args_and_count_hooks(
+            argc, argv, &hooks, &exec_arg_pos)) {
+        goto verify_fail;
+    }
 
-            if (log_file) {
-                fprintf(log_file, "%s", str);
-            }
+    if (!verify_hook_dlls_exist(argc, argv, hooks)) {
+        goto verify_2_fail;
+    }
 
-            free(str);
-        } else {
-            fprintf(stderr, "OutputDebugStringW: UTF-16 conversion failed\n");
+    // buffer consumed by debugger_init
+    cmd_line = args_join(argc - exec_arg_pos, argv + exec_arg_pos);
+
+    local_debugger = options.debug && !options.remote_debugger;
+
+    if (!debugger_init(local_debugger, argv[exec_arg_pos], cmd_line)) {
+        goto debugger_init_fail;
+    }
+
+    if (!inject_hook_dlls(hooks, argv)) {
+        goto inject_hook_dlls_fail;
+    }
+
+    // Execute this after injecting the DLLs. Some debuggers seem to crash if we
+    // attach the process before DLL injection (inject's local one doesn't
+    // crash). However, this means the remote debugger is missing out on all
+    // injected DLL loads, e.g. calls to DllMain
+    if (options.remote_debugger) {
+        if (!debugger_wait_for_remote_debugger()) {
+            goto debugger_wait_for_remote_debugger_fail;
         }
-    } else {
-        fprintf(
-            stderr,
-            "ReadProcessMemory failed: %08x\n",
-            (unsigned int) GetLastError());
-
-        return false;
     }
 
-    free(wstr);
-
-    return (bool) ok;
-}
-
-static bool debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
-{
-    char *str;
-    BOOL ok;
-
-    str = xmalloc(odsi->nDebugStringLength);
-
-    ok = ReadProcessMemory(
-        process, odsi->lpDebugStringData, str, odsi->nDebugStringLength, NULL);
-
-    if (ok) {
-        str[odsi->nDebugStringLength - 1] = '\0';
-
-        SetConsoleTextAttribute(
-            GetStdHandle(STD_OUTPUT_HANDLE), console_get_color(str));
-        printf("%s", str);
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
-
-        if (log_file) {
-            fprintf(log_file, "%s", str);
-        }
-    } else {
-        fprintf(
-            stderr,
-            "ReadProcessMemory failed: %08x\n",
-            (unsigned int) GetLastError());
+    if (!debugger_resume_process()) {
+        goto debugger_resume_process_fail;
     }
 
-    free(str);
+    debugger_wait_process_exit();
 
-    return (bool) ok;
+    debugger_finit(false);
+
+    logger_finit();
+
+    return EXIT_SUCCESS;
+
+debugger_resume_process_fail:
+debugger_wait_for_remote_debugger_fail:
+inject_hook_dlls_fail:
+    debugger_finit(true);
+
+debugger_init_fail:
+verify_2_fail:
+verify_fail:
+    logger_finit();
+
+init_logger_fail:
+init_options_fail:
+    return EXIT_FAILURE;
 }
