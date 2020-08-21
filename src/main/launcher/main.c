@@ -20,6 +20,7 @@
 #include "util/fs.h"
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/os.h"
 #include "util/str.h"
 
 /* Gratuitous API changes orz */
@@ -207,6 +208,8 @@ int main(int argc, const char **argv)
 
     log_to_external(
         log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+
+    os_version_log();
 
     /* Load game DLL */
 
