@@ -22,6 +22,7 @@
 #define log_misc(...) log_impl_misc(LOG_MODULE, __VA_ARGS__)
 #define log_info(...) log_impl_info(LOG_MODULE, __VA_ARGS__)
 #define log_warning(...) log_impl_warning(LOG_MODULE, __VA_ARGS__)
+#define log_error(...) log_impl_fatal(LOG_MODULE, __VA_ARGS__)
 
 /* This doesn't really belong here, but it's what libavs does so w/e */
 
@@ -37,6 +38,7 @@
 #define log_misc(...)
 #define log_info(...)
 #define log_warning(...)
+#define log_error(...)
 #define log_assert(x) \
     do {              \
         if (!(x)) {   \
