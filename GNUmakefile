@@ -26,7 +26,7 @@ toolchain_64          := x86_64-w64-mingw32-
 gitrev                := $(shell git rev-parse HEAD)
 cppflags              := -I src -I src/main -I src/test -DGITREV=$(gitrev)
 cflags                := -O2 -pipe -ffunction-sections -fdata-sections \
-                          -Wall -std=c99
+                          -Wall -std=c99 -DPSAPI_VERSION=1
 cflags_release        := -Werror
 ldflags		          := -Wl,--gc-sections -static-libgcc
 
