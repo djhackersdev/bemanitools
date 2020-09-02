@@ -185,8 +185,8 @@ bool logger_init(const char *log_file_path)
         log_info("Log file: %s", log_file_path);
 
         if (!log_file) {
-            log_error(
-                "Opening log file %s failed: %s",
+            log_warning(
+                "ERROR: Opening log file %s failed: %s",
                 log_file_path,
                 strerror(errno));
             return false;
