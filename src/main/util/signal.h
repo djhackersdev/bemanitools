@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 /**
  * Function signature of shutdown handler.
  */
@@ -18,3 +20,11 @@ void signal_exception_handler_init();
  * @param handler Handler function to register.
  */
 void signal_register_shutdown_handler(signal_shutdown_handler_t handler);
+
+/**
+ * Convert a (windows) exception code to a human readable representation.
+ * 
+ * @param code Exception code
+ * @return Human readable representation of the given exception code
+ */ 
+const char* signal_exception_code_to_str(DWORD code);
