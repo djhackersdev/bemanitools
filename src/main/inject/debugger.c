@@ -13,6 +13,7 @@
 
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/signal.h"
 #include "util/str.h"
 
 struct debugger_thread_params {
@@ -185,53 +186,6 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     }
 }
 
-static const char *exception_code_to_str(DWORD code)
-{
-    switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION:
-            return "EXCEPTION_ACCESS_VIOLATION";
-        case EXCEPTION_DATATYPE_MISALIGNMENT:
-            return "EXCEPTION_DATATYPE_MISALIGNMENT";
-        case EXCEPTION_BREAKPOINT:
-            return "EXCEPTION_BREAKPOINT";
-        case EXCEPTION_SINGLE_STEP:
-            return "EXCEPTION_SINGLE_STEP";
-        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-            return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
-        case EXCEPTION_FLT_DENORMAL_OPERAND:
-            return "EXCEPTION_FLT_DENORMAL_OPERAND";
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-            return "EXCEPTION_FLT_DIVIDE_BY_ZERO";
-        case EXCEPTION_FLT_INEXACT_RESULT:
-            return "EXCEPTION_FLT_INEXACT_RESULT";
-        case EXCEPTION_FLT_INVALID_OPERATION:
-            return "EXCEPTION_FLT_INVALID_OPERATION";
-        case EXCEPTION_FLT_OVERFLOW:
-            return "EXCEPTION_FLT_OVERFLOW";
-        case EXCEPTION_FLT_STACK_CHECK:
-            return "EXCEPTION_FLT_STACK_CHECK";
-        case EXCEPTION_FLT_UNDERFLOW:
-            return "EXCEPTION_FLT_UNDERFLOW";
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:
-            return "EXCEPTION_INT_DIVIDE_BY_ZERO";
-        case EXCEPTION_INT_OVERFLOW:
-            return "EXCEPTION_INT_OVERFLOW";
-        case EXCEPTION_PRIV_INSTRUCTION:
-            return "EXCEPTION_PRIV_INSTRUCTION";
-        case EXCEPTION_IN_PAGE_ERROR:
-            return "EXCEPTION_IN_PAGE_ERROR";
-        case EXCEPTION_ILLEGAL_INSTRUCTION:
-            return "EXCEPTION_ILLEGAL_INSTRUCTION";
-        case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-            return "EXCEPTION_NONCONTINUABLE_EXCEPTION";
-        case EXCEPTION_STACK_OVERFLOW:
-            return "EXCEPTION_STACK_OVERFLOW";
-        default:
-            log_warning("Unknown exception code: %ld", code);
-            return "EXCEPTION_UNKNOWN";
-    }
-}
-
 static bool debugger_create_process(
     bool local_debugger, const char *app_name, char *cmd_line)
 {
@@ -307,8 +261,7 @@ static bool debugger_loop()
                     "EXCEPTION_DEBUG_EVENT(pid %ld, tid %ld): x%s 0x%p",
                     de.dwProcessId,
                     de.dwThreadId,
-                    exception_code_to_str(
-                        de.u.Exception.ExceptionRecord.ExceptionCode),
+                    signal_exception_code_to_str(de.u.Exception.ExceptionRecord.ExceptionCode),
                     de.u.Exception.ExceptionRecord.ExceptionAddress);
 
                 if (de.u.Exception.ExceptionRecord.ExceptionCode ==
