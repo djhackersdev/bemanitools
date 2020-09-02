@@ -54,12 +54,12 @@ static bool verify_hook_dll_and_exec_args_and_count_hooks(
     }
 
     if (!(*hooks)) {
-        log_error("No Hook DLL(s) specified before executable");
+        log_warning("ERROR: No Hook DLL(s) specified before executable");
         return false;
     }
 
     if (!*exec_arg_pos) {
-        log_error("No executable specified");
+        log_warning("ERROR: No executable specified");
         return false;
     }
 
@@ -83,8 +83,8 @@ verify_hook_dlls_exist(int argc, char **argv, uint32_t hook_dll_count)
             SearchPath(NULL, argv[i + 1], NULL, MAX_PATH, dll_path, NULL);
 
         if (dll_path_length == 0) {
-            log_error(
-                "Hook DLL not found: %08x", (unsigned int) GetLastError());
+            log_warning(
+                "ERROR: Hook DLL not found: %08x", (unsigned int) GetLastError());
 
             return false;
         }

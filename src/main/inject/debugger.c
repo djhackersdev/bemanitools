@@ -122,8 +122,8 @@ read_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     } else {
         free(str);
 
-        log_error(
-            "ReadProcessMemory for debug string failed: %08x",
+        log_warning(
+            "ERROR: ReadProcessMemory for debug string failed: %08x",
             (unsigned int) GetLastError());
         str = NULL;
     }
@@ -149,12 +149,12 @@ read_debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
         if (wstr_narrow(wstr, &str)) {
             str[odsi->nDebugStringLength - 1] = '\0';
         } else {
-            log_error("OutputDebugStringW: UTF-16 conversion failed");
+            log_warning("ERROR: OutputDebugStringW: UTF-16 conversion failed");
             str = NULL;
         }
     } else {
-        log_error(
-            "ReadProcessMemory for debug string failed: %08x",
+        log_warning(
+            "ERROR: ReadProcessMemory for debug string failed: %08x",
             (unsigned int) GetLastError());
         str = NULL;
     }
@@ -221,8 +221,8 @@ static bool debugger_create_process(
         app_name, cmd_line, NULL, NULL, FALSE, flags, NULL, NULL, &si, &pi);
 
     if (!ok) {
-        log_error(
-            "Failed to launch hooked EXE: %08x", (unsigned int) GetLastError());
+        log_warning(
+            "ERRPR: Failed to launch hooked EXE: %08x", (unsigned int) GetLastError());
 
         free(cmd_line);
 
@@ -246,8 +246,8 @@ static bool debugger_loop()
 
     for (;;) {
         if (!WaitForDebugEvent(&de, INFINITE)) {
-            log_error(
-                "WaitForDebugEvent failed: %08x",
+            log_warning(
+                "ERROR: WaitForDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
             return false;
         }
@@ -364,8 +364,8 @@ static bool debugger_loop()
 
         if (!ContinueDebugEvent(
                 de.dwProcessId, de.dwThreadId, continue_status)) {
-            log_error(
-                "ContinueDebugEvent failed: %08x",
+            log_warning(
+                "ERROR: ContinueDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
             return false;
         }
@@ -410,8 +410,8 @@ bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line)
     if (!debugger_ready_event) {
         free(cmd_line);
 
-        log_error(
-            "Creating event object failed: %08x",
+        log_warning(
+            "ERROR: Creating event object failed: %08x",
             (unsigned int) GetLastError());
         return false;
     }
@@ -430,8 +430,8 @@ bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line)
         free(cmd_line);
         free(thread_params);
 
-        log_error(
-            "Creating debugger thread failed: %08x",
+        log_warning(
+            "ERROR: Creating debugger thread failed: %08x",
             (unsigned int) GetLastError());
         return false;
     }
@@ -453,8 +453,8 @@ bool debugger_wait_for_remote_debugger()
         res = FALSE;
 
         if (!CheckRemoteDebuggerPresent(pi.hProcess, &res)) {
-            log_error(
-                "CheckRemoteDebuggerPresent failed: %08x",
+            log_warning(
+                "ERROR: CheckRemoteDebuggerPresent failed: %08x",
                 (unsigned int) GetLastError());
             return false;
         }
@@ -495,7 +495,7 @@ bool debugger_inject_dll(const char *path_dll)
         PAGE_READWRITE);
 
     if (!remote_addr) {
-        log_error("VirtualAllocEx failed: %08x", (unsigned int) GetLastError());
+        log_warning("ERROR: VirtualAllocEx failed: %08x", (unsigned int) GetLastError());
 
         goto alloc_fail;
     }
@@ -504,8 +504,8 @@ bool debugger_inject_dll(const char *path_dll)
         pi.hProcess, remote_addr, dll_path, dll_path_length, NULL);
 
     if (!ok) {
-        log_error(
-            "WriteProcessMemory failed: %08x", (unsigned int) GetLastError());
+        log_warning(
+            "ERROR: WriteProcessMemory failed: %08x", (unsigned int) GetLastError());
 
         goto write_fail;
     }
@@ -520,8 +520,8 @@ bool debugger_inject_dll(const char *path_dll)
         NULL);
 
     if (remote_thread == NULL) {
-        log_error(
-            "CreateRemoteThread failed: %08x", (unsigned int) GetLastError());
+        log_warning(
+            "ERROR: CreateRemoteThread failed: %08x", (unsigned int) GetLastError());
 
         goto inject_fail;
     }
@@ -533,7 +533,7 @@ bool debugger_inject_dll(const char *path_dll)
     remote_addr = NULL;
 
     if (!ok) {
-        log_error("VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
+        log_warning("ERROR: VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
     }
 
     return true;
@@ -553,8 +553,8 @@ bool debugger_resume_process()
     log_info("Resuming remote process...");
 
     if (ResumeThread(pi.hThread) == -1) {
-        log_error(
-            "Error resuming remote process: %08x",
+        log_warning(
+            "ERROR: Resuming remote process: %08x",
             (unsigned int) GetLastError());
         return false;
     }
