@@ -7,7 +7,8 @@
 
 static signal_shutdown_handler_t shutdown_handler;
 
-static const char* control_code_to_str(DWORD ctrl_code) {
+static const char* control_code_to_str(DWORD ctrl_code)
+{
     switch (ctrl_code) {
         case CTRL_C_EVENT:
             return "CTRL_C_EVENT";
@@ -25,8 +26,67 @@ static const char* control_code_to_str(DWORD ctrl_code) {
     }
 }
 
-static const char* exception_code_to_str(struct _EXCEPTION_RECORD *exception_record) {
-    switch (exception_record->ExceptionCode) {
+static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType)
+{
+    log_misc("Console ctrl handler called: %s", control_code_to_str(dwCtrlType));
+
+    if (dwCtrlType == CTRL_C_EVENT) {
+        if (shutdown_handler) {
+            log_misc("Executing shutdown handler");
+            shutdown_handler();
+        }
+
+        log_info("Exiting process");
+
+        ExitProcess(0);
+    }
+
+    return FALSE;
+}
+
+static LONG WINAPI unhandled_exception_filter(struct _EXCEPTION_POINTERS *ExceptionInfo)
+{
+    // no exception info provided
+    if (ExceptionInfo != NULL) {
+        struct _EXCEPTION_RECORD *ExceptionRecord = ExceptionInfo->ExceptionRecord;
+
+        log_warning(
+            "Exception raised: %s", 
+            signal_exception_code_to_str(ExceptionRecord->ExceptionCode));
+
+        struct _EXCEPTION_RECORD *record_cause = ExceptionRecord->ExceptionRecord;
+
+        while (record_cause != NULL) {
+            log_warning("Caused by: %s", signal_exception_code_to_str(record_cause->ExceptionCode));
+            record_cause = record_cause->ExceptionRecord;
+        }
+
+        // TODO print stacktrace
+
+        log_fatal("End exception handler");
+    }
+
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void signal_exception_handler_init()
+{
+    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
+    SetUnhandledExceptionFilter(unhandled_exception_filter);
+
+    log_info("Initialized");
+}
+
+void signal_register_shutdown_handler(signal_shutdown_handler_t handler)
+{
+    shutdown_handler = handler;
+
+    log_misc("Registered shutdown handler");
+}
+
+const char* signal_exception_code_to_str(DWORD code)
+{
+    switch (code) {
         case EXCEPTION_ACCESS_VIOLATION:
             return "EXCEPTION_ACCESS_VIOLATION";
         case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
@@ -70,62 +130,7 @@ static const char* exception_code_to_str(struct _EXCEPTION_RECORD *exception_rec
         case DBG_CONTROL_C:
             return "DBG_CONTROL_C";
         default:
-            log_warning("Unknown exception code: %lX", exception_record->ExceptionCode);
+            log_warning("Unknown exception code: %lX", code);
             return "Unknown";
     }
-}
-
-static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
-    log_misc("Console ctrl handler called: %s", control_code_to_str(dwCtrlType));
-
-    if (dwCtrlType == CTRL_C_EVENT) {
-        if (shutdown_handler) {
-            log_misc("Executing shutdown handler");
-            shutdown_handler();
-        }
-
-        log_info("Exiting process");
-
-        ExitProcess(0);
-    }
-
-    return FALSE;
-}
-
-static LONG WINAPI unhandled_exception_filter(struct _EXCEPTION_POINTERS *ExceptionInfo) {
-
-    // no exception info provided
-    if (ExceptionInfo != NULL) {
-        struct _EXCEPTION_RECORD *ExceptionRecord = ExceptionInfo->ExceptionRecord;
-
-        log_warning("Exception raised: %s", exception_code_to_str(ExceptionRecord));
-
-        struct _EXCEPTION_RECORD *record_cause = ExceptionRecord->ExceptionRecord;
-
-        while (record_cause != NULL) {
-            log_warning("Caused by: %s", exception_code_to_str(record_cause));
-            record_cause = record_cause->ExceptionRecord;
-        }
-
-        // TODO print stacktrace
-
-        log_fatal("End exception handler");
-    }
-
-    return EXCEPTION_CONTINUE_SEARCH;
-}
-
-void signal_exception_handler_init()
-{
-    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
-    SetUnhandledExceptionFilter(unhandled_exception_filter);
-
-    log_info("Initialized");
-}
-
-void signal_register_shutdown_handler(signal_shutdown_handler_t handler)
-{
-    shutdown_handler = handler;
-
-    log_misc("Registered shutdown handler");
 }
