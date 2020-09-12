@@ -36,6 +36,7 @@ enum ac_io_node_type {
     AC_IO_NODE_TYPE_LED_SPIKE = 0x05010000,
     AC_IO_NODE_TYPE_KFCA = 0x09060000,
     AC_IO_NODE_TYPE_BI2A = 0x0d060000,
+    AC_IO_NODE_TYPE_RVOL = 0x09060001,
 };
 
 #pragma pack(push, 1)
