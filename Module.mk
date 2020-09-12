@@ -129,6 +129,7 @@ include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxiotest/Module.mk
 include src/main/inject/Module.mk
 include src/main/jbio/Module.mk
+include src/main/jbiotest/Module.mk
 include src/main/jbhook/Module.mk
 include src/main/jbhook1/Module.mk
 include src/main/launcher/Module.mk
@@ -174,6 +175,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/iidxiotest.exe \
 		build/bin/indep-32/iidx-ezusb-exit-hook.dll \
 		build/bin/indep-32/iidx-ezusb2-exit-hook.dll \
+		build/bin/indep-32/jbiotest.exe \
 		build/bin/indep-32/pcbidgen.exe \
 		dist/iidx/ezusb-boot.bat \
 		dist/iidx/ezusb2-boot.bat \
@@ -191,6 +193,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidxiotest.exe \
 		build/bin/indep-64/iidx-ezusb-exit-hook.dll \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
+		build/bin/indep-64/jbiotest.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
