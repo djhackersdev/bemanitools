@@ -99,7 +99,7 @@ static bool get_device_by_filter(
 
         if (DeviceRegKey) {
             bool found = false;
-            log_info("Found a serial device at index: %d", idx);
+            log_info("Found a serial device at index: %ld", idx);
 
             if (!id_filter) {
                 if (check_property(DeviceInfoSet, &DeviceInfoData, property)) {

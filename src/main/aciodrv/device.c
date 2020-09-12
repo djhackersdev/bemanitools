@@ -166,6 +166,7 @@ static int aciodrv_device_receive(uint8_t *buffer, int size)
 
 #ifdef AC_IO_MSG_LOG
         aciodrv_device_log_buffer("Recv (1)", recv_buf, recv_size);
+        log_warning("Expected %d got %d", recv_buf[4], recv_size - 6);
 #endif
 
         /* recv_size - 1: omit checksum for checksum calc */
