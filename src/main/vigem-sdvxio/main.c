@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
     XUSB_REPORT state;
 
-    log_info("vigem init succeeded, beginnning poll loop");
+    log_info("vigem init succeeded, beginning poll loop");
     while (loop) {
         sdvx_io_read_input();
 
