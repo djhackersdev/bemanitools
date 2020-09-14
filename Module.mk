@@ -149,6 +149,8 @@ include src/main/security/Module.mk
 include src/main/unicorntail/Module.mk
 include src/main/util/Module.mk
 include src/main/vefxio/Module.mk
+include src/main/vigem-sdvxio/Module.mk
+include src/main/vigemstub/Module.mk
 
 include src/test/cconfig/Module.mk
 include src/test/d3d9hook/Module.mk
@@ -202,11 +204,8 @@ $(zipdir)/iidx-09-to-12.zip: \
 		build/bin/indep-32/iidxhook1.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
@@ -230,11 +229,8 @@ $(zipdir)/iidx-13.zip: \
 		build/bin/avs2_0-32/iidxhook2.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
@@ -249,11 +245,8 @@ $(zipdir)/iidx-14-to-17.zip: \
 		build/bin/avs2_0-32/iidxhook3.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
@@ -275,11 +268,8 @@ $(zipdir)/iidx-18.zip: \
 		build/bin/avs2_1101-32/launcher.exe \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18.bat \
@@ -294,11 +284,8 @@ $(zipdir)/iidx-19.zip: \
 		build/bin/avs2_1304-32/launcher.exe \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-19.bat \
@@ -313,11 +300,8 @@ $(zipdir)/iidx-20.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20.bat \
@@ -332,11 +316,8 @@ $(zipdir)/iidx-21-to-24.zip: \
 		build/bin/avs2_1601-32/launcher.exe \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
-		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
-		build/bin/indep-32/iidxio-ezusb.dll \
-		build/bin/indep-32/iidxio-ezusb2.dll \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-21.bat \
@@ -357,11 +338,8 @@ $(zipdir)/iidx-25-to-26.zip: \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/indep-64/config.exe \
 		build/bin/indep-64/eamio.dll \
-		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/geninput.dll \
 		build/bin/indep-64/iidxio.dll \
-		build/bin/indep-64/iidxio-ezusb.dll \
-        build/bin/indep-64/iidxio-ezusb2.dll \
 		build/bin/indep-64/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-25.bat \
@@ -369,6 +347,22 @@ $(zipdir)/iidx-25-to-26.zip: \
 		dist/iidx/iidxhook-25.conf \
 		dist/iidx/iidxhook-26.conf \
 		dist/iidx/vefx.txt \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/iidx-hwio-x86.zip: \
+		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/iidxio-ezusb.dll \
+		build/bin/indep-32/iidxio-ezusb2.dll \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/iidx-hwio-x64.zip: \
+		build/bin/indep-64/eamio-icca.dll \
+		build/bin/indep-64/iidxio-ezusb.dll \
+		build/bin/indep-64/iidxio-ezusb2.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -420,8 +414,6 @@ $(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/sdvxio.dll \
-		build/bin/indep-32/sdvxio-kfca.dll \
-		build/bin/indep-32/sdvxio-bio2.dll \
 		dist/sdvx/config.bat \
 		dist/sdvx/gamestart.bat \
 		| $(zipdir)/
@@ -435,8 +427,6 @@ $(zipdir)/sdvx-05.zip: \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \
 		build/bin/indep-64/sdvxio.dll \
-		build/bin/indep-64/sdvxio-kfca.dll \
-		build/bin/indep-64/sdvxio-bio2.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
 		dist/sdvx5/sdvxhook2.conf \
@@ -454,6 +444,22 @@ $(zipdir)/sdvx-05-cn.zip: \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart-cn.bat \
 		dist/sdvx5/sdvxhook2-cn.conf \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/sdvx-hwio-x86.zip: \
+		build/bin/indep-32/sdvxio-kfca.dll \
+		build/bin/indep-32/sdvxio-bio2.dll \
+		build/bin/indep-32/vigem-sdvxio.exe \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/sdvx-hwio-x64.zip: \
+		build/bin/indep-64/sdvxio-kfca.dll \
+		build/bin/indep-64/sdvxio-bio2.dll \
+		build/bin/indep-64/vigem-sdvxio.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -556,12 +562,16 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-20.zip \
 		$(zipdir)/iidx-21-to-24.zip \
 		$(zipdir)/iidx-25-to-26.zip \
+		$(zipdir)/iidx-hwio-x86.zip \
+		$(zipdir)/iidx-hwio-x64.zip \
 		$(zipdir)/jb-01.zip \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05.zip \
 		$(zipdir)/sdvx-05-cn.zip \
+		$(zipdir)/sdvx-hwio-x86.zip \
+		$(zipdir)/sdvx-hwio-x64.zip \
 		$(zipdir)/tools.zip \
 		$(zipdir)/tools-x64.zip \
 		CHANGELOG.md \
