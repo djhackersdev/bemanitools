@@ -322,7 +322,11 @@ bool aciodrv_send_and_recv(struct ac_io_message *msg, int resp_size)
     int send_size = offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes;
 
 #ifdef AC_IO_MSG_LOG
-    log_info("Beginning send on %d: %04x (%d b)", msg->addr, msg->cmd.code, send_size);
+    log_info(
+        "Beginning send on %d: %04x (%d b)",
+        msg->addr,
+        msg->cmd.code,
+        send_size);
 #endif
     if (aciodrv_device_send((uint8_t *) msg, send_size) <= 0) {
         return false;

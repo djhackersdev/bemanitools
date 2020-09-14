@@ -28,7 +28,9 @@ static bool poll_delay;
 static bool force_headphones_on;
 
 void bio2_emu_bi2a_init(
-    struct bio2emu_port *bio2_emu, bool disable_poll_limiter, bool force_headphones)
+    struct bio2emu_port *bio2_emu,
+    bool disable_poll_limiter,
+    bool force_headphones)
 {
     bio2emu_port_init(bio2_emu);
 

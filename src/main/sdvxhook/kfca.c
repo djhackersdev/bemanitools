@@ -122,7 +122,8 @@ static void kfca_amp_control(const struct ac_io_message *req)
 
     // bytes 0-4: main, headphone, unused, subwoofer
 
-    if (!sdvx_io_set_amp_volume(req->cmd.raw[0], req->cmd.raw[1], req->cmd.raw[3])) {
+    if (!sdvx_io_set_amp_volume(
+            req->cmd.raw[0], req->cmd.raw[1], req->cmd.raw[3])) {
         log_warning("Unable to set amp volume?");
     }
 

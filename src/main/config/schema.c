@@ -160,7 +160,6 @@ static const struct light_def ddr_lights[] = {
     {0x2A, IDS_DDR_HD_P2_SPEAKER_W_G},
     {0x2B, IDS_DDR_HD_P2_SPEAKER_W_B},
 
-
     // EXTIO
     {0x1E, IDS_DDR_P1_UP},
     {0x1D, IDS_DDR_P1_DOWN},

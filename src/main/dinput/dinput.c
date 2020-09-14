@@ -96,7 +96,7 @@ static HRESULT STDCALL my_DirectInput8Create(
     }
 
     res = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
-    
+
     if (res != S_OK) {
         log_warning("Wrapping com proxy failed: %08lx", res);
         return res;
