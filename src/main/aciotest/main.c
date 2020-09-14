@@ -6,10 +6,10 @@
 
 #include "aciodrv/device.h"
 
+#include "aciotest/bi2a-sdvx.h"
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
-#include "aciotest/bi2a-sdvx.h"
 
 #include "util/log.h"
 

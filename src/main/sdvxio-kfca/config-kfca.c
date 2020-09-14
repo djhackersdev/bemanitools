@@ -4,7 +4,6 @@
 
 #include "util/log.h"
 
-SDVXIO_KFCA_CONFIG_KFCA_H
 #define SDVXIO_KFCA_CONFIG_KFCA_PORT_KEY "kfca.port"
 #define SDVXIO_KFCA_CONFIG_KFCA_BAUD_KEY "kfca.baud"
 

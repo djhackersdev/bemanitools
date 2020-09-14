@@ -122,9 +122,9 @@ static IDirect3D9 *STDCALL my_Direct3DCreate9(UINT sdk_ver)
     log_info("Direct3DCreate9 hook hit");
 
     api = real_Direct3DCreate9(sdk_ver);
-    
+
     hr = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
-    
+
     if (hr != S_OK) {
         log_fatal("Wrapping com proxy failed: %08lx", hr);
     }
