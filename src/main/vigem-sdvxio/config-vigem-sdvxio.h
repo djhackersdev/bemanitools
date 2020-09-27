@@ -7,11 +7,12 @@
 
 struct vigem_sdvxio_config {
     bool enable_keylight;
+    bool relative_analog;
     int32_t pwm_wings;
     int32_t pwm_controller;
     int32_t amp_volume;
 };
 
-void get_vigem_sdvxio_config(struct vigem_sdvxio_config *config_out);
+bool get_vigem_sdvxio_config(struct vigem_sdvxio_config *config_out);
 
 #endif
