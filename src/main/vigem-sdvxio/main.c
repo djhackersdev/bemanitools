@@ -15,10 +15,72 @@
 
 #include "vigem-sdvxio/config-vigem-sdvxio.h"
 
-int64_t convert_analog_to_s16(uint16_t val)
+#define ANALOG_FIXED_SENSITIVITY 1024
+
+int16_t convert_analog_to_s16(uint16_t val)
 {
     // val is 10 bit
     return (int64_t)(val * 64);
+}
+
+int16_t get_relative_delta(int16_t val, int16_t last)
+{
+    // val is 10 bit
+    const int16_t half_point = 512; // 2^9
+
+    int16_t delta = val - last;
+
+    if (delta > half_point) {
+        delta -= 1024;
+    }
+
+    if (delta < -half_point) {
+        delta += 1024;
+    }
+
+    // delta is now between (-512 - 512)
+    return delta;
+}
+
+int16_t filter_floor(int32_t value, int16_t floor) {
+    if (abs(value) < floor) {
+        return 0;
+    }
+    if (value > INT16_MAX) {
+        value = INT16_MAX;
+    }
+    if (value < INT16_MIN) {
+        value = INT16_MIN;
+    }
+
+    return value;
+}
+
+int32_t convert_relative_analog(
+    uint16_t val, uint16_t last, int32_t buffered_last, int16_t multiplier)
+{
+    int16_t delta = get_relative_delta(val, last);
+
+    if (delta == 0) {
+        // ease the stick back to 0 like a real stick would
+        return buffered_last / 2.f;
+    } else {
+        int64_t result = buffered_last;
+        result += delta * multiplier;
+
+        // we use an i32 to store the buffered value
+        // so that we can overshoot an i16 by up to 1.5x
+        // this allows users to stay at the min/max stick positions
+        // without perfect knob turning
+        if (result > INT16_MAX*1.5) {
+            result = INT16_MAX*1.5;
+        }
+        if (result < INT16_MIN*1.5) {
+            result = INT16_MIN*1.5;
+        }
+
+        return result;
+    }
 }
 
 bool check_key(uint16_t input, size_t idx_in)
@@ -87,7 +149,9 @@ int main(int argc, char **argv)
     log_to_writer(log_writer_stdout, NULL);
 
     struct vigem_sdvxio_config config;
-    get_vigem_sdvxio_config(&config);
+    if (!get_vigem_sdvxio_config(&config)) {
+        exit(EXIT_FAILURE);
+    }
 
     sdvx_io_set_loggers(
         log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
@@ -100,12 +164,14 @@ int main(int argc, char **argv)
     sdvx_io_set_amp_volume(config.amp_volume, config.amp_volume, config.amp_volume);
 
     PVIGEM_CLIENT client = vigem_helper_setup();
+
     if (!client) {
         log_warning("client failed to connect failed");
         return -1;
     }
 
     PVIGEM_TARGET pad = vigem_helper_add_pad(client);
+
     if (!pad) {
         log_warning("vigem_alloc pad 1 failed");
         return -1;
@@ -117,10 +183,14 @@ int main(int argc, char **argv)
     uint16_t gpio0;
     uint16_t gpio1;
     uint16_t vol[2] = {0, 0};
+    uint16_t last_vol[2] = {0, 0};
+
+    int32_t buffered_vol[2] = {0, 0};
 
     XUSB_REPORT state;
 
     log_info("vigem init succeeded, beginning poll loop");
+
     while (loop) {
         sdvx_io_read_input();
 
@@ -133,8 +203,19 @@ int main(int argc, char **argv)
 
         memset(&state, 0, sizeof(state));
 
-        state.sThumbLX = convert_analog_to_s16(vol[0]);
-        state.sThumbRX = convert_analog_to_s16(vol[1]);
+        if (config.relative_analog) {
+            buffered_vol[0] = convert_relative_analog(vol[0], last_vol[0], buffered_vol[0], ANALOG_FIXED_SENSITIVITY);
+            buffered_vol[1] = convert_relative_analog(vol[1], last_vol[1], buffered_vol[1], ANALOG_FIXED_SENSITIVITY);
+
+            state.sThumbLX = filter_floor(buffered_vol[0], ANALOG_FIXED_SENSITIVITY/2);
+            state.sThumbLY = filter_floor(buffered_vol[1], ANALOG_FIXED_SENSITIVITY/2);
+
+            last_vol[0] = vol[0];
+            last_vol[1] = vol[1];
+        } else {
+            state.sThumbLX = convert_analog_to_s16(vol[0]);
+            state.sThumbLY = convert_analog_to_s16(vol[1]);
+        }
 
         state.wButtons |= check_assign_key(
             gpio0, SDVX_IO_IN_GPIO_0_START, XUSB_GAMEPAD_START);

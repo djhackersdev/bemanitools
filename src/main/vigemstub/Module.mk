@@ -5,6 +5,7 @@ cppflags_vigemstub  := \
     -I src/imports \
 
 libs_vigemstub  := \
+    util \
  
 src_vigemstub   := \
     helper.c \
