@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <Xinput.h>
 #include <windows.h>
 
 #include "ViGEm/Client.h"
