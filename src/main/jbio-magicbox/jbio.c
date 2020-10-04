@@ -34,12 +34,12 @@ bool jb_io_init(
     thread_join_t thread_join,
     thread_destroy_t thread_destroy)
 {
-	if(CH341OpenDevice(0) < 0) {
-		jb_io_log_warning("jbio", "Can't open CH341 device.\n");
-		return false;
-	}
+    if (CH341OpenDevice(0) < 0) {
+        jb_io_log_warning("jbio", "Can't open CH341 device.\n");
+        return false;
+    }
 
-	is_initialized = true;
+    is_initialized = true;
 
     return true;
 }
@@ -76,8 +76,8 @@ static const uint32_t magic_sys_mappings[] = {
 
 bool jb_io_read_inputs(void)
 {
-	// Read IO board
-	unsigned long n;
+    // Read IO board
+    unsigned long n;
     union {
         uint32_t dword;
         uint8_t bytes[4];
@@ -87,29 +87,29 @@ bool jb_io_read_inputs(void)
     jb_io_panels = 0;
     jb_io_sys_buttons = 0;
 
-	CH341EppSetAddr(0, 255);
-	CH341EppSetAddr(0, 1);
-	CH341EppSetAddr(0, 255);
-	CH341EppSetAddr(0, 0);
-	n = 1;
-	CH341EppReadData(0, &input.bytes[0], &n);
-	CH341EppSetAddr(0, 255);
-	CH341EppSetAddr(0, 0);
-	n = 1;
-	CH341EppReadData(0, &input.bytes[1], &n);
-	CH341EppSetAddr(0, 255);
-	CH341EppSetAddr(0, 0);
-	n = 1;
-	CH341EppReadData(0, &input.bytes[2], &n);
-	CH341EppSetAddr(0, 255);
+    CH341EppSetAddr(0, 255);
+    CH341EppSetAddr(0, 1);
+    CH341EppSetAddr(0, 255);
+    CH341EppSetAddr(0, 0);
+    n = 1;
+    CH341EppReadData(0, &input.bytes[0], &n);
+    CH341EppSetAddr(0, 255);
+    CH341EppSetAddr(0, 0);
+    n = 1;
+    CH341EppReadData(0, &input.bytes[1], &n);
+    CH341EppSetAddr(0, 255);
+    CH341EppSetAddr(0, 0);
+    n = 1;
+    CH341EppReadData(0, &input.bytes[2], &n);
+    CH341EppSetAddr(0, 255);
 
     for (uint8_t i = 0; i < lengthof(magic_panel_mappings); i++) {
-        if((input.dword & magic_panel_mappings[i]) == 0) {
+        if ((input.dword & magic_panel_mappings[i]) == 0) {
             jb_io_panels |= 1 << i;
         }
     }
     for (uint8_t i = 0; i < lengthof(magic_sys_mappings); i++) {
-        if((input.dword & magic_sys_mappings[i]) == 0) {
+        if ((input.dword & magic_sys_mappings[i]) == 0) {
             jb_io_sys_buttons |= 1 << i;
         }
     }
