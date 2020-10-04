@@ -130,6 +130,7 @@ include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxiotest/Module.mk
 include src/main/inject/Module.mk
 include src/main/jbio/Module.mk
+include src/main/jbio-magicbox/Module.mk
 include src/main/jbiotest/Module.mk
 include src/main/jbhook/Module.mk
 include src/main/jbhook1/Module.mk

@@ -1,0 +1,11 @@
+LIBRARY jbio
+
+EXPORTS
+    jb_io_fini
+    jb_io_get_panel_inputs
+    jb_io_get_sys_inputs
+    jb_io_init
+    jb_io_read_inputs
+    jb_io_set_loggers
+    jb_io_set_rgb_led
+    jb_io_write_outputs

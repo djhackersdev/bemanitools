@@ -256,7 +256,7 @@ impdef_$1_$2_$3	?= src/imports/import_$1_$2_$3.def
 
 $$(bindir_$1_$2)/lib$3.a: $$(impdef_$1_$2_$3) | $$(bindir_$1_$2)
 	$(V)echo ... $$@ [dlltool]
-	$(V)$$(toolchain_$1)dlltool -l $$@ -d $$<
+	$(V)$$(toolchain_$1)dlltool --kill-at -l $$@ -d $$<
 
 endef
 
