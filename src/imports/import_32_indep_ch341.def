@@ -1,0 +1,7 @@
+LIBRARY ch341dll
+
+EXPORTS
+    CH341OpenDevice@4=CH341OpenDevice
+    CH341CloseDevice@4=CH341CloseDevice
+    CH341EppReadData@12=CH341EppReadData
+    CH341EppSetAddr@8=CH341EppSetAddr
