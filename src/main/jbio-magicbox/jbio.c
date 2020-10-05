@@ -12,10 +12,15 @@ static uint8_t jb_io_sys_buttons;
 
 static bool is_initialized = false;
 
-log_formatter_t jb_io_log_misc;
-log_formatter_t jb_io_log_info;
-log_formatter_t jb_io_log_warning;
-log_formatter_t jb_io_log_fatal;
+static log_formatter_t jb_io_log_misc;
+static log_formatter_t jb_io_log_info;
+static log_formatter_t jb_io_log_warning;
+static log_formatter_t jb_io_log_fatal;
+
+union magicbox_input {
+    uint32_t dword;
+    uint8_t bytes[4];
+};
 
 void jb_io_set_loggers(
     log_formatter_t misc,
@@ -77,11 +82,8 @@ static const uint32_t magic_sys_mappings[] = {
 bool jb_io_read_inputs(void)
 {
     // Read IO board
-    unsigned long n;
-    union {
-        uint32_t dword;
-        uint8_t bytes[4];
-    } input;
+    unsigned long size;
+    union magicbox_input input;
 
     input.dword = -1;
     jb_io_panels = 0;
@@ -91,16 +93,16 @@ bool jb_io_read_inputs(void)
     CH341EppSetAddr(0, 1);
     CH341EppSetAddr(0, 255);
     CH341EppSetAddr(0, 0);
-    n = 1;
-    CH341EppReadData(0, &input.bytes[0], &n);
+    size = sizeof(uint8_t);
+    CH341EppReadData(0, &input.bytes[0], &size);
     CH341EppSetAddr(0, 255);
     CH341EppSetAddr(0, 0);
-    n = 1;
-    CH341EppReadData(0, &input.bytes[1], &n);
+    size = sizeof(uint8_t);
+    CH341EppReadData(0, &input.bytes[1], &size);
     CH341EppSetAddr(0, 255);
     CH341EppSetAddr(0, 0);
-    n = 1;
-    CH341EppReadData(0, &input.bytes[2], &n);
+    size = sizeof(uint8_t);
+    CH341EppReadData(0, &input.bytes[2], &size);
     CH341EppSetAddr(0, 255);
 
     for (uint8_t i = 0; i < lengthof(magic_panel_mappings); i++) {
