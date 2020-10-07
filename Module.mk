@@ -196,6 +196,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidx-ezusb-exit-hook.dll \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
+		build/bin/indep-64/mempatch-hook.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
