@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -9,19 +10,21 @@
 #include "util/log.h"
 
 static bool patch_memory_check_data(
-    uint32_t base_address, uint32_t address, uint8_t *data_expected, size_t len)
+    uintptr_t base_address, uintptr_t address, uint8_t *data_expected, size_t len)
 {
-    uint8_t *dest = (uint8_t *) (base_address + address);
+    uint8_t *dest = (uint8_t *)(base_address + address);
     bool success = true;
 
     for (size_t i = 0; i < len; i++) {
         if (dest[i] != data_expected[i]) {
             log_warning(
-                "Memcheck error: base %X + address %X + offset %d: "
+                "Memcheck error: base %" PRIXPTR " + address %" PRIXPTR " + offset %d: "
                 "expected %X, found %X",
                 base_address,
                 address,
-                i,
+                // this cast is technically wrong
+                // but no one should be patching 32K worth of bytes at once
+                (int)i,
                 data_expected[i],
                 dest[i]);
             success = false;
@@ -32,11 +35,11 @@ static bool patch_memory_check_data(
 }
 
 static bool patch_memory_data(
-    uint32_t base_address, uint32_t address, uint8_t *data, size_t len)
+    uintptr_t base_address, uintptr_t address, uint8_t *data, size_t len)
 {
     DWORD old_protect;
 
-    uint32_t dest = base_address + address;
+    uint8_t *dest = (uint8_t *)(base_address + address);
 
     if (!VirtualProtect(
             (void *) dest,
@@ -44,7 +47,7 @@ static bool patch_memory_data(
             PAGE_EXECUTE_READWRITE,
             &old_protect)) {
         log_warning(
-            "VirtualProtect %X (%d) failed: %d",
+            "VirtualProtect %p (%Iu) failed: %d",
             dest,
             len,
             (int) GetLastError());
@@ -56,7 +59,7 @@ static bool patch_memory_data(
     if (!VirtualProtect(
             (void *) dest, sizeof(uint8_t) * len, old_protect, &old_protect)) {
         log_warning(
-            "VirtualProtect (2) %X (%d) failed: %d",
+            "VirtualProtect (2) %p (%Iu) failed: %d",
             dest,
             len,
             (int) GetLastError());
@@ -83,8 +86,8 @@ static bool patch_memory_apply(char *script)
     char *data_expected_str = NULL;
     size_t data_expected_str_len;
 
-    uint32_t address;
-    uint32_t address_base;
+    uintptr_t address;
+    uintptr_t address_base;
     HMODULE hmodule;
     uint8_t data[4096];
     size_t data_len;
@@ -151,10 +154,10 @@ static bool patch_memory_apply(char *script)
                     goto error_next_line;
                 }
 
-                address_base = (uint32_t) hmodule;
+                address_base = (uintptr_t) hmodule;
             }
 
-            address = strtol(address_str, NULL, 16);
+            address = strtoll(address_str, NULL, 16);
 
             /* Most likely an error but we don't know for sure */
             if (address == 0) {
@@ -166,7 +169,7 @@ static bool patch_memory_apply(char *script)
 
             if (data_len % 2 != 0) {
                 log_warning(
-                    "[%d] Data length %d mod 2 != 0: %s",
+                    "[%d] Data length %Iu mod 2 != 0: %s",
                     line_cnt,
                     data_len,
                     data_str);
@@ -181,7 +184,7 @@ static bool patch_memory_apply(char *script)
 
                 if (data_expected_len % 2 != 0) {
                     log_warning(
-                        "[%d] Data expected length %d mod 2 != 0: %s",
+                        "[%d] Data expected length %Iu mod 2 != 0: %s",
                         line_cnt,
                         data_len,
                         data_str);
@@ -286,7 +289,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
                 filepath = argv[i + 1];
                 log_info("Loading memory patch file: %s", filepath);
 
-                patch_memory_from_file("test.mph");
+                patch_memory_from_file(filepath);
 
                 log_info("Finished patching with file %s", filepath);
                 i++;
