@@ -250,3 +250,12 @@ bool wstr_eq(const wchar_t *lhs, const wchar_t *rhs)
         return wcscmp(lhs, rhs) == 0;
     }
 }
+
+bool wstr_insensitive_eq(const wchar_t *lhs, const wchar_t *rhs)
+{
+    if (lhs == NULL || rhs == NULL) {
+        return lhs == rhs;
+    } else {
+        return _wcsicmp(lhs, rhs) == 0;
+    }
+}

@@ -9,11 +9,13 @@
 #define SDVXHOOK2_CONFIG_IO_DISABLE_BIO2_EMU_KEY "io.disable_bio2_emu"
 #define SDVXHOOK2_CONFIG_IO_DISABLE_POLL_LIMITER_KEY "io.disable_poll_limiter"
 #define SDVXHOOK2_CONFIG_IO_FORCE_HEADPHONES_KEY "io.force_headphones"
+#define SDVXHOOK2_CONFIG_IO_DISABLE_FILE_HOOKS_KEY "io.disable_file_hooks"
 
 #define SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE false
 #define SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_BIO2_EMU_VALUE false
 #define SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_POLL_LIMITER_VALUE false
 #define SDVXHOOK2_CONFIG_IO_DEFAULT_FORCE_HEADPHONES_VALUE false
+#define SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE false
 
 void sdvxhook2_config_io_init(struct cconfig *config)
 {
@@ -41,6 +43,12 @@ void sdvxhook2_config_io_init(struct cconfig *config)
         SDVXHOOK2_CONFIG_IO_FORCE_HEADPHONES_KEY,
         SDVXHOOK2_CONFIG_IO_DEFAULT_FORCE_HEADPHONES_VALUE,
         "Forces game to think headphones are attached");
+
+    cconfig_util_set_bool(
+        config,
+        SDVXHOOK2_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
+        SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE,
+        "Disables the built in file hooks, requiring manual file creation (/dev/raw/j.dest)");
 }
 
 void sdvxhook2_config_io_get(
@@ -92,5 +100,17 @@ void sdvxhook2_config_io_get(
             "to default '%d'",
             SDVXHOOK2_CONFIG_IO_FORCE_HEADPHONES_KEY,
             SDVXHOOK2_CONFIG_IO_DEFAULT_FORCE_HEADPHONES_VALUE);
+    }
+
+    if (!cconfig_util_get_bool(
+            config,
+            SDVXHOOK2_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
+            &config_io->disable_file_hooks,
+            SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            SDVXHOOK2_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
+            SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE);
     }
 }

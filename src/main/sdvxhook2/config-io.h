@@ -10,6 +10,7 @@ struct sdvxhook2_config_io {
     bool disable_bio2_emu;
     bool disable_poll_limiter;
     bool force_headphones;
+    bool disable_file_hooks;
 };
 
 void sdvxhook2_config_io_init(struct cconfig *config);

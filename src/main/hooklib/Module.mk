@@ -7,4 +7,5 @@ src_hooklib     := \
     config-adapter.c \
     rs232.c \
     setupapi.c \
+    memfile.c \
 

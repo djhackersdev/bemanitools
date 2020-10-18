@@ -21,6 +21,7 @@ void wstr_cpy(wchar_t *dest, size_t dnchars, const wchar_t *src);
 wchar_t *wstr_dup(const wchar_t *src);
 bool wstr_ends_with(const wchar_t *haystack, const wchar_t *needle);
 bool wstr_eq(const wchar_t *lhs, const wchar_t *rhs);
+bool wstr_insensitive_eq(const wchar_t *lhs, const wchar_t *rhs);
 size_t wstr_format(wchar_t *buf, size_t nchars, const wchar_t *fmt, ...);
 bool wstr_narrow(const wchar_t *src, char **dest);
 size_t
