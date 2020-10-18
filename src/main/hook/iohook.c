@@ -223,6 +223,12 @@ static void iohook_init(void)
     if (iohook_initted) {
         return;
     }
+    InitializeCriticalSection(&iohook_lock);
+    EnterCriticalSection(&iohook_lock);
+
+    /* we do this first, so that any hooks that fire while we're applying
+       get caught by the critical section. */
+    iohook_initted = true;
 
     /* Splice iohook into IAT entries referencing Win32 I/O APIs */
 
@@ -273,8 +279,7 @@ static void iohook_init(void)
                 "SetFilePointerEx");
     }
 
-    InitializeCriticalSection(&iohook_lock);
-    iohook_initted = true;
+    LeaveCriticalSection(&iohook_lock);
 }
 
 // Deprecated
