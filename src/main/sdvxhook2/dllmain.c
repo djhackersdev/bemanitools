@@ -14,6 +14,7 @@
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
 #include "hooklib/config-adapter.h"
+#include "hooklib/memfile.h"
 #include "hooklib/rs232.h"
 
 #include "bio2emu/emu.h"
@@ -50,6 +51,21 @@ static struct bio2emu_port bio2_emu = {
     .wport = L"\\\\.\\COM4",
     .dispatcher = bio2_emu_bi2a_dispatch_request,
 };
+
+static void attach_dest_fd_intercept(const char *sidcode)
+{
+    char region = sidcode[3];
+
+    if (region == 'X') {
+        region = 'J';
+    }
+
+    char target_file[8] = "\\x.dest";
+    target_file[1] = tolower(region);
+
+    // can only capture these by ending path due to /dev/raw being mountable
+    memfile_hook_add_fd(target_file, ENDING_MATCH, NULL, 0);
+}
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
@@ -113,12 +129,21 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     iohook_push_handler(ac_io_port_dispatch_irp);
     iohook_push_handler(bio2emu_port_dispatch_irp);
 
+    if (!config_io.disable_file_hooks) {
+        memfile_hook_init();
+        iohook_push_handler(memfile_hook_dispatch_irp);
+        attach_dest_fd_intercept(sidcode);
+    }
+
     rs232_hook_init();
     rs232_hook_limit_hooks();
 
     if (!config_io.disable_bio2_emu) {
         bio2emu_init();
-        bio2_emu_bi2a_init(&bio2_emu, config_io.disable_poll_limiter, config_io.force_headphones);
+        bio2_emu_bi2a_init(
+            &bio2_emu,
+            config_io.disable_poll_limiter,
+            config_io.force_headphones);
     }
 
     if (!config_io.disable_card_reader_emu) {
@@ -155,6 +180,10 @@ static bool my_dll_entry_main(void)
     if (!config_io.disable_bio2_emu) {
         log_misc("Shutting down sdvx IO backend");
         sdvx_io_fini();
+    }
+
+    if (!config_io.disable_file_hooks) {
+        memfile_hook_fini();
     }
 
     return result;
