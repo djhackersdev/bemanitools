@@ -2,6 +2,7 @@
 
 The following games are compatible with this version of iidxhook:
 * CANNON BALLERS
+* Rootage
 
 The games must be bootstrapped using [launcher](../launcher.md).
 
