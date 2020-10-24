@@ -230,4 +230,6 @@ int avs_fs_addfs(void *filesys_struct);
 int avs_fs_mount(
     const char *mountpoint, const char *fsroot, const char *fstype, void *data);
 
+bool avs_is_active();
+
 #endif
