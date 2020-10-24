@@ -23,6 +23,7 @@ EXPORTS
     std_setenv @213 NONAME
     avs_boot @298 NONAME
     avs_shutdown @299 NONAME
+    avs_is_active @302 NONAME
     log_body_fatal @379 NONAME
     log_body_warning @380 NONAME
     log_body_info @381 NONAME
