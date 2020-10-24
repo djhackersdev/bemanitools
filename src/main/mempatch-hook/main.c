@@ -78,6 +78,7 @@ static bool patch_memory_apply(char *script)
     char *pos_line;
     char *ctx_line;
     uint32_t line_tokens;
+    bool use_crlf;
 
     char *module;
     char *address_str = NULL;
@@ -99,7 +100,12 @@ static bool patch_memory_apply(char *script)
     error = false;
 
     line_cnt = 0;
-    pos_lines = strtok_r(script, "\n", &ctx_lines);
+
+    use_crlf = false;
+    if (strstr(script, "\r\n")) {
+        use_crlf = true;
+    }
+    pos_lines = strtok_r(script, use_crlf ? "\r\n" : "\n", &ctx_lines);
 
     while (pos_lines != NULL) {
         /* ignore comments and empty lines */
@@ -243,7 +249,7 @@ static bool patch_memory_apply(char *script)
         error = true;
 
     next_line:
-        pos_lines = strtok_r(NULL, "\n", &ctx_lines);
+        pos_lines = strtok_r(NULL, use_crlf ? "\r\n" : "\n", &ctx_lines);
         line_cnt++;
     }
 
