@@ -1,0 +1,4 @@
+LIBRARY iidxhook9
+
+EXPORTS
+    DllMain@12 @1 NONAME

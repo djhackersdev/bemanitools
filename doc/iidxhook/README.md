@@ -23,6 +23,7 @@ games:
 * [iidxhook6](iidxhook6.md): Tricoro
 * [iidxhook7](iidxhook7.md): SPADA, PENDUAL, copula, SINOBUZ
 * [iidxhook8](iidxhook8.md): CANNON BALLERS, Rootage
+* [iidxhook8](iidxhook9.md): Heroic Verse
 
 When building kactools, independent packages are created for each set of games
 which are ready to be dropped on top of vanilla AC data dumps. We recommend
