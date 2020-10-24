@@ -7,6 +7,7 @@
 
 struct asiohook_config_asio {
     bool force_asio;
+    bool force_wasapi;
     char replacement_name[128];
 };
 

@@ -123,6 +123,7 @@ include src/main/iidxhook5/Module.mk
 include src/main/iidxhook6/Module.mk
 include src/main/iidxhook7/Module.mk
 include src/main/iidxhook8/Module.mk
+include src/main/iidxhook9/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
@@ -352,6 +353,22 @@ $(zipdir)/iidx-25-to-26.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/iidx-27.zip: \
+		build/bin/avs2_1700-64/iidxhook9.dll \
+		build/bin/avs2_1700-64/launcher.exe \
+		build/bin/indep-64/config.exe \
+		build/bin/indep-64/eamio.dll \
+		build/bin/indep-64/geninput.dll \
+		build/bin/indep-64/iidxio.dll \
+		build/bin/indep-64/vefxio.dll \
+		dist/iidx/config.bat \
+		dist/iidx/gamestart-27.bat \
+		dist/iidx/iidxhook-27.conf \
+		dist/iidx/vefx.txt \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
@@ -563,6 +580,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-20.zip \
 		$(zipdir)/iidx-21-to-24.zip \
 		$(zipdir)/iidx-25-to-26.zip \
+		$(zipdir)/iidx-27.zip \
 		$(zipdir)/iidx-hwio-x86.zip \
 		$(zipdir)/iidx-hwio-x64.zip \
 		$(zipdir)/jb-01.zip \
