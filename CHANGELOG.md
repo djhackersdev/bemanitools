@@ -1,5 +1,9 @@
 # Release history
 ## 5.33
+* iidxhook9: Support for IIDX27 
+* sdvxio-bio2: Driver for real sdvx5 cabinet IO hardware
+* vigem-sdvxio: Tool to allow using sdvxio (kfca or bio2) to emulate an xbox controller
+* Various bugfixes and refactoring for inject and launcher
 
 ## 5.32
 * Various bugfixes
