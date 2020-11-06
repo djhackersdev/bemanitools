@@ -29,13 +29,6 @@ enum ac_io_icca_flag {
     AC_IO_ICCA_FLAG_SOLENOID = 0x40
 };
 
-enum ac_io_icca_status_code {
-    AC_IO_ICCA_STATUS_FAULT = 0x00,
-    AC_IO_ICCA_STATUS_IDLE = 0x01,
-    AC_IO_ICCA_STATUS_GOT_UID = 0x02,
-    AC_IO_ICCA_STATUS_IDLE_NEW = 0x04
-};
-
 static void ac_io_emu_icca_cmd_send_version(
     struct ac_io_emu_icca *icca, const struct ac_io_message *req);
 

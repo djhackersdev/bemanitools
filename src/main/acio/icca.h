@@ -46,6 +46,13 @@ enum ac_io_icca_keypad_mask {
     AC_IO_ICCA_KEYPAD_MASK_8 = (1 << 15),
 };
 
+enum ac_io_icca_status_code {
+    AC_IO_ICCA_STATUS_FAULT = 0x00,
+    AC_IO_ICCA_STATUS_IDLE = 0x01,
+    AC_IO_ICCA_STATUS_GOT_UID = 0x02,
+    AC_IO_ICCA_STATUS_IDLE_NEW = 0x04
+};
+
 #pragma pack(push, 1)
 
 struct ac_io_icca_misc {
