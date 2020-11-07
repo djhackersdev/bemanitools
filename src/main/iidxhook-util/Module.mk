@@ -9,6 +9,7 @@ src_iidxhook-util     := \
     clock.c \
     config-eamuse.c \
     config-gfx.c \
+    config-io.c \
     config-misc.c \
     config-sec.c \
     d3d9.c \
