@@ -27,6 +27,7 @@
 
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/config-gfx.h"
+#include "iidxhook-util/config-io.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
 #include "iidxhook-util/settings.h"
@@ -46,6 +47,8 @@
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
+
+static struct iidxhook_config_io config_io;
 
 static void
 iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
@@ -86,6 +89,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     config = cconfig_init();
 
     iidxhook_config_gfx_init(config);
+    iidxhook_config_io_init(config);
 
     if (!cconfig_hook_config_init(
             config,
@@ -97,6 +101,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     iidxhook_config_gfx_get(&config_gfx, config);
+    iidxhook_config_io_get(&config_io, config);
 
     cconfig_finit(config);
 
@@ -105,22 +110,30 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook5_setup_d3d9_hooks(&config_gfx);
 
-    /* Start up IIDXIO.DLL */
-    log_info("Starting IIDX IO backend");
-    iidx_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    if (!config_io.disable_io_emu) {
+        log_info("Starting IIDX IO backend");
 
-    if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
-        log_fatal("Initializing IIDX IO backend failed");
+        iidx_io_set_loggers(
+            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+
+        if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+            log_fatal("Initializing IIDX IO backend failed");
+        }
+    } else {
+        log_info("IIDX IO emulation backend disabled");
     }
 
-    /* Start up EAMIO.DLL */
-    log_misc("Initializing card reader backend");
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    if (!config_io.disable_card_reader_emu) {
+        log_misc("Initializing card reader backend");
 
-    if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
-        log_fatal("Initializing card reader backend failed");
+        eam_io_set_loggers(
+            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+
+        if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+            log_fatal("Initializing card reader backend failed");
+        }
+    } else {
+        log_info("Card reader emulation backend disabled");
     }
 
     /* Set up IO emulation hooks _after_ IO API setup to allow
@@ -129,14 +142,18 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     iohook_push_handler(iidxhook_util_acio_dispatch_irp);
     iohook_push_handler(settings_hook_dispatch_irp);
 
-    hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
-    ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());
+    if (!config_io.disable_io_emu) {
+        hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
+        ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());
+    }
 
     /* Card reader emulation, same issue with hooking as IO emulation */
     rs232_hook_init();
 
-    /* Do not use legacy mode, first version with wave pass readers */
-    iidxhook_util_acio_init(false);
+    if (!config_io.disable_card_reader_emu) {
+        /* Do not use legacy mode, first version with wave pass readers */
+        iidxhook_util_acio_init(false);
+    }
 
     log_info("-------------------------------------------------------------");
     log_info("---------------- End iidxhook dll_entry_init ----------------");
@@ -151,11 +168,15 @@ static bool my_dll_entry_main(void)
 
     result = app_hook_invoke_main();
 
-    log_misc("Shutting down card reader backend");
-    eam_io_fini();
+    if (!config_io.disable_card_reader_emu) {
+        log_misc("Shutting down card reader backend");
+        eam_io_fini();
+    }
 
-    log_misc("Shutting down IIDX IO backend");
-    iidx_io_fini();
+    if (!config_io.disable_io_emu) {
+        log_misc("Shutting down IIDX IO backend");
+        iidx_io_fini();
+    }
 
     log_server_fini();
 
