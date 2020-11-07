@@ -94,22 +94,31 @@ cycle the machine (i.e. quit the game and restart it).
 
 ### BIO2 hardware
 
-Set the *io.disable_bio2_emu* configuration value to *1* to disable BIO2
-emulation to run the game using real BIO2 hardware.
+Set `io.disable_bio2_emu=true` in the `iidxhook.conf` file to not hook the BIO2
+communication with an emulation layer. The game will directly talk to the IO.
+In this mode, tthe game supports the BIO2 board only.
 
 ### Ezusb and other
 
-Use the specific iidxio API implementations, e.g. iidxio-ezusb2.dll to use
-the IO2 EZUSB board, to run the game on real hardware. Thanks to a common
-abstraction layer, you can also use custom IO boards or whatever Konami hardware
-is going to be available in the future. Obviously, someone has to write a
-driver, first.
+Set `io.disable_bio2_emu=false` in the `iidxhook.conf` file.
+Use the specific iidxio API implementations, e.g. `iidxio-ezusb2.dll` to use
+the IO2 EZUSB board. The common `iidxio` abstraction layer also allows you to
+use custom IO boards or whatever Konami hardware is going to be available in
+the future. Obviously, someone has to write an imlementation of the `iidxio`
+API, first.
 
 ## Slotted/Wave pass card readers
 
-Replace the default *eamio.dll* with the *eamio-icca.dll* and have either your
+You have the following options:
+* Set `io.disable_card_reader_emu=true` in the `iidxhook.conf` file to not hook
+card reader communication with an emulation layer. The game will directly talk
+to the real readers though this only supports whatever readers the game 
+directly supports (wave pass readers)
+* Set `io.disable_card_reader_emu=false` in the `iidxhook.conf` file.
+Replace the default `eamio.dll` with the `eamio-icca.dll` and have either your
 slotted (IIDX, DDR Supernova or GF/DM type) or new wave pass card readers 
-conencted and and assigned to *COM1*.
+conencted and and assigned to `COM1`. Other custom implementations of of the
+`eamio` API also work.
 
 ### ICCA device settings (device manager)
 * Port: COM1
