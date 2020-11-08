@@ -12,7 +12,17 @@ BT5 uses a cleaner approach than BT4 did; specifically, all input and lighting i
 spoken by the real IO PCBs, instead of replacing chunks of game code like BT4. The benefits of this approach are a more
 authentic gameplay experience, and easier support for a broader range of releases from each game series.
 
-# List of supported games
+## Contributions and bug reporting
+[Read the dedicated CONTRIBUTING.md documentation](CONTRIBUTING.md).
+
+The tl;dr version and golden rules of the sections in the document:
+* **EVERYONE** can contribute, this is **NOT** limited to people coding
+* [Open an issue on gitlab for discussions, feature requests and bug reports](CONTRIBUTING.md#reporting-and-discussions-issues-section-on-github)
+* [ALWAYS report bugs as issues and ALWAYS use the available bug template](CONTRIBUTING.md#bug-reports)
+* [Everyone is allowed to submit changes which are not just limited to code by opening merge requests](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
+* [Documentation improvements can and even should be contributed by non developers](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
+
+## List of supported games
 * BeatStream
     * BeatStream (bst.zip) using bsthook
     * BeatStream アニムトライヴ (bst.zip) using bsthook
@@ -55,13 +65,13 @@ authentic gameplay experience, and easier support for a broader range of release
     * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX Vivid Wave (sdvx-05.zip) using sdvxhook2
 
-# Supported platforms
+## Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
 of those games. However, as it gets more difficult to get and maintain hardware comptible with Windows XP, this might
 change in the future. Many games also run on very recent Windows 10 builds but bear with us that it's hard to keep up
 with Windows updates breaking legacy software.
 
-# Distribution contents
+## Distribution contents
 Check the [list of supported games](#list-of-supported-games) to grab the right files for your game. BT5 also includes
 a *tools* subpackage (tools.zip) as well as the full source code (src.zip).
 
@@ -69,7 +79,7 @@ You will find *.md files in various sub-packages that give you further instructi
 or FAQ. We advice you to read them as your questions and concerns might already be answered by them. If not, let us
 know if there is any information that you consider helpful or important to know and should be added.
 
-# Setup and dependencies
+## Setup and dependencies
 Most (older generation) games were developed for Windows XP Embedded but should run fine on any
 consumer version of Windows XP. Newer versions of Windows, e.g. Windows 7, 8 and 10, should be fine
 as well. Some hooks also include fixes required to run the games on a more recent version.
@@ -79,21 +89,18 @@ Depending on the game, you also need the following dependencies installed:
 * Microsoft Visual C++ Redistributables 2010 **and** 2013: Depends on the game and age but both
 should cover most if not all of the games so far
 
-# Contributions
-Please refer to the [dedicated documentation](CONTRIBUTING.md).
-
-# Development
-## Building
+## Development
+### Building
 See the [development document](doc/development).
 
-## Architecture
+### Architecture
 A dedicate [architecture document](doc/architecture.md) outlines the architecture of Bemanitools and points out the most
 important aspects you should know before you get started with development.
 
-## API
+### API
 Please refer to the [API documentation](doc/api.md).
 
-# License
+## License
 Source code license is the Unlicense; you are permitted to do with this as thou wilt. For details, please refer to the
 [LICENSE file](LICENSE) included with the source code.
 
