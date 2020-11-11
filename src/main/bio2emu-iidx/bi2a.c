@@ -24,6 +24,8 @@ static void bio2_emu_bi2a_send_status(
 
 static int default_sliders[5];
 static bool poll_delay;
+static bool coin_latch;
+static uint8_t coin_count;
 
 int get_default_slider_valid(size_t idx)
 {
@@ -276,6 +278,17 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     body->SYSTEM.v_test = (input_sys >> IIDX_IO_SYS_TEST) & 1;
     body->SYSTEM.v_service = (input_sys >> IIDX_IO_SYS_SERVICE) & 1;
     body->SYSTEM.v_coin = (input_sys >> IIDX_IO_SYS_COIN) & 1;
+
+    if (body->SYSTEM.v_coin) {
+        if (!coin_latch) {
+            coin_latch = true;
+            coin_count += 1;
+        }
+    } else {
+        coin_latch = false;
+    }
+
+    body->coins = coin_count;
 
     ac_io_emu_response_push(emu, &resp, 0);
 }

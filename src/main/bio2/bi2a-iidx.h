@@ -39,7 +39,7 @@ struct bi2a_iidx_state_out {
     uint8_t UNK2;
     struct bi2a_iidx_slider SLIDER4;
     struct bi2a_iidx_slider SLIDER5;
-    uint8_t UNK3; // coin mech?
+    uint8_t coins; // coin mech?
     struct bi2a_iidx_panel PANEL;
     uint8_t UNK4;
     uint8_t UNK5;

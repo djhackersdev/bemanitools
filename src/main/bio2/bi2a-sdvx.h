@@ -36,7 +36,7 @@ struct bi2a_sdvx_state_in {
         uint16_t raw[8];
         struct {
             struct bi2a_sdvx_analog analogs[4];
-            uint8_t unk_1; // coin mech?
+            uint8_t coins;
             struct bi2a_sdvx_buttons1 buttons_1;
             struct bi2a_sdvx_buttons2 buttons_2;
             uint8_t unk_2[5];
