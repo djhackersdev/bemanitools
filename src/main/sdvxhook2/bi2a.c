@@ -27,6 +27,9 @@ static bool poll_delay;
 
 static bool force_headphones_on;
 
+static bool coin_latch;
+static uint8_t coin_count;
+
 void bio2_emu_bi2a_init(
     struct bio2emu_port *bio2_emu,
     bool disable_poll_limiter,
@@ -241,10 +244,22 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     pin->analogs[0].a_val = sdvx_io_get_spinner_pos(0);
     pin->analogs[1].a_val = sdvx_io_get_spinner_pos(1);
 
-    pin->analogs[0].a_coin = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
     pin->analogs[0].a_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
-    pin->analogs[0].a_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE) ||
-        check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+    pin->analogs[0].a_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
+    pin->analogs[0].a_coin = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+
+    if (pin->analogs[0].a_coin) {
+        if (!coin_latch) {
+            coin_latch = true;
+            coin_count += 1;
+        }
+    } else {
+        coin_latch = false;
+    }
+
+    // this is NOT byteswapped, only the analogs are
+    pin->coins = coin_count;
+
     pin->raw[0] = ac_io_u16(pin->raw[0]);
     pin->raw[1] = ac_io_u16(pin->raw[1]);
 
