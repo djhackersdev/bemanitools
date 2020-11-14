@@ -126,6 +126,16 @@ happens, run the game again.
 
 # Troubleshooting and FAQ
 
+## The game is running (very) slow in fullscreen mode but is fine in window mode
+If you are using a AMD GPU, try disabling "GPU scaling" which you can find in AMD
+settings UI under "Settings" -> "Display".
+
+This issue only observed on 9th Style so far.
+
+Use
+[bemanitool's built in upscaling feature](#over-underscan-bad-image-quality-or-latency-caused-by-my-monitorsTV-upscaler) if the game is not
+scaled properly in full screen.
+
 ## Window mode or any other gfx related options do not work when changing them in the config file or using cmd args
 
 See [this](#Use-d3d8to9-wrapper) section.
