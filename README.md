@@ -91,7 +91,7 @@ should cover most if not all of the games so far
 
 ## Development
 ### Building
-See the [development document](doc/development).
+See the [development document](doc/development.md).
 
 ### Architecture
 A dedicate [architecture document](doc/architecture.md) outlines the architecture of Bemanitools and points out the most
