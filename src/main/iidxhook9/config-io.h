@@ -12,6 +12,7 @@ struct iidxhook9_config_io {
     bool lightning_mode;
     bool disable_cams;
     bool disable_file_hooks;
+    float tt_multiplier;
 };
 
 void iidxhook9_config_io_init(struct cconfig *config);

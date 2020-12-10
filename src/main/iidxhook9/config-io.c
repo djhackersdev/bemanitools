@@ -11,6 +11,7 @@
 #define IIDXHOOK9_CONFIG_IO_LIGHTNING_MODE_KEY "io.lightning_mode"
 #define IIDXHOOK9_CONFIG_IO_DISABLE_CAMS_KEY "io.disable_cams"
 #define IIDXHOOK9_CONFIG_IO_DISABLE_FILE_HOOKS_KEY "io.disable_file_hooks"
+#define IIDXHOOK9_CONFIG_IO_TT_MULTIPLIER_KEY "io.tt_multiplier"
 
 #define IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE false
 #define IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_BIO2_EMU_VALUE false
@@ -18,6 +19,7 @@
 #define IIDXHOOK9_CONFIG_IO_DEFAULT_LIGHTNING_MODE_VALUE false
 #define IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_CAMS_VALUE false
 #define IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE false
+#define IIDXHOOK9_CONFIG_IO_DEFAULT_TT_MULTIPLIER_VALUE 1.0
 
 void iidxhook9_config_io_init(struct cconfig *config)
 {
@@ -57,6 +59,12 @@ void iidxhook9_config_io_init(struct cconfig *config)
         IIDXHOOK9_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
         IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE,
         "Disables the built in file hooks, requiring manual file creation");
+
+    cconfig_util_set_float(
+        config,
+        IIDXHOOK9_CONFIG_IO_TT_MULTIPLIER_KEY,
+        IIDXHOOK9_CONFIG_IO_DEFAULT_TT_MULTIPLIER_VALUE,
+        "Turntable sensitivity multiplier (1.0 is default)");
 }
 
 void iidxhook9_config_io_get(
@@ -132,5 +140,17 @@ void iidxhook9_config_io_get(
             "to default '%d'",
             IIDXHOOK9_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
             IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE);
+    }
+
+    if (!cconfig_util_get_float(
+            config,
+            IIDXHOOK9_CONFIG_IO_TT_MULTIPLIER_KEY,
+            &config_io->tt_multiplier,
+            IIDXHOOK9_CONFIG_IO_DEFAULT_TT_MULTIPLIER_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%f'",
+            IIDXHOOK9_CONFIG_IO_TT_MULTIPLIER_KEY,
+            IIDXHOOK9_CONFIG_IO_DEFAULT_TT_MULTIPLIER_VALUE);
     }
 }

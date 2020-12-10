@@ -4,11 +4,13 @@
 
 #include <windows.h> /* for _BitScanForward */
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "acioemu/emu.h"
+#include "util/math.h"
 
 #include "bemanitools/iidxio.h"
 
@@ -27,6 +29,11 @@ static bool poll_delay;
 static bool coin_latch;
 static uint8_t coin_count;
 
+static bool tt_multiplier_set;
+static float tt_multiplier = 1.f;
+static uint8_t tt_accum[2];
+static int16_t tt_last[2];
+
 int get_default_slider_valid(size_t idx)
 {
     if (default_sliders[idx] >= 0 && default_sliders[idx] <= 15) {
@@ -34,6 +41,12 @@ int get_default_slider_valid(size_t idx)
     } else {
         return 0;
     }
+}
+
+void bio2_emu_bi2a_set_tt_multiplier(float multiplier)
+{
+    tt_multiplier_set = true;
+    tt_multiplier = multiplier;
 }
 
 void bio2_emu_bi2a_init(
@@ -158,6 +171,15 @@ static void bio2_emu_bi2a_send_status(
     ac_io_emu_response_push(emu, &resp, 0);
 }
 
+static int16_t tt_mult_delta(size_t tt_no) {
+    int16_t current_tt = iidx_io_ep2_get_turntable(tt_no);
+    int16_t delta = get_wrapped_delta_s16(current_tt, tt_last[tt_no], 256);
+
+    tt_last[tt_no] = current_tt;
+
+    return round(delta * tt_multiplier);
+}
+
 static void
 bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
 {
@@ -233,8 +255,16 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
-    body->TURNTABLE1 = iidx_io_ep2_get_turntable(0);
-    body->TURNTABLE2 = iidx_io_ep2_get_turntable(1);
+    if (tt_multiplier_set) {
+        tt_accum[0] += tt_mult_delta(0);
+        tt_accum[1] += tt_mult_delta(1);
+
+        body->TURNTABLE1 = tt_accum[0];
+        body->TURNTABLE2 = tt_accum[1];
+    } else {
+        body->TURNTABLE1 = iidx_io_ep2_get_turntable(0);
+        body->TURNTABLE2 = iidx_io_ep2_get_turntable(1);
+    }
 
     body->SLIDER1.s_val = get_default_slider_valid(0) ?
         default_sliders[0] :
