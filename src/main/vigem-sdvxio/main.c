@@ -9,6 +9,7 @@
 
 #include "bemanitools/sdvxio.h"
 #include "util/log.h"
+#include "util/math.h"
 #include "util/thread.h"
 #include "vigemstub/helper.h"
 
@@ -20,25 +21,6 @@ int16_t convert_analog_to_s16(uint16_t val)
 {
     // val is 10 bit
     return (int64_t)(val * 64);
-}
-
-int16_t get_relative_delta(int16_t val, int16_t last)
-{
-    // val is 10 bit
-    const int16_t half_point = 512; // 2^9
-
-    int16_t delta = val - last;
-
-    if (delta > half_point) {
-        delta -= 1024;
-    }
-
-    if (delta < -half_point) {
-        delta += 1024;
-    }
-
-    // delta is now between (-512 - 512)
-    return delta;
 }
 
 int16_t filter_floor(int32_t value, int16_t floor) {
@@ -58,7 +40,8 @@ int16_t filter_floor(int32_t value, int16_t floor) {
 int32_t convert_relative_analog(
     uint16_t val, uint16_t last, int32_t buffered_last, int16_t multiplier)
 {
-    int16_t delta = get_relative_delta(val, last);
+    // val is 10 bit
+    int16_t delta = get_wrapped_delta_s16(val, last, 1024);
 
     if (delta == 0) {
         // ease the stick back to 0 like a real stick would
