@@ -85,9 +85,13 @@ void bio2_emu_bi2a_dispatch_request(
     cmd_code = ac_io_u16(req->cmd.code);
 
     switch (cmd_code) {
-        case BIO2_BI2A_CMD_UNK_0100:
-        case BIO2_BI2A_CMD_UNK_0120:
-            log_misc("BIO2_BI2A_CMD_UNK_%04X(%d)", cmd_code, req->addr);
+        case BIO2_BI2A_CMD_CLEAR:
+            log_misc("BIO2_BI2A_CMD_CLEAR(%d)", req->addr);
+            bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
+            break;
+
+        case BIO2_BI2A_CMD_WATCHDOG:
+            log_misc("BIO2_BI2A_CMD_WATCHDOGX(%d)", req->addr);
             bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
             break;
 
