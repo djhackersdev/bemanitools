@@ -54,8 +54,10 @@
 #
 # 17:   Patch 0:    beatmania IIDX 25 CANNON BALLERS
 #                   beatmania IIDX 26 Rootage
+#                   beatmania IIDX 27 HEROIC VERSE
 #
 #       Patch 3:    SOUND VOLTEX VIVID WAVE
+#
 #
 
 cflags          += \
