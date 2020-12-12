@@ -17,7 +17,7 @@
 #define VIGEM_SDVXIO_CONFIG_DEFAULT_PWM_CONTROLLER_VALUE 64
 #define VIGEM_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE 48
 
-void vigem_sdvxio_config_init(struct cconfig *config)
+static void vigem_sdvxio_config_init(struct cconfig *config)
 {
     cconfig_util_set_bool(
         config,
@@ -50,7 +50,7 @@ void vigem_sdvxio_config_init(struct cconfig *config)
         "SDVXIO digital amp volume (0-96) 0 is high, 96 is low.");
 }
 
-void vigem_sdvxio_config_get(
+static void vigem_sdvxio_config_get(
     struct vigem_sdvxio_config *vigem_config, struct cconfig *config)
 {
     if (!cconfig_util_get_bool(
