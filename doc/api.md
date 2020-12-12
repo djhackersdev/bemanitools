@@ -28,6 +28,8 @@ The following implementations are already shipped with BT5.
     * jbio.dll (default): Keyboard, joystick and mouse input
 * SOUND VOLTEX
     * sdvxio.dll (default): Keyboard, joystick and mouse input
+    * sdvxio-bio2.dll: BIO2 driver
+    * sdvxio-kfca.dll: KFCA IO board driver
 
 Eamuse hardware support is implemented separately:
 * eamio.dll (default): Keyboard and joystick input 
