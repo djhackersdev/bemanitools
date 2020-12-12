@@ -30,7 +30,7 @@ struct bi2a_iidx_panel {
     uint8_t y_start1 : 1;
 };
 
-struct bi2a_iidx_state_out {
+struct bi2a_iidx_state_in {
     struct bi2a_iidx_slider SLIDER1;
     struct bi2a_iidx_system SYSTEM;
     struct bi2a_iidx_slider SLIDER2;
@@ -84,7 +84,7 @@ struct bi2a_iidx_light {
     uint8_t l_state : 1;
 };
 
-struct bi2a_iidx_state_in {
+struct bi2a_iidx_state_out {
     struct bi2a_iidx_light UNK1[3];
     struct bi2a_iidx_light PANEL[4];
     struct bi2a_iidx_light DECKSW[14];
@@ -96,11 +96,11 @@ struct bi2a_iidx_state_in {
     uint8_t UNK3[7];
 };
 _Static_assert(
-    sizeof(struct bi2a_iidx_state_in) == 48,
-    "bi2a_iidx_state_in is the wrong size");
-_Static_assert(
-    sizeof(struct bi2a_iidx_state_out) == 46,
+    sizeof(struct bi2a_iidx_state_out) == 48,
     "bi2a_iidx_state_out is the wrong size");
+_Static_assert(
+    sizeof(struct bi2a_iidx_state_in) == 46,
+    "bi2a_iidx_state_in is the wrong size");
 #pragma pack(pop)
 
 #endif
