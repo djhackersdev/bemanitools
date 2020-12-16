@@ -22,15 +22,15 @@ The following implementations are already shipped with BT5.
     * ddrio-smx.dll: StepManiaX platforms
 * Beatmania IIDX
     * iidxio.dll (default): Keyboard, joystick and mouse input
-    * iidxio-bio2.dll: BIO2 driver
-    * iidxio-ezusb.dll: Ezusb (C02 IO) driver
-    * iidxio-ezusb2.dll: Ezusb FX2 (IO2) driver
+    * [iidxio-bio2.dll](iidxhook/iidxio-bio2.md): BIO2 driver
+    * [iidxio-ezusb.dll](iidxhook/iidxio-ezusb.md): Ezusb (C02 IO) driver
+    * [iidxio-ezusb2.dll](iidxhook/iidxio-ezusb2.md): Ezusb FX2 (IO2) driver
 * jubeat
     * jbio.dll (default): Keyboard, joystick and mouse input
 * SOUND VOLTEX
     * sdvxio.dll (default): Keyboard, joystick and mouse input
-    * sdvxio-bio2.dll: BIO2 driver
-    * sdvxio-kfca.dll: KFCA IO board driver
+    * [sdvxio-bio2.dll](sdvxhook/sdvxio-bio2.md): BIO2 driver
+    * [sdvxio-kfca.dll](sdvxhook/sdvxio-kfca.md): KFCA IO board driver
 
 Eamuse hardware support is implemented separately:
 * eamio.dll (default): Keyboard and joystick input 

@@ -1,5 +1,4 @@
 # iidxhook
-
 iidxhook is a collection of hook libraries for BeatmaniaIIDX providing
 emulation and various patches to run these games on non BemaniPC hardware and
 newer Windows versions.
@@ -9,8 +8,7 @@ The hook libraries must be bootstrapped either using [inject](../inject.md) or
 instructions are given in dedicated readme files for each iidxhook version
 (see below).
 
-# Versions
-
+## Versions
 iidxhook comes in a few different flavors. The game and its engine changed over
 the years. Some game versions might require patches/parameters enabled which
 others don't need or have different AVS versions. Here is the list of supported 
@@ -30,8 +28,7 @@ which are ready to be dropped on top of vanilla AC data dumps. We recommend
 using prestine dumps to avoid any conflicts with other hardcoded hacks or
 binary patches.
 
-# How to run
-
+## How to run
 To run your game with iidxhook, you have to use the inject tool to inject the
 DLL to the game process. *dist/iidx* contains bat scripts with all the
 important parameters configured. Further parameters can be added but might not
@@ -39,7 +36,15 @@ be required to run the game with default settings.
 Further information on how to setup the data for each specific version are
 elaborated in their dedicated readme files.
 
-# Command line options
-
+## Command line options
 Add the argument *-h* when running inject with iidxhook to print help/usage
 information with a list of parameters you can apply to tweak various things.
+
+## iidxio API
+Available implementations that can be swapped out depending on which kind of
+IO hardware you want to use:
+* `iidxio`: Default implementation supporting keyboard, mouse and USB
+game controllers
+* [iidxio-bio2](iidxhook/iidxio-bio2.md): Support BIO2 hardware
+* [iidxio-ezusb](iidxhook/iidxio-ezusb.md): Support C02 ezusb FX hardware
+* [iidxio-ezusb2](iidxhook/iidxio-ezusb2.md): Support IO2 ezusb FX2 hardware
