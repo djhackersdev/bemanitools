@@ -126,6 +126,7 @@ include src/main/iidxhook6/Module.mk
 include src/main/iidxhook7/Module.mk
 include src/main/iidxhook8/Module.mk
 include src/main/iidxhook9/Module.mk
+include src/main/iidxio-bio2/Module.mk
 include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxio/Module.mk
@@ -374,6 +375,7 @@ $(zipdir)/iidx-27.zip: \
 
 $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
 		build/bin/indep-32/iidxio-ezusb2.dll \
 		| $(zipdir)/
@@ -382,6 +384,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 
 $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/eamio-icca.dll \
+		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
 		| $(zipdir)/
