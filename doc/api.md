@@ -22,6 +22,7 @@ The following implementations are already shipped with BT5.
     * ddrio-smx.dll: StepManiaX platforms
 * Beatmania IIDX
     * iidxio.dll (default): Keyboard, joystick and mouse input
+    * iidxio-bio2.dll: BIO2 driver
     * iidxio-ezusb.dll: Ezusb (C02 IO) driver
     * iidxio-ezusb2.dll: Ezusb FX2 (IO2) driver
 * jubeat
