@@ -16,3 +16,6 @@ launcher -K iidxhook4.dll bm2dx.dll ...*
 ```
 * This assumes that the BIO2 is already flashed to the correct firmware. The firmware perists once
 flashed and does not need to be re-flashed after a power cycle.
+
+## Driver notes
+See [here](iidxhook9.md#driver-notes).
