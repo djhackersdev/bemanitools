@@ -26,7 +26,7 @@ The tl;dr version and golden rules of the sections in the document:
 * [Everyone is allowed to submit changes which are not just limited to code by opening merge requests](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
 * [Documentation improvements can and even should be contributed by non developers](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
 
-## List of supported games
+## List of supported games (hook libraries)
 * BeatStream
     * BeatStream (bst.zip) using bsthook
     * BeatStream アニムトライヴ (bst.zip) using bsthook
@@ -68,6 +68,12 @@ The tl;dr version and golden rules of the sections in the document:
     * SOUND VOLTEX III GRAVITY WARS (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX Vivid Wave (sdvx-05.zip) using sdvxhook2
+
+## ViGEm clients: Expose BT5 APIs as XBOX game controllers
+Play your favorite non-bemani arcade games with any hardware, e.g. real cabinet hardware, that
+implements BT5 APIs.
+
+See the dedicated [readme](docs/vigem/README.md) for details.
 
 ## Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
