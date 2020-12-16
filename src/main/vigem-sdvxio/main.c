@@ -237,6 +237,8 @@ int main(int argc, char **argv)
     vigem_target_remove(client, pad);
     vigem_target_free(pad);
 
+    vigem_free(client);
+
     sdvx_io_set_amp_volume(96, 96, 96);
     Sleep(1000);
 
