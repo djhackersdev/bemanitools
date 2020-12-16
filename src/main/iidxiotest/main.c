@@ -10,6 +10,25 @@
 #include "util/log.h"
 #include "util/thread.h"
 
+static uint8_t _fix_top_lamps_order(uint8_t top_lamps)
+{
+    uint8_t out;
+
+    out = 0;
+
+    out |= ((1 << 0) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_RED) : 0;
+    out |= ((1 << 1) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_YELLOW) : 0;
+    out |= ((1 << 2) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_GREEN) : 0;
+    out |= ((1 << 3) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_BLUE) : 0;
+
+    out |= ((1 << 4) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_BLUE) : 0;
+    out |= ((1 << 5) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_GREEN) : 0;
+    out |= ((1 << 6) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW) : 0;
+    out |= ((1 << 7) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_RED) : 0;
+
+    return out;
+}
+
 /**
  * Tool to test your implementations of iidxio.
  */
@@ -150,7 +169,7 @@ int main(int argc, char **argv)
 
         iidx_io_ep1_set_deck_lights(deck_lights);
         iidx_io_ep1_set_panel_lights(panel_lights);
-        iidx_io_ep1_set_top_lamps(top_lamps);
+        iidx_io_ep1_set_top_lamps(_fix_top_lamps_order(top_lamps));
         iidx_io_ep1_set_top_neons(top_neons);
 
         /* light up keys when pressed */
