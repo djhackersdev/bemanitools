@@ -70,6 +70,19 @@ enum iidx_io_panel_light {
     IIDX_IO_PANEL_LIGHT_EFFECT = 3,
 };
 
+/* Bit mapping for the top lamps from left to right when facing cabinet screen */
+
+enum iidx_io_top_lamp {
+    IIDX_IO_TOP_LAMP_LEFT_BLUE = 0,
+    IIDX_IO_TOP_LAMP_LEFT_GREEN = 1,
+    IIDX_IO_TOP_LAMP_LEFT_YELLOW = 2,
+    IIDX_IO_TOP_LAMP_LEFT_RED = 3,
+    IIDX_IO_TOP_LAMP_RIGHT_BLUE = 4,
+    IIDX_IO_TOP_LAMP_RIGHT_GREEN = 5,
+    IIDX_IO_TOP_LAMP_RIGHT_YELLOW = 6,
+    IIDX_IO_TOP_LAMP_RIGHT_RED = 7,
+};
+
 /* The first function that will be called on your DLL. You will be supplied
    with four function pointers that may be used to log messages to the game's
    log file. See comments in glue.h for further information. */
