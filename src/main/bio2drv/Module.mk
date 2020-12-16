@@ -6,4 +6,5 @@ libs_bio2drv     := \
 src_bio2drv     := \
     detect.c \
     config-bio2.c \
-    bi2a-sdvx.c \
+    bi2a-iidx.c \
+    bi2a-sdvx.c
