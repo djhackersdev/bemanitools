@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 enum bio2_bi2a_cmd {
-    // Custom Stuff
-    BIO2_BI2A_CMD_CLEAR = 0x0100,
     BIO2_BI2A_CMD_WATCHDOG = 0x0120,
     BIO2_BI2A_CMD_POLL = 0x0152, // For IIDX
 };
