@@ -66,6 +66,7 @@ struct ac_io_message {
                 uint8_t raw[0xFF];
                 uint8_t count;
                 uint8_t status;
+                uint8_t param;
                 struct ac_io_version version;
 
                 struct ac_io_icca_misc icca_misc;
