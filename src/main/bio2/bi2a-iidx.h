@@ -3,6 +3,27 @@
 
 #include "bio2/bio2.h"
 
+enum bi2a_iidx_panel_button {
+    BI2A_IIDX_PANEL_BUTTON_START_P1 = 0,
+    BI2A_IIDX_PANEL_BUTTON_START_P2 = 1,
+    BI2A_IIDX_PANEL_BUTTON_VEFX = 2,
+    BI2A_IIDX_PANEL_BUTTON_EFFECT = 3,
+};
+
+enum bi2a_iidx_spotlight_left {
+    BI2A_IIDX_SPOTLIGHT_LEFT_BLUE = 0,
+    BI2A_IIDX_SPOTLIGHT_LEFT_GREEN = 1,
+    BI2A_IIDX_SPOTLIGHT_LEFT_YELLOW = 2,
+    BI2A_IIDX_SPOTLIGHT_LEFT_RED = 3,
+};
+
+enum bi2a_iidx_spotlight_right {
+    BI2A_IIDX_SPOTLIGHT_RIGHT_RED = 0,
+    BI2A_IIDX_SPOTLIGHT_RIGHT_YELLOW = 1,
+    BI2A_IIDX_SPOTLIGHT_RIGHT_GREEN = 2,
+    BI2A_IIDX_SPOTLIGHT_RIGHT_BLUE = 3,
+};
+
 #pragma pack(push, 1)
 struct bi2a_iidx_slider {
     uint8_t s_unk : 4;
@@ -90,8 +111,10 @@ struct bi2a_iidx_state_out {
     struct bi2a_iidx_light DECKSW[14];
     uint8_t UNK2[2];
     uint8_t SEG16[9];
+    // right
     struct bi2a_iidx_light SPOTLIGHT1[4];
     struct bi2a_iidx_light NEONLAMP;
+    // left
     struct bi2a_iidx_light SPOTLIGHT2[4];
     uint8_t UNK3[7];
 };
