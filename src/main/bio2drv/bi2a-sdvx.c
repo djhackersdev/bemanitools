@@ -15,7 +15,7 @@ static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
     struct ac_io_message msg;
 
     msg.addr = node_id + 1;
-    msg.cmd.code = ac_io_u16(AC_IO_CMD_CLEAR);
+    msg.cmd.code = ac_io_u16(BIO2_BI2A_CMD_INIT);
     msg.cmd.nbytes = 1;
     msg.cmd.count = 0x3B;
 
