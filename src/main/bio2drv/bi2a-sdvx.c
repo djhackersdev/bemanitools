@@ -9,6 +9,8 @@
 
 #include "util/log.h"
 
+static const uint8_t _BIO2DR_BI2A_SDVX_INIT_DATA = 0x3B;
+
 // this is probably InitIO
 static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
 {
@@ -17,7 +19,7 @@ static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(BIO2_BI2A_CMD_INIT);
     msg.cmd.nbytes = 1;
-    msg.cmd.count = 0x3B;
+    msg.cmd.param = _BIO2DR_BI2A_SDVX_INIT_DATA;
 
     if (!aciodrv_send_and_recv(
             &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {

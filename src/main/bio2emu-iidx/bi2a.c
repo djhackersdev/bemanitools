@@ -85,8 +85,8 @@ void bio2_emu_bi2a_dispatch_request(
     cmd_code = ac_io_u16(req->cmd.code);
 
     switch (cmd_code) {
-        case AC_IO_CMD_CLEAR:
-            log_misc("AC_IO_CMD_CLEAR(%d)", req->addr);
+        case BIO2_BI2A_CMD_INIT:
+            log_misc("BIO2_BI2A_CMD_INIT(%d)", req->addr);
             bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
             break;
 
