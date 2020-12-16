@@ -178,6 +178,9 @@ stuck, try a USB <-> COM dongle instead of using one of the COM ports of the
 mainboard.
 
 # Troubleshooting and FAQ
+## The turntable input feels laggy/delayed with my BIO2 + sub IO
+See the [this readme](hardware/bio2-sub-io-turntable-bypass-cable.md) for
+information about the bypass cable.
 
 ## The game does not run "well" (frame drops, drifting offsync etc)
 This can be related to various issues:
