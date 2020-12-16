@@ -127,7 +127,21 @@ On AMD GPUs, set the "V-Sync" option to `On, unless application specifies`.
 
 Set `io.disable_bio2_emu=true` in the `iidxhook.conf` file to not hook the BIO2
 communication with an emulation layer. The game will directly talk to the IO.
-In this mode, tthe game supports the BIO2 board only.
+In this mode, the game supports the BIO2 board only.
+
+## Driver notes
+You can use the default driver that Windows (7/10) automatically installs once
+you connect the BIO2 board via USB to your host. However, these drivers will
+not allow the game to detect the board correctly, throwing an IO error.
+The drivers will work fine when using the iidxio API implementation 
+[iidxio-bio2](iidxio-bio2.md).
+
+If you want to use the BIO2 with the game without the emulation layer, as
+suggested above, you need to install Konami's original driver which is
+identical to the stock Windows driver except the device name is different
+(which is the crucial part for the stock game's automatic detection).
+
+The driver is available in the bemanitools-supplement repository.
 
 ### Ezusb and other
 
