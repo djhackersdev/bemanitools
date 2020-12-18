@@ -8,7 +8,7 @@
 struct vigem_iidxio_config {
     bool enable_keylight;
     bool relative_analog;
-    bool enable_cab_light_seq;
+    int32_t cab_light_mode;
     char text_16seg[1024 + 1];
     int32_t text_scroll_cycle_time_ms;
 };
