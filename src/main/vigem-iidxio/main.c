@@ -22,6 +22,8 @@
 
 #define ANALOG_FIXED_SENSITIVITY 256
 
+static const uint8_t JOYSTICKS_NUM = 3;
+
 static int16_t _convert_analog_to_s16(uint8_t val)
 {
     return (int64_t) val * 256;
@@ -114,28 +116,28 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    PVIGEM_TARGET pad[2];
+    PVIGEM_TARGET pad[JOYSTICKS_NUM];
+    bool failed;
+
+    failed = false;
     
-    pad[0] = vigem_helper_add_pad(client);
-    pad[1] = vigem_helper_add_pad(client);
+    for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
+        pad[i] = vigem_helper_add_pad(client);
 
-    if (!pad[0] || !pad[1]) {
-        if (!pad[0]) {
-            log_warning("vigem_alloc pad 1 failed");
+        if (!pad[i]) {
+            log_warning("vigem_alloc pad %d failed", i);
+            failed = true;
         }
+    }
 
-        if (!pad[1]) {
-            log_warning("vigem_alloc pad 2 failed");
-        }
-
+    if (failed) {
         iidx_io_fini();
-
         return -1;
     }
 
     bool loop = true;
 
-    XUSB_REPORT state[2];
+    XUSB_REPORT state[JOYSTICKS_NUM];
 
     log_info("vigem init succeeded, beginning poll loop");
 
@@ -160,9 +162,10 @@ int main(int argc, char **argv)
             break;
         }
 
-        memset(&state[0], 0, sizeof(state[0]));
-        memset(&state[1], 0, sizeof(state[1]));
-
+        for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
+            memset(&state[i], 0, sizeof(state[i]));
+        }
+        
         // 14 keys
         uint16_t keys = iidx_io_ep2_get_keys();
 
@@ -179,7 +182,7 @@ int main(int argc, char **argv)
         state[0].wButtons |= _check_assign_key(
                 keys, IIDX_IO_KEY_P1_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
         state[0].wButtons |= _check_assign_key(
-                keys, IIDX_IO_KEY_P1_7, XUSB_GAMEPAD_DPAD_RIGHT);
+                keys, IIDX_IO_KEY_P1_7, XUSB_GAMEPAD_BACK);
 
         state[1].wButtons |= _check_assign_key(
                 keys, IIDX_IO_KEY_P2_1, XUSB_GAMEPAD_A);
@@ -194,7 +197,7 @@ int main(int argc, char **argv)
         state[1].wButtons |= _check_assign_key(
                 keys, IIDX_IO_KEY_P2_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
         state[1].wButtons |= _check_assign_key(
-                keys, IIDX_IO_KEY_P2_7, XUSB_GAMEPAD_DPAD_RIGHT);
+                keys, IIDX_IO_KEY_P2_7, XUSB_GAMEPAD_BACK);
 
         // Panel buttons
         uint8_t panel = iidx_io_ep2_get_panel();
@@ -203,20 +206,21 @@ int main(int argc, char **argv)
                 panel, IIDX_IO_PANEL_LIGHT_P1_START, XUSB_GAMEPAD_START);
         state[1].wButtons |= _check_assign_key(
                 panel, IIDX_IO_PANEL_LIGHT_P2_START, XUSB_GAMEPAD_START);
-        state[0].wButtons |= _check_assign_key(
-                panel, IIDX_IO_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_BACK);
-        state[1].wButtons |= _check_assign_key(
-                panel, IIDX_IO_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_BACK);
+
+        state[2].wButtons |= _check_assign_key(
+                panel, IIDX_IO_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_B);
+        state[2].wButtons |= _check_assign_key(
+                panel, IIDX_IO_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_A);
 
         // System buttons
         uint8_t system = iidx_io_ep2_get_sys();
 
-        state[0].wButtons |= _check_assign_key(
-                system, IIDX_IO_SYS_TEST, XUSB_GAMEPAD_LEFT_THUMB);
-        state[0].wButtons |= _check_assign_key(
-                system, IIDX_IO_SYS_SERVICE, XUSB_GAMEPAD_RIGHT_THUMB);
-        state[1].wButtons |= _check_assign_key(
-                system, IIDX_IO_SYS_COIN, XUSB_GAMEPAD_LEFT_THUMB);
+        state[2].wButtons |= _check_assign_key(
+                system, IIDX_IO_SYS_TEST, XUSB_GAMEPAD_X);
+        state[2].wButtons |= _check_assign_key(
+                system, IIDX_IO_SYS_SERVICE, XUSB_GAMEPAD_Y);
+        state[2].wButtons |= _check_assign_key(
+                system, IIDX_IO_SYS_COIN, XUSB_GAMEPAD_START);
 
         // Turntable
         uint8_t turntable[2];
@@ -303,7 +307,7 @@ int main(int argc, char **argv)
 
     Sleep(10);
 
-    for (int i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
         vigem_target_remove(client, pad[i]);
         vigem_target_free(pad[i]);
     }
