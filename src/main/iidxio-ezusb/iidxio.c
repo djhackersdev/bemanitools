@@ -75,9 +75,17 @@ bool iidx_io_init(
         } else {
             log_info(
                 "Connected ezusb: vid 0x%X, pid 0x%X", ident.vid, ident.pid);
-            return true;
         }
     }
+
+    // Random data returned by device, likely not properly initalized on device side
+    // Triggers random inputs and lights
+    // Flush that by execute a few polls
+    for (int i = 0; i < 10; i++) {
+        iidx_io_ep2_recv();
+    }
+
+    return true;
 }
 
 void iidx_io_fini(void)
