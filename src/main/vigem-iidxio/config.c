@@ -7,13 +7,13 @@
 
 #define VIGEM_IIDXIO_CONFIG_ENABLE_KEYLIGHT_KEY "vigem.iidxio.enable_keylight"
 #define VIGEM_IIDXIO_CONFIG_RELATIVE_ANALOG_KEY "vigem.iidxio.use_relative_analog"
-#define VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_SEQ_KEY "vigem.iidxio.enable_cab_light_seq"
+#define VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_MODE_KEY "vigem.iidxio.cab_light_mode"
 #define VIGEM_IIDXIO_CONFIG_TEXT_16SEG_KEY "vigem.iidxio.text_16seg"
 #define VIGEM_IIDXIO_CONFIG_TEXT_SCROLL_CYCLE_TIME_MS_KEY "vigem.iidxio.text_scroll_cycle_time_ms"
 
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE true
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_RELATIVE_ANALOG_VALUE false
-#define VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_SEQ_VALUE false
+#define VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_MODE_VALUE 0
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_TEXT_16SEG_VALUE ""
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_TEXT_SCROLL_CYCLE_TIME_MS_VALUE 500
 
@@ -31,11 +31,11 @@ static void _vigem_iidxio_config_init(struct cconfig *config)
         VIGEM_IIDXIO_CONFIG_DEFAULT_RELATIVE_ANALOG_VALUE,
         "Use relative mode analog mapping");
 
-    cconfig_util_set_bool(
+    cconfig_util_set_int(
         config,
-        VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_SEQ_KEY,
-        VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_SEQ_VALUE,
-        "Enable built in cabinet light sequence");
+        VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_MODE_KEY,
+        VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_MODE_VALUE,
+        "Different cabinet light modes: 0 = off, 1 = neons sequence, 2 = neons flash on TT spin");
 
     cconfig_util_set_str(
         config,
@@ -77,16 +77,16 @@ static void _vigem_iidxio_config_get(
             VIGEM_IIDXIO_CONFIG_DEFAULT_RELATIVE_ANALOG_VALUE);
     }
 
-    if (!cconfig_util_get_bool(
+    if (!cconfig_util_get_int(
             config,
-            VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_SEQ_KEY,
-            &vigem_config->enable_cab_light_seq,
-            VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_SEQ_VALUE)) {
+            VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_MODE_KEY,
+            &vigem_config->cab_light_mode,
+            VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_MODE_VALUE)) {
         log_warning(
             "Invalid value for key '%s' specified, fallback "
             "to default '%d'",
-            VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_SEQ_KEY,
-            VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_SEQ_VALUE);
+            VIGEM_IIDXIO_CONFIG_ENABLE_CAB_LIGHT_MODE_KEY,
+            VIGEM_IIDXIO_CONFIG_DEFAULT_ENABLE_CAB_LIGHT_MODE_VALUE);
     }
 
     if (!cconfig_util_get_str(

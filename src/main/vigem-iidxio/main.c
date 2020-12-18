@@ -145,9 +145,7 @@ int main(int argc, char **argv)
     iidx_io_ep1_set_top_lamps(0);
     iidx_io_ep1_set_top_neons(false);
 
-    if (config.enable_cab_light_seq) {
-        vigem_iidxio_cab_light_sequencer_init();
-    }
+    vigem_iidxio_cab_light_sequencer_init(config.cab_light_mode);
 
     if (config.text_16seg[0] != '\0') {
         vigem_iidxio_cab_16seg_sequencer_init(config.text_16seg, config.text_scroll_cycle_time_ms);
@@ -254,14 +252,19 @@ int main(int argc, char **argv)
             iidx_io_ep1_set_panel_lights(panel);
         }
 
-        if (config.enable_cab_light_seq) {
+        if (config.cab_light_mode != LIGHT_SEQ_MODE_OFF) {
             bool neon;
             uint8_t spots;
 
             neon = false;
             spots = 0;
 
-            vigem_iidxio_cab_light_sequencer_update(&neon, &spots);
+            vigem_iidxio_cab_light_sequencer_update(
+                keys,
+                turntable[0],
+                turntable[1],
+                &neon,
+                &spots);
 
             iidx_io_ep1_set_top_neons(neon);
             iidx_io_ep1_set_top_lamps(spots);
