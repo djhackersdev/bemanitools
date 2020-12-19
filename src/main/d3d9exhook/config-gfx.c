@@ -16,6 +16,8 @@
 #define D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
 #define D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY "gfx.force_orientation"
+#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY "gfx.force_screen_res.width"
+#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY "gfx.force_screen_res.height"
 
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE false
@@ -25,6 +27,8 @@
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE -1
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE -1
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE -1
 
 void d3d9exhook_config_gfx_init(struct cconfig *config)
 {
@@ -78,6 +82,20 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE,
         "Orientation to force monitor into, -1 to use default, "
         "0, 1, 2, 3 to do 0, 90, 180, 270 degrees");
+
+    cconfig_util_set_int(
+        config,
+        D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY,
+        D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE,
+        "Force a screen resolution (width), -1 to disable. Use this if the game does not auto "
+        "detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720.");
+
+    cconfig_util_set_int(
+        config,
+        D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY,
+        D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE,
+        "Force a screen resolution (height), -1 to disable. Use this if the game does not auto "
+        "detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720.");
 }
 
 void d3d9exhook_config_gfx_get(
@@ -177,5 +195,29 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_ORIENTATION_VALUE);
+    }
+
+    if (!cconfig_util_get_int(
+            config,
+            D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY,
+            &config_gfx->force_screen_res.width,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE);
+    }
+
+    if (!cconfig_util_get_int(
+            config,
+            D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY,
+            &config_gfx->force_screen_res.height,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE);
     }
 }

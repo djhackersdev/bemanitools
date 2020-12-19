@@ -18,6 +18,11 @@ struct d3d9exhook_config_gfx {
     int32_t forced_refresh_rate;
     int32_t device_adapter;
     int32_t force_orientation;
+
+    struct force_screen_res {
+        int32_t width;
+        int32_t height;
+    } force_screen_res;
 };
 
 /**
