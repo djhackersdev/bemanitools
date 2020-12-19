@@ -242,8 +242,56 @@ static HRESULT STDCALL my_CreateDeviceEx(
     D3DDISPLAYMODEEX *fdm,
     IDirect3DDevice9Ex **pdev)
 {
+    log_assert(self);
+    log_assert(pp);
+    log_assert(pdev);
+
     IDirect3D9Ex *real = com_proxy_downcast(self)->real;
     HRESULT hr;
+
+    log_misc(
+        "CreateDeviceEx parameters: adapter %d, type %d, hwnd %p, flags %lX, "
+        "pdev %p",
+        adapter,
+        type,
+        hwnd,
+        flags,
+        pdev);
+
+    if (fdm) {
+        log_misc(
+            "CreateDeviceEx display mode: size %d, width %d, height %d, refresh rate %d, format %d, "
+            "scan line ordering %d",
+            fdm->Size,
+            fdm->Width,
+            fdm->Height,
+            fdm->RefreshRate,
+            fdm->Format,
+            fdm->ScanLineOrdering);
+    }
+
+    log_misc(
+        "D3D9EX presenter parameters: BackBufferWidth %d, BackBufferHeight "
+        "%d, BackBufferFormat %d, "
+        "BackBufferCount %d, MultiSampleType %d, MultiSampleQuality %ld, SwapEffect %d, "
+        "hDeviceWindow %p, Windowed %d, "
+        "EnableAutoDepthStencil "
+        "%d, AutoDepthStencilFormat %d, Flags %lX, "
+        "FullScreen_RefreshRateInHz %d, PresentationInterval %d",
+        pp->BackBufferWidth,
+        pp->BackBufferHeight,
+        pp->BackBufferFormat,
+        pp->BackBufferCount,
+        pp->MultiSampleType,
+        pp->MultiSampleQuality,
+        pp->SwapEffect,
+        pp->hDeviceWindow,
+        pp->Windowed,
+        pp->EnableAutoDepthStencil,
+        pp->AutoDepthStencilFormat,
+        pp->Flags,
+        pp->FullScreen_RefreshRateInHz,
+        pp->PresentationInterval);
 
     if (d3d9ex_device_adapter >= 0) {
         log_info("Forcing adapter %d -> %d", adapter, d3d9ex_device_adapter);
