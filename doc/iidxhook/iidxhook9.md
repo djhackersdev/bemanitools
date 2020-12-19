@@ -92,6 +92,27 @@ cycle the machine (i.e. quit the game and restart it).
 
 # Real hardware support
 
+## The game does not go into either 640x480 (SD) or 1280x720 (HD) as expected but rather picks a resolution like 1386x768
+The graphics backend of the game is auto detecting the resolution and refresh
+rate based on the supported specs reported by the monitor. Depending on that
+output, this can lead to the game picking some "odd" resolution like 1386x768
+even the game is set to HD mode (expecting 1280x720).
+
+Furthermore, this can lead to different refresh rate values on the automatic
+monitor check, e.g. compared to previous versions (59.94 on Rootage but 60.02
+on Heroic Verse). Ultimately, the result can be a very offsync gameplay
+experience with extremely delayed input.
+
+If that happens, try forcing the resolution to `1280x720` when the game is
+set to HD mode in the operator menu. Note: Your monitor must also be capable
+of handling the resolution.
+
+iidxhook.conf:
+```text
+gfx.force_screen_res.width=1280
+gfx.force_screen_res.height=720
+```
+
 ## The monitor check is showing high fps and I am using a monitor with high refresh rate features, e.g. 120/144hz
 Sync and timing might be screwed up since the game was never meant to run on
 such refresh rates. Try setting the option `gfx.forced_refresh_rate` to either
