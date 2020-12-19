@@ -137,6 +137,16 @@ mainboard.
 
 # Troubleshooting and FAQ
 
+## The monitor check is showing high fps and I am using a monitor with high refresh rate features, e.g. 120/144hz
+Sync and timing might be screwed up since the game was never meant to run on
+such refresh rates. Try setting the option `gfx.forced_refresh_rate` to either
+`59` or `60`.
+
+Note: Your GPU driver settings must be configured to allow application overrides
+on vertical sync/refresh rate options.
+
+On AMD GPUs, set the "V-Sync" option to `On, unless application specifies`.
+
 ## The game does not run "well" (frame drops, drifting offsync etc)
 This can be related to various issues:
 * Make sure to run the game as (true) Administrator especially on Windows 7 and
