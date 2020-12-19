@@ -91,6 +91,8 @@ static int32_t d3d9ex_window_height = -1;
 static bool d3d9ex_window_framed;
 static int32_t d3d9ex_device_adapter = -1;
 static int32_t d3d9ex_force_orientation = -1;
+static int32_t d3d9ex_force_screen_res_width = -1;
+static int32_t d3d9ex_force_screen_res_height = -1;
 
 /* ------------------------------------------------------------------------- */
 
@@ -298,6 +300,22 @@ static HRESULT STDCALL my_CreateDeviceEx(
         adapter = d3d9ex_device_adapter;
     }
 
+    if (d3d9ex_force_screen_res_width > 0 && d3d9ex_force_screen_res_height > 0) {
+        log_info("Overriding screen resolution/back buffer of %dx%d -> %dx%d",
+            pp->BackBufferWidth,
+            pp->BackBufferHeight,
+            d3d9ex_force_screen_res_width,
+            d3d9ex_force_screen_res_height);
+
+        pp->BackBufferWidth = d3d9ex_force_screen_res_width;
+        pp->BackBufferHeight = d3d9ex_force_screen_res_height;
+
+        if (fdm) {
+            fdm->Width = pp->BackBufferWidth;
+            fdm->Height = pp->BackBufferHeight;
+        }
+    }
+
     if (d3d9ex_windowed) {
         fdm = NULL;
         pp->Windowed = TRUE;
@@ -437,6 +455,14 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
     d3d9ex_force_refresh_rate = gfx_config->forced_refresh_rate;
     d3d9ex_device_adapter = gfx_config->device_adapter;
     d3d9ex_force_orientation = gfx_config->force_orientation;
+
+    d3d9ex_force_screen_res_width = gfx_config->force_screen_res.width;
+    d3d9ex_force_screen_res_height = gfx_config->force_screen_res.height;
+
+    if (d3d9ex_force_screen_res_width * d3d9ex_force_screen_res_height > 0) {
+        log_warning("Force screen res: Only one, either width or height, is > 0."
+            " Force screen res not activate");
+    }
 }
 
 /* ------------------------------------------------------------------------- */
