@@ -92,6 +92,16 @@ cycle the machine (i.e. quit the game and restart it).
 
 # Real hardware support
 
+## The monitor check is showing high fps and I am using a monitor with high refresh rate features, e.g. 120/144hz
+Sync and timing might be screwed up since the game was never meant to run on
+such refresh rates. Try setting the option `gfx.forced_refresh_rate` to either
+`59` or `60`.
+
+Note: Your GPU driver settings must be configured to allow application overrides
+on vertical sync/refresh rate options.
+
+On AMD GPUs, set the "V-Sync" option to `On, unless application specifies`.
+
 ### BIO2 hardware
 
 Set `io.disable_bio2_emu=true` in the `iidxhook.conf` file to not hook the BIO2
