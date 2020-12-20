@@ -12,6 +12,10 @@ BT5 uses a cleaner approach than BT4 did; specifically, all input and lighting i
 spoken by the real IO PCBs, instead of replacing chunks of game code like BT4. The benefits of this approach are a more
 authentic gameplay experience, and easier support for a broader range of releases from each game series.
 
+## Documentation
+Browse our [documentation](doc/README.md) as it might already cover various questions and concerns
+you are looking for or about to ask.
+
 ## Contributions and bug reporting
 [Read the dedicated CONTRIBUTING.md documentation](CONTRIBUTING.md).
 
