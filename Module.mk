@@ -113,6 +113,7 @@ include src/main/ezusb2/Module.mk
 include src/main/geninput/Module.mk
 include src/main/hook/Module.mk
 include src/main/hooklib/Module.mk
+include src/main/iidx-bio2-exit-hook/Module.mk
 include src/main/iidx-ezusb-exit-hook/Module.mk
 include src/main/iidx-ezusb2-exit-hook/Module.mk
 include src/main/iidx-irbeat-patch/Module.mk
@@ -180,6 +181,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb-iidx-fpga-flash.exe \
 		build/bin/indep-32/ezusb-iidx-sram-flash.exe \
 		build/bin/indep-32/iidxiotest.exe \
+		build/bin/indep-32/iidx-bio2-exit-hook.dll \
 		build/bin/indep-32/iidx-ezusb-exit-hook.dll \
 		build/bin/indep-32/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-32/jbiotest.exe \
@@ -198,6 +200,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/aciotest.exe \
 		build/bin/indep-64/eamiotest.exe \
 		build/bin/indep-64/iidxiotest.exe \
+		build/bin/indep-64/iidx-bio2-exit-hook.dll \
 		build/bin/indep-64/iidx-ezusb-exit-hook.dll \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
