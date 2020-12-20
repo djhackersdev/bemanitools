@@ -15,6 +15,7 @@ src_util        := \
     msg-thread.c \
     net.c \
     os.c \
+    proc.c \
     signal.c \
     str.c \
     thread.c \
