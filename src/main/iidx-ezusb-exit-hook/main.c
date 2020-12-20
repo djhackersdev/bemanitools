@@ -15,6 +15,7 @@
 #include "hook/table.h"
 
 #include "util/defs.h"
+#include "util/proc.h"
 
 static BOOL STDCALL my_DeviceIoControl(
     HANDLE fd,
@@ -163,12 +164,7 @@ static BOOL STDCALL my_DeviceIoControl(
 
                     /* Don't use ExitProcess. This might result in deadlocks
                        on newer games which rely more on multi threading */
-                    HANDLE hnd;
-                    hnd = OpenProcess(
-                        SYNCHRONIZE | PROCESS_TERMINATE,
-                        TRUE,
-                        GetCurrentProcessId());
-                    TerminateProcess(hnd, 0);
+                    proc_terminate_current_process(0);
                 }
             }
         }
