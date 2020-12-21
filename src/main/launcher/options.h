@@ -19,10 +19,9 @@ struct options {
     struct array hook_dlls;
     struct array before_hook_dlls;
     bool remote_debugger;
-    bool override_service_enabled;
     const char *override_service;
     bool override_urlslash_enabled;
-    bool override_urlslash;
+    bool override_urlslash_value;
 };
 
 void options_init(struct options *options);
