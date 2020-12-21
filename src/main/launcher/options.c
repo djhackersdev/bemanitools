@@ -25,6 +25,10 @@ void options_init(struct options *options)
     options->remote_debugger = false;
     array_init(&options->hook_dlls);
     array_init(&options->before_hook_dlls);
+
+    options->override_service = NULL;
+    options->override_urlslash_enabled = false;
+    options->override_urlslash_value = false;
 }
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
@@ -141,7 +145,6 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->override_service_enabled = true;
                     options->override_service = argv[++i];
 
                     break;
@@ -155,12 +158,12 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     const char * urlslash_value = argv[++i];
 
-                    options->override_urlslash = false;
+                    options->override_urlslash_value = false;
                     if (_stricmp(urlslash_value, "1") == 0) {
-                        options->override_urlslash = true;
+                        options->override_urlslash_value = true;
                     }
                     if (_stricmp(urlslash_value, "true") == 0) {
-                        options->override_urlslash = true;
+                        options->override_urlslash_value = true;
                     }
 
                     break;

@@ -285,15 +285,16 @@ int main(int argc, const char **argv)
     ea3_ident_to_property(&ea3, ea3_config);
 
     if (options.override_urlslash_enabled) {
-        log_info("Overriding url_slash to: %d", options.override_urlslash);
+        log_info(
+            "Overriding url_slash to: %d", options.override_urlslash_value);
 
         ea3_ident_replace_property_bool(
             ea3_config_root,
             "/network/url_slash",
-            options.override_urlslash);
+            options.override_urlslash_value);
     }
 
-    if (options.override_service_enabled) {
+    if (options.override_service != NULL) {
         log_info("Overriding service url to: %s", options.override_service);
 
         ea3_ident_replace_property_str(
