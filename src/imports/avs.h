@@ -36,7 +36,8 @@ enum property_type {
     PROPERTY_TYPE_S64 = 8,
     PROPERTY_TYPE_U64 = 9,
     PROPERTY_TYPE_BIN = 10,
-    PROPERTY_TYPE_STR = 11
+    PROPERTY_TYPE_STR = 11,
+    PROPERTY_TYPE_BOOL = 52
 };
 
 struct property;
@@ -57,8 +58,6 @@ enum psmap_type {
     PSMAP_TYPE_S64 = 8,
     PSMAP_TYPE_U64 = 9,
     PSMAP_TYPE_STR = 10,
-    /* Used on avs 803 instead of value 10 */
-    PSMAP_TYPE_STR_LEGACY = 11,
     PSMAP_TYPE_ATTR = 45,
     PSMAP_TYPE_BOOL = 50,
 };

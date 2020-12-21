@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "imports/avs.h"
 
@@ -135,6 +136,35 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     break;
 
+                case 'S':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    options->override_service_enabled = true;
+                    options->override_service = argv[++i];
+
+                    break;
+
+                case 'U':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    options->override_urlslash_enabled = true;
+
+                    const char * urlslash_value = argv[++i];
+
+                    options->override_urlslash = false;
+                    if (_stricmp(urlslash_value, "1") == 0) {
+                        options->override_urlslash = true;
+                    }
+                    if (_stricmp(urlslash_value, "true") == 0) {
+                        options->override_urlslash = true;
+                    }
+
+                    break;
+
                 case 'D':
                     options->remote_debugger = true;
 
@@ -179,6 +209,8 @@ void options_print_usage(void)
 #endif
         "       -P [pcbid]      Specify PCBID (default: use ea3 config)\n"
         "       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
+        "       -S [url]        Specify service url (default: use ea3 config)\n"
+        "       -U [0/1]        Specify url_slash (default: use ea3 config)\n"
         "       -K [filename]   Load hook DLL (can be specified multiple "
         "times)\n"
         "       -B [filename]   Load pre-hook DLL loaded before avs boot "

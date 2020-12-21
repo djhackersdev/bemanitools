@@ -77,7 +77,7 @@ static void avs_boot_replace_property_str(
         property_node_remove(tmp);
     }
 
-    tmp = property_node_create(NULL, node, PSMAP_TYPE_STR_LEGACY, name, val);
+    tmp = property_node_create(NULL, node, PROPERTY_TYPE_STR, name, val);
 
     if (tmp) {
         property_node_datasize(tmp);

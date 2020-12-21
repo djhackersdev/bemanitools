@@ -38,5 +38,9 @@ bool ea3_ident_invoke_module_init(
     struct property_node *app_config);
 void ea3_ident_to_property(
     const struct ea3_ident *ident, struct property *ea3_config);
+void ea3_ident_replace_property_bool(
+    struct property_node *node, const char *name, uint8_t val);
+void ea3_ident_replace_property_str(
+    struct property_node *node, const char *name, const char *val);
 
 #endif
