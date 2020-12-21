@@ -94,7 +94,8 @@ static AVS_LOG_WRITER(log_callback, chars, nchars, ctx)
     free(utf16);
 }
 
-static void load_hook_dlls(struct array* hook_dlls) {
+static void load_hook_dlls(struct array *hook_dlls)
+{
     const char *hook_dll;
 
     for (size_t i = 0; i < hook_dlls->nitems; i++) {
@@ -282,6 +283,24 @@ int main(int argc, const char **argv)
     boot_property_free(app_config);
 
     ea3_ident_to_property(&ea3, ea3_config);
+
+    if (options.override_urlslash_enabled) {
+        log_info("Overriding url_slash to: %d", options.override_urlslash);
+
+        ea3_ident_replace_property_bool(
+            ea3_config_root,
+            "/network/url_slash",
+            options.override_urlslash);
+    }
+
+    if (options.override_service_enabled) {
+        log_info("Overriding service url to: %s", options.override_service);
+
+        ea3_ident_replace_property_str(
+            ea3_config_root,
+            "/network/services",
+            options.override_service);
+    }
 
     /* Start up e-Amusement client */
 
