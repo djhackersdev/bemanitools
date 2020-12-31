@@ -74,6 +74,7 @@ void vigem_iidxio_cab_light_sequencer_update(
     switch (_light_seq_mode) {
         case LIGHT_SEQ_MODE_NEONS_FLASH:
             _update_neons_seq_flash(out_neon);
+            break;
 
         case LIGHT_SEQ_MODE_NEONS_FLASH_TT_INPUT:
             _update_neons_flash_tt_input(tt_p1, tt_p2, out_neon);
