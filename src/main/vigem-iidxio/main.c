@@ -131,6 +131,14 @@ static int16_t _handle_turntable_as_button(
         printf("delta_button %d, ", delta);
     }
 
+    // TT direction changed suddendly -> fast scratchin' action like a real DJ
+    // Reset state to avoid lag with state having to decrease from high values
+    if (delta > 0 && delta >= config->tt.button.threshold && state < 0) {
+        state = 0;
+    } else if (delta < 0 && abs(delta) >= config->tt.button.threshold && state > 0) {
+        state = 0;
+    }
+
     // Update state according to delta, debounce and max values
     if (delta > 0 && state < btn_max) {
         state += btn_inc;
