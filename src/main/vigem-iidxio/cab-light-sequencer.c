@@ -2,13 +2,15 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "vigem-iidxio/cab-light-sequencer.h"
 
 #include "util/log.h"
+#include "util/math.h"
 #include "util/time.h"
 
-static const uint32_t _SEQ_CYCLE_TIME_MS = 2000;
+static const uint32_t _SEQ_CYCLE_TIME_MS = 2000; 
 
 static enum vigem_iidxio_cab_light_sequencer_mode _light_seq_mode;
 
@@ -16,6 +18,7 @@ static bool _first_update;
 static uint64_t _time_counter;
 
 static uint8_t _tt_prev[2];
+static int32_t _tt_neon_on_state;
 
 void _update_neons_seq_flash(bool* out_neon)
 {
@@ -41,11 +44,36 @@ void _update_neons_flash_tt_input(uint8_t tt_p1, uint8_t tt_p2, bool* out_neon)
         return;
     }
 
-    if (_tt_prev[0] != tt_p1 || _tt_prev[1] != tt_p2) {
+    int8_t delta[2];
+    
+    delta[0] = tt_p1 - _tt_prev[0];
+    delta[1] = tt_p2 - _tt_prev[1];
+
+    // Debounce to avoid too much flickering
+    if (abs(_tt_neon_on_state) < 20) {
+        if (delta[0] != 0) {
+            _tt_neon_on_state += delta[0] * 2;
+        }
+
+        if (delta[1] != 0) {
+            _tt_neon_on_state += delta[1] * 2;
+        }
+    }
+
+    if (_tt_neon_on_state != 0) {
         *out_neon = true;
     } else {
         *out_neon = false;
     }
+
+    if (_tt_neon_on_state > 0) {
+        _tt_neon_on_state--;
+    } else if (_tt_neon_on_state < 0) {
+        _tt_neon_on_state++;
+    }
+
+    _tt_prev[0] = tt_p1;
+    _tt_prev[1] = tt_p2;  
 }
 
 void vigem_iidxio_cab_light_sequencer_init(
