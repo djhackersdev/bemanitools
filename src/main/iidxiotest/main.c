@@ -29,6 +29,25 @@ static uint8_t _fix_top_lamps_order(uint8_t top_lamps)
     return out;
 }
 
+static void _all_lights_off_shutdown()
+{
+    iidx_io_ep1_set_deck_lights(0);
+    iidx_io_ep1_set_panel_lights(0);
+    iidx_io_ep1_set_top_lamps(0);
+    iidx_io_ep1_set_top_neons(false);
+
+    // Depending on the IO, pushing the state to the actual outputs, e.g. lights on/off
+    // can be a bit finicky. Do a few times to "enforce" the state 
+    for (uint8_t i = 0; i < 3; i++) {
+        iidx_io_ep1_send();
+        // Required to handle iidxio-ezusb specific quirks with flushing 16seg text
+        iidx_io_ep2_recv();
+        iidx_io_ep3_write_16seg("         ");
+
+        Sleep(10);
+    }
+}
+
 /**
  * Tool to test your implementations of iidxio.
  */
@@ -221,22 +240,6 @@ int main(int argc, char **argv)
 
             switch (c) {
                 case '1': {
-                    /* one last update to turn off the lights */
-                    iidx_io_ep1_set_deck_lights(0);
-                    iidx_io_ep1_set_panel_lights(0);
-                    iidx_io_ep1_set_top_lamps(0);
-                    iidx_io_ep1_set_top_neons(false);
-
-                    if (!iidx_io_ep3_write_16seg("         ")) {
-                        printf("ERROR: Sending ep3 failed\n");
-                        return -3;
-                    }
-
-                    if (!iidx_io_ep1_send()) {
-                        printf("ERROR: Sending ep1 failed\n");
-                        return -4;
-                    }
-
                     loop = false;
                     break;
                 }
@@ -307,6 +310,9 @@ int main(int argc, char **argv)
     }
 
     system("cls");
+
+    _all_lights_off_shutdown();
+
     iidx_io_fini();
 
     return 0;
