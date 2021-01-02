@@ -24,7 +24,7 @@ void bio2drv_config_bio2_init(struct cconfig *config)
         config,
         BIO2DRV_CONFIG_BIO2_PORT_KEY,
         BIO2DRV_CONFIG_BIO2_DEFAULT_PORT_VALUE,
-        "BIO2 serial port");
+        "BIO2 serial port. Optional, if autodetect property is turned on");
 
     cconfig_util_set_int(
         config,
