@@ -384,6 +384,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/iidxio-ezusb2.dll \
 		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-32/vigem-iidxio.exe \
+		dist/iidx/vigem-iidxio.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -395,6 +396,7 @@ $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/iidxio-ezusb2.dll \
 		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-64/vigem-iidxio.exe \
+		dist/iidx/vigem-iidxio.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
