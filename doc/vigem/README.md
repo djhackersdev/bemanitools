@@ -9,5 +9,5 @@ References:
 * [ViGEmClient](https://github.com/ViGEm/ViGEmClient)
 
 Available ViGEm client implementations:
-* [vigem-iidxio](vigem-iidxio.md): Exposes inputs provided by the iidxio API as two XBOX gamepads
+* [vigem-iidxio](vigem-iidxio.md): Exposes inputs provided by the iidxio API as three XBOX gamepads
 * [vigem-sdvxio](vigem-sdvxio.md): Exposes inputs provided by the sdvxio API as one XBOX gamepad

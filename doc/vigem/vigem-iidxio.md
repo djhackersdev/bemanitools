@@ -4,6 +4,8 @@ or `iidxio-bio2.dll`, to be exposed as three XBOX 360 game controller on Windows
 
 Thus, it allows you to use a real cabinet with all its IO with *any* game that supports xinput.
 
+Note: This will not work with games that require Direct Input (dinput), e.g. IIDX Infinitas.
+
 ## Setup
 * Install [ViGEmBus](https://github.com/ViGEm/ViGEmBus/releases)
   * Source for compiled binaries: [bemanitools-supplement](https://dev.s-ul.eu/djhackers/bemanitools-supplement)
