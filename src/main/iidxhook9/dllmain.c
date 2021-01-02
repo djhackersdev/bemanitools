@@ -166,6 +166,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!iidxhook9_config_io.disable_bio2_emu) {
         if (!iidxhook9_config_io.lightning_mode) {
             bio2emu_init();
+            bio2_emu_bi2a_set_tt_multiplier(iidxhook9_config_io.tt_multiplier);
             bio2_emu_bi2a_init(&bio2_emu, iidxhook9_config_io.disable_poll_limiter);
         }
     }
