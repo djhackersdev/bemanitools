@@ -1,4 +1,6 @@
 # Release history
+## 5.35
+
 ## 5.34
 * IIDX: Support IO and card reader feature switches to disable emulation in iidxhook4-7
 * Jubeat: jbio implementation for magicbox hardware
