@@ -181,6 +181,8 @@ void iidx_io_fini(void)
         // avoid banging
         Sleep(1);
     }
+
+    aciodrv_device_close();
 }
 
 void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
