@@ -1,4 +1,19 @@
 # Release history
+## 5.34
+* IIDX: Support IO and card reader feature switches to disable emulation in iidxhook4-7
+* Jubeat: jbio implementation for magicbox hardware
+* Misc: Various documentation improvements
+* IIDX: Turntable multiplier (can also be used as inverted) for iidxhook9
+* IIDX: iidxhook9, add force screen resolution option to fix sometimes wrong auto res detection by
+iidx27 causing inaccurate/wrong refresh rates on monitor check
+* IIDX: iidxio BIO2 implementation -> Use BIO2 hardware with any iidxhook or other software
+supporting BT5's iidxio interface
+* IIDX: BIO2 exit hook, exit the game pressing Start P1 + Start P2, Effect and VEFX
+* launcher: Allow overriding service URL from command line
+* IIDX: vigem-iidxio, tool to allow using iidxio (ezusb, ezusb2 or bio2) to emulate XBOX controllers
+to play other non arcade games that support xinput, e.g. Lunatic Rave (note: Infinitas does not
+work with this since it only supports direct input)
+
 ## 5.33
 * iidxhook9: Support for IIDX27 
 * sdvxio-bio2: Driver for real sdvx5 cabinet IO hardware
