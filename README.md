@@ -1,7 +1,7 @@
 # Bemanitools 5
 [![pipeline status](https://dev.s-ul.eu/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.eu/djhackers/bemanitools/commits/master)
 
-Version: 5.33
+Version: 5.34
 
 [Release history](CHANGELOG.md)
 
