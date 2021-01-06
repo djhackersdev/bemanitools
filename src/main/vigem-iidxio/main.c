@@ -251,23 +251,7 @@ static void _all_lights_off()
     iidx_io_ep1_set_panel_lights(0);
     iidx_io_ep1_set_top_lamps(0);
     iidx_io_ep1_set_top_neons(false);
-}
-
-static void _all_lights_off_shutdown()
-{
-    // Cleanup, turn all lights off
-    _all_lights_off();
-
-    // Depending on the IO, pushing the state to the actual outputs, e.g. lights on/off
-    // can be a bit finicky. Do a few times to "enforce" the state 
-    for (uint8_t i = 0; i < 3; i++) {
-        iidx_io_ep1_send();
-        // Required to handle iidxio-ezusb specific quirks with flushing 16seg text
-        iidx_io_ep2_recv();
-        iidx_io_ep3_write_16seg("         ");
-
-        Sleep(10);
-    }
+    iidx_io_ep3_write_16seg("         ");
 }
 
 int main(int argc, char **argv)
@@ -418,8 +402,6 @@ int main(int argc, char **argv)
         Sleep(1);
     }
 
-    _all_lights_off_shutdown();
-
     for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
         vigem_target_remove(client, pad[i]);
         vigem_target_free(pad[i]);
@@ -428,6 +410,8 @@ int main(int argc, char **argv)
     vigem_free(client);
 
     Sleep(1000);
+
+    _all_lights_off();
 
     iidx_io_fini();
 
