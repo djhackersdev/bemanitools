@@ -166,6 +166,15 @@ bool iidx_io_init(
 
 void iidx_io_fini(void)
 {
+    // Pushing some final state before closing the IO to the actual outputs, e.g. lights on/off
+    // can be a bit finicky. Do a few polls to "enforce"/flush this final state 
+    for (uint8_t i = 0; i < 3; i++) {
+        iidx_io_ep1_send();
+        iidx_io_ep2_recv();
+
+        Sleep(10);
+    }
+
     running = false;
 
     while (processing_io) {
