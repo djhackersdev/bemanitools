@@ -52,11 +52,11 @@ void _update_neons_flash_tt_input(uint8_t tt_p1, uint8_t tt_p2, bool* out_neon)
     // Debounce to avoid too much flickering
     if (abs(_tt_neon_on_state) < 20) {
         if (delta[0] != 0) {
-            _tt_neon_on_state += delta[0] * 2;
+            _tt_neon_on_state += delta[0] * 4;
         }
 
         if (delta[1] != 0) {
-            _tt_neon_on_state += delta[1] * 2;
+            _tt_neon_on_state += delta[1] * 4;
         }
     }
 
