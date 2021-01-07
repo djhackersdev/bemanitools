@@ -11,8 +11,7 @@ before_script:
 
 stages:
   - build
-  - create-release-package
-  - releasetag
+  - upload-release
 
 build:
   stage: build
@@ -20,48 +19,28 @@ build:
     - apk update && apk add make > /dev/null
   script:
     - make build-docker
+    - mv build/docker/bemanitools.zip bemanitools.zip
   artifacts:
     name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     paths:
-      - build
+      - bemanitools.zip
   only:
     refs:
       - master
 
-create-release-package:
-  stage: create-release-package
-  variables:
-    GIT_STRATEGY: none
+upload-release:
+  stage: upload-release
   dependencies:
     - build
   before_script:
-    - apk update && apk add zip > /dev/null
-  script:
-    - mv build/docker/bemanitools.zip ./bemanitools.zip
-    - rm -r build
-    - find . -mindepth 1 ! -regex '^./bemanitools.zip' -delete
-    - unzip bemanitools.zip
-    - rm bemanitools.zip
-  artifacts:
-    name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
-    paths:
-      - ./*
-  only:
-    refs:
-      - master
-    
-releasetag:
-  stage: releasetag
-  dependencies: []
-  before_script:
     - apk update && apk add curl > /dev/null
   script:
+    - ls -la ./
+    - echo "Uploading ${CI_PROJECT_NAME}-${CI_COMMIT_TAG}..."
     - |
       curl --silent --show-error \
-        --data "{\"tag_name\": \"${CI_COMMIT_TAG}\", \"name\": \"${CI_PROJECT_NAME}-${CI_COMMIT_TAG}\", \"description\": \"${CI_COMMIT_TAG_MESSAGE:-No release notes.}\"}" \
-        --header "Content-Type: application/json" \
-        --header "Private-Token: ${CI_PRIVATE_TOKEN}" \
-        --request POST \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+      -F "key=${CI_UPLOAD_KEY}" \
+      -F "filename=${CI_PROJECT_NAME}-v${CI_COMMIT_TAG}.zip" \
+      -F "file=@./bemanitools.zip" ${CI_UPLOAD_URL}
   only:
     - tags
