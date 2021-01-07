@@ -13,7 +13,7 @@ stages:
   - build
   - upload-release
 
-build:
+build-master:
   stage: build
   before_script:
     - apk update && apk add make > /dev/null
@@ -28,19 +28,28 @@ build:
     refs:
       - master
 
+build-tags:
+  stage: build
+  before_script:
+    - apk update && apk add make > /dev/null
+  script:
+    - make build-docker
+    - mv build/docker/bemanitools.zip bemanitools.zip
+  artifacts:
+    name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    paths:
+      - bemanitools.zip
+  only:
+    - tags
+
 upload-release:
   stage: upload-release
   dependencies:
-    - build
+    - build-tags
   before_script:
     - apk update && apk add curl > /dev/null
   script:
-    - ls -la ./
     - echo "Uploading ${CI_PROJECT_NAME}-${CI_COMMIT_TAG}..."
-    - |
-      curl --silent --show-error \
-      -F "key=${CI_UPLOAD_KEY}" \
-      -F "filename=${CI_PROJECT_NAME}-v${CI_COMMIT_TAG}.zip" \
-      -F "file=@./bemanitools.zip" ${CI_UPLOAD_URL}
+    - curl --silent --show-error -F "key=${CI_UPLOAD_KEY}" -F "filename=${CI_PROJECT_NAME}-v${CI_COMMIT_TAG}.zip" -F "file=@./bemanitools.zip" ${CI_UPLOAD_URL}
   only:
     - tags
