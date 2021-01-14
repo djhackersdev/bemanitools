@@ -6,17 +6,19 @@
 /**
  * Initialize an KFCA node.
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to initialize (0 based).
  * @return True if successful, false on error.
  * @note This module is supposed to be used in combination with the common
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_kfca_init(uint8_t node_id);
+bool aciodrv_kfca_init(struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Poll the KFCA io board
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to query (0 based).
  * @param state Pointer to a state struct to return the current state to
  *        (optional, NULL for none).
@@ -26,6 +28,7 @@ bool aciodrv_kfca_init(uint8_t node_id);
  * @see driver.h
  */
 bool aciodrv_kfca_poll(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     const struct ac_io_kfca_poll_out *pout,
     struct ac_io_kfca_poll_in *pin);
@@ -33,6 +36,7 @@ bool aciodrv_kfca_poll(
 /**
  * Set the KFCA digital amp level
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to query (0 based).
  * @param primary primary volume (96-0)
  * @param headphone headphone volume (96-0)
@@ -42,6 +46,7 @@ bool aciodrv_kfca_poll(
  * @note Note 96 (or 100?) is lowest volume level, 0 is highest
  */
 bool aciodrv_kfca_amp(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     uint8_t primary,
     uint8_t headphone,

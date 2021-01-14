@@ -70,14 +70,16 @@ int main(int argc, char **argv)
 
     log_to_writer(log_writer_stdout, NULL);
 
-    if (!aciodrv_device_open(argv[1], atoi(argv[2]))) {
+
+    struct aciodrv_device_ctx *device = aciodrv_device_open(argv[1], atoi(argv[2]));
+    if (!device) {
         printf("Opening acio device failed\n");
         return -1;
     }
 
     printf("Opening acio device successful\n");
 
-    uint8_t node_count = aciodrv_device_get_node_count();
+    uint8_t node_count = aciodrv_device_get_node_count(device);
     printf("Enumerated %d nodes\n", node_count);
 
     struct aciotest_handler_node_handler handler[aciotest_handler_max];
@@ -88,7 +90,7 @@ int main(int argc, char **argv)
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
-        aciodrv_device_get_node_product_ident(i, product);
+        aciodrv_device_get_node_product_ident(device, i, product);
         printf(
             "> %d: %c%c%c%c\n",
             i + 1,
@@ -110,7 +112,7 @@ int main(int argc, char **argv)
 
     for (uint8_t i = 0; i < aciotest_handler_max; i++) {
         if (handler[i].init != NULL) {
-            if (!handler[i].init(i, &handler[i].ctx)) {
+            if (!handler[i].init(device, i, &handler[i].ctx)) {
                 printf("ERROR: Initializing node %d failed\n", i);
                 handler[i].update = NULL;
             }
@@ -129,7 +131,7 @@ int main(int argc, char **argv)
 
         for (uint8_t i = 0; i < aciotest_handler_max; i++) {
             if (handler[i].update != NULL) {
-                if (!handler[i].update(i, handler[i].ctx)) {
+                if (!handler[i].update(device, i, handler[i].ctx)) {
                     printf("ERROR: Updating node %d, removed from loop\n", i);
                     handler[i].update = NULL;
                     Sleep(5000);
