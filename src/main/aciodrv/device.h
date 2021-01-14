@@ -16,7 +16,7 @@ struct aciodrv_device_ctx;
  * @param baud Baud rate for communication (e.g. 57600 for ICCA)
  * @return opened device context, NULL on error
  */
-struct aciodrv_device_ctx* aciodrv_device_open(const char *port_path, int baud);
+struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud);
 
 /**
  * Get the node count on the opened device.
@@ -24,7 +24,7 @@ struct aciodrv_device_ctx* aciodrv_device_open(const char *port_path, int baud);
  * @param device Context of opened device
  * @return Total num of nodes enumerated on the ACIO device.
  */
-uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx* device);
+uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device);
 
 /**
  * Get the product identifier of an enumerated node.
@@ -35,7 +35,7 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx* device);
  * @return True on success, false on error. If True the variable product
  * contains the identifier of the queried node.
  */
-bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx* device, uint8_t node_id, char product[4]);
+bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[4]);
 
 /**
  * Send a message to the ACIO bus and receive an answer.
@@ -48,13 +48,13 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx* device, ui
  * @param resp_size Size of the expecting response.
  * @return True on success, false on error.
  */
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_message *msg, int max_resp_size);
+bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size);
 
 /**
  * Close the previously opened ACIO device.
  * 
  * @param device Context of opened device
  */
-void aciodrv_device_close(struct aciodrv_device_ctx* device);
+void aciodrv_device_close(struct aciodrv_device_ctx *device);
 
 #endif
