@@ -134,6 +134,7 @@ static HRESULT ac_io_emu_write(struct ac_io_emu *emu, struct irp *irp)
             break;
         }
 
+        // this supplies a single SOF byte per byte read
         ac_io_in_supply(&emu->in, NULL, 0);
         ac_io_out_consume_message(&emu->out);
     }

@@ -5,29 +5,31 @@
 
 #include "aciodrv/icca.h"
 
-bool aciotest_icca_handler_init(uint8_t node_id, void **ctx)
+bool aciotest_icca_handler_init(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void **ctx)
 {
     *ctx = malloc(sizeof(uint32_t));
     *((uint32_t *) *ctx) = 0;
 
-    return aciodrv_icca_init(node_id);
+    return aciodrv_icca_init(device, node_id);
 }
 
-bool aciotest_icca_handler_update(uint8_t node_id, void *ctx)
+bool aciotest_icca_handler_update(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void *ctx)
 {
     if (*((uint32_t *) ctx) == 0) {
         *((uint32_t *) ctx) = 1;
 
         /* eject cards that were left in the reader */
         if (!aciodrv_icca_set_state(
-                node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
+                device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
             return false;
         }
     }
 
     struct ac_io_icca_state state;
 
-    if (!aciodrv_icca_get_state(node_id, &state)) {
+    if (!aciodrv_icca_get_state(device, node_id, &state)) {
         return false;
     }
 
@@ -61,7 +63,7 @@ bool aciotest_icca_handler_update(uint8_t node_id, void *ctx)
     /* eject card with "empty" key */
     if (state.key_state & AC_IO_ICCA_KEYPAD_MASK_EMPTY) {
         if (!aciodrv_icca_set_state(
-                node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
+                device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
             return false;
         }
     }
@@ -70,7 +72,7 @@ bool aciotest_icca_handler_update(uint8_t node_id, void *ctx)
     if (!(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
         !(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
         if (!aciodrv_icca_set_state(
-                node_id, AC_IO_ICCA_SLOT_STATE_OPEN, NULL)) {
+                device, node_id, AC_IO_ICCA_SLOT_STATE_OPEN, NULL)) {
             return false;
         }
     }
@@ -79,11 +81,11 @@ bool aciotest_icca_handler_update(uint8_t node_id, void *ctx)
     if ((state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
         (state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
         if (!aciodrv_icca_set_state(
-                node_id, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL)) {
+                device, node_id, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL)) {
             return false;
         }
 
-        if (!aciodrv_icca_read_card(node_id, NULL)) {
+        if (!aciodrv_icca_read_card(device, node_id, NULL)) {
             return false;
         }
     }

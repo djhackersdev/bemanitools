@@ -34,6 +34,8 @@ static const uint8_t eam_io_keypad_mappings[16] = {EAM_IO_KEYPAD_DECIMAL,
 
 static struct ac_io_icca_state eam_io_icca_state[2];
 
+static struct aciodrv_device_ctx *acio_device_ctx;
+
 void eam_io_set_loggers(
     log_formatter_t misc,
     log_formatter_t info,
@@ -46,13 +48,14 @@ void eam_io_set_loggers(
 bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
-    if (!aciodrv_device_open("COM1", 57600)) {
+    acio_device_ctx = aciodrv_device_open("COM1", 57600);
+    if (acio_device_ctx == NULL) {
         log_warning("Opening acio device on COM1 failed");
         return false;
     }
 
     for (uint8_t i = 0; i < 2; i++) {
-        if (!aciodrv_icca_init(i)) {
+        if (!aciodrv_icca_init(acio_device_ctx, i)) {
             log_warning("Initializing icca %d failed", i);
             return false;
         }
@@ -63,7 +66,7 @@ bool eam_io_init(
 
 void eam_io_fini(void)
 {
-    aciodrv_device_close();
+    aciodrv_device_close(acio_device_ctx);
 }
 
 uint16_t eam_io_get_keypad_state(uint8_t unit_no)
@@ -112,19 +115,20 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
     switch (cmd) {
         case EAM_IO_CARD_SLOT_CMD_CLOSE:
             return aciodrv_icca_set_state(
-                unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
+                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_OPEN:
             return aciodrv_icca_set_state(
-                unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
+                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_EJECT:
             return aciodrv_icca_set_state(
-                unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
+                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_READ:
-            return aciodrv_icca_read_card(unit_no, NULL) &&
-                aciodrv_icca_get_state(unit_no, &eam_io_icca_state[unit_no]);
+            return aciodrv_icca_read_card(acio_device_ctx, unit_no, NULL) &&
+                aciodrv_icca_get_state(
+                    acio_device_ctx, unit_no, &eam_io_icca_state[unit_no]);
 
         default:
             break;
@@ -135,7 +139,8 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 
 bool eam_io_poll(uint8_t unit_no)
 {
-    return aciodrv_icca_get_state(unit_no, &eam_io_icca_state[unit_no]);
+    return aciodrv_icca_get_state(
+        acio_device_ctx, unit_no, &eam_io_icca_state[unit_no]);
 }
 
 const struct eam_io_config_api *eam_io_get_config_api(void)

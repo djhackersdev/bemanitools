@@ -6,17 +6,19 @@
 /**
  * Initialize an ICCA node.
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to initialize (0 based).
  * @return True if successful, false on error.
  * @note This module is supposed to be used in combination with the common
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_init(uint8_t node_id);
+bool aciodrv_icca_init(struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Set the state of on ICCA node.
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to set the state for (0 based).
  * @param slot_state State of the slot (refer to corresponding enum).
  * @param state Pointer to a state struct to return the current state to
@@ -27,11 +29,14 @@ bool aciodrv_icca_init(uint8_t node_id);
  * @see driver.h
  */
 bool aciodrv_icca_set_state(
-    uint8_t node_id, int slot_state, struct ac_io_icca_state *state);
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id, int slot_state,
+    struct ac_io_icca_state *state);
 
 /**
  * Get the current state of an ICCA node.
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to query (0 based).
  * @param state Pointer to a state struct to return the current state to
  *        (optional, NULL for none).
@@ -40,7 +45,10 @@ bool aciodrv_icca_set_state(
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state *state);
+bool aciodrv_icca_get_state(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id,
+    struct ac_io_icca_state *state);
 
 /**
  * Trigger a card read action on the ICCA reader. Make sure to call this
@@ -48,6 +56,7 @@ bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state *state);
  * to get the most recent card data. Make sure to re-get the state after
  * a read call. The state returned here might not be up to date for some reason.
  *
+ * @param device Context of opened device
  * @param node_id Id of the node to query (0 based).
  * @param state Pointer to a state struct to return the current state to
  *        (optional, NULL for none).
@@ -56,6 +65,9 @@ bool aciodrv_icca_get_state(uint8_t node_id, struct ac_io_icca_state *state);
  *       device driver foundation.
  * @see driver.h
  */
-bool aciodrv_icca_read_card(uint8_t node_id, struct ac_io_icca_state *state);
+bool aciodrv_icca_read_card(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id,
+    struct ac_io_icca_state *state);
 
 #endif

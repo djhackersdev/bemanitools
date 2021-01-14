@@ -38,6 +38,8 @@ static struct bi2a_iidx_state_in pin_cur;
 static struct bi2a_iidx_state_out pout_staging;
 static struct bi2a_iidx_state_out pout_ready;
 
+static struct aciodrv_device_ctx *bio2_device_ctx;
+
 static bool _bio2_iidx_io_poll(
     const struct bi2a_iidx_state_out *pout, struct bi2a_iidx_state_in *pin)
 {
@@ -47,7 +49,7 @@ static bool _bio2_iidx_io_poll(
 
     processing_io = true;
 
-    if (!bio2drv_bi2a_iidx_poll(bio2_node_id, pout, pin)) {
+    if (!bio2drv_bi2a_iidx_poll(bio2_device_ctx, bio2_node_id, pout, pin)) {
         processing_io = false;
         return false;
     }
@@ -114,14 +116,15 @@ bool iidx_io_init(
         }
     }
 
-    if (!aciodrv_device_open(selected_port, config_bio2.baud)) {
+    bio2_device_ctx = aciodrv_device_open(selected_port, config_bio2.baud);
+    if (bio2_device_ctx == NULL) {
         log_info("Opening BIO2 device on [%s] failed", selected_port);
         return 0;
     }
 
     log_info("Opening BIO2 device on [%s] successful", selected_port);
 
-    uint8_t node_count = aciodrv_device_get_node_count();
+    uint8_t node_count = aciodrv_device_get_node_count(bio2_device_ctx);
     log_info("Enumerated %d nodes", node_count);
 
     bio2_node_id = -1;
@@ -129,7 +132,7 @@ bool iidx_io_init(
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
 
-        aciodrv_device_get_node_product_ident(i, product);
+        aciodrv_device_get_node_product_ident(bio2_device_ctx, i, product);
         
         log_info(
             "> %d: %c%c%c%c\n",
@@ -150,7 +153,7 @@ bool iidx_io_init(
     if (bio2_node_id != -1) {
         log_warning("Using BI2A on node: %d", bio2_node_id);
 
-        if (!bio2drv_bi2a_iidx_init(bio2_node_id)) {
+        if (!bio2drv_bi2a_iidx_init(bio2_device_ctx, bio2_node_id)) {
             log_warning("Unable to start BI2A on node: %d", bio2_node_id);
             return false;
         }

@@ -7,7 +7,9 @@
 
 #include "util/log.h"
 
-static bool aciodrv_kfca_watchdog_start(uint8_t node_id)
+static bool aciodrv_kfca_watchdog_start(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id)
 {
     // exit early and don't actually call watchdog
     // the watchdog call actually returns different sized packets depending on
@@ -26,8 +28,9 @@ static bool aciodrv_kfca_watchdog_start(uint8_t node_id)
     msg.cmd.raw[0] = 23;
     msg.cmd.raw[1] = 112;
 
-    if (!aciodrv_send_and_recv(&msg, offsetof(struct ac_io_message, cmd.raw) +
-    2)) { log_warning("Starting watchdog failed"); return false;
+    if (!aciodrv_send_and_recv(
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 2)) {
+        log_warning("Starting watchdog failed"); return false;
     }
 
     log_warning("Started watchdog of node %d, status: %d",
@@ -38,6 +41,7 @@ static bool aciodrv_kfca_watchdog_start(uint8_t node_id)
 }
 
 bool aciodrv_kfca_amp(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     uint8_t primary,
     uint8_t headphone,
@@ -56,7 +60,9 @@ bool aciodrv_kfca_amp(
     msg.cmd.raw[3] = subwoofer;
 
     if (!aciodrv_send_and_recv(
-            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Setting AMP failed");
         return false;
     }
@@ -66,13 +72,15 @@ bool aciodrv_kfca_amp(
     return true;
 }
 
-bool aciodrv_kfca_init(uint8_t node_id)
+bool aciodrv_kfca_init(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id)
 {
-    if (!aciodrv_kfca_watchdog_start(node_id)) {
+    if (!aciodrv_kfca_watchdog_start(device, node_id)) {
         return false;
     }
 
-    if (!aciodrv_kfca_amp(node_id, 0, 0, 0, 0)) {
+    if (!aciodrv_kfca_amp(device, node_id, 0, 0, 0, 0)) {
         return false;
     }
 
@@ -80,6 +88,7 @@ bool aciodrv_kfca_init(uint8_t node_id)
 }
 
 bool aciodrv_kfca_poll(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     const struct ac_io_kfca_poll_out *pout,
     struct ac_io_kfca_poll_in *pin)
@@ -93,7 +102,9 @@ bool aciodrv_kfca_poll(
     msg.cmd.kfca_poll_out = *pout;
 
     if (!aciodrv_send_and_recv(
-            &msg, offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
         log_warning("Polling of node %d failed", node_id + 1);
         return false;
     }

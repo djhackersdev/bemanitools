@@ -7,17 +7,15 @@
 
 #include "util/log.h"
 
-static HANDLE aciodrv_port_fd;
-
-bool aciodrv_port_open(const char *port, int baud)
+HANDLE aciodrv_port_open(const char *port_path, int baud)
 {
     COMMTIMEOUTS ct;
     DCB dcb;
 
-    log_info("Opening ACIO on %s at %d baud", port, baud);
+    log_info("Opening ACIO on %s at %d baud", port_path, baud);
 
-    aciodrv_port_fd = CreateFile(
-        port,
+    HANDLE port_fd = CreateFile(
+        port_path,
         GENERIC_READ | GENERIC_WRITE,
         0,
         NULL,
@@ -25,26 +23,26 @@ bool aciodrv_port_open(const char *port, int baud)
         FILE_FLAG_WRITE_THROUGH | FILE_ATTRIBUTE_NORMAL,
         NULL);
 
-    if (aciodrv_port_fd == INVALID_HANDLE_VALUE) {
-        log_warning("Failed to open %s", port);
+    if (port_fd == INVALID_HANDLE_VALUE) {
+        log_warning("Failed to open %s", port_path);
 
         goto early_fail;
     }
 
-    if (!SetCommMask(aciodrv_port_fd, EV_RXCHAR)) {
+    if (!SetCommMask(port_fd, EV_RXCHAR)) {
         log_warning("SetCommMask failed");
 
         goto fail;
     }
 
-    if (!SetupComm(aciodrv_port_fd, 0x1000, 0x1000)) {
+    if (!SetupComm(port_fd, 0x1000, 0x1000)) {
         log_warning("SetupComm failed");
 
         goto fail;
     }
 
     if (!PurgeComm(
-            aciodrv_port_fd,
+            port_fd,
             PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR)) {
         log_warning("PurgeComm failed");
 
@@ -57,7 +55,7 @@ bool aciodrv_port_open(const char *port, int baud)
     ct.ReadTotalTimeoutMultiplier = 0;
     ct.WriteTotalTimeoutMultiplier = 0;
 
-    if (!SetCommTimeouts(aciodrv_port_fd, &ct)) {
+    if (!SetCommTimeouts(port_fd, &ct)) {
         log_warning("SetCommTimeouts failed");
 
         goto fail;
@@ -65,7 +63,7 @@ bool aciodrv_port_open(const char *port, int baud)
 
     dcb.DCBlength = sizeof(dcb);
 
-    if (!GetCommState(aciodrv_port_fd, &dcb)) {
+    if (!GetCommState(port_fd, &dcb)) {
         log_warning("GetCommState failed");
 
         goto fail;
@@ -90,45 +88,44 @@ bool aciodrv_port_open(const char *port, int baud)
     dcb.XonLim = 100;
     dcb.XoffLim = 100;
 
-    if (!SetCommState(aciodrv_port_fd, &dcb)) {
+    if (!SetCommState(port_fd, &dcb)) {
         log_warning("SetCommState failed");
 
         goto fail;
     }
 
-    if (!EscapeCommFunction(aciodrv_port_fd, SETDTR)) {
+    if (!EscapeCommFunction(port_fd, SETDTR)) {
         log_warning("SETDTR failed: err = %lu", GetLastError());
 
         goto fail;
     }
 
-    log_info("Opened ACIO device on %s", port);
+    log_info("Opened ACIO device on %s", port_path);
 
-    return true;
+    return port_fd;
 
 fail:
-    CloseHandle(aciodrv_port_fd);
+    CloseHandle(port_fd);
 
 early_fail:
-    aciodrv_port_fd = NULL;
-    return false;
+    return NULL;
 }
 
-int aciodrv_port_read(void *bytes, int nbytes)
+int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes)
 {
     DWORD nread;
 
-    if (aciodrv_port_fd == NULL) {
+    if (port_fd == NULL) {
         return -1;
     }
 
-    if (!ClearCommError(aciodrv_port_fd, NULL, NULL)) {
+    if (!ClearCommError(port_fd, NULL, NULL)) {
         log_warning("ClearCommError failed");
 
         return -1;
     }
 
-    if (!ReadFile(aciodrv_port_fd, bytes, nbytes, &nread, NULL)) {
+    if (!ReadFile(port_fd, bytes, nbytes, &nread, NULL)) {
         log_warning("ReadFile failed: err = %lu", GetLastError());
 
         return -1;
@@ -137,15 +134,15 @@ int aciodrv_port_read(void *bytes, int nbytes)
     return nread;
 }
 
-int aciodrv_port_write(const void *bytes, int nbytes)
+int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes)
 {
     DWORD nwrit;
 
-    if (aciodrv_port_fd == NULL) {
+    if (port_fd == NULL) {
         return -1;
     }
 
-    if (!WriteFile(aciodrv_port_fd, bytes, nbytes, &nwrit, NULL)) {
+    if (!WriteFile(port_fd, bytes, nbytes, &nwrit, NULL)) {
         log_warning("WriteFile failed: err = %lu", GetLastError());
 
         return -1;
@@ -154,9 +151,9 @@ int aciodrv_port_write(const void *bytes, int nbytes)
     return nwrit;
 }
 
-void aciodrv_port_close(void)
+void aciodrv_port_close(HANDLE port_fd)
 {
-    if (aciodrv_port_fd != NULL) {
-        CloseHandle(aciodrv_port_fd);
+    if (port_fd != NULL) {
+        CloseHandle(port_fd);
     }
 }

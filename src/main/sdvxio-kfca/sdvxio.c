@@ -37,6 +37,8 @@ static int16_t kfca_node_id;
 struct ac_io_kfca_poll_out pout_staging;
 struct ac_io_kfca_poll_out pout_ready;
 
+static struct aciodrv_device_ctx *acio_device_ctx;
+
 void sdvx_io_set_loggers(
     log_formatter_t misc,
     log_formatter_t info,
@@ -78,21 +80,22 @@ bool sdvx_io_init(
 
     cconfig_finit(config);
 
-    if (!aciodrv_device_open(config_kfca.port, config_kfca.baud)) {
+    acio_device_ctx = aciodrv_device_open(config_kfca.port, config_kfca.baud);
+    if (acio_device_ctx == NULL) {
         log_info("Opening acio device on [%s] failed", config_kfca.port);
         return 0;
     }
 
     log_info("Opening acio device successful");
 
-    uint8_t node_count = aciodrv_device_get_node_count();
+    uint8_t node_count = aciodrv_device_get_node_count(acio_device_ctx);
     log_info("Enumerated %d nodes", node_count);
 
     kfca_node_id = -1;
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
-        aciodrv_device_get_node_product_ident(i, product);
+        aciodrv_device_get_node_product_ident(acio_device_ctx, i, product);
         log_info(
             "> %d: %c%c%c%c\n",
             i,
@@ -112,7 +115,7 @@ bool sdvx_io_init(
     if (kfca_node_id != -1) {
         log_warning("Using KFCA on node: %d", kfca_node_id);
 
-        if (!aciodrv_kfca_init(kfca_node_id)) {
+        if (!aciodrv_kfca_init(acio_device_ctx, kfca_node_id)) {
             log_warning("Unable to start KFCA on node: %d", kfca_node_id);
             return false;
         }
@@ -163,7 +166,7 @@ bool sdvx_io_read_input(void)
     }
     processing_io = true;
 
-    if (!aciodrv_kfca_poll(kfca_node_id, &pout_ready, &pin)) {
+    if (!aciodrv_kfca_poll(acio_device_ctx, kfca_node_id, &pout_ready, &pin)) {
         return false;
     }
 
@@ -217,7 +220,10 @@ bool sdvx_io_set_amp_volume(
         return false;
     }
 
-    if (!aciodrv_kfca_amp(kfca_node_id, primary, 96, headphone, subwoofer)) {
+    if (!aciodrv_kfca_amp(
+            acio_device_ctx,
+            kfca_node_id,
+            primary, 96, headphone, subwoofer)) {
         return false;
     }
 

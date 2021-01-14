@@ -8,15 +8,17 @@
 
 #include "aciodrv/kfca.h"
 
-bool aciotest_kfca_handler_init(uint8_t node_id, void **ctx)
+bool aciotest_kfca_handler_init(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void **ctx)
 {
     *ctx = malloc(sizeof(uint32_t));
     *((uint32_t *) *ctx) = 0;
 
-    return aciodrv_kfca_init(node_id);
+    return aciodrv_kfca_init(device, node_id);
 }
 
-bool aciotest_kfca_handler_update(uint8_t node_id, void *ctx)
+bool aciotest_kfca_handler_update(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void *ctx)
 {
     struct ac_io_kfca_poll_in pin;
     struct ac_io_kfca_poll_out pout;
@@ -28,7 +30,7 @@ bool aciotest_kfca_handler_update(uint8_t node_id, void *ctx)
     pout.gpio |= 1 << gpio_test_pin;
     pout.gpio = ac_io_u32(pout.gpio);
 
-    if (!aciodrv_kfca_poll(node_id, &pout, &pin)) {
+    if (!aciodrv_kfca_poll(device, node_id, &pout, &pin)) {
         return false;
     }
 

@@ -8,22 +8,24 @@
 
 #include "bio2drv/bi2a-sdvx.h"
 
-bool aciotest_bi2a_sdvx_handler_init(uint8_t node_id, void **ctx)
+bool aciotest_bi2a_sdvx_handler_init(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void **ctx)
 {
     *ctx = malloc(sizeof(uint32_t));
     *((uint32_t *) *ctx) = 0;
 
-    return bio2drv_bi2a_sdvx_init(node_id);
+    return bio2drv_bi2a_sdvx_init(device, node_id);
 }
 
-bool aciotest_bi2a_sdvx_handler_update(uint8_t node_id, void *ctx)
+bool aciotest_bi2a_sdvx_handler_update(
+    struct aciodrv_device_ctx *device, uint8_t node_id, void *ctx)
 {
     struct bi2a_sdvx_state_in pin;
     struct bi2a_sdvx_state_out pout;
 
     memset(&pout, 0, sizeof(pout));
 
-    if (!bio2drv_bi2a_sdvx_poll(node_id, &pout, &pin)) {
+    if (!bio2drv_bi2a_sdvx_poll(device, node_id, &pout, &pin)) {
         return false;
     }
 

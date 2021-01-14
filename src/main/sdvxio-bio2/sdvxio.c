@@ -40,6 +40,8 @@ uint8_t wing_staging[12];
 struct bi2a_sdvx_state_out pout_staging;
 struct bi2a_sdvx_state_out pout_ready;
 
+static struct aciodrv_device_ctx *bio2_device_ctx;
+
 void sdvx_io_set_loggers(
     log_formatter_t misc,
     log_formatter_t info,
@@ -99,21 +101,22 @@ bool sdvx_io_init(
         }
     }
 
-    if (!aciodrv_device_open(selected_port, config_bio2.baud)) {
+    bio2_device_ctx = aciodrv_device_open(selected_port, config_bio2.baud);
+    if (bio2_device_ctx == NULL) {
         log_info("Opening BIO2 device on [%s] failed", selected_port);
         return 0;
     }
 
     log_info("Opening BIO2 device on [%s] successful", selected_port);
 
-    uint8_t node_count = aciodrv_device_get_node_count();
+    uint8_t node_count = aciodrv_device_get_node_count(bio2_device_ctx);
     log_info("Enumerated %d nodes", node_count);
 
     bio2_node_id = -1;
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
-        aciodrv_device_get_node_product_ident(i, product);
+        aciodrv_device_get_node_product_ident(bio2_device_ctx, i, product);
         log_info(
             "> %d: %c%c%c%c\n",
             i,
@@ -133,7 +136,7 @@ bool sdvx_io_init(
     if (bio2_node_id != -1) {
         log_warning("Using BI2A on node: %d", bio2_node_id);
 
-        if (!bio2drv_bi2a_sdvx_init(bio2_node_id)) {
+        if (!bio2drv_bi2a_sdvx_init(bio2_device_ctx, bio2_node_id)) {
             log_warning("Unable to start BI2A on node: %d", bio2_node_id);
             return false;
         }
@@ -240,7 +243,7 @@ bool _bio2_sdvx_io_poll(
 
     processing_io = true;
 
-    if (!bio2drv_bi2a_sdvx_poll(bio2_node_id, pout, pin)) {
+    if (!bio2drv_bi2a_sdvx_poll(bio2_device_ctx, bio2_node_id, pout, pin)) {
         processing_io = false;
         return false;
     }
@@ -319,7 +322,7 @@ bool sdvx_io_set_amp_volume(
 
     // yes, the BIO2 doesn't allow control of the amps individually
     // so let's just set it so that people's ear's don't blow out
-    if (!bio2drv_bi2a_sdvx_amp(bio2_node_id, 0, 0, primary, primary)) {
+    if (!bio2drv_bi2a_sdvx_amp(bio2_device_ctx, bio2_node_id, 0, 0, primary, primary)) {
         return false;
     }
 

@@ -12,7 +12,7 @@
 static const uint8_t _BIO2DR_BI2A_SDVX_INIT_DATA = 0x3B;
 
 // this is probably InitIO
-static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
+static bool bio2drv_bi2a_sdvx_init_io(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 
@@ -22,7 +22,9 @@ static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
     msg.cmd.param = _BIO2DR_BI2A_SDVX_INIT_DATA;
 
     if (!aciodrv_send_and_recv(
-            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Init node failed");
         return 0;
     }
@@ -32,7 +34,7 @@ static bool bio2drv_bi2a_sdvx_init_io(uint8_t node_id)
     return 1;
 }
 
-static bool bio2drv_bi2a_sdvx_watchdog_start(uint8_t node_id)
+static bool bio2drv_bi2a_sdvx_watchdog_start(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     // exit early and don't actually call watchdog
     // the watchdog call actually returns different sized packets depending on
@@ -65,6 +67,7 @@ static bool bio2drv_bi2a_sdvx_watchdog_start(uint8_t node_id)
 }
 
 bool bio2drv_bi2a_sdvx_amp(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     uint8_t unused_1,
     uint8_t unused_2,
@@ -86,7 +89,9 @@ bool bio2drv_bi2a_sdvx_amp(
     msg.cmd.raw[3] = right;
 
     if (!aciodrv_send_and_recv(
-            &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Setting AMP failed");
         return false;
     }
@@ -96,17 +101,17 @@ bool bio2drv_bi2a_sdvx_amp(
     return true;
 }
 
-bool bio2drv_bi2a_sdvx_init(uint8_t node_id)
+bool bio2drv_bi2a_sdvx_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
-    if (!bio2drv_bi2a_sdvx_init_io(node_id)) {
+    if (!bio2drv_bi2a_sdvx_init_io(device, node_id)) {
         return false;
     }
 
-    if (!bio2drv_bi2a_sdvx_watchdog_start(node_id)) {
+    if (!bio2drv_bi2a_sdvx_watchdog_start(device, node_id)) {
         return false;
     }
 
-    if (!bio2drv_bi2a_sdvx_amp(node_id, 0, 0, 0, 0)) {
+    if (!bio2drv_bi2a_sdvx_amp(device, node_id, 0, 0, 0, 0)) {
         return false;
     }
 
@@ -114,6 +119,7 @@ bool bio2drv_bi2a_sdvx_init(uint8_t node_id)
 }
 
 bool bio2drv_bi2a_sdvx_poll(
+    struct aciodrv_device_ctx *device,
     uint8_t node_id,
     const struct bi2a_sdvx_state_out *pout,
     struct bi2a_sdvx_state_in *pin)
@@ -127,7 +133,9 @@ bool bio2drv_bi2a_sdvx_poll(
     *(struct bi2a_sdvx_state_out *) msg.cmd.raw = *pout;
 
     if (!aciodrv_send_and_recv(
-            &msg, offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
         log_warning("Polling of node %d failed", node_id + 1);
         return false;
     }
