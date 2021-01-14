@@ -48,7 +48,7 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx* device, ui
  * @param resp_size Size of the expecting response.
  * @return True on success, false on error.
  */
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_message *msg, int resp_size);
+bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_message *msg, int max_resp_size);
 
 /**
  * Close the previously opened ACIO device.
