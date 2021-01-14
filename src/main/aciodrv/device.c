@@ -109,7 +109,7 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx* device, const uint8_t
     return true;
 }
 
-static int aciodrv_device_receive(struct aciodrv_device_ctx* device, uint8_t *buffer, int size)
+static int aciodrv_device_receive(struct aciodrv_device_ctx* device, uint8_t *buffer, int max_resp_size)
 {
     uint8_t recv_buf[512];
     int recv_size = 0;
@@ -124,13 +124,11 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx* device, uint8_t *bu
         read = aciodrv_port_read(device->fd, recv_buf, 1);
     } while (recv_buf[0] == AC_IO_SOF);
 
-    if (read > 0) {
-        size += 1;
 
+    if (read > 0) {
         /* recv_buf[0] is already the first byte of the message.
            now read until nothing's left */
         recv_size++;
-        size--;
 
         /* important: we have to know how much data we expect
            and have to read until we reach the requested amount.
@@ -138,7 +136,8 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx* device, uint8_t *bu
            need to handle escaping (which relies on an up to
            date recv_buf[recv_size]) we loop until we get a
            non-zero read. */
-        while (size > 0) {
+        size_t expected_size = offsetof(struct ac_io_message, cmd.nbytes) + 1;
+        while (recv_size < expected_size) {
             do {
                 read = aciodrv_port_read(device->fd, recv_buf + recv_size, 1);
             } while (read == 0);
@@ -165,15 +164,23 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx* device, uint8_t *bu
             }
 
             recv_size += read;
-            size -= read;
+
+            if (recv_size > offsetof(struct ac_io_message, cmd.nbytes)) {
+                // header + data + checksum
+                expected_size = offsetof(struct ac_io_message, cmd.raw) + ((struct ac_io_message*)recv_buf)->cmd.nbytes + 1;
+            }
         }
 
 #ifdef AC_IO_MSG_LOG
         aciodrv_device_log_buffer("Recv (1)", recv_buf, recv_size);
-        log_warning("Expected %d got %d", recv_buf[4], recv_size - 6);
+        log_warning("Expected %d got %d", max_resp_size - 6, recv_buf[4]);
 #endif
 
         /* recv_size - 1: omit checksum for checksum calc */
+        if ((recv_size - 1) > max_resp_size) {
+            log_warning("Expected %d got %d", max_resp_size - 6, recv_buf[4]);
+            return -1;
+        }
         for (int i = 0; i < recv_size - 1; i++) {
             checksum += recv_buf[i];
             buffer[i] = recv_buf[i];
@@ -334,7 +341,7 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx* device, ui
     return true;
 }
 
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_message *msg, int resp_size)
+bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_message *msg, int max_resp_size)
 {
     msg->cmd.seq_no = device->msg_counter++;
     int send_size = offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes;
@@ -353,9 +360,9 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx* device, struct ac_io_messa
     uint16_t req_code = msg->cmd.code;
 
 #ifdef AC_IO_MSG_LOG
-    log_info("Beginning recv: (%d b)", resp_size);
+    log_info("Beginning recv: (%d b)", max_resp_size);
 #endif
-    if (aciodrv_device_receive(device, (uint8_t *) msg, resp_size) <= 0) {
+    if (aciodrv_device_receive(device, (uint8_t *) msg, max_resp_size) <= 0) {
         return false;
     }
 
