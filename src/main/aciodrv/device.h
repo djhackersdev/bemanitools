@@ -7,6 +7,8 @@
 
 #include "windows.h"
 
+#define ACIO_NODE_PRODUCT_CODE_LEN 4
+
 struct aciodrv_device_ctx;
 
 /**
@@ -35,7 +37,7 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device);
  * @return True on success, false on error. If True the variable product
  * contains the identifier of the queried node.
  */
-bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[4]);
+bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN]);
 
 /**
  * Send a message to the ACIO bus and receive an answer.

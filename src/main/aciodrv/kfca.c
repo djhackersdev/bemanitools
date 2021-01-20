@@ -11,17 +11,12 @@ static bool aciodrv_kfca_watchdog_start(
     struct aciodrv_device_ctx *device,
     uint8_t node_id)
 {
-    // exit early and don't actually call watchdog
-    // the watchdog call actually returns different sized packets depending on
-    // the state this results in an issue during packet processing (see: #68)
-    return true;
-
-    /*
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_WATCHDOG);
-    msg.cmd.nbytes = 2;
     msg.cmd.nbytes = 2;
 
     // uint16_t: 6000
@@ -33,11 +28,10 @@ static bool aciodrv_kfca_watchdog_start(
         log_warning("Starting watchdog failed"); return false;
     }
 
-    log_warning("Started watchdog of node %d, status: %d",
-        node_id, msg.cmd.status);
+    log_warning("Started watchdog of node %d, sz: %d, status: %d",
+        node_id, msg.cmd.nbytes, msg.cmd.status);
 
     return true;
-    */
 }
 
 bool aciodrv_kfca_amp(
@@ -49,6 +43,8 @@ bool aciodrv_kfca_amp(
     uint8_t subwoofer)
 {
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_AMP_CONTROL);
@@ -76,6 +72,8 @@ bool aciodrv_kfca_init(
     struct aciodrv_device_ctx *device,
     uint8_t node_id)
 {
+    log_assert(device);
+
     if (!aciodrv_kfca_watchdog_start(device, node_id)) {
         return false;
     }
@@ -94,6 +92,8 @@ bool aciodrv_kfca_poll(
     struct ac_io_kfca_poll_in *pin)
 {
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_POLL);

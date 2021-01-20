@@ -30,7 +30,8 @@ bool aciodrv_icca_init(struct aciodrv_device_ctx *device, uint8_t node_id);
  */
 bool aciodrv_icca_set_state(
     struct aciodrv_device_ctx *device,
-    uint8_t node_id, int slot_state,
+    uint8_t node_id,
+    int slot_state,
     struct ac_io_icca_state *state);
 
 /**

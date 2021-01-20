@@ -16,6 +16,8 @@ static bool bio2drv_bi2a_sdvx_init_io(struct aciodrv_device_ctx *device, uint8_t
 {
     struct ac_io_message msg;
 
+    log_assert(device);
+
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(BIO2_BI2A_CMD_INIT);
     msg.cmd.nbytes = 1;
@@ -36,6 +38,8 @@ static bool bio2drv_bi2a_sdvx_init_io(struct aciodrv_device_ctx *device, uint8_t
 
 static bool bio2drv_bi2a_sdvx_watchdog_start(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
+    log_assert(device);
+
     // exit early and don't actually call watchdog
     // the watchdog call actually returns different sized packets depending on
     // the state this results in an issue during packet processing (see: #68)
@@ -54,7 +58,7 @@ static bool bio2drv_bi2a_sdvx_watchdog_start(struct aciodrv_device_ctx *device, 
     msg.cmd.raw[1] = 112;
 
     if (!aciodrv_send_and_recv(
-        &msg, offsetof(struct ac_io_message, cmd.raw) + 2
+        device, &msg, offsetof(struct ac_io_message, cmd.raw) + 2
     )) {
         log_warning("Starting watchdog failed"); return false;
     }
@@ -75,6 +79,8 @@ bool bio2drv_bi2a_sdvx_amp(
     uint8_t right)
 {
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_AMP_CONTROL);
@@ -103,6 +109,8 @@ bool bio2drv_bi2a_sdvx_amp(
 
 bool bio2drv_bi2a_sdvx_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
+    log_assert(device);
+
     if (!bio2drv_bi2a_sdvx_init_io(device, node_id)) {
         return false;
     }
@@ -125,6 +133,8 @@ bool bio2drv_bi2a_sdvx_poll(
     struct bi2a_sdvx_state_in *pin)
 {
     struct ac_io_message msg;
+
+    // log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_POLL);

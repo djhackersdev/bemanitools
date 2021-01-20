@@ -32,7 +32,10 @@ enum memfile_hook_path_mode {
  * @param sz size of file
  */
 void memfile_hook_add_fd(
-    const char *path, enum memfile_hook_path_mode path_mode, const void *data, uint32_t sz);
+    const char *path,
+    enum memfile_hook_path_mode path_mode,
+    const void *data,
+    uint32_t sz);
 
 /**
  * iohook dispatch function. Needs to be installed.

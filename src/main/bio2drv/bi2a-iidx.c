@@ -20,6 +20,8 @@ static bool bio2drv_bi2a_iidx_init_io(
 {
     struct ac_io_message msg;
 
+    log_assert(device);
+
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(BIO2_BI2A_CMD_INIT);
     msg.cmd.nbytes = 1;
@@ -42,6 +44,8 @@ static bool bio2drv_bi2a_iidx_watchdog_start(
     struct aciodrv_device_ctx *device,
     uint8_t node_id)
 {
+    log_assert(device);
+
     // exit early and don't actually call watchdog
     // the watchdog call actually returns different sized packets depending on
     // the state this results in an issue during packet processing (see: #68)
@@ -52,7 +56,6 @@ static bool bio2drv_bi2a_iidx_watchdog_start(
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_KFCA_WATCHDOG);
-    msg.cmd.nbytes = 2;
     msg.cmd.nbytes = 2;
 
     // uint16_t: 6000
@@ -74,6 +77,8 @@ static bool bio2drv_bi2a_iidx_watchdog_start(
 
 bool bio2drv_bi2a_iidx_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
+    log_assert(device);
+
     if (!bio2drv_bi2a_iidx_init_io(device, node_id)) {
         return false;
     }
@@ -93,6 +98,8 @@ bool bio2drv_bi2a_iidx_poll(
 {
     struct ac_io_message msg;
 
+    // log_assert(device);
+
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(BIO2_BI2A_CMD_POLL);
     msg.cmd.nbytes = sizeof(*pout);
@@ -103,7 +110,7 @@ bool bio2drv_bi2a_iidx_poll(
             device,
             &msg,
             offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
-        log_warning("Polling of node %d failed", node_id + 1);
+        log_warning("[%x] Polling of node %d failed", node_id + 1);
         return false;
     }
 
