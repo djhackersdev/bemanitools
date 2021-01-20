@@ -100,7 +100,7 @@ HANDLE aciodrv_port_open(const char *port_path, int baud)
         goto fail;
     }
 
-    log_info("Opened ACIO device on %s", port_path);
+    log_info("[%x] Opened ACIO device on %s", port_fd, port_path);
 
     return port_fd;
 
@@ -115,18 +115,20 @@ int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes)
 {
     DWORD nread;
 
+    log_assert(bytes);
+
     if (port_fd == NULL) {
         return -1;
     }
 
     if (!ClearCommError(port_fd, NULL, NULL)) {
-        log_warning("ClearCommError failed");
+        log_warning("[%x] ClearCommError failed", port_fd);
 
         return -1;
     }
 
     if (!ReadFile(port_fd, bytes, nbytes, &nread, NULL)) {
-        log_warning("ReadFile failed: err = %lu", GetLastError());
+        log_warning("[%x] ReadFile failed: err = %lu", port_fd, GetLastError());
 
         return -1;
     }
@@ -138,12 +140,14 @@ int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes)
 {
     DWORD nwrit;
 
+    log_assert(bytes);
+
     if (port_fd == NULL) {
         return -1;
     }
 
     if (!WriteFile(port_fd, bytes, nbytes, &nwrit, NULL)) {
-        log_warning("WriteFile failed: err = %lu", GetLastError());
+        log_warning("[%x] WriteFile failed: err = %lu", port_fd, GetLastError());
 
         return -1;
     }

@@ -81,6 +81,7 @@ bool sdvx_io_init(
     cconfig_finit(config);
 
     acio_device_ctx = aciodrv_device_open(config_kfca.port, config_kfca.baud);
+
     if (acio_device_ctx == NULL) {
         log_info("Opening acio device on [%s] failed", config_kfca.port);
         return 0;

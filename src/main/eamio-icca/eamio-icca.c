@@ -49,6 +49,7 @@ bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
     acio_device_ctx = aciodrv_device_open("COM1", 57600);
+
     if (acio_device_ctx == NULL) {
         log_warning("Opening acio device on COM1 failed");
         return false;

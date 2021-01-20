@@ -12,6 +12,8 @@ static bool aciodrv_icca_queue_loop_start(
 {
     struct ac_io_message msg;
 
+    log_assert(device);
+
     msg.addr = node_id;
     msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_QUEUE_LOOP_START);
     msg.cmd.nbytes = 1;
@@ -33,6 +35,8 @@ static bool aciodrv_icca_queue_loop_start(
 
 bool aciodrv_icca_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
+    log_assert(device);
+
     if (!aciodrv_icca_queue_loop_start(device, node_id + 1)) {
         return false;
     }
@@ -47,6 +51,8 @@ bool aciodrv_icca_set_state(
     struct ac_io_icca_state *state)
 {
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_SET_SLOT_STATE);
@@ -77,6 +83,8 @@ bool aciodrv_icca_get_state(
 {
     struct ac_io_message msg;
 
+    log_assert(device);
+
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_POLL);
     msg.cmd.nbytes = 1;
@@ -104,6 +112,8 @@ bool aciodrv_icca_read_card(
     struct ac_io_icca_state *state)
 {
     struct ac_io_message msg;
+
+    log_assert(device);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_ENGAGE);

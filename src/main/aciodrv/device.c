@@ -12,9 +12,11 @@
 /* Enable to dump all data to the logger */
 //#define AC_IO_MSG_LOG
 
+#define ACIO_MAX_NODES_PER_PORT 16
+
 struct aciodrv_device_ctx {
     HANDLE fd;
-    char node_products[16][4]; // 16 devices max
+    char node_products[ACIO_MAX_NODES_PER_PORT][ACIO_NODE_PRODUCT_CODE_LEN];
     uint8_t msg_counter;
     uint8_t node_count;
 };
@@ -51,12 +53,12 @@ static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
 
 #ifdef AC_IO_MSG_LOG
 static void
-aciodrv_device_log_buffer(const char *msg, const uint8_t *buffer, int length)
+aciodrv_device_log_buffer(struct aciodrv_device_ctx *device, const char *msg, const uint8_t *buffer, int length)
 {
     char str[4096];
 
     hex_encode_uc((const void *) buffer, length, str, sizeof(str));
-    log_misc("%s, length %d: %s", msg, length, str);
+    log_misc("[%x] %s, length %d: %s", device->fd, msg, length, str);
 }
 #endif
 
@@ -67,12 +69,12 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     uint8_t checksum = 0;
 
     if (length > sizeof(send_buf)) {
-        log_warning("Send buffer overflow");
+        log_warning("[%x] Send buffer overflow", device->fd);
         return false;
     }
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Send (1)", buffer, length);
+    aciodrv_device_log_buffer("Send (1)", device, buffer, length);
 #endif
 
     send_buf[send_buf_pos++] = AC_IO_SOF;
@@ -98,11 +100,11 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     }
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Send (2)", send_buf, send_buf_pos);
+    aciodrv_device_log_buffer("Send (2)", device, send_buf, send_buf_pos);
 #endif
 
     if (aciodrv_port_write(device->fd, send_buf, send_buf_pos) != send_buf_pos) {
-        log_warning("Sending data with length %d failed", send_buf_pos);
+        log_warning("[%x] Sending data with length %d failed", device->fd, send_buf_pos);
         return false;
     }
 
@@ -172,13 +174,13 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
         }
 
 #ifdef AC_IO_MSG_LOG
-        aciodrv_device_log_buffer("Recv (1)", recv_buf, recv_size);
+        aciodrv_device_log_buffer("Recv (1)", device, recv_buf, recv_size);
         log_warning("Expected %d got %d", max_resp_size - 6, recv_buf[4]);
 #endif
 
         /* recv_size - 1: omit checksum for checksum calc */
         if ((recv_size - 1) > max_resp_size) {
-            log_warning("Expected %d got %d", max_resp_size - 6, recv_buf[4]);
+            log_warning("[%x] Expected %d got %d", device->fd, max_resp_size - 6, recv_buf[4]);
             return -1;
         }
         for (int i = 0; i < recv_size - 1; i++) {
@@ -189,12 +191,13 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
         result_size = recv_size - 1;
 
 #ifdef AC_IO_MSG_LOG
-        aciodrv_device_log_buffer("Recv (2)", buffer, result_size);
+        aciodrv_device_log_buffer("Recv (2)", device, buffer, result_size);
 #endif
 
         if (checksum != recv_buf[recv_size - 1]) {
             log_warning(
-                "Invalid message checksum: %02X != %02X",
+                "[%x] Invalid message checksum: %02X != %02X",
+                device->fd,
                 checksum,
                 recv_buf[recv_size - 1]);
             return -1;
@@ -289,13 +292,16 @@ static bool aciodrv_device_start_node(struct aciodrv_device_ctx *device, uint8_t
 struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
 {
     HANDLE port = aciodrv_port_open(port_path, baud);
+
     if (!port) {
         return NULL;
     }
 
-    struct aciodrv_device_ctx *device = malloc(sizeof(struct aciodrv_device_ctx));
+    struct aciodrv_device_ctx *device = xmalloc(sizeof(struct aciodrv_device_ctx));
 
+    memset(device, 0, sizeof(struct aciodrv_device_ctx));
     device->fd = port;
+    device->msg_counter = 1;
 
     if (!aciodrv_device_init(device)) {
         aciodrv_device_close(device);
@@ -303,6 +309,7 @@ struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
     }
 
     device->node_count = aciodrv_device_enum_nodes(device);
+
     if (device->node_count == 0) {
         aciodrv_device_close(device);
         return false;
@@ -323,6 +330,7 @@ struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
         }
     }
 
+    log_info("Opening ACIO device on [%x]", device->fd);
     return device;
 }
 
@@ -337,7 +345,7 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, ui
         return false;
     }
 
-    memcpy(product, device->node_products[node_id], 4);
+    memcpy(product, device->node_products[node_id], ACIO_NODE_PRODUCT_CODE_LEN);
     return true;
 }
 
@@ -348,7 +356,8 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
 
 #ifdef AC_IO_MSG_LOG
     log_info(
-        "Beginning send on %d: %04x (%d b)",
+        "[%x] Beginning send on %d: %04x (%d b)",
+        device->fd,
         msg->addr,
         msg->cmd.code,
         send_size);
@@ -360,7 +369,7 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
     uint16_t req_code = msg->cmd.code;
 
 #ifdef AC_IO_MSG_LOG
-    log_info("Beginning recv: (%d b)", max_resp_size);
+    log_info("[%x] Beginning recv: (%d b)", device->fd, max_resp_size);
 #endif
     if (aciodrv_device_receive(device, (uint8_t *) msg, max_resp_size) <= 0) {
         return false;
@@ -368,9 +377,11 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
 
     if (req_code != msg->cmd.code) {
         log_warning(
-            "Received invalid response %04X for request %04X",
+            "[%x] Received invalid response %04X for request %04X on fd %x",
+            device->fd,
             msg->cmd.code,
-            req_code);
+            req_code,
+            device->fd);
         return false;
     }
 
@@ -379,6 +390,10 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
 
 void aciodrv_device_close(struct aciodrv_device_ctx *device)
 {
+    log_assert(device);
+
+    log_info("Closing ACIO on [%x]", device->fd);
+
     aciodrv_port_close(device->fd);
 
     free(device);

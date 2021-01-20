@@ -25,23 +25,17 @@ struct file_entry {
 static struct array hooked_files;
 static CRITICAL_SECTION hooked_files_cs;
 
-
 BOOL my_GetFileInformationByHandle(
-  HANDLE                       hFile,
-  LPBY_HANDLE_FILE_INFORMATION lpFileInformation
-);
+    HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
 
-BOOL (*real_GetFileInformationByHandle)(
-  HANDLE                       hFile,
-  LPBY_HANDLE_FILE_INFORMATION lpFileInformation
-);
+BOOL (*real_GetFileInformationByHandle)
+(HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
 
 static const struct hook_symbol memfile_hook_kernel32_syms[] = {
     {.name = "GetFileInformationByHandle",
      .patch = my_GetFileInformationByHandle,
      .link = (void **) &real_GetFileInformationByHandle},
 };
-
 
 void memfile_hook_init(void)
 {
@@ -82,7 +76,10 @@ void memfile_hook_fini(void)
 }
 
 void memfile_hook_add_fd(
-    const char *path, enum memfile_hook_path_mode path_mode, const void *data, uint32_t sz)
+    const char *path,
+    enum memfile_hook_path_mode path_mode,
+    const void *data,
+    uint32_t sz)
 {
     log_assert(path != NULL);
 
@@ -110,7 +107,11 @@ void memfile_hook_add_fd(
 
     LeaveCriticalSection(&hooked_files_cs);
 
-    log_misc("memfile_hook_add_fd: path %s, mode %d, data size %d", path, path_mode, sz);
+    log_misc(
+        "memfile_hook_add_fd: path %s, mode %d, data size %d",
+        path,
+        path_mode,
+        sz);
 }
 
 static struct file_entry *memfile_hook_match_irp(const struct irp *irp)
@@ -155,7 +156,10 @@ static HRESULT memfile_hook_irp_read(struct file_entry *entry, struct irp *irp)
     size_t nread = min(entry->sz - entry->pos, irp->read.nbytes);
 
     if (nread > 0) {
-        memcpy(irp->read.bytes + irp->read.pos, (uint8_t*)entry->data + entry->pos, nread);
+        memcpy(
+            irp->read.bytes + irp->read.pos,
+            (uint8_t *) entry->data + entry->pos,
+            nread);
 
         entry->pos += nread;
         irp->read.pos += nread;
@@ -248,9 +252,7 @@ HRESULT memfile_hook_dispatch_irp(struct irp *irp)
 
 // this isn't a standard iohook IRP atm.
 BOOL my_GetFileInformationByHandle(
-  HANDLE                       hFile,
-  LPBY_HANDLE_FILE_INFORMATION lpFileInformation
-)
+    HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation)
 {
     struct file_entry *entry;
     for (size_t i = 0; i < hooked_files.nitems; i++) {

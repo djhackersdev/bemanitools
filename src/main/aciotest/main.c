@@ -72,6 +72,7 @@ int main(int argc, char **argv)
 
 
     struct aciodrv_device_ctx *device = aciodrv_device_open(argv[1], atoi(argv[2]));
+
     if (!device) {
         printf("Opening acio device failed\n");
         return -1;
