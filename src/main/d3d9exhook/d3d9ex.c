@@ -45,6 +45,18 @@ static HRESULT STDCALL my_CreateDeviceEx(
     D3DDISPLAYMODEEX *fdm,
     IDirect3DDevice9Ex **pdev);
 
+static HRESULT STDCALL my_EnumAdapterModes(
+    IDirect3D9Ex *self,
+    UINT Adapter,
+    D3DFORMAT Format,
+    UINT Mode,
+    D3DDISPLAYMODE *pMode);
+
+static UINT STDCALL my_GetAdapterModeCount(
+    IDirect3D9Ex *self,
+    UINT Adapter,
+    D3DFORMAT Format);
+
 static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api);
 
 static WNDPROC real_WndProc;
@@ -95,6 +107,17 @@ static int32_t d3d9ex_device_adapter = -1;
 static int32_t d3d9ex_force_orientation = -1;
 static int32_t d3d9ex_force_screen_res_width = -1;
 static int32_t d3d9ex_force_screen_res_height = -1;
+
+static bool check_d3d9ex_force_enum()
+{
+    if (d3d9ex_force_refresh_rate != -1 &&
+        d3d9ex_force_screen_res_width != -1 &&
+        d3d9ex_force_screen_res_height != -1) {
+        return true;
+    }
+
+    return false;
+}
 
 /* ------------------------------------------------------------------------- */
 
@@ -412,6 +435,54 @@ static HRESULT STDCALL my_CreateDeviceEx(
     return hr;
 }
 
+static HRESULT STDCALL my_EnumAdapterModes(
+    IDirect3D9Ex *self,
+    UINT Adapter,
+    D3DFORMAT Format,
+    UINT Mode,
+    D3DDISPLAYMODE *pMode)
+{
+    IDirect3D9Ex *real = com_proxy_downcast(self)->real;
+    HRESULT hr;
+
+    if (d3d9ex_device_adapter>= 0) {
+        Adapter = d3d9ex_device_adapter;
+    }
+
+    hr = IDirect3D9Ex_EnumAdapterModes(real, Adapter, Format, Mode, pMode);
+
+    if (check_d3d9ex_force_enum()) {
+        log_info("EnumAdapterModes: Forcing mode");
+        pMode->Width = d3d9ex_force_screen_res_width;
+        pMode->Height = d3d9ex_force_screen_res_height;
+        pMode->RefreshRate = d3d9ex_force_refresh_rate;
+    }
+
+    return hr;
+}
+
+static UINT STDCALL my_GetAdapterModeCount(
+    IDirect3D9Ex *self,
+    UINT Adapter,
+    D3DFORMAT Format)
+{
+    IDirect3D9Ex *real = com_proxy_downcast(self)->real;
+    UINT res;
+
+    if (d3d9ex_device_adapter>= 0) {
+        Adapter = d3d9ex_device_adapter;
+    }
+
+    res = IDirect3D9Ex_GetAdapterModeCount(real, Adapter, Format);
+
+    if (check_d3d9ex_force_enum()) {
+        log_info("GetAdapterModeCount: Forcing single return");
+        res = 1;
+    }
+
+    return res;
+}
+
 static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api)
 {
     HRESULT hr;
@@ -434,6 +505,8 @@ static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api)
     api_vtbl = api_proxy->vptr;
 
     api_vtbl->CreateDeviceEx = my_CreateDeviceEx;
+    api_vtbl->EnumAdapterModes = my_EnumAdapterModes;
+    api_vtbl->GetAdapterModeCount = my_GetAdapterModeCount;
 
     *api = (IDirect3D9Ex *) api_proxy;
 
