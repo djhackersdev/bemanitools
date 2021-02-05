@@ -162,11 +162,7 @@ static HWND STDCALL my_CreateWindowExA(
 static BOOL STDCALL
 my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 {
-    if (d3d9ex_windowed && d3d9ex_window_framed) {
-        /* we have to adjust the window size, because the window needs to be a
-           slightly bigger than the rendering resolution (window caption and
-           stuff is included in the window size) */
-
+    if (d3d9ex_windowed) {
         if (d3d9ex_window_width != -1 && d3d9ex_window_height != -1) {
             log_misc(
                 "Overriding window size from %dx%d with %dx%d",
@@ -179,13 +175,19 @@ my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
             nHeight = d3d9ex_window_height;
         }
 
-        WINDOWPOS wp;
-        calc_win_size_with_framed(hWnd, X, Y, nWidth, nHeight, &wp);
-        SetWindowPos(hWnd, 0, wp.x, wp.y, wp.cx, wp.cy, 0);
-        X = wp.x;
-        Y = wp.y;
-        nWidth = wp.cx;
-        nHeight = wp.cy;
+        if (d3d9ex_window_framed) {
+            /* we have to adjust the window size, because the window needs to
+            be a slightly bigger than the rendering resolution (window caption
+            and stuff is included in the window size) */
+
+            WINDOWPOS wp;
+            calc_win_size_with_framed(hWnd, X, Y, nWidth, nHeight, &wp);
+            SetWindowPos(hWnd, 0, wp.x, wp.y, wp.cx, wp.cy, 0);
+            X = wp.x;
+            Y = wp.y;
+            nWidth = wp.cx;
+            nHeight = wp.cy;
+        }
     }
 
     BOOL result = real_MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
@@ -392,17 +394,6 @@ static HRESULT STDCALL my_CreateDeviceEx(
         real_WndProc = (void *) GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
         SetWindowLongPtr(hwnd, GWLP_WNDPROC, (uintptr_t) my_WndProc);
-    }
-
-    if (d3d9ex_windowed) {
-        if (d3d9ex_window_width > 0 && d3d9ex_window_height > 0) {
-            // set window size
-            RECT rect;
-            GetWindowRect(hwnd, &rect);
-
-            log_info("Calling SetWindowPos to fix window size: %dx%d", d3d9ex_window_width, d3d9ex_window_height);
-            SetWindowPos(hwnd, 0, rect.left, rect.top, d3d9ex_window_width, d3d9ex_window_height, 0);
-        }
     }
 
     return hr;
