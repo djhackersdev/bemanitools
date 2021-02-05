@@ -130,11 +130,16 @@ static HWND STDCALL my_CreateWindowExA(
     HINSTANCE hInstance,
     LPVOID lpParam)
 {
-    if (d3d9ex_windowed && d3d9ex_window_framed) {
-        /* use a different style */
-        dwStyle |= WS_OVERLAPPEDWINDOW;
-        /* also show mouse cursor */
-        ShowCursor(TRUE);
+    if (d3d9ex_windowed) {
+        if (d3d9ex_window_framed) {
+            /* use a different style */
+            dwStyle |= WS_OVERLAPPEDWINDOW;
+            /* also show mouse cursor */
+            ShowCursor(TRUE);
+        } else {
+            dwStyle = dwStyle & ~WS_OVERLAPPEDWINDOW;
+            ShowCursor(FALSE);
+        }
     }
 
     HWND hwnd = real_CreateWindowExA(
@@ -387,6 +392,17 @@ static HRESULT STDCALL my_CreateDeviceEx(
         real_WndProc = (void *) GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
         SetWindowLongPtr(hwnd, GWLP_WNDPROC, (uintptr_t) my_WndProc);
+    }
+
+    if (d3d9ex_windowed) {
+        if (d3d9ex_window_width > 0 && d3d9ex_window_height > 0) {
+            // set window size
+            RECT rect;
+            GetWindowRect(hwnd, &rect);
+
+            log_info("Calling SetWindowPos to fix window size: %dx%d", d3d9ex_window_width, d3d9ex_window_height);
+            SetWindowPos(hwnd, 0, rect.left, rect.top, d3d9ex_window_width, d3d9ex_window_height, 0);
+        }
     }
 
     return hr;
