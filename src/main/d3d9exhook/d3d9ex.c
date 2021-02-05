@@ -88,6 +88,8 @@ static bool d3d9ex_confined;
 static int32_t d3d9ex_force_refresh_rate = -1;
 static int32_t d3d9ex_window_width = -1;
 static int32_t d3d9ex_window_height = -1;
+static int32_t d3d9ex_window_x = -1;
+static int32_t d3d9ex_window_y = -1;
 static bool d3d9ex_window_framed;
 static int32_t d3d9ex_device_adapter = -1;
 static int32_t d3d9ex_force_orientation = -1;
@@ -173,6 +175,17 @@ my_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 
             nWidth = d3d9ex_window_width;
             nHeight = d3d9ex_window_height;
+        }
+        if (d3d9ex_window_x != -1 && d3d9ex_window_y != -1) {
+            log_misc(
+                "Overriding window position from %dx%d with %dx%d",
+                X,
+                Y,
+                d3d9ex_window_x,
+                d3d9ex_window_y);
+
+            X = d3d9ex_window_x;
+            Y = d3d9ex_window_y;
         }
 
         if (d3d9ex_window_framed) {
@@ -458,6 +471,8 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
     d3d9ex_window_framed = gfx_config->framed;
     d3d9ex_window_width = gfx_config->window_width;
     d3d9ex_window_height = gfx_config->window_height;
+    d3d9ex_window_x = gfx_config->window_x;
+    d3d9ex_window_y = gfx_config->window_y;
 
     d3d9ex_force_refresh_rate = gfx_config->forced_refresh_rate;
     d3d9ex_device_adapter = gfx_config->device_adapter;
