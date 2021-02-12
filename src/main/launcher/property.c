@@ -64,7 +64,7 @@ struct property *boot_property_load(const char *filename)
     nbytes = property_read_query_memsize(boot_property_fread, f_keyhole, 0, 0);
 
     if (nbytes < 0) {
-        log_fatal("%s: Error parsing configuration file", filename);
+        log_fatal("%s: Error querying configuration file", filename);
     }
 
     buffer = xmalloc(nbytes);
@@ -76,7 +76,7 @@ struct property *boot_property_load(const char *filename)
     rewind(f);
 
     if (!property_insert_read(prop, 0, boot_property_fread, f_keyhole)) {
-        log_fatal("%s: Error parsing configuration file", filename);
+        log_fatal("%s: Error reading configuration file", filename);
     }
 
     TlsFree(f_keyhole);

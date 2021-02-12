@@ -72,7 +72,7 @@ cflags          += \
 # that is still ABI-compatible with the real build its target links against.
 
 avsvers_32      := 1700 1603 1601 1508 1403 1304 1101 803 0
-avsvers_64      := 1700 1603 1601 1508
+avsvers_64      := 1700 1603 1601 1509 1508
 
 imps            += avs avs-ea3
 

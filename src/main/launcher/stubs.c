@@ -35,7 +35,7 @@ static void *STDCALL my_GetProcAddress(HMODULE dll, const char *name);
 
 static void bt_get_ikey_status(struct ikey_status *ik);
 
-#if AVS_VERSION >= 1600
+#if AVS_VERSION >= 1509
 static void bt_get_fucked(bt_get_fucked_t callback, uint32_t ctx);
 #endif
 
@@ -48,7 +48,7 @@ static HMODULE(STDCALL *real_GetModuleHandleW)(const wchar_t *name);
 static void *(STDCALL *real_GetProcAddress)(HMODULE dll, const char *name);
 
 static struct stub stub_list[] = {
-#if AVS_VERSION >= 1600
+#if AVS_VERSION >= 1509
     {"k_bt0001", bt_get_ikey_status},
     {"k_bt0002", bt_get_fucked},
 #else
@@ -134,7 +134,7 @@ static void bt_get_ikey_status(struct ikey_status *ik)
     ik[1].cert_valid_end = -1;
 }
 
-#if AVS_VERSION >= 1600
+#if AVS_VERSION >= 1509
 static void bt_get_fucked(bt_get_fucked_t callback, uint32_t ctx)
 {
     log_info(">>> k_bt0002");
