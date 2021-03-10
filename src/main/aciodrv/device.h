@@ -18,7 +18,13 @@ struct aciodrv_device_ctx;
  * @param baud Baud rate for communication (e.g. 57600 for ICCA)
  * @return opened device context, NULL on error
  */
-struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud);
+struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
+#ifdef __GNUC__
+__attribute__((deprecated("Use aciomgr instead if device is shareable, else aciodrv_device_open_path")))
+#endif
+;
+
+struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int baud);
 
 /**
  * Get the node count on the opened device.

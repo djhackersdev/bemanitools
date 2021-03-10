@@ -3,6 +3,7 @@ dlls                 += \
 
 libs_eamio-icca      := \
     aciodrv \
+    aciomgr \
     util \
 
 src_eamio-icca       := \

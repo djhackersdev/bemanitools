@@ -9,7 +9,7 @@
 
 #include "cconfig/cconfig-main.h"
 
-#include "aciodrv/device.h"
+#include "aciomgr/manager.h"
 #include "aciodrv/kfca.h"
 
 #include "sdvxio-kfca/config-kfca.h"
@@ -37,7 +37,7 @@ static int16_t kfca_node_id;
 struct ac_io_kfca_poll_out pout_staging;
 struct ac_io_kfca_poll_out pout_ready;
 
-static struct aciodrv_device_ctx *acio_device_ctx;
+static struct aciomgr_port_dispatcher *acio_manager_ctx;
 
 void sdvx_io_set_loggers(
     log_formatter_t misc,
@@ -45,6 +45,10 @@ void sdvx_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
+    /* Pass logger functions on to aciomgr so that it has somewhere to write
+       its own log output. */
+    aciomgr_set_loggers(misc, info, warning, fatal);
+
     sdvx_io_log_misc = misc;
     sdvx_io_log_info = info;
     sdvx_io_log_warning = warning;
@@ -80,23 +84,23 @@ bool sdvx_io_init(
 
     cconfig_finit(config);
 
-    acio_device_ctx = aciodrv_device_open(config_kfca.port, config_kfca.baud);
+    acio_manager_ctx = aciomgr_port_init(config_kfca.port, config_kfca.baud);
 
-    if (acio_device_ctx == NULL) {
+    if (acio_manager_ctx == NULL) {
         log_info("Opening acio device on [%s] failed", config_kfca.port);
         return 0;
     }
 
     log_info("Opening acio device successful");
 
-    uint8_t node_count = aciodrv_device_get_node_count(acio_device_ctx);
+    uint8_t node_count = aciomgr_get_node_count(acio_manager_ctx);
     log_info("Enumerated %d nodes", node_count);
 
     kfca_node_id = -1;
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
-        aciodrv_device_get_node_product_ident(acio_device_ctx, i, product);
+        aciomgr_get_node_product_ident(acio_manager_ctx, i, product);
         log_info(
             "> %d: %c%c%c%c\n",
             i,
@@ -116,7 +120,12 @@ bool sdvx_io_init(
     if (kfca_node_id != -1) {
         log_warning("Using KFCA on node: %d", kfca_node_id);
 
-        if (!aciodrv_kfca_init(acio_device_ctx, kfca_node_id)) {
+        bool init_result = aciodrv_kfca_init(
+            aciomgr_port_checkout(acio_manager_ctx),
+            kfca_node_id);
+        aciomgr_port_checkin(acio_manager_ctx);
+
+        if (!init_result) {
             log_warning("Unable to start KFCA on node: %d", kfca_node_id);
             return false;
         }
@@ -167,7 +176,14 @@ bool sdvx_io_read_input(void)
     }
     processing_io = true;
 
-    if (!aciodrv_kfca_poll(acio_device_ctx, kfca_node_id, &pout_ready, &pin)) {
+    bool poll_result = aciodrv_kfca_poll(
+        aciomgr_port_checkout(acio_manager_ctx),
+        kfca_node_id,
+        &pout_ready,
+        &pin);
+    aciomgr_port_checkin(acio_manager_ctx);
+
+    if (!poll_result) {
         return false;
     }
 
@@ -221,10 +237,13 @@ bool sdvx_io_set_amp_volume(
         return false;
     }
 
-    if (!aciodrv_kfca_amp(
-            acio_device_ctx,
-            kfca_node_id,
-            primary, 96, headphone, subwoofer)) {
+    bool amp_result = aciodrv_kfca_amp(
+        aciomgr_port_checkout(acio_manager_ctx),
+        kfca_node_id,
+        primary, 96, headphone, subwoofer);
+    aciomgr_port_checkin(acio_manager_ctx);
+
+    if (!amp_result) {
         return false;
     }
 

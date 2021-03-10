@@ -110,7 +110,7 @@ bool bio2drv_bi2a_iidx_poll(
             device,
             &msg,
             offsetof(struct ac_io_message, cmd.raw) + sizeof(*pin))) {
-        log_warning("[%x] Polling of node %d failed", node_id + 1);
+        log_warning("Polling of node %d failed", node_id + 1);
         return false;
     }
 

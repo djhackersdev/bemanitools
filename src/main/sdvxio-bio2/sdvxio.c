@@ -101,7 +101,8 @@ bool sdvx_io_init(
         }
     }
 
-    bio2_device_ctx = aciodrv_device_open(selected_port, config_bio2.baud);
+    // BIO2's cannot share a bus with anything else, so use device directly
+    bio2_device_ctx = aciodrv_device_open_path(selected_port, config_bio2.baud);
 
     if (bio2_device_ctx == NULL) {
         log_info("Opening BIO2 device on [%s] failed", selected_port);

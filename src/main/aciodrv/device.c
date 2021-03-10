@@ -291,7 +291,13 @@ static bool aciodrv_device_start_node(struct aciodrv_device_ctx *device, uint8_t
     return true;
 }
 
+// deprecated name
 struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
+{
+    return aciodrv_device_open_path(port_path, baud);
+}
+
+struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int baud)
 {
     HANDLE port = aciodrv_port_open(port_path, baud);
 
