@@ -1,5 +1,6 @@
 #define LOG_MODULE "aciodrv-device"
 
+#include <inttypes.h>
 #include <string.h>
 
 #include "aciodrv/device.h"
@@ -8,6 +9,7 @@
 
 #include "util/hex.h"
 #include "util/log.h"
+#include "util/mem.h"
 
 /* Enable to dump all data to the logger */
 //#define AC_IO_MSG_LOG
@@ -58,7 +60,7 @@ aciodrv_device_log_buffer(struct aciodrv_device_ctx *device, const char *msg, co
     char str[4096];
 
     hex_encode_uc((const void *) buffer, length, str, sizeof(str));
-    log_misc("[%x] %s, length %d: %s", device->fd, msg, length, str);
+    log_misc("[%" PRIXPTR "] %s, length %d: %s", (uintptr_t)device->fd, msg, length, str);
 }
 #endif
 
@@ -69,7 +71,7 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     uint8_t checksum = 0;
 
     if (length > sizeof(send_buf)) {
-        log_warning("[%x] Send buffer overflow", device->fd);
+        log_warning("[%" PRIXPTR "] Send buffer overflow", (uintptr_t)device->fd);
         return false;
     }
 
@@ -104,7 +106,7 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
 #endif
 
     if (aciodrv_port_write(device->fd, send_buf, send_buf_pos) != send_buf_pos) {
-        log_warning("[%x] Sending data with length %d failed", device->fd, send_buf_pos);
+        log_warning("[%" PRIXPTR "] Sending data with length %d failed", (uintptr_t)device->fd, send_buf_pos);
         return false;
     }
 
@@ -180,7 +182,7 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
 
         /* recv_size - 1: omit checksum for checksum calc */
         if ((recv_size - 1) > max_resp_size) {
-            log_warning("[%x] Expected %d got %d", device->fd, max_resp_size - 6, recv_buf[4]);
+            log_warning("[%" PRIXPTR "] Expected %d got %d", (uintptr_t)device->fd, max_resp_size - 6, recv_buf[4]);
             return -1;
         }
         for (int i = 0; i < recv_size - 1; i++) {
@@ -196,8 +198,8 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
 
         if (checksum != recv_buf[recv_size - 1]) {
             log_warning(
-                "[%x] Invalid message checksum: %02X != %02X",
-                device->fd,
+                "[%" PRIXPTR "] Invalid message checksum: %02X != %02X",
+                (uintptr_t)device->fd,
                 checksum,
                 recv_buf[recv_size - 1]);
             return -1;
@@ -330,7 +332,7 @@ struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
         }
     }
 
-    log_info("Opening ACIO device on [%x]", device->fd);
+    log_info("Opening ACIO device on [%" PRIXPTR "]", (uintptr_t)device->fd);
     return device;
 }
 
@@ -339,7 +341,7 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device)
     return device->node_count;
 }
 
-bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[4])
+bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN])
 {
     if (device->node_count == 0 || node_id > device->node_count) {
         return false;
@@ -356,8 +358,8 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
 
 #ifdef AC_IO_MSG_LOG
     log_info(
-        "[%x] Beginning send on %d: %04x (%d b)",
-        device->fd,
+        "[%" PRIXPTR "] Beginning send on %d: %04x (%d b)",
+        (uintptr_t)device->fd,
         msg->addr,
         msg->cmd.code,
         send_size);
@@ -369,7 +371,7 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
     uint16_t req_code = msg->cmd.code;
 
 #ifdef AC_IO_MSG_LOG
-    log_info("[%x] Beginning recv: (%d b)", device->fd, max_resp_size);
+    log_info("[%" PRIXPTR "] Beginning recv: (%d b)", (uintptr_t)device->fd, max_resp_size);
 #endif
     if (aciodrv_device_receive(device, (uint8_t *) msg, max_resp_size) <= 0) {
         return false;
@@ -377,11 +379,10 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
 
     if (req_code != msg->cmd.code) {
         log_warning(
-            "[%x] Received invalid response %04X for request %04X on fd %x",
-            device->fd,
+            "[%" PRIXPTR "] Received invalid response %04X for request %04X",
+            (uintptr_t)device->fd,
             msg->cmd.code,
-            req_code,
-            device->fd);
+            req_code);
         return false;
     }
 
@@ -392,7 +393,7 @@ void aciodrv_device_close(struct aciodrv_device_ctx *device)
 {
     log_assert(device);
 
-    log_info("Closing ACIO on [%x]", device->fd);
+    log_info("Closing ACIO on [%" PRIXPTR "]", (uintptr_t)device->fd);
 
     aciodrv_port_close(device->fd);
 
