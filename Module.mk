@@ -78,6 +78,7 @@ imps            += avs avs-ea3
 
 include src/main/aciodrv/Module.mk
 include src/main/acioemu/Module.mk
+include src/main/aciomgr/Module.mk
 include src/main/aciotest/Module.mk
 include src/main/asio/Module.mk
 include src/main/bio2drv/Module.mk
@@ -378,6 +379,7 @@ $(zipdir)/iidx-27.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x86.zip: \
+		build/bin/indep-32/aciomgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
@@ -390,6 +392,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x64.zip: \
+		build/bin/indep-64/aciomgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
@@ -483,6 +486,8 @@ $(zipdir)/sdvx-05-cn.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x86.zip: \
+		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
@@ -491,6 +496,8 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x64.zip: \
+		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \

@@ -8,12 +8,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "aciodrv/device.h"
+#include "aciomgr/manager.h"
 #include "aciodrv/icca.h"
 
 #include "bemanitools/eamio.h"
 
 #include "util/log.h"
+
+#define NUMBER_OF_EMULATED_READERS 2
 
 static const uint8_t eam_io_keypad_mappings[16] = {EAM_IO_KEYPAD_DECIMAL,
                                                    EAM_IO_KEYPAD_3,
@@ -32,9 +34,11 @@ static const uint8_t eam_io_keypad_mappings[16] = {EAM_IO_KEYPAD_DECIMAL,
                                                    EAM_IO_KEYPAD_5,
                                                    EAM_IO_KEYPAD_8};
 
-static struct ac_io_icca_state eam_io_icca_state[2];
+static struct ac_io_icca_state eam_io_icca_state[NUMBER_OF_EMULATED_READERS];
 
-static struct aciodrv_device_ctx *acio_device_ctx;
+static struct aciomgr_port_dispatcher *acio_manager_ctx;
+
+static int32_t icca_node_id[NUMBER_OF_EMULATED_READERS];
 
 void eam_io_set_loggers(
     log_formatter_t misc,
@@ -42,32 +46,83 @@ void eam_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
+    /* Pass logger functions on to aciomgr so that it has somewhere to write
+       its own log output. */
+    aciomgr_set_loggers(misc, info, warning, fatal);
+
     log_to_external(misc, info, warning, fatal);
+}
+
+static bool check_if_icca(int node_id) {
+    char product[4];
+    aciomgr_get_node_product_ident(acio_manager_ctx, node_id, product);
+
+    if (!memcmp(product, "ICCA", 4)) {
+        return true;
+    }
+    if (!memcmp(product, "ICCB", 4)) {
+        return true;
+    }
+    if (!memcmp(product, "ICCC", 4)) {
+        return true;
+    }
+
+    return false;
 }
 
 bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
-    acio_device_ctx = aciodrv_device_open("COM1", 57600);
+    acio_manager_ctx = aciomgr_port_init("COM1", 57600);
 
-    if (acio_device_ctx == NULL) {
+    if (acio_manager_ctx == NULL) {
         log_warning("Opening acio device on COM1 failed");
         return false;
     }
 
-    for (uint8_t i = 0; i < 2; i++) {
-        if (!aciodrv_icca_init(acio_device_ctx, i)) {
-            log_warning("Initializing icca %d failed", i);
-            return false;
+    struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
+    for (uint8_t i = 0; i < NUMBER_OF_EMULATED_READERS; i++) {
+        icca_node_id[i] = -1;
+
+        for (uint8_t nid = 0; nid < aciomgr_get_node_count(acio_manager_ctx); ++nid) {
+            if (check_if_icca(nid)) {
+                bool existing_reader = false;
+                for (uint8_t j = 0; j < i; j++) {
+                    if (nid == icca_node_id[j]) {
+                        existing_reader = true;
+                        break;
+                    }
+                }
+
+                if (existing_reader) {
+                    continue;
+                }
+
+                icca_node_id[i] = nid;
+
+                if (!aciodrv_icca_init(device, icca_node_id[i])) {
+                    log_warning("Initializing icca %d failed", i);
+
+                    // if we have at least 1 valid reader, don't fail
+                    // (ex: for games that expect only 1 reader)
+                    if (i > 0) {
+                        aciomgr_port_checkin(acio_manager_ctx);
+                        return false;
+                    }
+                }
+
+                break;
+            }
         }
     }
 
+    aciomgr_port_checkin(acio_manager_ctx);
     return true;
 }
 
 void eam_io_fini(void)
 {
-    aciodrv_device_close(acio_device_ctx);
+    aciomgr_port_fini(acio_manager_ctx);
 }
 
 uint16_t eam_io_get_keypad_state(uint8_t unit_no)
@@ -113,35 +168,54 @@ uint8_t eam_io_read_card(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 
 bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 {
+    // this node is not setup, just return "success""
+    if (icca_node_id[unit_no] == -1) {
+        return true;
+    }
+
+    struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
+
+    bool response = false;
     switch (cmd) {
         case EAM_IO_CARD_SLOT_CMD_CLOSE:
-            return aciodrv_icca_set_state(
-                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
+            response = aciodrv_icca_set_state(
+                device, unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_OPEN:
-            return aciodrv_icca_set_state(
-                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
+            response = aciodrv_icca_set_state(
+                device, unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_EJECT:
-            return aciodrv_icca_set_state(
-                acio_device_ctx, unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
+            response = aciodrv_icca_set_state(
+                device, unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_READ:
-            return aciodrv_icca_read_card(acio_device_ctx, unit_no, NULL) &&
+            response = aciodrv_icca_read_card(device, unit_no, NULL) &&
                 aciodrv_icca_get_state(
-                    acio_device_ctx, unit_no, &eam_io_icca_state[unit_no]);
+                    device, unit_no, &eam_io_icca_state[unit_no]);
 
         default:
             break;
     }
+    aciomgr_port_checkin(acio_manager_ctx);
 
-    return false;
+    return response;
 }
 
 bool eam_io_poll(uint8_t unit_no)
 {
-    return aciodrv_icca_get_state(
-        acio_device_ctx, unit_no, &eam_io_icca_state[unit_no]);
+    // this node is not setup, just return "success""
+    if (icca_node_id[unit_no] == -1) {
+        return true;
+    }
+
+    bool response = aciodrv_icca_get_state(
+        aciomgr_port_checkout(acio_manager_ctx),
+        unit_no,
+        &eam_io_icca_state[unit_no]);
+    aciomgr_port_checkin(acio_manager_ctx);
+
+    return response;
 }
 
 const struct eam_io_config_api *eam_io_get_config_api(void)

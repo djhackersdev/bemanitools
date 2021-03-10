@@ -3,6 +3,7 @@ dlls += sdvxio-kfca
 libs_sdvxio-kfca := \
     geninput \
     aciodrv \
+    aciomgr \
     cconfig \
     util \
 
