@@ -15,6 +15,8 @@
  */
 int main(int argc, char **argv)
 {
+    log_to_writer(log_writer_stdout, NULL);
+
     eam_io_set_loggers(
         log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
