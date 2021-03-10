@@ -18,6 +18,7 @@ struct aciomgr_port_dispatcher {
     struct aciodrv_device_ctx *device;
     char path[MAX_PORT_PATH_LENGTH];
     int baud;
+    bool has_failure;
 };
 
 static void _aciomgr_setup_port_dispatcher(
@@ -41,6 +42,13 @@ static void _aciomgr_setup_port_dispatcher(
     dispatcher->baud = baud;
 
     dispatcher->device = aciodrv_device_open_path(path, baud);
+    dispatcher->has_failure = false;
+
+    if (dispatcher->device == NULL) {
+        log_info("Opening ACIO device on %s failed", path);
+        dispatcher->has_failure = true;
+    }
+
     dispatcher->references = 0;
 }
 
@@ -119,8 +127,15 @@ struct aciomgr_port_dispatcher *aciomgr_port_init(const char *path, int baud)
     _aciomgr_setup_port_dispatcher(entry, path, baud);
 
 done:
-    entry->references++;
+    if (!entry->has_failure) {
+        entry->references++;
+    }
+
     LeaveCriticalSection(&mgr_cs);
+
+    if (entry->has_failure) {
+        return NULL;
+    }
 
     return entry;
 }

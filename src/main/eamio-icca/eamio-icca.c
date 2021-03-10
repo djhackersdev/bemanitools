@@ -13,6 +13,9 @@
 
 #include "bemanitools/eamio.h"
 
+#include "cconfig/cconfig-main.h"
+#include "eamio-icca/config-icc.h"
+
 #include "util/log.h"
 
 #define NUMBER_OF_EMULATED_READERS 2
@@ -73,7 +76,30 @@ static bool check_if_icca(int node_id) {
 bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
-    acio_manager_ctx = aciomgr_port_init("COM1", 57600);
+    struct cconfig *config;
+    struct icc_config config_icc;
+
+    config = cconfig_init();
+
+    eamio_icca_config_icc_init(config);
+
+    if (!cconfig_main_config_init(
+            config,
+            "--icc-config",
+            "eamio-icc.conf",
+            "--help",
+            "-h",
+            "eamio-icca",
+            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
+        cconfig_finit(config);
+        exit(EXIT_FAILURE);
+    }
+
+    eamio_icca_config_icc_get(&config_icc, config);
+
+    cconfig_finit(config);
+
+    acio_manager_ctx = aciomgr_port_init(config_icc.port, config_icc.baud);
 
     if (acio_manager_ctx == NULL) {
         log_warning("Opening acio device on COM1 failed");
