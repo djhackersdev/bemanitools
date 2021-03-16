@@ -45,8 +45,6 @@ void sdvx_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    /* Pass logger functions on to aciomgr so that it has somewhere to write
-       its own log output. */
     aciomgr_set_loggers(misc, info, warning, fatal);
 
     sdvx_io_log_misc = misc;

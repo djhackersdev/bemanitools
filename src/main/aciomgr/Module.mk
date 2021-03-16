@@ -5,4 +5,5 @@ libs_aciomgr    := \
     util \
 
 src_aciomgr     := \
+    dllmain.c \
     manager.c \
