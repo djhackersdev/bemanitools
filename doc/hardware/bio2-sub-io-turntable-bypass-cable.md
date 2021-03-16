@@ -1,14 +1,15 @@
 # BIO2 sub IO turntable bypass cable
-If you upgraded a C02/IO2 wired cabinet, the turntables are connected to the
+If you upgraded a C02 wired cabinet, the turntables are connected to the
 sub IO via a serial line that goes to another sub IO behind the front panel
 next to the 16seg display. This introduces additional latency as the input
 data needs to pass through multiple systems/PCBs until it reaches the game.
 
 This can be reduced by using a so-called "bypass" cable, that connects the
-turntables directly to the BIO2 sub IO board reducing latency significantly.
+turntables directly to the BIO2 sub IO board by emulating the wiring of a
+D01 cabinet, reducing latency significantly.
 
-This cable could be ordered with any IIDX upgrade kit including the BIO sub IO
-board but can also be easily created from scratch.
+This cable could be ordered with the IIDX Rootage upgrade kit but can also
+be easily created from scratch.
 
 ## Parts
 * Some wires
