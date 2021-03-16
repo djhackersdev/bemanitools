@@ -9,6 +9,8 @@
 
 #include "cconfig/cconfig-main.h"
 
+#include "acio/acio.h"
+
 #include "aciomgr/manager.h"
 #include "aciodrv/kfca.h"
 
