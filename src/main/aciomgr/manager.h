@@ -3,18 +3,13 @@
 
 #include <stdbool.h>
 
-#include "acio/acio.h"
-
 #include "bemanitools/glue.h"
 
 #define ACIOMGR_NODE_PRODUCT_CODE_LEN 4
 
+struct ac_io_message;
 struct aciodrv_device_ctx;
 struct aciomgr_port_dispatcher;
-
-// internal
-void _aciomgr_init();
-void _aciomgr_fini();
 
 /**
  * The first function that will be called on your DLL. You will be supplied

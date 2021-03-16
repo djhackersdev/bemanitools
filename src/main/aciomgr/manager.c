@@ -4,7 +4,11 @@
 
 #include <stdatomic.h>
 
-#include "manager.h"
+#include "aciomgr/manager-init.h"
+
+#include "aciomgr/manager.h"
+
+#include "acio/acio.h"
 
 #include "aciodrv/device.h"
 #include "util/array.h"
