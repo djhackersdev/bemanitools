@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "manager.h"
+#include "manager-init.h"
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
