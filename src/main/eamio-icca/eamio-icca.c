@@ -19,6 +19,7 @@
 #include "util/log.h"
 
 #define NUMBER_OF_EMULATED_READERS 2
+#define INVALID_NODE_ID -1
 
 static const uint8_t eam_io_keypad_mappings[16] = {EAM_IO_KEYPAD_DECIMAL,
                                                    EAM_IO_KEYPAD_3,
@@ -49,24 +50,24 @@ void eam_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    /* Pass logger functions on to aciomgr so that it has somewhere to write
-       its own log output. */
     aciomgr_set_loggers(misc, info, warning, fatal);
 
     log_to_external(misc, info, warning, fatal);
 }
 
-static bool check_if_icca(int node_id) {
-    char product[4];
+// all of these are referred to internally as ICCA
+static bool check_if_icca(int node_id)
+{
+    char product[ACIOMGR_NODE_PRODUCT_CODE_LEN];
     aciomgr_get_node_product_ident(acio_manager_ctx, node_id, product);
 
-    if (!memcmp(product, "ICCA", 4)) {
+    if (!memcmp(product, "ICCA", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
-    if (!memcmp(product, "ICCB", 4)) {
+    if (!memcmp(product, "ICCB", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
-    if (!memcmp(product, "ICCC", 4)) {
+    if (!memcmp(product, "ICCC", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
 
@@ -107,12 +108,14 @@ bool eam_io_init(
     }
 
     struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
+
     for (uint8_t i = 0; i < NUMBER_OF_EMULATED_READERS; i++) {
-        icca_node_id[i] = -1;
+        icca_node_id[i] = INVALID_NODE_ID;
 
         for (uint8_t nid = 0; nid < aciomgr_get_node_count(acio_manager_ctx); ++nid) {
             if (check_if_icca(nid)) {
                 bool existing_reader = false;
+
                 for (uint8_t j = 0; j < i; j++) {
                     if (nid == icca_node_id[j]) {
                         existing_reader = true;
@@ -195,7 +198,7 @@ uint8_t eam_io_read_card(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 {
     // this node is not setup, just return "success""
-    if (icca_node_id[unit_no] == -1) {
+    if (icca_node_id[unit_no] == INVALID_NODE_ID) {
         return true;
     }
 
@@ -231,7 +234,7 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 bool eam_io_poll(uint8_t unit_no)
 {
     // this node is not setup, just return "success""
-    if (icca_node_id[unit_no] == -1) {
+    if (icca_node_id[unit_no] == INVALID_NODE_ID) {
         return true;
     }
 

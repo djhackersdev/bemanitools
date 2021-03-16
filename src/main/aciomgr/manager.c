@@ -14,7 +14,7 @@
 
 struct aciomgr_port_dispatcher {
     CRITICAL_SECTION cs;
-    size_t references;
+    atomic_size_t references;
     struct aciodrv_device_ctx *device;
     char path[MAX_PORT_PATH_LENGTH];
     int baud;
@@ -23,10 +23,8 @@ struct aciomgr_port_dispatcher {
 
 static void _aciomgr_setup_port_dispatcher(
     struct aciomgr_port_dispatcher *dispatcher, const char *path, int baud);
-static void _aciomgr_destroy_port_dispatcher(
-    struct aciomgr_port_dispatcher *dispatcher);
-static void _aciomgr_init();
-static void _aciomgr_fini();
+static void
+_aciomgr_destroy_port_dispatcher(struct aciomgr_port_dispatcher *dispatcher);
 
 // DLL-globals
 static atomic_bool running;
@@ -52,17 +50,17 @@ static void _aciomgr_setup_port_dispatcher(
     dispatcher->references = 0;
 }
 
-static void _aciomgr_destroy_port_dispatcher(
-    struct aciomgr_port_dispatcher *dispatcher)
+static void
+_aciomgr_destroy_port_dispatcher(struct aciomgr_port_dispatcher *dispatcher)
 {
     aciodrv_device_close(dispatcher->device);
     DeleteCriticalSection(&dispatcher->cs);
 }
 
-static void _aciomgr_init()
+void _aciomgr_init()
 {
     if (running) {
-        // warn
+        log_warning("_aciomgr_init called when already running");
         _aciomgr_fini();
     }
     InitializeCriticalSection(&mgr_cs);
@@ -71,11 +69,12 @@ static void _aciomgr_init()
     running = true;
 }
 
-static void _aciomgr_fini()
+void _aciomgr_fini()
 {
     if (!running) {
-        // warn
+        log_warning("_aciomgr_fini called when not running");
     }
+
     running = false;
     DeleteCriticalSection(&mgr_cs);
     array_fini(&active_ports);
@@ -93,17 +92,17 @@ void aciomgr_set_loggers(
 struct aciomgr_port_dispatcher *aciomgr_port_init(const char *path, int baud)
 {
     if (!running) {
-        // warn
+        log_warning("aciomgr_port_init: called when not running");
         return NULL;
     }
 
     if (strlen(path) >= MAX_PORT_PATH_LENGTH) {
-        // warn
+        log_warning("aciomgr_port_init: path too long");
         return NULL;
     }
 
 
-    struct aciomgr_port_dispatcher* entry;
+    struct aciomgr_port_dispatcher *entry;
 
     EnterCriticalSection(&mgr_cs);
 
@@ -143,7 +142,7 @@ done:
 void aciomgr_port_fini(struct aciomgr_port_dispatcher *dispatcher)
 {
     if (!running) {
-        // warn
+        log_warning("aciomgr_port_fini: called when not running");
         return;
     }
 
@@ -157,7 +156,8 @@ void aciomgr_port_fini(struct aciomgr_port_dispatcher *dispatcher)
 }
 
 // this function don't require the lock
-uint8_t aciomgr_get_node_count(struct aciomgr_port_dispatcher *dispatcher) {
+uint8_t aciomgr_get_node_count(struct aciomgr_port_dispatcher *dispatcher)
+{
     return aciodrv_device_get_node_count(dispatcher->device);
 }
 
@@ -165,9 +165,10 @@ uint8_t aciomgr_get_node_count(struct aciomgr_port_dispatcher *dispatcher) {
 bool aciomgr_get_node_product_ident(
     struct aciomgr_port_dispatcher *dispatcher,
     uint8_t node_id,
-    char product[4])
+    char product[ACIOMGR_NODE_PRODUCT_CODE_LEN])
 {
-    return aciodrv_device_get_node_product_ident(dispatcher->device, node_id, product);
+    return aciodrv_device_get_node_product_ident(
+        dispatcher->device, node_id, product);
 }
 
 bool aciomgr_port_submit_packet(
@@ -178,7 +179,8 @@ bool aciomgr_port_submit_packet(
     // CS's although lightweight, may still be a burden, short circuit
     if (dispatcher->references > 1) {
         EnterCriticalSection(&dispatcher->cs);
-        bool response = aciodrv_send_and_recv(dispatcher->device, msg, max_resp_size);
+        bool response =
+            aciodrv_send_and_recv(dispatcher->device, msg, max_resp_size);
         LeaveCriticalSection(&dispatcher->cs);
         return response;
     }
@@ -186,8 +188,8 @@ bool aciomgr_port_submit_packet(
     return aciodrv_send_and_recv(dispatcher->device, msg, max_resp_size);
 }
 
-struct aciodrv_device_ctx *aciomgr_port_checkout(
-    struct aciomgr_port_dispatcher *dispatcher)
+struct aciodrv_device_ctx *
+aciomgr_port_checkout(struct aciomgr_port_dispatcher *dispatcher)
 {
     if (dispatcher->references > 1) {
         EnterCriticalSection(&dispatcher->cs);
@@ -196,21 +198,9 @@ struct aciodrv_device_ctx *aciomgr_port_checkout(
     return dispatcher->device;
 }
 
-void aciomgr_port_checkin(struct aciomgr_port_dispatcher *dispatcher) {
+void aciomgr_port_checkin(struct aciomgr_port_dispatcher *dispatcher)
+{
     if (dispatcher->references > 1) {
         LeaveCriticalSection(&dispatcher->cs);
     }
-}
-
-BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
-{
-    if (reason == DLL_PROCESS_ATTACH) {
-        _aciomgr_init();
-    }
-
-    if (reason == DLL_PROCESS_DETACH) {
-        _aciomgr_fini();
-    }
-
-    return TRUE;
 }

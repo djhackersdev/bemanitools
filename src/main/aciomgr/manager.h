@@ -7,8 +7,14 @@
 
 #include "bemanitools/glue.h"
 
+#define ACIOMGR_NODE_PRODUCT_CODE_LEN 4
+
 struct aciodrv_device_ctx;
 struct aciomgr_port_dispatcher;
+
+// internal
+void _aciomgr_init();
+void _aciomgr_fini();
 
 /**
  * The first function that will be called on your DLL. You will be supplied
@@ -48,7 +54,10 @@ uint8_t aciomgr_get_node_count(struct aciomgr_port_dispatcher *dispatcher);
  * @return True on success, false on error. If True the variable product
  * contains the identifier of the queried node.
  */
-bool aciomgr_get_node_product_ident(struct aciomgr_port_dispatcher *dispatcher, uint8_t node_id, char product[4]);
+bool aciomgr_get_node_product_ident(
+    struct aciomgr_port_dispatcher *dispatcher,
+    uint8_t node_id,
+    char product[ACIOMGR_NODE_PRODUCT_CODE_LEN]);
 
 /**
  * Submit and wait for the response of the specified packet
@@ -69,8 +78,8 @@ bool aciomgr_port_submit_packet(
  * @param dispatcher dispatcher context from aciomgr_port_init
  * @return the device context
  */
-struct aciodrv_device_ctx *aciomgr_port_checkout(
-    struct aciomgr_port_dispatcher *dispatcher);
+struct aciodrv_device_ctx *
+aciomgr_port_checkout(struct aciomgr_port_dispatcher *dispatcher);
 
 /**
  * Checkin the device handler that this thread holds
