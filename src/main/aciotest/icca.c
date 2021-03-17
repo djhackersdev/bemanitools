@@ -5,6 +5,9 @@
 
 #include "aciodrv/icca.h"
 
+
+#define IDLE_RESPONSES_BETWEEN_FELICA_POLLS 5
+
 struct icca_handler_ctx {
     bool init;
     bool slotted_reader;
@@ -114,7 +117,7 @@ bool aciotest_icca_handler_update(
             ++icca_ctx->last_poll;
         }
 
-        if (icca_ctx->last_poll >= 5) {
+        if (icca_ctx->last_poll >= IDLE_RESPONSES_BETWEEN_FELICA_POLLS) {
             if (!aciodrv_icca_poll_felica(device, node_id)) {
                 return false;
             }

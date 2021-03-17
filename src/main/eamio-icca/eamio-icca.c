@@ -19,6 +19,7 @@
 
 #include "util/log.h"
 
+#define IDLE_RESPONSES_BETWEEN_FELICA_POLLS 5
 #define NUMBER_OF_EMULATED_READERS 2
 #define INVALID_NODE_ID -1
 
@@ -133,11 +134,9 @@ bool eam_io_init(
                 }
 
                 icca_node_id[i] = nid;
-
-                icca_is_slotted[i] = true;
                 icca_poll_counter[i] = 0;
-
                 icca_is_slotted[i] = aciodrv_icca_is_slotted(device, nid);
+                log_misc("ICC reader %d is_slotted: %d", nid, icca_is_slotted[i]);
 
                 if (!aciodrv_icca_init(device, icca_node_id[i])) {
                     log_warning("Initializing icca %d failed", i);
@@ -279,7 +278,7 @@ bool eam_io_poll(uint8_t unit_no)
         // we must manually call this every few polls to actually update the felica state
         // we don't do it every poll, since card polling isn't that time sensitive of an operation
         // libacio does it every 5ish polls after the last AC_IO_ICCA_STATUS_BUSY_NEW message
-        if (icca_poll_counter[unit_no] >= 5) {
+        if (icca_poll_counter[unit_no] >= IDLE_RESPONSES_BETWEEN_FELICA_POLLS) {
             response = aciodrv_icca_poll_felica(
                 aciomgr_port_checkout(acio_manager_ctx),
                 icca_node_id[unit_no]);
