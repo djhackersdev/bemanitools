@@ -48,6 +48,14 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
+    /* Set up IO emulation hooks _after_ IO API setup to allow
+       API implementations with real IO devices */
+    iohook_push_handler(ac_io_bus_dispatch_irp);
+    iohook_push_handler(lcd_dispatch_irp);
+
+    rs232_hook_init();
+    lcd_init();
+
     if (!ok) {
         goto eam_io_fail;
     }
@@ -119,13 +127,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 
-    iohook_push_handler(ac_io_bus_dispatch_irp);
-    iohook_push_handler(lcd_dispatch_irp);
-
-    rs232_hook_init();
-
     gfx_init();
-    lcd_init();
 
     return TRUE;
 }
