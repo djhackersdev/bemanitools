@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "aciodrv/device.h"
+#include "aciodrv/icca.h"
 
 #include "util/log.h"
 
@@ -131,6 +132,55 @@ bool aciodrv_icca_read_card(
 
     if (state != NULL) {
         memcpy(state, msg.cmd.raw, sizeof(struct ac_io_icca_state));
+    }
+
+    return true;
+}
+
+bool aciodrv_icca_is_slotted(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id)
+{
+    struct aciodrv_device_node_version *version;
+    version = aciodrv_device_get_node_product_version(device, node_id);
+
+    // current heuristic is to check if version >= 1.5
+    if (version) {
+        if (version->major == 1)  {
+            if (version->minor >= 5) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool aciodrv_icca_poll_felica(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id)
+{
+    struct ac_io_message msg;
+
+    log_assert(device);
+
+    msg.addr = node_id + 1;
+    msg.cmd.code = ac_io_u16(AC_IO_ICCA_CMD_POLL_FELICA);
+    msg.cmd.nbytes = 4;
+    /* buffer size of data we expect */
+    msg.cmd.count = 1;
+
+    // additional data, not sure
+    msg.cmd.raw[1] = 0x03;
+    msg.cmd.raw[2] = 0xFF;
+    msg.cmd.raw[3] = 0xFF;
+
+    if (!aciodrv_send_and_recv(
+            device,
+            &msg,
+            offsetof(struct ac_io_message, cmd.raw) + msg.cmd.count)) {
+        log_warning("Reading card of node %d failed", node_id + 1);
+        return false;
     }
 
     return true;

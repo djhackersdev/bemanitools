@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "aciomgr/manager.h"
+#include "aciodrv/device.h"
 #include "aciodrv/icca.h"
 
 #include "bemanitools/eamio.h"
@@ -43,6 +44,10 @@ static struct ac_io_icca_state eam_io_icca_state[NUMBER_OF_EMULATED_READERS];
 static struct aciomgr_port_dispatcher *acio_manager_ctx;
 
 static int32_t icca_node_id[NUMBER_OF_EMULATED_READERS];
+
+static bool icca_is_slotted[NUMBER_OF_EMULATED_READERS];
+
+static int32_t icca_poll_counter[NUMBER_OF_EMULATED_READERS];
 
 void eam_io_set_loggers(
     log_formatter_t misc,
@@ -103,7 +108,7 @@ bool eam_io_init(
     acio_manager_ctx = aciomgr_port_init(config_icc.port, config_icc.baud);
 
     if (acio_manager_ctx == NULL) {
-        log_warning("Opening acio device on COM1 failed");
+        log_warning("Opening acio device on %s failed", config_icc.port);
         return false;
     }
 
@@ -129,20 +134,25 @@ bool eam_io_init(
 
                 icca_node_id[i] = nid;
 
+                icca_is_slotted[i] = true;
+                icca_poll_counter[i] = 0;
+
+                icca_is_slotted[i] = aciodrv_icca_is_slotted(device, nid);
+
                 if (!aciodrv_icca_init(device, icca_node_id[i])) {
                     log_warning("Initializing icca %d failed", i);
-
-                    // if we have at least 1 valid reader, don't fail
-                    // (ex: for games that expect only 1 reader)
-                    if (i > 0) {
-                        aciomgr_port_checkin(acio_manager_ctx);
-                        return false;
-                    }
+                    icca_node_id[i] = INVALID_NODE_ID;
+                    continue;
                 }
 
                 break;
             }
         }
+    }
+
+    if (icca_node_id[0] == INVALID_NODE_ID) {
+        log_warning("No ICC readers detected");
+        return false;
     }
 
     aciomgr_port_checkin(acio_manager_ctx);
@@ -173,13 +183,24 @@ uint8_t eam_io_get_sensor_state(uint8_t unit_no)
 {
     uint8_t sensors = 0;
 
-    if ((eam_io_icca_state[unit_no].sensor_state &
-         AC_IO_ICCA_SENSOR_MASK_BACK_ON) > 0) {
-        sensors |= (1 << EAM_IO_SENSOR_BACK);
-    }
-    if ((eam_io_icca_state[unit_no].sensor_state &
-         AC_IO_ICCA_SENSOR_MASK_FRONT_ON) > 0) {
-        sensors |= (1 << EAM_IO_SENSOR_FRONT);
+    if (icca_is_slotted[unit_no]) {
+        if ((eam_io_icca_state[unit_no].sensor_state &
+            AC_IO_ICCA_SENSOR_MASK_BACK_ON) > 0) {
+            sensors |= (1 << EAM_IO_SENSOR_BACK);
+        }
+        if ((eam_io_icca_state[unit_no].sensor_state &
+            AC_IO_ICCA_SENSOR_MASK_FRONT_ON) > 0) {
+            sensors |= (1 << EAM_IO_SENSOR_FRONT);
+        }
+    } else {
+        // wavepass readers always report (EAM_IO_SENSOR_BACK + EAM_IO_SENSOR_FRONT) + type
+        // but because we can't report status_code back directly
+        // and libacio actually just ignores the sensor_state other then the type
+        // we just return this state like we're a slotted reader so the emulation takes card of it
+        if (eam_io_icca_state[unit_no].status_code == AC_IO_ICCA_STATUS_GOT_UID) {
+            sensors |= (1 << EAM_IO_SENSOR_BACK);
+            sensors |= (1 << EAM_IO_SENSOR_FRONT);
+        }
     }
 
     return sensors;
@@ -202,26 +223,31 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
         return true;
     }
 
+    // ignore these for wavepass
+    if (!icca_is_slotted[unit_no]) {
+        return true;
+    }
+
     struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
 
     bool response = false;
     switch (cmd) {
         case EAM_IO_CARD_SLOT_CMD_CLOSE:
             response = aciodrv_icca_set_state(
-                device, unit_no, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
+                device, icca_node_id[unit_no], AC_IO_ICCA_SLOT_STATE_CLOSE, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_OPEN:
             response = aciodrv_icca_set_state(
-                device, unit_no, AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
+                device, icca_node_id[unit_no], AC_IO_ICCA_SLOT_STATE_OPEN, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_EJECT:
             response = aciodrv_icca_set_state(
-                device, unit_no, AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
+                device, icca_node_id[unit_no], AC_IO_ICCA_SLOT_STATE_EJECT, NULL);
 
         case EAM_IO_CARD_SLOT_CMD_READ:
-            response = aciodrv_icca_read_card(device, unit_no, NULL) &&
+            response = aciodrv_icca_read_card(device, icca_node_id[unit_no], NULL) &&
                 aciodrv_icca_get_state(
-                    device, unit_no, &eam_io_icca_state[unit_no]);
+                    device, icca_node_id[unit_no], &eam_io_icca_state[unit_no]);
 
         default:
             break;
@@ -240,9 +266,28 @@ bool eam_io_poll(uint8_t unit_no)
 
     bool response = aciodrv_icca_get_state(
         aciomgr_port_checkout(acio_manager_ctx),
-        unit_no,
+        icca_node_id[unit_no],
         &eam_io_icca_state[unit_no]);
     aciomgr_port_checkin(acio_manager_ctx);
+
+    if (response && !icca_is_slotted[unit_no]) {
+        // we handle wavepass a bit differently to handle polling felica
+        if (eam_io_icca_state[unit_no].status_code != AC_IO_ICCA_STATUS_BUSY_NEW) {
+            ++icca_poll_counter[unit_no];
+        }
+
+        // we must manually call this every few polls to actually update the felica state
+        // we don't do it every poll, since card polling isn't that time sensitive of an operation
+        // libacio does it every 5ish polls after the last AC_IO_ICCA_STATUS_BUSY_NEW message
+        if (icca_poll_counter[unit_no] >= 5) {
+            response = aciodrv_icca_poll_felica(
+                aciomgr_port_checkout(acio_manager_ctx),
+                icca_node_id[unit_no]);
+            aciomgr_port_checkin(acio_manager_ctx);
+
+            icca_poll_counter[unit_no] = 0;
+        }
+    }
 
     return response;
 }

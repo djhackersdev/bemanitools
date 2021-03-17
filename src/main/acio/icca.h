@@ -29,6 +29,14 @@ enum ac_io_icca_sensor_state {
     AC_IO_ICCA_SENSOR_MASK_BACK_ON = (1 << 5)
 };
 
+enum ac_io_icca_status_code {
+    AC_IO_ICCA_STATUS_FAULT = 0x00,
+    AC_IO_ICCA_STATUS_IDLE = 0x01,
+    AC_IO_ICCA_STATUS_GOT_UID = 0x02,
+    AC_IO_ICCA_STATUS_IDLE_NEW = 0x04,
+    AC_IO_ICCA_STATUS_BUSY_NEW = 0x01,
+};
+
 enum ac_io_icca_keypad_mask {
     AC_IO_ICCA_KEYPAD_MASK_EMPTY = (1 << 0),
     AC_IO_ICCA_KEYPAD_MASK_3 = (1 << 1),

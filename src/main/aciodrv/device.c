@@ -18,7 +18,7 @@
 
 struct aciodrv_device_ctx {
     HANDLE fd;
-    char node_products[ACIO_MAX_NODES_PER_PORT][ACIO_NODE_PRODUCT_CODE_LEN];
+    struct aciodrv_device_node_version node_versions[ACIO_MAX_NODES_PER_PORT];
     uint8_t msg_counter;
     uint8_t node_count;
 };
@@ -233,7 +233,7 @@ static uint8_t aciodrv_device_enum_nodes(struct aciodrv_device_ctx *device)
     return msg.cmd.count;
 }
 
-static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_t node_id, char product[4])
+static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_t node_id, struct aciodrv_device_node_version *version)
 {
     struct ac_io_message msg;
 
@@ -266,7 +266,10 @@ static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_
         msg.cmd.version.date,
         msg.cmd.version.time);
 
-    memcpy(product, msg.cmd.version.product_code, 4);
+    memcpy(version->product, msg.cmd.version.product_code, ACIO_NODE_PRODUCT_CODE_LEN);
+    version->major = msg.cmd.version.major;
+    version->minor = msg.cmd.version.minor;
+    version->revision = msg.cmd.version.revision;
 
     return true;
 }
@@ -325,7 +328,7 @@ struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int b
 
     for (uint8_t i = 0; i < device->node_count; i++) {
         if (!aciodrv_device_get_version(
-                device, i + 1, device->node_products[i])) {
+                device, i + 1, &device->node_versions[i])) {
             aciodrv_device_close(device);
             return NULL;
         }
@@ -353,8 +356,17 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, ui
         return false;
     }
 
-    memcpy(product, device->node_products[node_id], ACIO_NODE_PRODUCT_CODE_LEN);
+    memcpy(product, device->node_versions[node_id].product, ACIO_NODE_PRODUCT_CODE_LEN);
     return true;
+}
+
+const struct aciodrv_device_node_version *aciodrv_device_get_node_product_version(struct aciodrv_device_ctx *device, uint8_t node_id)
+{
+    if (device->node_count == 0 || node_id > device->node_count) {
+        return NULL;
+    }
+
+    return &device->node_versions[node_id];
 }
 
 bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)

@@ -71,4 +71,41 @@ bool aciodrv_icca_read_card(
     uint8_t node_id,
     struct ac_io_icca_state *state);
 
+/**
+ * Uses some heruistics based on the product ident to determine if the detected
+ * device is a slotted (true) or wavepass reader (false).
+ * 
+ * This function will also return false if the provided node_id is invalid.
+ * 
+ * @param device Context of opened device
+ * @param node_id Id of the node to query (0 based).
+ * @return True on slotted, false on wavepass.
+ * @note This module is supposed to be used in combination with the common
+ *       device driver foundation.
+ * @see driver.h
+ */
+bool aciodrv_icca_is_slotted(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id);
+
+/**
+ * Polls the felica chip on wavepass readers. This will cause the state of the
+ * reader to be AC_IO_ICCA_STATUS_BUSY_NEW for a few polls, before returning
+ * either: AC_IO_ICCA_STATUS_IDLE_NEW or AC_IO_ICCA_STATUS_GOT_UID.
+ * 
+ * The user should take care to call this every so often to actually get new
+ * felica UIDs, instead of just old NFC idents. The game seems to do it every
+ * 5 or so polls after the last AC_IO_ICCA_STATUS_BUSY_NEW poll.
+ * 
+ * @param device Context of opened device
+ * @param node_id Id of the node to query (0 based).
+ * @return True on success, false on error.
+ * @note This module is supposed to be used in combination with the common
+ *       device driver foundation.
+ * @see driver.h
+ */
+bool aciodrv_icca_poll_felica(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id);
+
 #endif
