@@ -11,6 +11,13 @@
 
 struct aciodrv_device_ctx;
 
+struct aciodrv_device_node_version {
+    char product[ACIO_NODE_PRODUCT_CODE_LEN];
+    uint8_t major;
+    uint8_t minor;
+    uint8_t revision;
+};
+
 /**
  * Open an ACIO device connected to a serial port.
  *
@@ -44,6 +51,15 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device);
  * contains the identifier of the queried node.
  */
 bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN]);
+
+/**
+ * Get the product version of an enumerated node.
+ *
+ * @param device Context of opened device
+ * @param node_id Id of the node. Needs to be in range of the total node count.
+ * @return Pointer to the version struct
+ */
+const struct aciodrv_device_node_version *aciodrv_device_get_node_product_version(struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Send a message to the ACIO bus and receive an answer.

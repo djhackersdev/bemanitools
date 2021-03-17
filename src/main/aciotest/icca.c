@@ -5,11 +5,25 @@
 
 #include "aciodrv/icca.h"
 
+struct icca_handler_ctx {
+    bool init;
+    bool slotted_reader;
+    uint8_t last_poll;
+};
+
 bool aciotest_icca_handler_init(
     struct aciodrv_device_ctx *device, uint8_t node_id, void **ctx)
 {
-    *ctx = malloc(sizeof(uint32_t));
-    *((uint32_t *) *ctx) = 0;
+    *ctx = malloc(sizeof(struct icca_handler_ctx));
+
+    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx*)*ctx;
+    icca_ctx->init = false;
+
+    icca_ctx->slotted_reader = true;
+
+    icca_ctx->last_poll = 0;
+
+    icca_ctx->slotted_reader = aciodrv_icca_is_slotted(device, node_id);
 
     return aciodrv_icca_init(device, node_id);
 }
@@ -17,13 +31,17 @@ bool aciotest_icca_handler_init(
 bool aciotest_icca_handler_update(
     struct aciodrv_device_ctx *device, uint8_t node_id, void *ctx)
 {
-    if (*((uint32_t *) ctx) == 0) {
-        *((uint32_t *) ctx) = 1;
+    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx*)ctx;
 
-        /* eject cards that were left in the reader */
-        if (!aciodrv_icca_set_state(
-                device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
-            return false;
+    if (icca_ctx->init == false) {
+        icca_ctx->init = true;
+
+        if (icca_ctx->slotted_reader) {
+            /* eject cards that were left in the reader */
+            if (!aciodrv_icca_set_state(
+                    device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
+                return false;
+            }
         }
     }
 
@@ -60,33 +78,48 @@ bool aciotest_icca_handler_update(
         state.key_events[0],
         state.key_events[1]);
 
-    /* eject card with "empty" key */
-    if (state.key_state & AC_IO_ICCA_KEYPAD_MASK_EMPTY) {
-        if (!aciodrv_icca_set_state(
-                device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
-            return false;
-        }
-    }
-
-    /* allow new card to be inserted when slot is clear */
-    if (!(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
-        !(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
-        if (!aciodrv_icca_set_state(
-                device, node_id, AC_IO_ICCA_SLOT_STATE_OPEN, NULL)) {
-            return false;
-        }
-    }
-
-    /* lock the card when fully inserted */
-    if ((state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
-        (state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
-        if (!aciodrv_icca_set_state(
-                device, node_id, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL)) {
-            return false;
+    if (icca_ctx->slotted_reader) {
+        /* eject card with "empty" key */
+        if (state.key_state & AC_IO_ICCA_KEYPAD_MASK_EMPTY) {
+            if (!aciodrv_icca_set_state(
+                    device, node_id, AC_IO_ICCA_SLOT_STATE_EJECT, NULL)) {
+                return false;
+            }
         }
 
-        if (!aciodrv_icca_read_card(device, node_id, NULL)) {
-            return false;
+        /* allow new card to be inserted when slot is clear */
+        if (!(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
+            !(state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
+            if (!aciodrv_icca_set_state(
+                    device, node_id, AC_IO_ICCA_SLOT_STATE_OPEN, NULL)) {
+                return false;
+            }
+        }
+
+        /* lock the card when fully inserted */
+        if ((state.sensor_state & AC_IO_ICCA_SENSOR_MASK_BACK_ON) &&
+            (state.sensor_state & AC_IO_ICCA_SENSOR_MASK_FRONT_ON)) {
+            if (!aciodrv_icca_set_state(
+                    device, node_id, AC_IO_ICCA_SLOT_STATE_CLOSE, NULL)) {
+                return false;
+            }
+
+            if (!aciodrv_icca_read_card(device, node_id, NULL)) {
+                return false;
+            }
+        }
+    } else {
+        // wavepass reader, see eamio-icca for why this is done this way
+        if (state.status_code != AC_IO_ICCA_STATUS_BUSY_NEW) {
+            ++icca_ctx->last_poll;
+        }
+
+        if (icca_ctx->last_poll >= 5) {
+            if (!aciodrv_icca_poll_felica(device, node_id)) {
+                return false;
+            }
+
+            icca_ctx->last_poll = 0;
         }
     }
 
