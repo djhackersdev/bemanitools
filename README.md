@@ -1,5 +1,5 @@
 # Bemanitools 5
-[![pipeline status](https://dev.s-ul.eu/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.eu/djhackers/bemanitools/commits/master)
+[![pipeline status](https://dev.s-ul.net/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.net/djhackers/bemanitools/commits/master)
 
 Version: 5.35
 
@@ -73,7 +73,7 @@ The tl;dr version and golden rules of the sections in the document:
 Play your favorite non-bemani arcade games with any hardware, e.g. real cabinet hardware, that
 implements BT5 APIs.
 
-See the dedicated [readme](docs/vigem/README.md) for details.
+See the dedicated [readme](doc/vigem/README.md) for details.
 
 ## Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
@@ -119,7 +119,7 @@ major features merged into master since the previous release
 [top of the readme](#bemanitools-5) as it always reflects the current version beinged worked on
 on the `master` branch , e.g. 5.35: `git tag 5.35`
 1. Push the tag to upstream: `git push origin 5.35`
-1. The [build pipeline](https://dev.s-ul.eu/djhackers/bemanitools/-/pipelines) should start
+1. The [build pipeline](https://dev.s-ul.net/djhackers/bemanitools/-/pipelines) should start
 automatically once the tag is pushed including the steps `build` and `upload-release`
 1. Once completed successfully, the release is uploaded
 1. Take the changelog of the published version and notify the pigs in the stall about it:
