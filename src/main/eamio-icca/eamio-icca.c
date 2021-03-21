@@ -49,6 +49,7 @@ static int32_t icca_node_id[NUMBER_OF_EMULATED_READERS];
 static bool icca_is_slotted[NUMBER_OF_EMULATED_READERS];
 
 static int32_t icca_poll_counter[NUMBER_OF_EMULATED_READERS];
+static uint8_t icca_last_nonbusy_state[NUMBER_OF_EMULATED_READERS];
 
 void eam_io_set_loggers(
     log_formatter_t misc,
@@ -136,6 +137,8 @@ bool eam_io_init(
                 icca_node_id[i] = nid;
                 icca_poll_counter[i] = 0;
                 icca_is_slotted[i] = aciodrv_icca_is_slotted(device, nid);
+                icca_last_nonbusy_state[i] = 0;
+
                 log_misc("ICC reader %d is_slotted: %d", nid, icca_is_slotted[i]);
 
                 if (!aciodrv_icca_init(device, icca_node_id[i])) {
@@ -199,6 +202,13 @@ uint8_t eam_io_get_sensor_state(uint8_t unit_no)
         if (eam_io_icca_state[unit_no].status_code == AC_IO_ICCA_STATUS_GOT_UID) {
             sensors |= (1 << EAM_IO_SENSOR_BACK);
             sensors |= (1 << EAM_IO_SENSOR_FRONT);
+        }
+
+        // continue reporting last state during busy
+        if (eam_io_icca_state[unit_no].status_code == AC_IO_ICCA_STATUS_BUSY_NEW) {
+            sensors = icca_last_nonbusy_state[unit_no];
+        } else {
+            icca_last_nonbusy_state[unit_no] = sensors;
         }
     }
 
