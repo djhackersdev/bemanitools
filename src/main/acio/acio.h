@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "acio/h44b.h"
 #include "acio/hdxs.h"
 #include "acio/icca.h"
 #include "acio/kfca.h"
@@ -68,6 +69,8 @@ struct ac_io_message {
                 uint8_t status;
                 uint8_t param;
                 struct ac_io_version version;
+
+                struct ac_io_h44b_output h44b_output;
 
                 struct ac_io_icca_misc icca_misc;
                 struct ac_io_icca_state icca_state;

@@ -29,6 +29,17 @@ enum jb_io_panel_bit {
     JB_IO_PANEL_16 = 0x0F,
 };
 
+/* input "single button mode" mappings. Allows you to check each corner of each
+    button to determine any flaky inputs
+*/
+enum jb_io_panel_mode {
+    JB_IO_PANEL_MODE_ALL = 0, // any of the four corners will trigger a panel
+    JB_IO_PANEL_MODE_TOP_LEFT = 1,
+    JB_IO_PANEL_MODE_TOP_RIGHT = 2,
+    JB_IO_PANEL_MODE_BOTTOM_RIGHT = 3,
+    JB_IO_PANEL_MODE_BOTTOM_LEFT = 4,
+};
+
 /* Bit mappings for "system" inputs */
 enum jb_io_sys_bit {
     JB_IO_SYS_TEST = 0x00,
@@ -73,17 +84,36 @@ bool jb_io_init(
 
 void jb_io_fini(void);
 
-/* TODO doc */
+/* Read input state */
 
 bool jb_io_read_inputs(void);
 
-bool jb_io_write_outputs(void);
+/* Get state of coin, test, service inputs */
 
 uint8_t jb_io_get_sys_inputs(void);
 
+/* Get panel button state. Will return either any button being pressed, or a
+   particular panel corner depending on previous call to jb_io_set_panel_mode */
+
 uint16_t jb_io_get_panel_inputs(void);
+
+/* Set state of a PWM (dimmable) light */
 
 void jb_io_set_rgb_led(
     enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b);
+
+/* Transmit the light state to the IOPCB */
+
+bool jb_io_write_lights(void);
+
+/* Select operating mode for the panel. Should be immediately sent to the IOPCB */
+
+bool jb_io_set_panel_mode(enum jb_io_panel_mode mode);
+
+/* Open or close the coin chute - true will redirect all coins to the return
+   slot. Required for jb_io_set_panel_mode to operate correctly on p4io.
+   Should be immediately sent to the IOPCB */
+
+bool jb_io_set_coin_blocker(bool blocked);
 
 #endif

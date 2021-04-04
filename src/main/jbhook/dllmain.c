@@ -42,9 +42,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- Begin jbhook dll_entry_init ---");
 
-    if (!options.disable_p4ioemu) {
-        p4ioemu_init(jbhook_io_init());
+    iohook_push_handler(p4ioemu_dispatch_irp);
+    iohook_push_handler(ac_io_port_dispatch_irp);
 
+    if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
 
         jb_io_set_loggers(
@@ -56,11 +57,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         if (!jb_io_ok) {
             goto fail;
         }
+
+        hook_setupapi_init(&p4ioemu_setupapi_data);
+        p4ioemu_init(jbhook_io_init());
     }
 
     if (!options.disable_cardemu) {
-        ac_io_port_init();
-
         log_info("Starting up card reader backend");
 
         eam_io_set_loggers(
@@ -72,6 +74,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         if (!eam_io_ok) {
             goto fail;
         }
+
+        rs232_hook_init();
+        ac_io_port_init();
     }
 
     log_info("---  End  jbhook dll_entry_init ---");
@@ -128,19 +133,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 
-    iohook_push_handler(p4ioemu_dispatch_irp);
-    iohook_push_handler(ac_io_port_dispatch_irp);
-
     if (!options.disable_adapteremu) {
         adapter_hook_init();
-    }
-
-    if (!options.disable_cardemu) {
-        rs232_hook_init();
-    }
-
-    if (!options.disable_p4ioemu) {
-        hook_setupapi_init(&p4ioemu_setupapi_data);
     }
 
     gfx_hook_init();

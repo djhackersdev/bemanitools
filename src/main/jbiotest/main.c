@@ -51,13 +51,51 @@ int main(int argc, char **argv)
     rgb_t lights[6] = {0};
 
     bool loop = true;
-    uint8_t cnt = 0;
+    uint16_t cnt = 0;
     enum jbio_light_mode light_mode = LIGHTS_OFF;
+    enum jb_io_panel_mode panel_mode = JB_IO_PANEL_MODE_ALL;
+
+    bool panel_corners_animate = false;
+    char *all_text;
+    char top_left, top_right, bottom_left, bottom_right;
 
     while (loop) {
         if (!jb_io_read_inputs()) {
             printf("ERROR: Input read fail\n");
             return -2;
+        }
+
+        if(panel_corners_animate && (cnt % 50) == 0) {
+            panel_mode++;
+            panel_mode %= 5;
+
+            // skip the all state
+            if(panel_mode == JB_IO_PANEL_MODE_ALL) {
+                panel_mode++;
+            }
+
+            jb_io_set_panel_mode(panel_mode);
+        }
+
+        all_text = "   ";
+        top_left = top_right = bottom_left = bottom_right = ' ';
+        switch(panel_mode) {
+            case JB_IO_PANEL_MODE_ALL:
+                all_text = "ALL";
+                top_left = top_right = bottom_left = bottom_right = '*';
+                break;
+            case JB_IO_PANEL_MODE_TOP_LEFT:
+                top_left = '*';
+                break;
+            case JB_IO_PANEL_MODE_TOP_RIGHT:
+                top_right = '*';
+                break;
+            case JB_IO_PANEL_MODE_BOTTOM_LEFT:
+                bottom_left = '*';
+                break;
+            case JB_IO_PANEL_MODE_BOTTOM_RIGHT:
+                bottom_right = '*';
+                break;
         }
 
         /* get inputs */
@@ -85,12 +123,12 @@ int main(int argc, char **argv)
             "\n"
             " Test: %d      Service: %d     Coin: %d\n"
             "          .___.___.___.___.\n"
-            "          | %d | %d | %d | %d |\n"
-            "          |---|---|---|---|\n"
-            "          | %d | %d | %d | %d |\n"
-            "          |---|---|---|---|\n"
-            "          | %d | %d | %d | %d |\n"
-            "          |---|---|---|---|\n"
+            "          | %d | %d | %d | %d |    Corner\n"
+            "          |---|---|---|---|    .___.\n"
+            "          | %d | %d | %d | %d |    |%c %c|\n"
+            "          |---|---|---|---|    |%s|\n"
+            "          | %d | %d | %d | %d |    |%c %c|\n"
+            "          |---|---|---|---|    `---`\n"
             "          | %d | %d | %d | %d |\n"
             "          `---`---`---`---`\n",
             cnt,
@@ -126,10 +164,19 @@ int main(int argc, char **argv)
             IS_BIT_SET(input_panel, JB_IO_PANEL_06),
             IS_BIT_SET(input_panel, JB_IO_PANEL_07),
             IS_BIT_SET(input_panel, JB_IO_PANEL_08),
+
+            top_left,
+            top_right,
+            all_text,
+
             IS_BIT_SET(input_panel, JB_IO_PANEL_09),
             IS_BIT_SET(input_panel, JB_IO_PANEL_10),
             IS_BIT_SET(input_panel, JB_IO_PANEL_11),
             IS_BIT_SET(input_panel, JB_IO_PANEL_12),
+
+            bottom_left,
+            bottom_right,
+
             IS_BIT_SET(input_panel, JB_IO_PANEL_13),
             IS_BIT_SET(input_panel, JB_IO_PANEL_14),
             IS_BIT_SET(input_panel, JB_IO_PANEL_15),
@@ -165,7 +212,7 @@ int main(int argc, char **argv)
             jb_io_set_rgb_led(i, lights[i].r, lights[i].g, lights[i].b);
         }
 
-        if (!jb_io_write_outputs()) {
+        if (!jb_io_write_lights()) {
             printf("ERROR: Writing outputs failed\n");
             return -4;
         }
@@ -185,6 +232,7 @@ int main(int argc, char **argv)
                 "  2: Set all lights on (cleared by pressing any panel)\n"
                 "  3: Tie each R/G/B to inputs (panels + test + service)\n"
                 "  4: Set all lights off\n"
+                "  5: Toggle switch corner test mode\n"
                 "Waiting for input: ");
             char c = getchar();
 
@@ -195,7 +243,7 @@ int main(int argc, char **argv)
                         jb_io_set_rgb_led(i, 0, 0, 0);
                     }
 
-                    if (!jb_io_write_outputs()) {
+                    if (!jb_io_write_lights()) {
                         printf("ERROR: Writing outputs failed\n");
                         return -4;
                     }
@@ -216,6 +264,15 @@ int main(int argc, char **argv)
 
                 case '4': {
                     light_mode = LIGHTS_OFF;
+                    break;
+                }
+
+                case '5': {
+                    panel_corners_animate = !panel_corners_animate;
+                    if(!panel_corners_animate) {
+                        panel_mode = JB_IO_PANEL_MODE_ALL;
+                        jb_io_set_panel_mode(panel_mode);
+                    }
                     break;
                 }
 

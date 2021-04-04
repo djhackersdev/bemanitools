@@ -169,6 +169,10 @@ static void ac_io_emu_iccb_send_state(
 
     /* state update */
 
+    if (!eam_io_poll(iccb->unit_no)) {
+        log_warning("Polling eamio failed");
+    }
+
     sensor = eam_io_get_sensor_state(iccb->unit_no);
 
     if (sensor != iccb->last_sensor) {

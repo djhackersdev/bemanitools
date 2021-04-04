@@ -102,7 +102,7 @@ bool jb_io_read_inputs(void)
     return true;
 }
 
-bool jb_io_write_outputs(void)
+bool jb_io_write_lights(void)
 {
     /* The generic input stack currently initiates lighting sends and input
        reads simultaneously, though this might change later. Perform all of our
@@ -120,6 +120,17 @@ uint8_t jb_io_get_sys_inputs(void)
 uint16_t jb_io_get_panel_inputs(void)
 {
     return jb_io_panels;
+}
+
+bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
+{
+    // geninput only uses 1 switch per panel, so ignore alternate modes
+    return true;
+}
+
+bool jb_io_set_coin_blocker(bool blocked)
+{
+    return true;
 }
 
 void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)

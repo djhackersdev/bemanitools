@@ -137,6 +137,7 @@ include src/main/inject/Module.mk
 include src/main/jbhook/Module.mk
 include src/main/jbhook1/Module.mk
 include src/main/jbio-magicbox/Module.mk
+include src/main/jbio-p4io/Module.mk
 include src/main/jbio/Module.mk
 include src/main/jbiotest/Module.mk
 include src/main/launcher/Module.mk
@@ -144,6 +145,7 @@ include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3ioemu/Module.mk
+include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
@@ -444,6 +446,15 @@ $(zipdir)/jb-08.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/jb-hwio.zip: \
+		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/jbio-magicbox.dll \
+		build/bin/indep-32/jbio-p4io.dll \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/avs2_1508-32/sdvxhook.dll \
@@ -609,6 +620,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-01.zip \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
+		$(zipdir)/jb-hwio.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05.zip \
 		$(zipdir)/sdvx-05-cn.zip \
