@@ -141,7 +141,7 @@ bool aciodrv_icca_is_slotted(
     struct aciodrv_device_ctx *device,
     uint8_t node_id)
 {
-    struct aciodrv_device_node_version *version;
+    const struct aciodrv_device_node_version *version;
     version = aciodrv_device_get_node_product_version(device, node_id);
 
     // current heuristic is to check if version >= 1.5
