@@ -135,26 +135,20 @@ bool p4io_usb_transfer(
         return false;
     }
 
-    bytes_requested = P4IO_CMD_HEADER_LEN + *resp_payload_len;
-    // must do this or requests can stall
-    if(bytes_requested == 64) {
-        bytes_requested = 65;
-    }
-    if(!ReadFile(bulk_handle, &cmd_buf, bytes_requested, &bytes_xferred, 0)) {
-        log_warning("ReadFile failed");
+    // must be 65 bytes or requests can stall - only 64 will ever be returned
+    if(!ReadFile(bulk_handle, &cmd_buf, 65, &bytes_xferred, 0)) {
+        log_warning("ReadFile (%u) failed", bytes_requested);
         return false;
     }
 
-    if(bytes_xferred > 0) {
-        if(resp_payload_len) {
-            if(*resp_payload_len < cmd_buf.header.payload_len) {
-                log_warning("Response buffer too short");
-                return false;
-            }
-
-            memcpy(resp_payload, cmd_buf.payload, *resp_payload_len);
-            *resp_payload_len = cmd_buf.header.payload_len;
+    if(bytes_xferred >= sizeof(struct p4io_cmd_header)) {
+        if(*resp_payload_len < cmd_buf.header.payload_len) {
+            log_warning("Response buffer too short");
+            return false;
         }
+
+        memcpy(resp_payload, cmd_buf.payload, *resp_payload_len);
+        *resp_payload_len = cmd_buf.header.payload_len;
 
         if(cmd_buf.header.AA != 0xAA) {
             log_warning("Response bad header");
@@ -165,7 +159,7 @@ bool p4io_usb_transfer(
             log_warning("seq_num mismatch (ours %d !=  theirs %d)", seq_no, cmd_buf.header.seq_num);
             return false;
         }
-    } else if(resp_payload_len) {
+    } else {
         *resp_payload_len = 0;
     }
 
