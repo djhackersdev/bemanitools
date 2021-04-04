@@ -137,7 +137,7 @@ bool p4io_usb_transfer(
 
     // must be 65 bytes or requests can stall - only 64 will ever be returned
     if(!ReadFile(bulk_handle, &cmd_buf, 65, &bytes_xferred, 0)) {
-        log_warning("ReadFile (%u) failed", bytes_requested);
+        log_warning("ReadFile (%u) failed", (unsigned)bytes_requested);
         return false;
     }
 
