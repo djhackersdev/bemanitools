@@ -142,11 +142,6 @@ bool p4io_usb_transfer(
     }
 
     if(bytes_xferred >= sizeof(struct p4io_cmd_header)) {
-        if(*resp_payload_len < cmd_buf.header.payload_len) {
-            log_warning("Response buffer too short");
-            return false;
-        }
-
         memcpy(resp_payload, cmd_buf.payload, *resp_payload_len);
         *resp_payload_len = cmd_buf.header.payload_len;
 
