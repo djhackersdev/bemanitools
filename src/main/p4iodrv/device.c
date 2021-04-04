@@ -27,13 +27,24 @@ static bool p4io_transfer(
     void *resp_payload,
     size_t resp_payload_len
 ) {
+    size_t transferred_response_payload = resp_payload_len;
     bool ret = p4io_usb_transfer(ctx->bulk_handle, cmd, ctx->seq_no,
         req_payload, req_payload_len,
-        resp_payload, &resp_payload_len);
+        resp_payload, &transferred_response_payload);
 
     ctx->seq_no++;
 
-    return ret;
+    if(!ret) {
+        return false;
+    }
+
+    if(resp_payload_len && transferred_response_payload != resp_payload_len) {
+        log_warning("Asked for %zu bytes got %zu", resp_payload_len,
+            transferred_response_payload);
+        return false;
+    }
+
+    return true;
 }
 
 struct p4iodrv_ctx *p4iodrv_open(void) {
@@ -73,8 +84,7 @@ bool p4iodrv_read_jamma(struct p4iodrv_ctx *ctx, uint32_t jamma[4]) {
 
 // send something you don't expect a response for
 static bool p4io_send(struct p4iodrv_ctx *ctx, uint8_t cmd) {
-    uint8_t dummy[P4IO_MAX_PAYLOAD];
-    return p4io_transfer(ctx, cmd, NULL, 0, dummy, sizeof(dummy));
+    return p4io_transfer(ctx, cmd, NULL, 0, NULL, 0);
 }
 
 // real IO does not check the return value, so neither do we
@@ -112,11 +122,9 @@ bool p4iodrv_cmd_device_info(struct p4iodrv_ctx *ctx, struct p4io_resp_device_in
 }
 
 bool p4iodrv_cmd_portout(struct p4iodrv_ctx *ctx, const uint8_t buffer[16]) {
-    uint8_t dummy[P4IO_MAX_PAYLOAD];
-    return p4io_transfer(ctx, P4IO_CMD_SET_PORTOUT, buffer, 16, dummy, sizeof(dummy));
+    return p4io_transfer(ctx, P4IO_CMD_SET_PORTOUT, buffer, 16, NULL, 0);
 }
 
 bool p4iodrv_cmd_coinstock(struct p4iodrv_ctx *ctx, const uint8_t buffer[4]) {
-    uint8_t dummy[P4IO_MAX_PAYLOAD];
-    return p4io_transfer(ctx, P4IO_CMD_COINSTOCK, buffer, 4, dummy, sizeof(dummy));
+    return p4io_transfer(ctx, P4IO_CMD_COINSTOCK, buffer, 4, NULL, 0);
 }
