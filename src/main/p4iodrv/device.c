@@ -39,8 +39,8 @@ static bool p4io_transfer(
     }
 
     if(resp_payload_len && transferred_response_payload != resp_payload_len) {
-        log_warning("Asked for %zu bytes got %zu", resp_payload_len,
-            transferred_response_payload);
+        log_warning("Asked for %u bytes got %u", (unsigned)resp_payload_len,
+            (unsigned)transferred_response_payload);
         return false;
     }
 
