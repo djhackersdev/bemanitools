@@ -61,7 +61,7 @@ void ac_io_emu_h44b_dispatch_request(
                     req->cmd.raw[i * 3 + 2]);
             }
 
-            jb_io_write_outputs();
+            jb_io_write_lights();
 
             ac_io_emu_h44b_send_status(h44b, req, 0x00);
 

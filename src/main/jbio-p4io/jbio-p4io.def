@@ -8,6 +8,6 @@ EXPORTS
     jb_io_read_inputs
     jb_io_set_loggers
     jb_io_set_rgb_led
-    jb_io_set_coin_blocker
     jb_io_set_panel_mode
+    jb_io_set_coin_blocker
     jb_io_write_lights

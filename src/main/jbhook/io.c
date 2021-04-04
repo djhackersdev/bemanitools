@@ -8,15 +8,9 @@
 
 #include "jbhook/io.h"
 
+#include "p4io/cmd.h"
+
 #include "util/log.h"
-
-enum jbhook_io_p4io_command {
-    JUHOOK_IO_P4IO_CMD_OUTPUTS = 0x18,
-};
-
-struct jbhook_io_p4io_outputs {
-    uint32_t outputs;
-};
 
 static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes);
 static uint32_t jbhook_command_handle(
@@ -91,6 +85,7 @@ static const uint32_t jbhook_io_panel_mappings[] = {
 static const uint32_t jbhook_io_sys_button_mappings[] = {
     (1 << 28),
     (1 << 25),
+    (1 << 24),
 };
 
 static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
@@ -116,7 +111,7 @@ static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
         }
     }
 
-    for (uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 3; i++) {
         if (buttons & (1 << i)) {
             *inputs |= jbhook_io_sys_button_mappings[i];
         }
@@ -131,17 +126,54 @@ static uint32_t jbhook_command_handle(
     uint32_t resp_max_len)
 {
     switch (cmd) {
-        case JUHOOK_IO_P4IO_CMD_OUTPUTS: {
-            // const struct jbhook_io_p4io_outputs* req =
-            //     (const struct jbhook_io_p4io_outputs*) payload;
+        case P4IO_CMD_COINSTOCK: {
+            // on is 0x00, off is either 0x10 or 0x20 depending on whether it's
+            // during gameplay (0x10) or test menu (0x20). Both seem to have the
+            // same effect
+            jb_io_set_coin_blocker(*(uint8_t*)payload == 0x00);
 
-            // log_misc("JUHOOK_IO_P4IO_CMD_OUTPUTS: 0x%X", req->outputs);
-
-            /* coin blocker: off 0x20, on 0x00 */
-
+            // this actually returns the coinstock, don't care for it
             memset(resp, 0, 4);
 
             return 4;
+        }
+
+        case P4IO_CMD_SET_PORTOUT: {
+            const struct p4io_req_panel_mode *req =
+                (const struct p4io_req_panel_mode *) payload;
+
+            // always fallback to ALL if input is unknown
+            enum jb_io_panel_mode mode = JB_IO_PANEL_MODE_ALL;
+
+            if(req->is_single) {
+                switch(req->mode) {
+                    case 0x0001:
+                        mode = JB_IO_PANEL_MODE_TOP_LEFT;
+                        break;
+
+                    case 0x0000:
+                        mode = JB_IO_PANEL_MODE_TOP_RIGHT;
+                        break;
+
+                    case 0x0101:
+                        mode = JB_IO_PANEL_MODE_BOTTOM_LEFT;
+                        break;
+
+                    case 0x0100:
+                        mode = JB_IO_PANEL_MODE_BOTTOM_RIGHT;
+                        break;
+
+                    default:
+                        mode = JB_IO_PANEL_MODE_ALL;
+                        break;
+                }
+            }
+
+            jb_io_set_panel_mode(mode);
+
+            memset(resp, 0, 1);
+
+            return 1;
         }
 
         default:

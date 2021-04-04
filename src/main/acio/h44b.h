@@ -14,6 +14,6 @@ struct ac_io_h44b_output {
     uint8_t right_rgb[3];
     uint8_t title_rgb[3];
     uint8_t woofer_rgb[3];
-};
+} __attribute__((__packed__));
 
 #endif
