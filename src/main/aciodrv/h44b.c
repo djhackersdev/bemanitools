@@ -13,6 +13,8 @@ bool aciodrv_h44b_init(
     struct aciodrv_device_ctx *device,
     uint8_t node_id)
 {
+    // unlike input devices like KFCA, H44B has no watchdog or special init code
+    // requirements - shared ACIO node initialisation is enough
     return true;
 }
 
@@ -24,6 +26,7 @@ bool aciodrv_h44b_lights(
     struct ac_io_message msg;
 
     log_assert(device);
+    log_assert(lights);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_H44B_CMD_SET_OUTPUTS);
