@@ -12,4 +12,4 @@ launcher -K jbhook.dll jubeat.dll ...*
 or that the application otherwise uses `jbio.dll`
 
 * If you have P4IO but no H44B, lights will be disabled
-* You can change the port and baudrate of the H44B node by editing the jbio-h44b.conf that should be created by default
+* You can change the port and baudrate of the H44B node by editing the `jbio-h44b.conf` that should be created by default
