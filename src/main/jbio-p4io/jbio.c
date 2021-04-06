@@ -190,11 +190,34 @@ bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
 
 void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)
 {
-    // enum jb_io_rgb_led matches the ACIO message order
-    uint8_t *raw_lights = (uint8_t*)&jb_io_new_lights;
-    raw_lights[unit * 3] = r;
-    raw_lights[unit * 3 + 1] = g;
-    raw_lights[unit * 3 + 2] = b;
+    uint8_t *light;
+
+    switch(unit) {
+        case JB_IO_RGB_LED_FRONT:
+            light = jb_io_new_lights.front_rgb;
+            break;
+        case JB_IO_RGB_LED_TOP:
+            light = jb_io_new_lights.top_rgb;
+            break;
+        case JB_IO_RGB_LED_LEFT:
+            light = jb_io_new_lights.left_rgb;
+            break;
+        case JB_IO_RGB_LED_RIGHT:
+            light = jb_io_new_lights.right_rgb;
+            break;
+        case JB_IO_RGB_LED_TITLE:
+            light = jb_io_new_lights.title_rgb;
+            break;
+        case JB_IO_RGB_LED_WOOFER:
+            light = jb_io_new_lights.woofer_rgb;
+            break;
+        default:
+            return;
+    }
+
+    light[0] = r;
+    light[1] = g;
+    light[2] = b;
 }
 
 bool jb_io_set_coin_blocker(bool blocked) {
