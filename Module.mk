@@ -451,6 +451,7 @@ $(zipdir)/jb-hwio.zip: \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/jbio-magicbox.dll \
 		build/bin/indep-32/jbio-p4io.dll \
+		dist/jb/jbio-h44b.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
