@@ -141,7 +141,7 @@ static HRESULT p4ioemu_p4io_bulk_read(void *resp, uint32_t nbytes)
         payload_len = p4ioemu_p4io_cmd_buffer_resp_len;
     }
 
-    package->header.AA = 0xAA;
+    package->header.sof = P4IO_SOF;
     package->header.cmd = p4ioemu_p4io_last_cmd;
     package->header.seq_num = p4ioemu_p4io_last_seq_num;
     package->header.payload_len = payload_len;
@@ -164,7 +164,7 @@ static HRESULT p4ioemu_p4io_bulk_write(const void *req, uint32_t nbytes)
 
     package = (struct p4io_cmd_package *) req;
 
-    if (package->header.AA != 0xAA) {
+    if (package->header.sof != P4IO_SOF) {
         log_warning("Command on bulk endpoint too short: %d", nbytes);
         p4ioemu_p4io_dump_buffer(req, nbytes);
 
