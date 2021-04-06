@@ -5,7 +5,7 @@
 
 #define P4IO_SOF 0xAA
 
-enum p4ioemu_p4io_command {
+enum p4io_command {
     P4IO_CMD_INIT = 0x00,
     P4IO_CMD_GET_DEVICE_INFO = 0x01,
     P4IO_CMD_SET_PORTOUT = 0x12,
@@ -19,6 +19,11 @@ enum p4ioemu_p4io_command {
     P4IO_CMD_DALLAS_READ_ID = 0x40,
     /* Read round plug mem over one-wire */
     P4IO_CMD_DALLAS_READ_MEM = 0x41
+};
+
+enum p4io_roundplug_type {
+    P4IO_ROUNDPLUG_BLACK = 0,
+    P4IO_ROUNDPLUG_WHITE = 1,
 };
 
 #define P4IO_CMD_HEADER_LEN 4
@@ -37,7 +42,7 @@ struct p4io_cmd_package {
 };
 
 struct p4io_req_read_roundplug {
-    /* 0 = black, 1 = white */
+    // see enum p4io_roundplug_type
     uint8_t type;
 };
 
