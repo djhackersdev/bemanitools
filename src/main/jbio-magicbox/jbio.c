@@ -142,6 +142,7 @@ void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)
 
 bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
 {
+    // panel always returns merged input state, no corner support
     return true;
 }
 
