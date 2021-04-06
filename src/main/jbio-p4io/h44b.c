@@ -76,6 +76,8 @@ bool jb_io_h44b_init(const char *port, int32_t baud) {
 }
 
 bool jb_io_h44b_fini(void) {
+    aciomgr_port_fini(acio_manager_ctx);
+
     return true;
 }
 
