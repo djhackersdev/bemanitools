@@ -75,9 +75,9 @@ void p4io_usb_close(HANDLE p4io_handle) {
     p4io_handle = INVALID_HANDLE_VALUE;
 }
 
-bool p4io_usb_read_jamma(HANDLE jamma_handle, uint32_t jamma[4]) {
+bool p4io_usb_read_jamma(HANDLE interrupt_handle, uint32_t jamma[4]) {
     DWORD bytes_returned;
-    if(!DeviceIoControl(jamma_handle, P4IO_IOCTL_READ_JAMMA_2, NULL, 0, jamma, sizeof(uint32_t[4]), &bytes_returned, NULL)) {
+    if(!DeviceIoControl(interrupt_handle, P4IO_IOCTL_READ_JAMMA_2, NULL, 0, jamma, sizeof(uint32_t[4]), &bytes_returned, NULL)) {
         log_warning("jamma read failed");
         return false;
     }

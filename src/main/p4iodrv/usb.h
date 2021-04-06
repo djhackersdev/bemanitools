@@ -7,7 +7,7 @@
 
 HANDLE p4io_usb_open(void);
 void p4io_usb_close(HANDLE p4io_handle);
-bool p4io_usb_read_jamma(HANDLE jamma_handle, uint32_t jamma[4]);
+bool p4io_usb_read_jamma(HANDLE interrupt_handle, uint32_t jamma[4]);
 bool p4io_usb_read_device_name(HANDLE bulk_handle, char name[128]);
 bool p4io_usb_transfer(
     HANDLE bulk_handle,
