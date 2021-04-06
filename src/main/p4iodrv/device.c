@@ -87,7 +87,10 @@ static bool p4io_send(struct p4iodrv_ctx *ctx, uint8_t cmd) {
     return p4io_transfer(ctx, cmd, NULL, 0, NULL, 0);
 }
 
-// real IO does not check the return value, so neither do we
+// Real IO does not check the return value, so neither do we.
+// Even if we were to check the return value here, the reset command returns a 0
+// byte response - not even an "OK" status, 0 bytes in total. That technically
+// should be raising an error, but because reset is a special case it's ignored
 static void p4io_cmd_init(struct p4iodrv_ctx *ctx) {
     p4io_send(ctx, P4IO_CMD_INIT);
 }
