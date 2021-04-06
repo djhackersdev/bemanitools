@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define P4IO_SOF 0xAA
+
 enum p4ioemu_p4io_command {
     P4IO_CMD_INIT = 0x00,
     P4IO_CMD_GET_DEVICE_INFO = 0x01,
@@ -23,7 +25,7 @@ enum p4ioemu_p4io_command {
 #define P4IO_MAX_PAYLOAD 60
 
 struct p4io_cmd_header {
-    uint8_t AA;
+    uint8_t sof;
     uint8_t cmd;
     uint8_t seq_num;
     uint8_t payload_len;

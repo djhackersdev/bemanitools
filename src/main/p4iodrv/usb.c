@@ -118,7 +118,7 @@ bool p4io_usb_transfer(
         return false;
     }
 
-    cmd_buf.header.AA = 0xAA;
+    cmd_buf.header.sof = P4IO_SOF;
     cmd_buf.header.cmd = cmd;
     cmd_buf.header.seq_num = seq_no;
     cmd_buf.header.payload_len = req_payload_len;
@@ -145,7 +145,7 @@ bool p4io_usb_transfer(
         memcpy(resp_payload, cmd_buf.payload, *resp_payload_len);
         *resp_payload_len = cmd_buf.header.payload_len;
 
-        if(cmd_buf.header.AA != 0xAA) {
+        if(cmd_buf.header.sof != P4IO_SOF) {
             log_warning("Response bad header");
             return false;
         }
