@@ -101,7 +101,7 @@ HANDLE aciodrv_port_open(const char *port_path, int baud)
         goto fail;
     }
 
-    log_info("[%" PRIXPTR "] Opened ACIO device on %s", (uintptr_t)port_fd, port_path);
+    log_info("[%p] Opened ACIO device on %s", port_fd, port_path);
 
     return port_fd;
 
@@ -123,13 +123,13 @@ int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes)
     }
 
     if (!ClearCommError(port_fd, NULL, NULL)) {
-        log_warning("[%" PRIXPTR "] ClearCommError failed", (uintptr_t)port_fd);
+        log_warning("[%p] ClearCommError failed", port_fd);
 
         return -1;
     }
 
     if (!ReadFile(port_fd, bytes, nbytes, &nread, NULL)) {
-        log_warning("[%" PRIXPTR "] ReadFile failed: err = %lu", (uintptr_t)port_fd, GetLastError());
+        log_warning("[%p] ReadFile failed: err = %lu", port_fd, GetLastError());
 
         return -1;
     }
@@ -148,7 +148,7 @@ int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes)
     }
 
     if (!WriteFile(port_fd, bytes, nbytes, &nwrit, NULL)) {
-        log_warning("[%" PRIXPTR "] WriteFile failed: err = %lu", (uintptr_t)port_fd, GetLastError());
+        log_warning("[%p] WriteFile failed: err = %lu", port_fd, GetLastError());
 
         return -1;
     }
