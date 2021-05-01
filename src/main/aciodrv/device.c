@@ -23,7 +23,7 @@ struct aciodrv_device_ctx {
     uint8_t node_count;
 };
 
-static bool aciodrv_device_reset(struct aciodrv_device_ctx *device)
+bool aciodrv_device_reset(struct aciodrv_device_ctx *device)
 {
     uint8_t reset_seq[525] = {0};
 
@@ -109,7 +109,7 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     }
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Send (1)", device, buffer, length);
+    aciodrv_device_log_buffer(device, "Send (1)", buffer, length);
 #endif
 
     send_buf[send_buf_pos++] = AC_IO_SOF;
@@ -135,7 +135,7 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     }
 
 #ifdef AC_IO_MSG_LOG
-    aciodrv_device_log_buffer("Send (2)", device, send_buf, send_buf_pos);
+    aciodrv_device_log_buffer(device, "Send (2)", send_buf, send_buf_pos);
 #endif
 
     if (aciodrv_port_write(device->fd, send_buf, send_buf_pos) != send_buf_pos) {
@@ -209,7 +209,7 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
         }
 
 #ifdef AC_IO_MSG_LOG
-        aciodrv_device_log_buffer("Recv (1)", device, recv_buf, recv_size);
+        aciodrv_device_log_buffer(device, "Recv (1)", recv_buf, recv_size);
         log_warning("Expected %d got %d", max_resp_size - 6, recv_buf[4]);
 #endif
 
@@ -226,7 +226,7 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
         result_size = recv_size - 1;
 
 #ifdef AC_IO_MSG_LOG
-        aciodrv_device_log_buffer("Recv (2)", device, buffer, result_size);
+        aciodrv_device_log_buffer(device, "Recv (2)", buffer, result_size);
 #endif
 
         if (checksum != recv_buf[recv_size - 1]) {
@@ -402,7 +402,7 @@ const struct aciodrv_device_node_version *aciodrv_device_get_node_product_versio
     return &device->node_versions[node_id];
 }
 
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)
+bool aciodrv_send(struct aciodrv_device_ctx *device, struct ac_io_message *msg)
 {
     msg->cmd.seq_no = device->msg_counter++;
     int send_size = offsetof(struct ac_io_message, cmd.raw) + msg->cmd.nbytes;
@@ -418,13 +418,29 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
     if (aciodrv_device_send(device, (uint8_t *) msg, send_size) <= 0) {
         return false;
     }
+    return true;
+}
 
-    uint16_t req_code = msg->cmd.code;
-
+bool aciodrv_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)
+{
 #ifdef AC_IO_MSG_LOG
     log_info("[%p] Beginning recv: (%d b)", device->fd, max_resp_size);
 #endif
     if (aciodrv_device_receive(device, (uint8_t *) msg, max_resp_size) <= 0) {
+        return false;
+    }
+    return true;
+}
+
+bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)
+{
+    if (!aciodrv_send(device, msg)) {
+        return false;
+    }
+
+    uint16_t req_code = msg->cmd.code;
+
+    if (!aciodrv_recv(device, msg, max_resp_size)) {
         return false;
     }
 

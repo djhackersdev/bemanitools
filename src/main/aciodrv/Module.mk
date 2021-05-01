@@ -7,5 +7,6 @@ src_aciodrv     := \
     h44b.c \
     icca.c \
     kfca.c \
+    panb.c \
     port.c \
 
