@@ -23,11 +23,9 @@ struct aciodrv_device_ctx {
     uint8_t node_count;
 };
 
-static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
+static bool aciodrv_device_reset(struct aciodrv_device_ctx *device)
 {
     uint8_t reset_seq[525] = {0};
-    uint8_t init_seq[1] = {AC_IO_SOF};
-    uint8_t read_buff[1] = {0};
 
     /* init/reset the device by sending 525 NULL bytes */
     log_info("Resetting device");
@@ -45,6 +43,14 @@ static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
     for (size_t i = 0; i < 100; ++i) {
         aciodrv_port_read(device->fd, reset_seq, sizeof(reset_seq));
     }
+
+    return true;
+}
+
+static bool aciodrv_device_sof_flush(struct aciodrv_device_ctx *device)
+{
+    uint8_t init_seq[1] = {AC_IO_SOF};
+    uint8_t read_buff[1] = {0};
 
     /* wait for reset to finish */
     int read = 0;
@@ -69,6 +75,15 @@ static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
         log_warning("Read failure when trying to clear device state");
         return false;
     }
+}
+
+static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
+{
+    if (!aciodrv_device_reset(device)) {
+        log_warning("Reset failed");
+        return false;
+    }
+    return aciodrv_device_sof_flush(device);
 }
 
 #ifdef AC_IO_MSG_LOG
