@@ -25,10 +25,28 @@ struct aciodrv_device_ctx {
 
 static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
 {
+    uint8_t reset_seq[525] = {0};
     uint8_t init_seq[1] = {AC_IO_SOF};
-    uint8_t read_buff[1] = {0x00};
+    uint8_t read_buff[1] = {0};
 
-    /* init/reset the device by sending 0xAA until 0xAA is returned */
+    /* init/reset the device by sending 525 NULL bytes */
+    log_info("Resetting device");
+    if (aciodrv_port_write(device->fd, reset_seq, sizeof(reset_seq)) <= 0) {
+        return false;
+    }
+
+    /* signal to device for a reset */
+    EscapeCommFunction(device->fd, SETBREAK);
+    Sleep(1450);
+    EscapeCommFunction(device->fd, CLRBREAK);
+    Sleep(1200);
+
+    /* ignore the next 100 reads (of whatever length) */
+    for (size_t i = 0; i < 100; ++i) {
+        aciodrv_port_read(device->fd, reset_seq, sizeof(reset_seq));
+    }
+
+    /* wait for reset to finish */
     int read = 0;
     do {
         if (aciodrv_port_write(device->fd, init_seq, sizeof(init_seq)) <= 0) {
@@ -39,7 +57,7 @@ static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
     } while ((read <= 0) || (read_buff[0] != init_seq[0]));
 
     if (read > 0) {
-        log_warning("Obtained SOF, clearing out buffer now");
+        log_info("Obtained SOF, clearing out buffer now");
         /* empty buffer by reading all data */
         while (read > 0) {
             read = aciodrv_port_read(device->fd, init_seq, sizeof(init_seq));
