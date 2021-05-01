@@ -58,5 +58,5 @@ Turntables are either in absolute or relative mode depending on how it's defined
 * Make sure that you follow the instructions exactly from the release page
 ([Prerequisites for Windows 7](https://github.com/ViGEm/ViGEmBus/wiki/Prerequisites-for-Windows-7))
 * If you get an error while trying to install KB3033929, re-enable windows update
-* Make sure to ewfmgr C: -commit and reboot after installing the drivers (this only needs to be
-done once)
+* If you can't find some of these files, see bemanitools-supplements
+* Make sure to ewfmgr C: -commit and reboot after installing the drivers (this only needs to be done once)
