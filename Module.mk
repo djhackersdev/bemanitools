@@ -569,10 +569,7 @@ $(zipdir)/bst.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/doc.zip: \
-		doc/iidxhook \
-		doc/sdvxhook \
-		doc/jbhook \
-		doc/tools \
+		doc/ \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -r $@ $^
