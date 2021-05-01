@@ -77,6 +77,7 @@ avsvers_64      := 1700 1603 1601 1509 1508
 imps            += avs avs-ea3
 
 include src/main/aciodrv/Module.mk
+include src/main/aciodrv-proc/Module.mk
 include src/main/acioemu/Module.mk
 include src/main/aciomgr/Module.mk
 include src/main/aciotest/Module.mk

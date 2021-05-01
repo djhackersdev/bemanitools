@@ -10,6 +10,7 @@
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
+#include "aciotest/panb.h"
 
 #include "util/log.h"
 
@@ -33,6 +34,13 @@ static bool aciotest_assign_handler(
     if (!memcmp(product, "KFCA", 4)) {
         handler->init = aciotest_kfca_handler_init;
         handler->update = aciotest_kfca_handler_update;
+
+        return true;
+    }
+
+    if (!memcmp(product, "PANB", 4)) {
+        handler->init = aciotest_panb_handler_init;
+        handler->update = aciotest_panb_handler_update;
 
         return true;
     }

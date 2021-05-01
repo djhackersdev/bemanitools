@@ -75,6 +75,35 @@ const struct aciodrv_device_node_version *aciodrv_device_get_node_product_versio
 bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size);
 
 /**
+ * Send a message to the ACIO bus.
+ *
+ * @param device Context of opened device
+ * @param msg Msg to send to the bus.
+ * @return True on success, false on error.
+ * @note Prefer the use of aciodrv_send_and_recv when possible. This is for commands which don't trigger a reply.
+ */
+bool aciodrv_send(struct aciodrv_device_ctx *device, struct ac_io_message *msg);
+
+/**
+ * Read a message from the ACIO bus.
+ *
+ * @param device Context of opened device
+ * @param msg Msg to send to the bus. Make sure that the buffer
+ *        is big enough to receive the response.
+ * @return True on success, false on error.
+ * @note Prefer the use of aciodrv_send_and_recv when possible. This is for unsollicited incoming messages.
+ */
+bool aciodrv_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size);
+
+/**
+ * Reset an opened device.
+ *
+ * @param device Context of opened device
+ * @return Total num of nodes enumerated on the ACIO device.
+ */
+bool aciodrv_device_reset(struct aciodrv_device_ctx *device);
+
+/**
  * Close the previously opened ACIO device.
  * 
  * @param device Context of opened device
