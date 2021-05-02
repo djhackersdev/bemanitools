@@ -390,15 +390,26 @@ N/A
 
 #### Description
 
-ACIO ERROR (ERR_INIT_LINE)
+##### ACIO ERROR (ERR_INIT_LINE)
+
+##### BACKUP DATA ERROR
+
+The backup data is corrupted. Press the test button to re-initialize it.
 
 #### Known occurances
 
-N/A
+* IIDX 15 (BACKUP DATA ERROR)
 
 #### How do I fix it?
 
-* If you're using ACrealIO, cut the reset trace on your Arduino.
+##### ACIO ERROR
+
+If you're using ACrealIO, cut the reset trace on your Arduino.
+
+##### BACKUP DATA ERROR
+
+Follow the instructions of the error message. You will have to re-set certain settings like clock
+settings in the operator menu to complete initialization.
 
 ### 5-1506-0001
 
