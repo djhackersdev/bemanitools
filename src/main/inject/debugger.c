@@ -222,7 +222,7 @@ static bool debugger_create_process(
 
     if (!ok) {
         log_warning(
-            "ERRPR: Failed to launch hooked EXE: %08x", (unsigned int) GetLastError());
+            "ERROR: Failed to launch hooked EXE: %08x", (unsigned int) GetLastError());
 
         free(cmd_line);
 
