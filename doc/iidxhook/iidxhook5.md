@@ -171,6 +171,13 @@ iidxhook can limit the frame rate for you (refer to help/config file)
 Use dxwnd and set settings like "Acquire admin caps" and "Fullscreen only"
 
 ## Background videos aren't working. When starting a song, windows is playing the error sound and a message box appears
+If you are running in window mode, you can see an error pop-up window with the title
+`DirectShow Texture3D Sample` and error message
+`Could not create source filter to graph! hr=<some number>`.
+
+When running fullscreen, you only hear a windows error sound and the game appears to be frozen
+when trying to play a background video.
+
 You are missing a codec to decode and play the videos. There are different 
 methods available to get background videos working. Probably, the easiest 
 solution: grab the CLVSD.ax file and go to Start -> Run -> regsvr32 clvsd.ax
