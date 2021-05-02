@@ -4,6 +4,9 @@ This folder contains various types of documentation.
 
 Table of contents:
 
+* Game
+  * [Error codes](game-error-codes.md): List of bemani game specific error codes that you might
+    encounter during boot or gameplay with troubleshooting information
 * Key tools
   * [Inject](inject.md): Readme for one of BT5's key applications, `inject.exe`
   * [Launcher](launcher.md): Readme for another one of BT5's key applications, `launcher.exe`
