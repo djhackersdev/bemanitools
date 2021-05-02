@@ -73,6 +73,8 @@ settings_hook_dispatch_irp(struct irp *irp)
         irp->open_filename[1] == L':') {
         char *log_str;
 
+        log_misc("settings hook trapped open call");
+
         ((wchar_t *) irp->open_filename)[1] = L'\\';
 
         if (wstr_narrow(irp->open_filename, &log_str)) {
@@ -82,9 +84,13 @@ settings_hook_dispatch_irp(struct irp *irp)
             log_warning("Remapped settings path wstr_narrow failed");
         }
 
+        log_misc("before settings_folders_checked");
+
         /* Create local settings folders if not available */
         if (!settings_folders_checked) {
             settings_folders_checked = true;
+
+            log_misc("after settings_folders_checked");
 
             for (char c = 'd'; c <= 'f'; c++) {
                 char str[3];
@@ -93,12 +99,18 @@ settings_hook_dispatch_irp(struct irp *irp)
                 str[1] = '\\';
                 str[2] = '\0';
 
+                log_misc("before path_exists: %s", str);
+
                 if (!path_exists(str)) {
                     log_misc("Creating local settings folder %s\\", str);
                     CreateDirectoryA(str, NULL);
                 }
+
+                log_misc("after path_exists: %s", str);
             }
         }
+
+        log_misc("iohook_invoke_next");
 
         return iohook_invoke_next(irp);
     }
