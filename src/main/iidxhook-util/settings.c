@@ -75,9 +75,12 @@ settings_hook_dispatch_irp(struct irp *irp)
 
         ((wchar_t *) irp->open_filename)[1] = L'\\';
 
-        wstr_narrow(irp->open_filename, &log_str);
-        log_misc("Remapped settings path %s", log_str);
-        free(log_str);
+        if (wstr_narrow(irp->open_filename, &log_str)) {
+            log_misc("Remapped settings path %s", log_str);
+            free(log_str);
+        } else {
+            log_warning("Remapped settings path wstr_narrow failed");
+        }
 
         /* Create local settings folders if not available */
         if (!settings_folders_checked) {
