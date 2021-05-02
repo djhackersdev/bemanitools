@@ -12,6 +12,8 @@
 necessary -->
 
 ## Steps to reproduce
+<!-- Try running the game with a default configuration as well. If that also causes issues, please point that out here in the report. This might speed up the debugging process.>
+
 <!--- Provide a detailed step by step description how to reproduce this issue -->
 1.
 2.
