@@ -132,15 +132,36 @@ Unknown
 
 #### Description
 
-USB I/O ERROR (FPGA WRITE ERROR)
+USB I/O ERROR 
+
+##### FPGA WRITE ERROR
+
+Writing the FPGA firmware fails. Can have various causes depending on your setup.
+
+##### FW TRNS-OUT
+
+This typically happens if it takes too long to upload the base firmware to the USB IO. A potential
+root-cause can be bad timing since the game uses a bad combination of software sleeps and fixed
+timeouts making this code prone to fail.
 
 #### Known occurances
 
-N/A
+* IIDX
 
 #### How to fix
 
-* Make sure data\hex\030408.hex exists.
+#### FPGA WRITE ERROR
+
+* Restart the game
+* Re-copy bemanitools
+
+#### FW TRNS-OUT
+
+* Restart the game
+* Re-copy bemanitools
+* Running the process on high priority and with admin rights
+* If you attached a debugger, that might have messed with the timing and caused this. Try a
+different debugger or attach it later in the boot process
 
 ### 5-1503-0001
 
