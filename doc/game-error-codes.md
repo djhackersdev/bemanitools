@@ -586,6 +586,35 @@ N/A
 
 N/A
 
+### 5-2002-1013
+
+#### Description
+
+NETWORK ERROR
+
+Cannot communicate with server.
+
+Ensure that your internet connection is working and that your router is turned on.
+
+Ensure that your machine is connected to your router.
+
+Press the service button to start the game.
+
+#### Known occurances
+
+* IIDX, probably all known versions
+
+#### How do I fix it?
+
+The original message is already telling you what is going on:
+
+* Check if your machine/pc has an internet connection
+* Check your firewall settings
+* Check that the server address is configured and correct in `iidxhook.conf` (old games) or
+`ea3-config.xml`
+* You can disable the network in the operator menu to just boot the game first. Note that this is
+not possible on any versions starting IIDX 20 (tricoro).
+
 ### 5-2002-2301
 
 #### Description
