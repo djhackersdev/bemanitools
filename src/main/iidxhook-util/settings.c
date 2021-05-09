@@ -67,6 +67,7 @@ void settings_hook_init(void)
 HRESULT
 settings_hook_dispatch_irp(struct irp *irp)
 {
+    if (0) {
     if (irp->op == IRP_OP_OPEN &&
         (irp->open_filename[0] == L'd' || irp->open_filename[0] == L'e' ||
          irp->open_filename[0] == L'f') &&
@@ -113,6 +114,7 @@ settings_hook_dispatch_irp(struct irp *irp)
         log_misc("iohook_invoke_next");
 
         return iohook_invoke_next(irp);
+    }
     }
 
     return iohook_invoke_next(irp);
