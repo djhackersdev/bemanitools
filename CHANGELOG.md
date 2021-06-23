@@ -4,6 +4,7 @@
 ## 5.35
 * Jubeat: Add jbio-p4io
 * Nostalgia: Add nostio-panb
+* Misc: Add wavepass support to aciodrv-icca (and eamio-icca)
 * Misc: Refactor aciodrv to support multiple devices using the same port (with aciomgr)
 * Misc: Fix d3d9ex windowed hook not behaving correctly (size/framed)
 * Misc: Fix docs not being included with release
