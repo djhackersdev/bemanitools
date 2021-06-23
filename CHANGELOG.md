@@ -1,5 +1,11 @@
 # Release history
 ## 5.35
+* Jubeat: Add jbio-p4io
+* Nostalgia: Add nostio-panb
+* Misc: Refactor aciodrv to support multiple devices using the same port (with aciomgr)
+* Misc: Fix d3d9ex windowed hook not behaving correctly (size/framed)
+* Misc: Fix docs not being included with release
+* Various bugfixes
 
 ## 5.34
 * IIDX: Support IO and card reader feature switches to disable emulation in iidxhook4-7
