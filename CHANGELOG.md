@@ -1,4 +1,6 @@
 # Release history
+## 5.36
+
 ## 5.35
 * Jubeat: Add jbio-p4io
 * Nostalgia: Add nostio-panb
