@@ -1,55 +1,139 @@
+#
+# This pipeline requires packages to be switched on under the repository settings. Otherwise, you will 403s when
+# uploading to the package repo is triggered.
+#
+# Variables to setup in GitLab CI/CD settings of the project
+# 
+# The variables with BASE64 postfixes need to contain the base64 encoded data. Otherwise, masking
+# in GitLab won't work due to not matching their pre-defined regex 
+#
+# CI_PIGSTALL_DATA_PREFIX_BASE64
+# CI_PIGSTALL_LINK_BASE64
+# CI_PIGSTALL_PHP_SESSION_ID
+# CI_PIGSTALL_SESSION_BASE64
+# 
+# CI_TOOLS_UPLOAD_KEY
+# CI_TOOLS_UPLOAD_URL
+# CI_TOOLS_URL
+
 image: docker:stable
 
 variables:
     DOCKER_TLS_CERTDIR: "/certs"
+    DIST_PACKAGE_RELATIVE_PATH: "build/docker/bemanitools.zip"
+    PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/bemanitools"
 
 services:
   - docker:19.03.8-dind
 
-before_script:
-  - docker info
-
 stages:
   - build
-  - upload-release
+  - upload
+  - release
 
-build-master:
+build:
   stage: build
-  before_script:
-    - apk update && apk add make > /dev/null
-  script:
-    - make build-docker
-    - mv build/docker/bemanitools.zip bemanitools.zip
-  artifacts:
-    name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
-    paths:
-      - bemanitools.zip
   only:
     refs:
       - master
-
-build-tags:
-  stage: build
+      - tags
   before_script:
     - apk update && apk add make > /dev/null
   script:
     - make build-docker
-    - mv build/docker/bemanitools.zip bemanitools.zip
-  artifacts:
-    name: "$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
-    paths:
-      - bemanitools.zip
-  only:
-    - tags
 
-upload-release:
-  stage: upload-release
-  dependencies:
-    - build-tags
-  before_script:
-    - apk update && apk add curl > /dev/null
-  script:
-    - echo "Uploading ${CI_PROJECT_NAME}-${CI_COMMIT_TAG}..."
-    - curl --silent --show-error -F "key=${CI_UPLOAD_KEY}" -F "filename=${CI_PROJECT_NAME}-v${CI_COMMIT_TAG}.zip" -F "file=@./bemanitools.zip" ${CI_UPLOAD_URL}
+upload-package-registry:
+  stage: upload
+  image: curlimages/curl:latest
   only:
-    - tags
+    refs:
+      - master
+      - tags
+  dependencies:
+    - build
+  script:
+    - |
+      if [ "${CI_COMMIT_TAG}" ]; then
+        version="${CI_COMMIT_TAG}"
+      else
+        version="${CI_COMMIT_SHORT_SHA}"
+      fi
+
+      curl \
+        --silent \
+        --fail \
+        --show-error \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file "${DIST_PACKAGE_RELATIVE_PATH}" \
+        $PACKAGE_REGISTRY_URL/${version}/bemanitools.zip
+
+upload-tools-page:
+  stage: upload
+  image: curlimages/curl:latest
+  only:
+    refs:
+      - tags
+  dependencies:
+    - build
+  script:
+    - |
+      curl \
+        --silent \
+        --fail \
+        --show-error \
+        --connect-timeout 5 \
+        --max-time 10 \
+        --retry 5 \
+        -F "key=${CI_TOOLS_UPLOAD_KEY}" \
+        -F "filename=${CI_PROJECT_NAME}-v${CI_COMMIT_TAG}.zip" \
+        -F "file=@${DIST_PACKAGE_RELATIVE_PATH}" \
+        ${CI_TOOLS_UPLOAD_URL}
+
+release-gitlab:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:v0.8.0
+  only:
+    refs:
+      - tags
+  script:
+    - |
+      version="$CI_COMMIT_TAG"
+
+      release_message="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
+
+      release-cli create \
+        --name "bemanitools ${version}" \
+        --description="${release_message}" \
+        --tag-name ${version} \
+        --assets-link "{\"name\":\"Distribution binaries\",\"url\":\"${PACKAGE_REGISTRY_URL}/${version}/bemanitools.zip\"}"
+
+release-pigstall:
+  stage: release
+  image: curlimages/curl:latest
+  only:
+    refs:
+      - tags
+  script:
+    - |
+      version="${CI_COMMIT_TAG}"
+
+      changelog_excerpt="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
+
+      release_message="$(printf \
+        "bemanitools ${version} released\n${CI_TOOLS_URL}/bemanitools-v${version}.zip\n${changelog_excerpt}")"
+
+      session="$(echo "$CI_PIGSTALL_SESSION_BASE64" | base64 -d)"
+      data_prefix="$(echo "$CI_PIGSTALL_DATA_PREFIX_BASE64" | base64 -d)"
+      link="$(echo "$CI_PIGSTALL_LINK_BASE64" | base64 -d)"
+
+      curl \
+        --silent \
+        --fail \
+        --connect-timeout 5 \
+        --max-time 10 \
+        --retry 5 \
+        --show-error \
+        -H 'Content-Type: application/x-www-form-urlencoded' \
+        -H "Cookie: PHPSESSID=$CI_PIGSTALL_PHP_SESSION_ID; session=${session}" \
+        --data-raw "${data_prefix}&body=${release_message}" \
+        "${link}"

@@ -1,4 +1,7 @@
 # Release history
+Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
+given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
+
 ## 5.36
 
 ## 5.35
