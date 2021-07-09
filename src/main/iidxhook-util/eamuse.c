@@ -168,6 +168,14 @@ void eamuse_set_addr(const struct net_addr *addr)
 
     tmp_str2 = net_addr_to_str(&eamuse_server_addr_resolved);
 
+    // when resolving URLs with net_str_parse
+    // it will default to NET_INVALID_PORT if no port is specified
+    // assume default 80 here as a good sanity check
+    if (eamuse_server_addr_resolved.ipv4.port == NET_INVALID_PORT) {
+        log_info("No port was specified, using port 80 as fallback");
+        eamuse_server_addr_resolved.ipv4.port = 80;
+    }
+
     log_info("Target eamuse server %s resolved to %s", tmp_str, tmp_str2);
 
     free(tmp_str);
