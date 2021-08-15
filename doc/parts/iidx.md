@@ -102,7 +102,7 @@ Used with versions:
 * GPU: Radeon R7
 * RAM: 4 GB
 
-## IO hardware
+## IO
 
 ### Twinkle IO
 
@@ -138,3 +138,15 @@ Used with versions:
 * Additional adapter/compatibility board to upgrade older cabinets with [C02](#c02), [D01](#d01) or [IO2](#io2) IO
 hardware and wiring
 * Connects to the [BIO2](#bio2) IO board
+
+## Card reader
+
+### Magnetic
+
+### Slotted
+
+### Wave pass
+
+### Wave pass built-in
+
+## Camera
