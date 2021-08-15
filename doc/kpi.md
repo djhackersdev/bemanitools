@@ -1,4 +1,7 @@
-# MCODE - Konami project codes
+# Konami Product Identifier (KPI)
+
+Konami labels their products, i.e. full cabinet, a hardware + software upgrade kit, software update, for identification
+using a propriatary format. These product codes are often seen denoting specific versions/iterations of software.
 
 ## Sources
 
@@ -6,7 +9,7 @@
 * [bemaniwiki](http://bemaniwiki.com/)
 * Game/cabinet manuals
 
-## MCODE format
+## Product identifier format
 
 Format string: `ptggg:d:s:r:e`
 
@@ -32,7 +35,11 @@ Format string: `ptggg:d:s:r:e`
 * `r` rev (revision), software revision
   * `A`, `B`, `C`, ...
 * `e`: ext (build date)
-  * Format: `yyyymmddnn`, `nn` = build number on the day
+  * Format: `yyyymmddnn`
+    * `yyyy` = year, e.g. `2020`
+    * `mm` = month, e.g. `11` for November
+    * `dd` = day of month, e.g. `03`
+    * `nn` = build number on the day, e.g. `00`, `01`, ...
 
 Note that older games are lacking the ext part/build date.
 
