@@ -40,14 +40,28 @@ in generations which is a non-Konami terminology.
 
 ### Generation 3 cabinet
 
-* Cabinet body identifiers
-  * GQLDJ-JA
-  * GQLDJ-JB
-  * GQLDJ-JC
+#### `GQLDJ-JA`
 
-From conversion manual iidx 25, renaming the models after conversion
-* GELDJ-JO
-* GELDJ-JM
+* Game: Tricoro
+* New Tricoro LCD
+
+#### `GQLDJ-JB`
+
+* Pendual cab?
+* New pendual LCD
+
+#### `GQLDJ-JC`
+
+* Game: COPULA
+* Introduced new Copula LCD monitor
+* Introduced LED spotlights and neons?
+
+### Generation 4 cabinet
+
+#### `GQTDJ-JA`
+
+* "Lightning model"
+* Game: HEROIC VERSE
 
 ## Upgrades
 
@@ -133,3 +147,44 @@ either [Twinkle V1](#twinkle-v1) or [Twinkle V2](#twinkle-v2) hardware.
 
 `GEE11-JA`
 `GEE11-JB`
+
+### Spada upgrade
+
+#### `GULDJ-JF`
+
+### Pendual upgrade
+
+#### `GULDJ-JH`
+
+* Update DVD: `LDJ JC A01`
+* Artwork
+
+### Cannon Ballers upgrade
+
+#### `GELDJ-JM`
+
+* Compatible with `GQLDJ-JA`, `GQLDJ-JA`, `GQLDJ-JA` [generation 3 cabinets](#generation-3-cabinet)
+* Contents
+  * Main PCB: [Bemani PC ADE-6291](../parts/iidx.md#bemani-pc-ade-6291)
+  * IO: [BIO2](../parts/iidx.md#bio2) and [BIO2 sub IO](../parts/iidx.md#bio2-sub-io)
+  * Camera
+  * Replacement bass platform artwork
+  * Cabinet artwork
+  * Wiring for compatible cabinet types
+
+#### `GELDJ-JN`
+
+Identical to `GELDJ-JO` but also includes a VGA to HDMI converter cable for old style monitors, e.g.
+[Toshiba rear projection](../parts/iidx.md#toshiba-rear-projection) and [CRT](../parts/iidx.md#crt).
+
+#### `GELDJ-JO`
+
+* Compatible with [generation 1 cabinets](#generation-1-cabinet) and [generation 2 cabinets](#generation-2-cabinet)
+  * Assumes other required hardware upgrades, e.g. card readers, available
+* Contents
+  * [Bemani PC ADE-6291](../parts/iidx.md#bemani-pc-ade-6291)
+  * IO: [BIO2](../parts/iidx.md#bio2) and [BIO2 sub IO](../parts/iidx.md#bio2-sub-io)
+  * Camera
+  * Replacement bass platform artwork
+  * Cabinet artwork
+  * Wiring for compatible cabinet types

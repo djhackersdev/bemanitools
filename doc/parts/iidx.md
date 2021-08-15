@@ -4,39 +4,54 @@
 
 ### Toshiba rear projection
 
-* Toshiba
-* 640x480 native resolution
-* VGA input
+* Monitor manufacturer: Toshiba
+* Size: ???
+* Native resolution: 640x480
+* Input: VGA, S-Video
 
 ### CRT
 
-* 37"
-* 640x480 native resolution
-* VGA input
+* Size: 37"
+* Monitor manufacturer: ???
+* Native resolution: 640x480
+* Input: VGA
 
 ### `GUHDD-JB`
 
-* "DJTroopers LCD"
-* Size: 37"
+* "DJ Troopers LCD"
 * Monitor manufacturer: Konami Manufacturing & Service Co., Ltd.
+* Size: 37"
+* Native resolution: 1280x720
+* Input: VGA, DVI
 
 ### `GULDJ-JC`
 
 * "Tricoro LCD"
-* Size: 37" (???)
-* Monitor manufacturer: Nissin Industry
-* Monitor manufacturer: Maywa Denki
-* Monitor manufacturer: Toshiba
+* Monitor manufacturer
+  * Nissin Industry
+  * Maywa Denki
+  * Toshiba
+* Size: 37"
+* Native resolution: 1280x720
+* Input: DVI
 
 ### `GULDJ-JJ`
 
-* late PENDUAL LCD
-* Monitor manufacturer: Konami Digital Entertainment
+* "PENDUAL LCD"
+* Monitor manufacturer
+  * Konami Digital Entertainment
+* Size: 37" ???
+* Native resolution: ???
+* Input: DVI
 
 ### `LDJ-MA014-JA`
 
 * "Rootage LCD"
-* Monitor manufacturer: Meiwa Denki
+* Monitor manufacturer
+  * Meiwa Denki
+* Size: 42"
+* Native resolution: ???
+* Input: DVI
 
 ## Main PCB
 
@@ -97,6 +112,7 @@ Used with versions:
 
 * Only option to convert [Gen 1 cabinets](#gen-1) to interface with the PC based games 9th to SINOBUZ
 * Only part of conversion kits, no dedicated cabinets released with this IO
+* Compatible clones with a 4-pin Molex HDD power connector exist
 
 ### D01
 
