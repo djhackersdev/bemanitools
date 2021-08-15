@@ -112,10 +112,29 @@ Used with versions:
 
 * Only option to convert [Gen 1 cabinets](#gen-1) to interface with the PC based games 9th to SINOBUZ
 * Only part of conversion kits, no dedicated cabinets released with this IO
+* Software support: 9th Style to SINOBUZ
 * Compatible clones with a 4-pin Molex HDD power connector exist
 
 ### D01
 
+* Part of [generation 2 cabinets](../product/iidx.md#generation-2-cabinet) from 10th Style to DistorteD
+* Software support from 10th Style to SINOBUZ
+* Supersed by [IO2](#io2) when dedicated cabinets started shipping with GOLD
+
 ### IO2
 
+* Part of [generation 2](../product/iidx.md#generation-2-cabinet) and
+[generation 3](../product/iidx.md#generation-3-cabinet) cabinets from GOLD to SINOBUZ
+* Software support: GOLD to SINOBUZ
+* Supersed by [BIO2](#bio2) when dedicated cabinets started shipping with CANNON BALLERS
+
 ### BIO2
+
+* Only compatible IO with games starting CANNON BALLERS
+* Software support: CANNON BALLERS to HEROIC VERSE
+
+#### BIO2 sub IO
+
+* Additional adapter/compatibility board to upgrade older cabinets with [C02](#c02), [D01](#d01) or [IO2](#io2) IO
+hardware and wiring
+* Connects to the [BIO2](#bio2) IO board
