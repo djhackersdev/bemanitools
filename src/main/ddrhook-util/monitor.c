@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <wchar.h>
 
-#include "ddrhook/monitor.h"
+#include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
 

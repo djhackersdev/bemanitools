@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "ddrhook/gfx.h"
+#include "ddrhook-util/gfx.h"
 
 #include "hook/pe.h"
 #include "hook/table.h"

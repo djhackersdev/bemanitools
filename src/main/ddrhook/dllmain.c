@@ -5,9 +5,10 @@
 #include "bemanitools/ddrio.h"
 #include "bemanitools/eamio.h"
 
+#include "ddrhook-util/gfx.h"
+
 #include "ddrhook/_com4.h"
 #include "ddrhook/extio.h"
-#include "ddrhook/gfx.h"
 #include "ddrhook/master.h"
 #include "ddrhook/p3io.h"
 #include "ddrhook/spike.h"
