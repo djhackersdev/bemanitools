@@ -5,6 +5,7 @@ deplibs_ddrhook	:= \
 
 libs_ddrhook		:= \
 	acioemu \
+	ddrhook-util \
 	p3ioemu \
 	p3io \
 	hook \
@@ -17,12 +18,7 @@ src_ddrhook		:= \
 	extio.c \
 	dllmain.c \
 	_com4.c \
-	dinput.c \
-	gfx.c \
-	guid.c \
 	master.c \
-	misc.c \
-	monitor.c \
 	p3io.c \
 	usbmem.c \
 	spike.c

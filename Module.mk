@@ -91,6 +91,7 @@ include src/main/camhook/Module.mk
 include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
 include src/main/d3d9exhook/Module.mk
+include src/main/ddrhook-util/Module.mk
 include src/main/ddrhook/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk

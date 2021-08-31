@@ -1,8 +1,9 @@
 #include "ddrhook/master.h"
-#include "ddrhook/dinput.h"
-#include "ddrhook/gfx.h"
-#include "ddrhook/misc.h"
-#include "ddrhook/monitor.h"
+
+#include "ddrhook-util/dinput.h"
+#include "ddrhook-util/gfx.h"
+#include "ddrhook-util/misc.h"
+#include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
 
