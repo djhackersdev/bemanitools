@@ -106,7 +106,10 @@ settings_hook_dispatch_irp(struct irp *irp)
 
                 if (!path_exists(str)) {
                     log_misc("Creating local settings folder %s\\", str);
-                    CreateDirectoryA(str, NULL);
+                    
+                    if (!real_CreateDirectoryA(str, NULL)) {
+                        log_warning("Creating local settings folder failed: %s", str);
+                    }
                 }
             }
         }
