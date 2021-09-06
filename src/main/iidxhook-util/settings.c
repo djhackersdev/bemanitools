@@ -68,12 +68,12 @@ HRESULT
 settings_hook_dispatch_irp(struct irp *irp)
 {
     if (irp->op == IRP_OP_OPEN &&
-        (irp->open_filename[0] == L'd' || irp->open_filename[0] == L'e' ||
-         irp->open_filename[0] == L'f') &&
-        irp->open_filename[1] == L':') {
+            (irp->open_filename[0] == L'd' || irp->open_filename[0] == L'e' ||
+            irp->open_filename[0] == L'f') &&
+            irp->open_filename[1] == L':') {
         char *log_str;
-
-        ((wchar_t *) irp->open_filename)[1] = L'\\';
+        struct irp irp_altered;
+        wchar_t redir_path[MAX_PATH];
 
         if (wstr_narrow(irp->open_filename, &log_str)) {
             log_misc("Remapped settings path %s", log_str);
@@ -81,6 +81,17 @@ settings_hook_dispatch_irp(struct irp *irp)
         } else {
             log_warning("Cannot narrow path wstr for logging on settings remap match");
         }
+
+        // Create a copy of the irp including a deep copy of the open_filename to avoid modifying
+        // the original one.
+        // Otherwise, state is altered which callers upwards in the call stack might depend
+        // upon, breaking stuff in very unforseeable ways...
+        wstr_cpy(redir_path, MAX_PATH, irp->open_filename);
+        memcpy(&irp_altered, irp, sizeof(struct irp));
+        irp_altered.open_filename = (const wchar_t*) &redir_path;
+
+        // Apply redir to path copy
+        redir_path[1] = L'\\';
 
         /* Create local settings folders if not available */
         if (!settings_folders_checked) {
@@ -100,7 +111,8 @@ settings_hook_dispatch_irp(struct irp *irp)
             }
         }
 
-        return iohook_invoke_next(irp);
+        // Use altered copy of irp instead of irp from callers upstream
+        return iohook_invoke_next(&irp_altered);
     }
 
     return iohook_invoke_next(irp);
