@@ -22,3 +22,10 @@ Table of contents:
 * Hardware
   * [Hardware](hardware/README.md): Anything related to hardware, e.g. IO boards
 
+## Further external documentation
+
+A list of external documentation that can be useful when dealing with bemanitools,
+supported data and hardware.
+
+* [arcade-docs](https://github.com/Shizmob/arcade-docs): An open (to read and contribute) repository
+  of arcade hardware and software documentation
