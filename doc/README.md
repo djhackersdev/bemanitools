@@ -19,8 +19,6 @@ Table of contents:
   * [Development](development.md): Development environment, building, releasing, etc.
   * [Developer documentation](dev/README.md): Various lose documentation/notes by developers
   * [Tools](tools/README.md): Documentation for additional user and development tooling
-* Hardware
-  * [Hardware](hardware/README.md): Anything related to hardware, e.g. IO boards
 
 ## Further external documentation
 
