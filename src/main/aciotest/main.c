@@ -11,6 +11,7 @@
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
 #include "aciotest/panb.h"
+#include "aciotest/rvol.h"
 
 #include "util/log.h"
 
@@ -21,31 +22,37 @@ static uint8_t bi2a_mode = 0;
  * Enumerate supported ACIO nodes based on their product id.
  */
 static bool aciotest_assign_handler(
-    char product[4], struct aciotest_handler_node_handler *handler)
+    uint32_t product_type, struct aciotest_handler_node_handler *handler)
 {
-    if (!memcmp(product, "ICCA", 4) || !memcmp(product, "ICCB", 4) ||
-        !memcmp(product, "ICCC", 4)) {
+    if (product_type == AC_IO_NODE_TYPE_ICCA) {
         handler->init = aciotest_icca_handler_init;
         handler->update = aciotest_icca_handler_update;
 
         return true;
     }
 
-    if (!memcmp(product, "KFCA", 4)) {
+    if (product_type == AC_IO_NODE_TYPE_KFCA) {
         handler->init = aciotest_kfca_handler_init;
         handler->update = aciotest_kfca_handler_update;
 
         return true;
     }
 
-    if (!memcmp(product, "PANB", 4)) {
+    if (product_type == AC_IO_NODE_TYPE_PANB) {
         handler->init = aciotest_panb_handler_init;
         handler->update = aciotest_panb_handler_update;
 
         return true;
     }
 
-    if (!memcmp(product, "BI2A", 4)) {
+    if (product_type == AC_IO_NODE_TYPE_RVOL) {
+        handler->init = aciotest_rvol_handler_init;
+        handler->update = aciotest_rvol_handler_update;
+
+        return true;
+    }
+
+    if (product_type == AC_IO_NODE_TYPE_BI2A) {
         if (bi2a_mode == 0) {
             handler->init = aciotest_bi2a_sdvx_handler_init;
             handler->update = aciotest_bi2a_sdvx_handler_update;
@@ -99,22 +106,22 @@ int main(int argc, char **argv)
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
+        uint32_t product_type = aciodrv_device_get_node_product_type(device, i);
         aciodrv_device_get_node_product_ident(device, i, product);
+
         printf(
-            "> %d: %c%c%c%c\n",
+            "> %d: %c%c%c%c (%08x)\n",
             i + 1,
             product[0],
             product[1],
             product[2],
-            product[3]);
+            product[3],
+            product_type);
 
-        if (!aciotest_assign_handler(product, &handler[i])) {
+        if (!aciotest_assign_handler(product_type, &handler[i])) {
             printf(
-                "ERROR: Unsupported acio node product %c%c%c%c on node %d\n",
-                product[0],
-                product[1],
-                product[2],
-                product[3],
+                "ERROR: Unsupported acio node product %08x on node %d\n",
+                product_type,
                 i);
         }
     }

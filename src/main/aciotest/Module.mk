@@ -9,6 +9,7 @@ libs_aciotest     := \
 src_aciotest      := \
     icca.c \
     kfca.c \
-    bi2a-sdvx.c \
     panb.c \
+    rvol.c \
+    bi2a-sdvx.c \
     main.c \
