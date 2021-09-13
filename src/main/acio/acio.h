@@ -11,6 +11,7 @@
 #include "acio/kfca.h"
 #include "acio/mdxf.h"
 #include "acio/panb.h"
+#include "acio/rvol.h"
 
 #define AC_IO_SOF 0xAA
 #define AC_IO_ESCAPE 0xFF
@@ -87,6 +88,9 @@ struct ac_io_message {
                 struct ac_io_panb_poll_out panb_poll_out;
 
                 struct ac_io_hdxs_output hdxs_output;
+
+                struct ac_io_rvol_poll_in rvol_poll_in;
+                struct ac_io_rvol_poll_out rvol_poll_out;
 
                 struct ac_io_mdxf_poll_in mdxf_poll_in;
                 struct ac_io_mdxf_light_out mdxf_light_out;
