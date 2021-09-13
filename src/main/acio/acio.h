@@ -9,6 +9,7 @@
 #include "acio/hdxs.h"
 #include "acio/icca.h"
 #include "acio/kfca.h"
+#include "acio/mdxf.h"
 #include "acio/panb.h"
 
 #define AC_IO_SOF 0xAA
@@ -37,9 +38,11 @@ enum ac_io_node_type {
     AC_IO_NODE_TYPE_LED_STRIP = 0x04020000,
     AC_IO_NODE_TYPE_LED_SPIKE = 0x05010000,
     AC_IO_NODE_TYPE_KFCA = 0x09060000,
-    AC_IO_NODE_TYPE_BI2A = 0x0d060000,
     AC_IO_NODE_TYPE_RVOL = 0x09060001,
+    AC_IO_NODE_TYPE_MDXF = 0x09070000,
     AC_IO_NODE_TYPE_PANB = 0x090E0000,
+    AC_IO_NODE_TYPE_BMPU = 0x0B000000,
+    AC_IO_NODE_TYPE_BI2A = 0x0D060000,
 };
 
 #pragma pack(push, 1)
@@ -84,6 +87,9 @@ struct ac_io_message {
                 struct ac_io_panb_poll_out panb_poll_out;
 
                 struct ac_io_hdxs_output hdxs_output;
+
+                struct ac_io_mdxf_poll_in mdxf_poll_in;
+                struct ac_io_mdxf_light_out mdxf_light_out;
             };
         } cmd;
 
