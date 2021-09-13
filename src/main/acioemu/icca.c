@@ -125,8 +125,8 @@ void ac_io_emu_icca_dispatch_request(
 
             break;
 
-        case AC_IO_ICCA_CMD_BEGIN_KEYPAD:
-            log_misc("AC_IO_ICCA_CMD_BEGIN_KEYPAD(%d)", req->addr);
+        case AC_IO_ICCA_CMD_DEVICE_CONTROL:
+            log_misc("AC_IO_ICCA_CMD_DEVICE_CONTROL(%d)", req->addr);
             ac_io_emu_icca_send_status(icca, req, 0x00);
             icca->keypad_started = true;
 
