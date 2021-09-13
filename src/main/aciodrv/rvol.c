@@ -56,6 +56,7 @@ bool aciodrv_rvol_poll(
     struct ac_io_message msg;
 
     log_assert(device);
+    log_assert(pout);
 
     msg.addr = node_id + 1;
     msg.cmd.code = ac_io_u16(AC_IO_CMD_RVOL_POLL);
