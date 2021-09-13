@@ -300,6 +300,7 @@ static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_
         msg.cmd.version.time);
 
     memcpy(version->product, msg.cmd.version.product_code, ACIO_NODE_PRODUCT_CODE_LEN);
+    version->type = ac_io_u32(msg.cmd.version.type);
     version->major = msg.cmd.version.major;
     version->minor = msg.cmd.version.minor;
     version->revision = msg.cmd.version.revision;
@@ -391,6 +392,14 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, ui
 
     memcpy(product, device->node_versions[node_id].product, ACIO_NODE_PRODUCT_CODE_LEN);
     return true;
+}
+uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device, uint8_t node_id)
+{
+    if (device->node_count == 0 || node_id > device->node_count) {
+        return 0;
+    }
+
+    return device->node_versions[node_id].type;
 }
 
 const struct aciodrv_device_node_version *aciodrv_device_get_node_product_version(struct aciodrv_device_ctx *device, uint8_t node_id)

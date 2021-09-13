@@ -13,6 +13,7 @@ struct aciodrv_device_ctx;
 
 struct aciodrv_device_node_version {
     char product[ACIO_NODE_PRODUCT_CODE_LEN];
+    uint32_t type;
     uint8_t major;
     uint8_t minor;
     uint8_t revision;
@@ -51,6 +52,15 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device);
  * contains the identifier of the queried node.
  */
 bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN]);
+
+/**
+ * Get the product identifier of an enumerated node.
+ *
+ * @param device Context of opened device
+ * @param node_id Id of the node. Needs to be in range of the total node count.
+ * @return product type ID on success, or 0 on failure
+ */
+uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Get the product version of an enumerated node.
