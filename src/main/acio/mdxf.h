@@ -15,6 +15,7 @@ union mdxf_panel_sensors_individual {
         uint8_t left : 1;
         uint8_t down : 1;
         uint8_t up : 1;
+        uint8_t unused : 4;
     };
     uint8_t raw;
 };
