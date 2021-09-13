@@ -8,5 +8,6 @@ src_aciodrv     := \
     icca.c \
     kfca.c \
     panb.c \
+    rvol.c \
     port.c \
 
