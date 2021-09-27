@@ -57,6 +57,12 @@ If you want to run the games online, you have to set a valid PCBID and EAMID
 argument. You also have to set the url of the eamuse server you want to 
 connect to.
 
+Additional note regarding EAMID: This is new compared to the prior games and
+is provided as the identifier of the "eamuse license" to the server. Depending
+on the implementation of the server, this can lead to authentication failure
+resulting in
+[a network error on boot or warning during gameplay](#network-warning-instead-of-network-ok).
+
 Run the game with the gamestart-XX.bat file and enable network on the operator 
 menu. When enabled, the game seems to hang and expects you to power
 cycle the machine (i.e. quit the game and restart it).
@@ -134,7 +140,7 @@ value to cut down start-up times.
 
 ## "NETWORK WARNING" instead of "NETWORK OK"
 This can be caused by:
-* Invalid PCBID
+* Invalid PCBID/EAMID: Ensure both are [set to the same ID](#eamuse-network-setup)
 * Firewall blocking connections
 * Invalid eamuse url or port specified
 * Game is not run using the Administrator account
