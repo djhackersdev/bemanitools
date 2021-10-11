@@ -55,7 +55,8 @@ The tl;dr version and golden rules of the sections in the document:
     * Beatmania IIDX 24 SINOBUZ (iidx-21-to-24.zip) using [iidxhook7](doc/iidxhook/iidxhook7.md)
     * Beatmania IIDX 25 CANNON BALLERS (iidx-25-to-26.zip) using [iidxhook8](doc/iidxhook/iidxhook8.md)
     * Beatmania IIDX 26 Rootage (iidx-25-to-26.zip) using [iidxhook8](doc/iidxhook/iidxhook8.md)
-    * Beatmania IIDX 27 Heroic Verse (iidx-27.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 27 Heroic Verse (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 28 BISTROVER (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
 * jubeat
     * jubeat (experimental/buggy) (jb-01.zip) using [jbhook1](doc/jbhook1/jbhook1.md)
     * jubeat saucer (fulfill) (jb-05-to-07.zip) using jbhook

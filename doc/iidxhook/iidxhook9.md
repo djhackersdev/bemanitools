@@ -2,6 +2,7 @@
 
 The following games are compatible with this version of iidxhook:
 * Heroic Verse
+* BISTROVER
 
 The games must be bootstrapped using [launcher](../launcher.md).
 
