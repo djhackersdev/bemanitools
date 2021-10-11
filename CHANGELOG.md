@@ -3,6 +3,8 @@ Note for CI/CD: Ensure the version formatting in the sections is kept identical 
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
 ## 5.36
+* iidxhook9: Support for IIDX28
+* Various bugfixes
 
 ## 5.35
 * Jubeat: Add jbio-p4io
