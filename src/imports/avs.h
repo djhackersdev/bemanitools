@@ -46,6 +46,12 @@ struct property_node;
 struct avs_net_interface {
     uint8_t mac_addr[6];
     uint8_t unknown[30];
+#if AVS_VERSION >= 1603
+    uint8_t unknown2[6];
+#endif
+#if AVS_VERSION >= 1700
+    uint8_t unknown3[6];
+#endif
 };
 
 enum psmap_type {
