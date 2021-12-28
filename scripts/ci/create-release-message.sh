@@ -23,6 +23,6 @@ if [ "$changelog_excerpt" ]; then
     printf "%s" "$changelog_excerpt"
     exit 0
 else
-    echo "Could not find version in changelog: $VERSION"
+    >&2 echo "Could not find version in changelog: $VERSION"
     exit 1
 fi
