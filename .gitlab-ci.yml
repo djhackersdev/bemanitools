@@ -62,7 +62,7 @@ upload-package-registry:
       else
         version="${CI_COMMIT_SHORT_SHA}"
       fi
-
+    - |
       curl \
         --silent \
         --fail \
@@ -100,11 +100,9 @@ release-gitlab:
     refs:
       - tags
   script:
+    - version="$CI_COMMIT_TAG"
+    - release_message="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
     - |
-      version="$CI_COMMIT_TAG"
-
-      release_message="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
-
       release-cli create \
         --name "bemanitools ${version}" \
         --description="${release_message}" \
@@ -118,18 +116,13 @@ release-pigstall:
     refs:
       - tags
   script:
+    - version="${CI_COMMIT_TAG}"
+    - changelog_excerpt="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
+    - release_message="$(printf "bemanitools ${version} released\n${CI_TOOLS_URL}/bemanitools-v${version}.zip\n${changelog_excerpt}")"
+    - session="$(echo "$CI_PIGSTALL_SESSION_BASE64" | base64 -d)"
+    - data_prefix="$(echo "$CI_PIGSTALL_DATA_PREFIX_BASE64" | base64 -d)"
+    - link="$(echo "$CI_PIGSTALL_LINK_BASE64" | base64 -d)"
     - |
-      version="${CI_COMMIT_TAG}"
-
-      changelog_excerpt="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
-
-      release_message="$(printf \
-        "bemanitools ${version} released\n${CI_TOOLS_URL}/bemanitools-v${version}.zip\n${changelog_excerpt}")"
-
-      session="$(echo "$CI_PIGSTALL_SESSION_BASE64" | base64 -d)"
-      data_prefix="$(echo "$CI_PIGSTALL_DATA_PREFIX_BASE64" | base64 -d)"
-      link="$(echo "$CI_PIGSTALL_LINK_BASE64" | base64 -d)"
-
       curl \
         --silent \
         --fail \
