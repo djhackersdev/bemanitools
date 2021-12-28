@@ -41,6 +41,10 @@ build:
     - apk update && apk add make > /dev/null
   script:
     - make build-docker
+  artifacts:
+    paths:
+      - build
+    expire_in: 1 week
 
 upload-package-registry:
   stage: upload
