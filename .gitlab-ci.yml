@@ -63,8 +63,6 @@ upload-package-registry:
         version="${CI_COMMIT_SHORT_SHA}"
       fi
 
-      ls -la
-
       curl \
         --silent \
         --fail \
@@ -102,11 +100,9 @@ release-gitlab:
     refs:
       - tags
   script:
+    - version="$CI_COMMIT_TAG"
+    - release_message="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
     - |
-      version="$CI_COMMIT_TAG"
-
-      release_message="$(scripts/ci/create-release-message.sh "${version}" < CHANGELOG.md)"
-
       release-cli create \
         --name "bemanitools ${version}" \
         --description="${release_message}" \
