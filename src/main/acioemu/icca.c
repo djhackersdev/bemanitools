@@ -63,12 +63,20 @@ void ac_io_emu_icca_init(
 
     // default to 1.6.0
     icca->version = v160;
+    // default, most common code
+    ac_io_emu_icca_set_product_code(icca, AC_IO_EMU_PROD_CODE_ICCA);
 }
 
 void ac_io_emu_icca_set_version(
     struct ac_io_emu_icca *icca, enum ac_io_emu_icca_version version)
 {
     icca->version = version;
+}
+
+void ac_io_emu_icca_set_product_code(
+    struct ac_io_emu_icca *icca, const char product_code[4])
+{
+    memcpy(icca->product_code, product_code, sizeof(icca->product_code));
 }
 
 void ac_io_emu_icca_dispatch_request(
@@ -119,8 +127,9 @@ void ac_io_emu_icca_dispatch_request(
 
             break;
 
+        case AC_IO_ICCA_CMD_UNKN_0116:
         case AC_IO_ICCA_CMD_UNKN_0120:
-            log_misc("AC_IO_ICCA_CMD_UNKN_0120(%d)", req->addr);
+            log_misc("AC_IO_ICCA_CMD_UNK_%04X(%d)", cmd_code, req->addr);
             ac_io_emu_icca_send_status(icca, req, 0x00);
 
             break;
@@ -138,48 +147,52 @@ void ac_io_emu_icca_dispatch_request(
             break;
 
         case AC_IO_ICCA_CMD_SET_SLOT_STATE: {
-            struct ac_io_icca_misc *misc =
-                (struct ac_io_icca_misc *) &req->cmd.raw;
-            uint8_t cmd;
+            if(icca->version == v150) {
+                ac_io_emu_icca_send_state(icca, req, 0, false);
+            } else {
+                struct ac_io_icca_misc *misc =
+                    (struct ac_io_icca_misc *) &req->cmd.raw;
+                uint8_t cmd;
 
-            switch (misc->subcmd) {
-                case AC_IO_ICCA_SUBCMD_CARD_SLOT_CLOSE:
-                    cmd = EAM_IO_CARD_SLOT_CMD_CLOSE;
-                    break;
+                switch (misc->subcmd) {
+                    case AC_IO_ICCA_SUBCMD_CARD_SLOT_CLOSE:
+                        cmd = EAM_IO_CARD_SLOT_CMD_CLOSE;
+                        break;
 
-                case AC_IO_ICCA_SUBCMD_CARD_SLOT_OPEN:
-                    cmd = EAM_IO_CARD_SLOT_CMD_OPEN;
-                    break;
+                    case AC_IO_ICCA_SUBCMD_CARD_SLOT_OPEN:
+                        cmd = EAM_IO_CARD_SLOT_CMD_OPEN;
+                        break;
 
-                case AC_IO_ICCA_SUBCMD_CARD_SLOT_EJECT:
-                    cmd = EAM_IO_CARD_SLOT_CMD_EJECT;
-                    icca->engaged = false;
-                    break;
+                    case AC_IO_ICCA_SUBCMD_CARD_SLOT_EJECT:
+                        cmd = EAM_IO_CARD_SLOT_CMD_EJECT;
+                        icca->engaged = false;
+                        break;
 
-                case 3:
-                    cmd = EAM_IO_CARD_SLOT_CMD_READ;
-                    break;
+                    case 3:
+                        cmd = EAM_IO_CARD_SLOT_CMD_READ;
+                        break;
 
-                default:
-                    cmd = 0xFF;
-                    log_warning(
-                        "Unhandled slot command %X, node %d",
-                        misc->subcmd,
-                        icca->unit_no);
-                    break;
-            }
-
-            if (cmd != 0xFF) {
-                if (!eam_io_card_slot_cmd(icca->unit_no, cmd)) {
-                    log_warning(
-                        "Eamio failed to handle slot cmd %d for node %d",
-                        cmd,
-                        icca->unit_no);
+                    default:
+                        cmd = 0xFF;
+                        log_warning(
+                            "Unhandled slot command %X, node %d",
+                            misc->subcmd,
+                            icca->unit_no);
+                        break;
                 }
-            }
 
-            /* response with current slot state */
-            ac_io_emu_icca_send_status(icca, req, misc->subcmd);
+                if (cmd != 0xFF) {
+                    if (!eam_io_card_slot_cmd(icca->unit_no, cmd)) {
+                        log_warning(
+                            "Eamio failed to handle slot cmd %d for node %d",
+                            cmd,
+                            icca->unit_no);
+                    }
+                }
+
+                /* response with current slot state */
+                ac_io_emu_icca_send_status(icca, req, misc->subcmd);
+            }
 
             break;
         }
@@ -202,12 +215,14 @@ void ac_io_emu_icca_dispatch_request(
             break;
 
         case AC_IO_ICCA_CMD_POLL_FELICA:
-            icca->detected_new_reader = true;
-
-            if (icca->version == v170) {
+            if (icca->version == v150) {
+                ac_io_emu_icca_send_state(icca, req, 0, false);
+            } else if (icca->version == v170) {
                 ac_io_emu_icca_send_empty(icca, req);
+                icca->detected_new_reader = true;
             } else {
                 ac_io_emu_icca_send_status(icca, req, 0x01);
+                icca->detected_new_reader = true;
             }
 
             break;
@@ -244,8 +259,6 @@ static void ac_io_emu_icca_cmd_send_version(
     resp.cmd.version.major = 0x01;
 
     if (icca->version == v150) {
-        log_warning(
-            "ICCA v1.5.0 emulation requested, please remove this log once implemented");
         resp.cmd.version.minor = 0x05;
     } else if (icca->version == v160) {
         resp.cmd.version.minor = 0x06;
@@ -262,7 +275,7 @@ static void ac_io_emu_icca_cmd_send_version(
 
     memcpy(
         resp.cmd.version.product_code,
-        "ICCA",
+        icca->product_code,
         sizeof(resp.cmd.version.product_code));
     strncpy(resp.cmd.version.date, __DATE__, sizeof(resp.cmd.version.date));
     strncpy(resp.cmd.version.time, __TIME__, sizeof(resp.cmd.version.time));

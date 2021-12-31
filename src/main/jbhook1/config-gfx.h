@@ -8,6 +8,7 @@
  */
 struct jbhook1_config_gfx {
     bool windowed;
+    bool vertical;
 };
 
 /**

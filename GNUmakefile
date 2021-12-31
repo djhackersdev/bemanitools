@@ -226,7 +226,7 @@ $$(dll_$1_$2_$3) $$(implib_$1_$2_$3):	$$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) \
 	$(V)echo ... $$(dll_$1_$2_$3)
 	$(V)$$(toolchain_$1)gcc -shared \
 		-o $$(dll_$1_$2_$3) -Wl,--out-implib,$$(implib_$1_$2_$3) \
-		$$^ $$(ldflags_$3)
+		-Wl,--start-group $$^ -Wl,--end-group $$(ldflags_$3)
 	$(V)$$(toolchain_$1)strip $$(dll_$1_$2_$3)
 	$(V)$$(toolchain_$1)ranlib $$(implib_$1_$2_$3)
 

@@ -1,0 +1,37 @@
+LIBRARY libavs-win32
+
+EXPORTS
+    avs_boot
+    avs_net_ctrl
+    avs_shutdown
+    avs_thread_create
+    avs_thread_destroy
+    avs_thread_exit
+    avs_thread_join
+    log_body_fatal
+    log_body_info
+    log_body_misc
+    log_body_warning
+    log_boot
+    log_change_level
+    property_create
+    property_desc_to_buffer
+    property_destroy
+    property_file_write
+    property_insert_read
+    property_mem_write
+    property_read_query_memsize
+    property_search
+    property_set_flag
+    property_node_clone
+    property_node_create
+    property_node_datasize
+    property_node_name
+    property_node_refer
+    property_node_remove
+    property_node_type
+    property_node_traversal
+    property_node_refdata
+    std_getenv
+    std_setenv    
+

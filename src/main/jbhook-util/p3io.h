@@ -9,13 +9,13 @@
 #include "security/mcode.h"
 
 /**
- * Initialize the jbhook1 specific p3io emulation backend.
+ * Initialize the jb01-04 specific p3io emulation backend.
  *
  * @param mcode Mcode of the target game to run. Required for dongle emulation.
  * @param pcbid PCBDID
  * @param eamid EAMID
  */
-void jbhook1_p3io_init(
+void jbhook_util_p3io_init(
     const struct security_mcode *mcode,
     const struct security_id *pcbid,
     const struct security_id *eamid);
@@ -23,6 +23,6 @@ void jbhook1_p3io_init(
 /**
  * Shutdown the p3io emulation backend.
  */
-void jbhook1_p3io_fini(void);
+void jbhook_util_p3io_fini(void);
 
 #endif

@@ -6,7 +6,7 @@
 
 #include "imports/avs.h"
 
-#include "jbhook/io.h"
+#include "jbhook-util/p4io.h"
 
 #include "p4io/cmd.h"
 
@@ -20,7 +20,7 @@ static uint32_t jbhook_command_handle(
     void *resp,
     uint32_t resp_max_len);
 
-static const struct p4ioemu_device_msg_hook jbhook_io_msg = {
+static const struct p4ioemu_device_msg_hook jbhook_p4io_msg = {
     .jamma2_read = jbhook_io_jamma2_read,
     .command_handle = jbhook_command_handle,
     .roundplug_read_id = NULL,
@@ -181,7 +181,7 @@ static uint32_t jbhook_command_handle(
     }
 }
 
-const struct p4ioemu_device_msg_hook *jbhook_io_init(void)
+const struct p4ioemu_device_msg_hook *jbhook_p4io_init(void)
 {
-    return &jbhook_io_msg;
+    return &jbhook_p4io_msg;
 }

@@ -150,10 +150,34 @@ static HRESULT p3io_emu_handle_ioctl(struct irp *irp)
     uint32_t pad;
     HRESULT hr;
 
-    if (irp->ioctl != P3IO_IOCTL_READ_JAMMA) {
-        log_warning("Unknown ioctl: %x", irp->ioctl);
+    switch (irp->ioctl) {
+        case P3IO_IOCTL_GET_VERSION: {
+            const char dev_name[] = "bemanitools p3ioemu";
 
-        return E_NOTIMPL;
+            if (irp->read.nbytes < strlen(dev_name)) {
+                log_fatal("Device name string does not fit into buffer");
+            }
+
+            memset(irp->read.bytes, 0, irp->read.nbytes);
+            memcpy(irp->read.bytes, dev_name, strlen(dev_name));
+            irp->read.pos = strlen(dev_name);
+
+            return S_OK;
+        }
+
+        case P3IO_IOCTL_RESET_PIPE:
+            // does not expect a response
+            irp->read.pos = 0;
+            return S_OK;
+
+        case P3IO_IOCTL_READ_JAMMA:
+            // handle it below
+            break;
+
+        default:
+            log_warning("Unknown ioctl %08x", irp->ioctl);
+
+            return E_NOTIMPL;
     }
 
     if (irp->read.nbytes < sizeof(uint32_t)) {
