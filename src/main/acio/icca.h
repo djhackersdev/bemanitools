@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 enum ac_io_icca_cmd {
+    /* found on jubeat, sent right after queue loop start */
+    AC_IO_ICCA_CMD_UNKN_0116 = 0x0116,
     /* Yet unknown command encountered first on jubeat (1) */
     AC_IO_ICCA_CMD_UNKN_0120 = 0x0120,
     AC_IO_ICCA_CMD_QUEUE_LOOP_START = 0x0130,

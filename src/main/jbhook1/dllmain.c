@@ -16,13 +16,17 @@
 #include "hooklib/adapter.h"
 #include "hooklib/rs232.h"
 
-#include "jbhook1/acio.h"
 #include "jbhook1/avs-boot.h"
 #include "jbhook1/config-eamuse.h"
 #include "jbhook1/config-gfx.h"
 #include "jbhook1/config-security.h"
 #include "jbhook1/log-gftools.h"
-#include "jbhook1/p3io.h"
+
+#include "jbhook-util/acio.h"
+#include "jbhook-util/eamuse.h"
+#include "jbhook-util/gfx.h"
+#include "jbhook-util/mixer.h"
+#include "jbhook-util/p3io.h"
 
 #include "p3ioemu/devmgr.h"
 #include "p3ioemu/emu.h"
@@ -72,6 +76,8 @@ static HWND CDECL my_mwindow_create(
     log_info("---------------- Begin jbhook mwindow_create ----------------");
     log_info("-------------------------------------------------------------");
 
+    jbhook_util_mixer_hook_init();
+
     config = cconfig_init();
 
     jbhook1_config_gfx_init(config);
@@ -101,6 +107,14 @@ static HWND CDECL my_mwindow_create(
 
     fullscreen = !config_gfx.windowed;
 
+    if(config_gfx.vertical) {
+        DWORD tmp = window_width;
+        window_width = window_height;
+        window_height = tmp;
+
+        jbhook_util_gfx_install_vertical_hooks();
+    }
+
     log_info("Starting up jubeat IO backend");
 
     jb_io_set_loggers(
@@ -119,14 +133,16 @@ static HWND CDECL my_mwindow_create(
         log_fatal("Initializing card reader backend failed");
     }
 
+    jbhook_util_eamuse_hook_init();
+
     iohook_push_handler(p3io_emu_dispatch_irp);
-    iohook_push_handler(ac_io_port_dispatch_irp);
+    iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
 
     rs232_hook_init();
-    ac_io_port_init();
+    jbhook_util_ac_io_port_init(L"COM1");
 
     p3io_setupapi_insert_hooks(NULL);
-    jbhook1_p3io_init(
+    jbhook_util_p3io_init(
         &config_security.mcode, &config_eamuse.pcbid, &config_eamuse.eamid);
 
     log_info("-------------------------------------------------------------");

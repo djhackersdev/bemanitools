@@ -6,6 +6,5 @@ src_acioemu     := \
     h44b.c \
     hdxs.c \
     icca.c \
-    iccb.c \
     pipe.c \
 

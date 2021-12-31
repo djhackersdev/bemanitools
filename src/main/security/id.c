@@ -137,6 +137,19 @@ bool security_id_verify(const struct security_id *id)
 {
     log_assert(id);
 
-    return id->header == SECURITY_ID_HEADER &&
-        id->checksum == security_id_checksum_buffer(id->id);
+    if(id->header != SECURITY_ID_HEADER) {
+        log_warning("PCBID header needs to be %02X but was %02X",
+            SECURITY_ID_HEADER, id->header);
+        return false;
+    }
+
+    uint8_t check = id->checksum;
+    uint8_t need = security_id_checksum_buffer(id->id);
+
+    if(check != need) {
+        log_warning("PCBID checksum should be %02X got %02X", need, check);
+        return false;
+    }
+
+    return true;
 }

@@ -23,14 +23,14 @@ games:
 * [iidxhook8](iidxhook8.md): CANNON BALLERS, Rootage
 * [iidxhook8](iidxhook9.md): Heroic Verse
 
-When building kactools, independent packages are created for each set of games
+When building bemanitools, independent packages are created for each set of games
 which are ready to be dropped on top of vanilla AC data dumps. We recommend
-using prestine dumps to avoid any conflicts with other hardcoded hacks or
+using pristine dumps to avoid any conflicts with other hardcoded hacks or
 binary patches.
 
 ## How to run
 To run your game with iidxhook, you have to use the inject tool to inject the
-DLL to the game process. *dist/iidx* contains bat scripts with all the
+DLL to the game process. `dist/iidx` contains bat scripts with all the
 important parameters configured. Further parameters can be added but might not
 be required to run the game with default settings.
 Further information on how to setup the data for each specific version are

@@ -14,11 +14,11 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 #include "acioemu/h44b.h"
-#include "acioemu/iccb.h"
+#include "acioemu/icca.h"
 
 #include "hook/iohook.h"
 
-#include "jbhook/acio.h"
+#include "jbhook-util/acio.h"
 
 #include "imports/avs.h"
 
@@ -29,23 +29,28 @@
 #include "util/str.h"
 
 static struct ac_io_emu ac_io_emu;
-static struct ac_io_emu_iccb ac_io_emu_iccb;
+static struct ac_io_emu_icca ac_io_emu_icca;
 static struct ac_io_emu_h44b ac_io_emu_h44b;
 
-void ac_io_port_init(void)
+void jbhook_util_ac_io_port_init(const wchar_t *filename)
 {
-    ac_io_emu_init(&ac_io_emu, L"COM2");
-    ac_io_emu_iccb_init(&ac_io_emu_iccb, &ac_io_emu, 0);
+    ac_io_emu_init(&ac_io_emu, filename);
+    ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
     ac_io_emu_h44b_init(&ac_io_emu_h44b, &ac_io_emu, 1);
 }
 
-void ac_io_port_fini(void)
+void jbhook_util_ac_io_port_fini(void)
 {
     ac_io_emu_fini(&ac_io_emu);
 }
 
+void jbhook_util_ac_io_set_iccb(void) {
+    ac_io_emu_icca_set_version(&ac_io_emu_icca, v150);
+    ac_io_emu_icca_set_product_code(&ac_io_emu_icca, AC_IO_EMU_PROD_CODE_ICCB);
+}
+
 HRESULT
-ac_io_port_dispatch_irp(struct irp *irp)
+jbhook_util_ac_io_port_dispatch_irp(struct irp *irp)
 {
     const struct ac_io_message *msg;
     HRESULT hr;
@@ -72,7 +77,7 @@ ac_io_port_dispatch_irp(struct irp *irp)
                 break;
 
             case 1:
-                ac_io_emu_iccb_dispatch_request(&ac_io_emu_iccb, msg);
+                ac_io_emu_icca_dispatch_request(&ac_io_emu_icca, msg);
 
                 break;
 

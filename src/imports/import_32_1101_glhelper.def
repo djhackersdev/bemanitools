@@ -1,0 +1,6 @@
+LIBRARY glhelper
+
+EXPORTS
+    glBindFramebufferEXT
+    glFramebufferTexture2DEXT
+    glGenFramebuffersEXT

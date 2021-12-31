@@ -1,4 +1,4 @@
-#include "jbhook/options.h"
+#include "jbhook2/options.h"
 
 #include <windows.h>
 
@@ -35,7 +35,7 @@ void options_init(struct options *options)
 {
     options->windowed = false;
     options->window_framed = false;
-    options->disable_p4ioemu = false;
+    options->disable_p3ioemu = false;
     options->disable_cardemu = false;
     options->disable_adapteremu = false;
 }
@@ -76,7 +76,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
             }
 
             case 'p': {
-                options->disable_p4ioemu = true;
+                options->disable_p3ioemu = true;
                 break;
             }
         }
@@ -89,7 +89,7 @@ void options_print_usage(void)
 {
     OutputDebugStringA("jbhook for jubeat, build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(
         GITREV) "\n"
-                "Usage: launcher.exe -K jbhook.dll [game exec] <options> \n"
+                "Usage: launcher.exe -K jbhook2.dll [game exec] <options> \n"
                 "\n"
                 "       The following options can be specified after the game exec path:\n"
                 "\n"
@@ -99,9 +99,8 @@ void options_print_usage(void)
                 "       -a                  Disable adapter hook\n"
                 "       -c                  Disable card emulation (e.g. when running on a "
                 "real cab)\n"
-                "       -p                  Disable p4io emulation (e.g. when running on a "
-                "real cab or on a bare "
-                "p4io)\n");
+                "       -p                  Disable p3io emulation (e.g. when running on a "
+                "real cab)\n");
 }
 
 void options_fini(struct options *options)

@@ -3,6 +3,6 @@
 
 #include "p4ioemu/device.h"
 
-const struct p4ioemu_device_msg_hook *jbhook_io_init(void);
+const struct p4ioemu_device_msg_hook *jbhook_p4io_init(void);
 
 #endif

@@ -4,6 +4,8 @@
 
 #include "jbhook1/config-security.h"
 
+#include "jbhook-util/security.h"
+
 #include "security/mcode.h"
 
 #include "util/log.h"
@@ -12,16 +14,7 @@
 #define JBHOOK1_CONFIG_SECURITY_MCODE_KEY "security.mcode"
 
 #define JBHOOK1_CONFIG_SECURITY_DEFAULT_MCODE_VALUE \
-    jbhook1_config_security_default_mcode
-
-static const struct security_mcode jbhook1_config_security_default_mcode = {
-    .header = SECURITY_MCODE_HEADER,
-    .unkn = SECURITY_MCODE_UNKN_C,
-    .game = SECURITY_MCODE_GAME_JB_1,
-    .region = SECURITY_MCODE_REGION_JAPAN,
-    .cabinet = SECURITY_MCODE_CABINET_A,
-    .revision = SECURITY_MCODE_REVISION_B,
-};
+    jbhook_util_security_default_mcode
 
 void jbhook1_config_security_init(struct cconfig *config)
 {

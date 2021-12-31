@@ -17,14 +17,18 @@
 
 #include "imports/avs.h"
 
-#include "jbhook/acio.h"
-#include "jbhook/eamuse.h"
-#include "jbhook/gfx.h"
-#include "jbhook/io.h"
-#include "jbhook/options.h"
+#include "jbhook3/options.h"
+
+#include "jbhook-util/acio.h"
+#include "jbhook-util/eamuse.h"
+#include "jbhook-util/gfx.h"
+#include "jbhook-util/p4io.h"
+#include "jbhook-util/security.h"
 
 #include "p4ioemu/device.h"
 #include "p4ioemu/setupapi.h"
+
+#include "security/id.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -43,7 +47,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("--- Begin jbhook dll_entry_init ---");
 
     iohook_push_handler(p4ioemu_dispatch_irp);
-    iohook_push_handler(ac_io_port_dispatch_irp);
+    iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
 
     if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
@@ -59,7 +63,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         }
 
         hook_setupapi_init(&p4ioemu_setupapi_data);
-        p4ioemu_init(jbhook_io_init());
+        p4ioemu_init(jbhook_p4io_init());
     }
 
     if (!options.disable_cardemu) {
@@ -76,12 +80,15 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         }
 
         rs232_hook_init();
-        ac_io_port_init();
+        jbhook_util_ac_io_port_init(L"COM2");
+        jbhook_util_ac_io_set_iccb();
     }
 
     log_info("---  End  jbhook dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, param);
+    bool ret = app_hook_invoke_init(sidcode, param);
+
+    return ret;
 
 fail:
     if (eam_io_ok) {
@@ -108,7 +115,7 @@ static bool my_dll_entry_main(void)
     jb_io_fini();
 
     if (!options.disable_cardemu) {
-        ac_io_port_fini();
+        jbhook_util_ac_io_port_fini();
     }
 
     if (!options.disable_p4ioemu) {
@@ -137,8 +144,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         adapter_hook_init();
     }
 
-    gfx_hook_init();
-    jbhook_eamuse_hook_init();
+    jbhook_util_gfx_hook_init();
+    jbhook_util_eamuse_hook_init();
 
     return TRUE;
 }
