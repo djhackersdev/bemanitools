@@ -88,6 +88,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     if (!options.disable_cardemu) {
         jbhook_util_ac_io_port_init(L"COM1");
+        jbhook_util_ac_io_set_iccb();
 
         log_info("Starting up card reader backend");
 
