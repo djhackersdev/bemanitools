@@ -51,6 +51,7 @@
 
 /* Jubeat */
 #define SECURITY_MCODE_GAME_JB_1 "H44"
+#define SECURITY_MCODE_GAME_JB_3 "J44"
 
 /* Region */
 #define SECURITY_MCODE_REGION_ASIA 'A'
@@ -58,6 +59,7 @@
 
 /* Cabinet */
 #define SECURITY_MCODE_CABINET_A 'A'
+#define SECURITY_MCODE_CABINET_C 'C'
 
 /* Revision */
 #define SECURITY_MCODE_REVISION_A 'A'

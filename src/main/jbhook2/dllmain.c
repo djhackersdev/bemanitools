@@ -24,7 +24,6 @@
 #include "jbhook-util/eamuse.h"
 #include "jbhook-util/gfx.h"
 #include "jbhook-util/p3io.h"
-#include "jbhook-util/security.h"
 
 #include "p3ioemu/devmgr.h"
 #include "p3ioemu/emu.h"
@@ -33,12 +32,22 @@
 #include "p4ioemu/setupapi.h"
 
 #include "security/id.h"
+#include "security/mcode.h"
 
 #include "util/defs.h"
 #include "util/log.h"
 #include "util/thread.h"
 
 static struct options options;
+
+static const struct security_mcode security_mcode_j44 = {
+    .header = SECURITY_MCODE_HEADER,
+    .unkn = SECURITY_MCODE_UNKN_C,
+    .game = SECURITY_MCODE_GAME_JB_3,
+    .region = SECURITY_MCODE_REGION_JAPAN,
+    .cabinet = SECURITY_MCODE_CABINET_C,
+    .revision = SECURITY_MCODE_REVISION_A,
+};
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
@@ -57,9 +66,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_p3ioemu) {
         log_assert(sidcode != NULL);
         // pcbid and eamid are only used here for sec check, the ones used for
-        // network access are taken from ea3-config.xml
+        // network access are taken from ea3-config.xml.
+        // When booting knit append (and on no other version), the code must
+        // actually match, so the ID used is for append (JCA)
         jbhook_util_p3io_init(
-            &jbhook_util_security_default_mcode,
+            &security_mcode_j44,
             &security_id_default, &security_id_default);
 
         log_info("Starting up jubeat IO backend");

@@ -23,7 +23,6 @@
 #include "jbhook-util/eamuse.h"
 #include "jbhook-util/gfx.h"
 #include "jbhook-util/p4io.h"
-#include "jbhook-util/security.h"
 
 #include "p4ioemu/device.h"
 #include "p4ioemu/setupapi.h"
