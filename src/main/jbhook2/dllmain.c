@@ -64,7 +64,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     if (!options.disable_p3ioemu) {
+        iohook_push_handler(p3io_emu_dispatch_irp);
+        p3io_setupapi_insert_hooks(NULL);
+
         log_assert(sidcode != NULL);
+
         // pcbid and eamid are only used here for sec check, the ones used for
         // network access are taken from ea3-config.xml.
         // When booting knit append (and on no other version), the code must
@@ -87,6 +91,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     if (!options.disable_cardemu) {
+        iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
+        rs232_hook_init();
         jbhook_util_ac_io_port_init(L"COM1");
         jbhook_util_ac_io_set_iccb();
 
@@ -199,25 +205,13 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
     options_init_from_cmdline(&options);
 
-        hook_table_apply(
-            NULL, "mwindow.dll", init_hook_syms, lengthof(init_hook_syms));
+    hook_table_apply(
+        NULL, "mwindow.dll", init_hook_syms, lengthof(init_hook_syms));
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 
-    iohook_push_handler(p3io_emu_dispatch_irp);
-
-    iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
-
     if (!options.disable_adapteremu) {
         adapter_hook_init();
-    }
-
-    if (!options.disable_cardemu) {
-        rs232_hook_init();
-    }
-
-    if (!options.disable_p3ioemu) {
-        p3io_setupapi_insert_hooks(NULL);
     }
 
     jbhook_util_gfx_hook_init();
