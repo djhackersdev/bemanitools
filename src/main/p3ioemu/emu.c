@@ -171,36 +171,33 @@ static HRESULT p3io_emu_handle_ioctl(struct irp *irp)
             return S_OK;
 
         case P3IO_IOCTL_READ_JAMMA:
-            // handle it below
-            break;
+            if (irp->read.nbytes < sizeof(uint32_t)) {
+                log_warning("Insufficient ioctl response buffer space");
+
+                return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+            }
+
+            pad = 0;
+
+            if (p3io_ops->read_jamma != NULL) {
+                hr = p3io_ops->read_jamma(p3io_ops_ctx, &pad);
+
+                if (FAILED(hr)) {
+                    return hr;
+                }
+            }
+
+            dest = (uint32_t *) irp->read.bytes;
+            *dest = ~_byteswap_ulong(pad);
+            irp->read.pos = sizeof(pad);
+
+            return S_OK;
 
         default:
             log_warning("Unknown ioctl %08x", irp->ioctl);
 
             return E_NOTIMPL;
     }
-
-    if (irp->read.nbytes < sizeof(uint32_t)) {
-        log_warning("Insufficient ioctl response buffer space");
-
-        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-    }
-
-    pad = 0;
-
-    if (p3io_ops->read_jamma != NULL) {
-        hr = p3io_ops->read_jamma(p3io_ops_ctx, &pad);
-
-        if (FAILED(hr)) {
-            return hr;
-        }
-    }
-
-    dest = (uint32_t *) irp->read.bytes;
-    *dest = ~_byteswap_ulong(pad);
-    irp->read.pos = sizeof(pad);
-
-    return S_OK;
 }
 
 static HRESULT p3io_emu_handle_read(struct irp *irp)
