@@ -120,10 +120,14 @@ void jbhook_util_gfx_install_vertical_hooks(void) {
     log_info("Inserted vertical display hooks");
 }
 
+// Welcome to OpenGL land! There is a ton of boilerplate needed here "just" to
+// rotate the render output
+
 // only jubeat uses openGL, let alone needs rotation at all, so hardcode for now
 #define W 768
 #define H 1360
 
+// the framebuffer we redirect renders to instead of rendering to the screen
 static GLuint fb;
 static GLuint color;
 
@@ -140,25 +144,33 @@ static void fb_init(void) {
     glGenTextures(1, &color);
 }
 
-static uint8_t pixels_raw[W*H*3];
-static uint8_t pixels_rot[W*H*3];
-
 static void __stdcall hook_glFlush(void) {
+    // 3 bytes per RGB pixel
+    uint8_t pixels_raw[W*H*3];
+    uint8_t pixels_rot[W*H*3];
+
     glReadPixels(0, 0, H, W, GL_RGB, GL_UNSIGNED_BYTE, pixels_raw);
 
+    // CPU copies may seem slow here, but this runs fine on my jubeat cab, so
+    // speed is not a huge concern.
     for(size_t x = 0; x < W; x++) {
         for(size_t y = 0; y < H; y++) {
             memcpy(&pixels_rot[3*(y*W + x)], &pixels_raw[3*((W-x)*H + y)], 3);
         }
     }
 
+    // now *we* get to draw to the main display
     real_glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 
+    // the scissor test clips pixels to the game window - must be disabled or
+    // the draw area is cut off vertically
     glDisable(GL_SCISSOR_TEST);
     glDrawPixels(W, H, GL_RGB, GL_UNSIGNED_BYTE, pixels_rot);
 
     real_glFlush();
 
+    // reset the framebuffer for the next draw - must be after flush (i.e. when
+    // all state is reset) and before the game tries to draw anything
     fb_init();
     real_glBindFramebufferEXT(GL_FRAMEBUFFER, fb);
     glBindTexture(GL_TEXTURE_2D, color);
@@ -169,9 +181,16 @@ static void __stdcall hook_glFlush(void) {
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
 }
 
+// hooking something in glhelper.dll (a jubeat supplied DLL) might seem
+// insufficiently generic compared to something in opengl32.dll, but the render
+// loop of the game makes it very difficult to "catch" the rendering at the
+// right place otherwise. This works with all horizontal jubeats, and they
+// stopped needing rotation past copious.
 static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer) {
     fb_init();
 
+    // check this is actually the screen - the game also uses internal
+    // framebuffers for some parts of the display
     if(target == GL_FRAMEBUFFER && framebuffer == 0) {
         framebuffer = fb;
     }
