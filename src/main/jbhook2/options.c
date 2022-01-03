@@ -65,6 +65,11 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                 break;
             }
 
+            case 'v': {
+                options->vertical = true;
+                break;
+            }
+
             case 'a': {
                 options->disable_adapteremu = true;
                 break;
@@ -96,6 +101,7 @@ void options_print_usage(void)
                 "       -h                  Print this usage message\n"
                 "       -w                  Run the game windowed\n"
                 "       -f                  Run the game in a framed window (needs -w option)\n"
+                "       -v                  Rotate the normally-horizontal game window to be vertical\n"
                 "       -a                  Disable adapter hook\n"
                 "       -c                  Disable card emulation (e.g. when running on a "
                 "real cab)\n"

@@ -42,8 +42,6 @@ static struct options options;
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
-    jbhook_util_gfx_install_vertical_hooks();
-
     bool eam_io_ok;
     bool jb_io_ok;
 
@@ -51,6 +49,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     jb_io_ok = false;
 
     log_info("--- Begin jbhook dll_entry_init ---");
+
+    if(options.vertical) {
+        jbhook_util_gfx_install_vertical_hooks();
+    }
 
     if (!options.disable_p3ioemu) {
         log_assert(sidcode != NULL);
@@ -157,9 +159,11 @@ static HWND CDECL my_mwindow_create(
     log_info("---------------- Begin jbhook mwindow_create ----------------");
     log_info("-------------------------------------------------------------");
 
-    DWORD tmp = window_width;
-    window_width = window_height;
-    window_height = tmp;
+    if(options.vertical) {
+        DWORD tmp = window_width;
+        window_width = window_height;
+        window_height = tmp;
+    }
 
     return real_mwindow_create(
         hinstance,
