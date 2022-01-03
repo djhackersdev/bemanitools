@@ -7,4 +7,4 @@ if not exist dev\nvram\coin.xml copy prop\defaults\coin.xml dev\nvram\coin.xml
 if not exist dev\nvram\eacoin.xml copy prop\defaults\eacoin.xml dev\nvram\eacoin.xml
 if not exist dev\raw mkdir dev\raw
 
-launcher -K jbhook3.dll jubeat.dll
+launcher -H 33554432 -K jbhook3.dll jubeat.dll
