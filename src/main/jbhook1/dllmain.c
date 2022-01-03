@@ -140,6 +140,7 @@ static HWND CDECL my_mwindow_create(
 
     rs232_hook_init();
     jbhook_util_ac_io_port_init(L"COM1");
+    jbhook_util_ac_io_set_iccb();
 
     p3io_setupapi_insert_hooks(NULL);
     jbhook_util_p3io_init(
