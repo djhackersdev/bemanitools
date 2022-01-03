@@ -177,13 +177,15 @@ static HWND CDECL my_mwindow_create(
         window_height = tmp;
     }
 
+    fullscreen = !options.windowed;
+
     return real_mwindow_create(
         hinstance,
         callback,
         window_title,
         window_width,
         window_height,
-        0);
+        fullscreen);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
