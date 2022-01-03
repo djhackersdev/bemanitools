@@ -146,8 +146,10 @@ static void fb_init(void) {
 
 static void __stdcall hook_glFlush(void) {
     // 3 bytes per RGB pixel
-    uint8_t pixels_raw[W*H*3];
-    uint8_t pixels_rot[W*H*3];
+    // these could really be stack variables but they are too big for gcc's
+    // default stack size, and it's no problem for 6MiB of data to hang around
+    static uint8_t pixels_raw[W*H*3];
+    static uint8_t pixels_rot[W*H*3];
 
     glReadPixels(0, 0, H, W, GL_RGB, GL_UNSIGNED_BYTE, pixels_raw);
 
@@ -185,7 +187,7 @@ static void __stdcall hook_glFlush(void) {
 // insufficiently generic compared to something in opengl32.dll, but the render
 // loop of the game makes it very difficult to "catch" the rendering at the
 // right place otherwise. This works with all horizontal jubeats, and they
-// stopped needing rotation past copious.
+// stopped needing rotation fixes starting with saucer.
 static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer) {
     fb_init();
 
