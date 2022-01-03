@@ -27,6 +27,8 @@ static void (__stdcall *real_glFlush)(void);
 static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer);
 static void (*real_glBindFramebufferEXT)(GLenum target, GLuint framebuffer);
 
+static void hook_infodispcore_set_angle(void* this, int angle);
+
 static const struct hook_symbol jbhook1_opengl_hook_syms[] = {
     {.name = "glFlush",
      .patch = hook_glFlush,
@@ -37,6 +39,12 @@ static const struct hook_symbol jbhook1_glhelper_hook_syms[] = {
     {.name = "glBindFramebufferEXT",
      .patch = hook_glBindFramebufferEXT,
      .link = (void **) &real_glBindFramebufferEXT},
+};
+
+// on knit/copious, this gives us right-side-up errors, too!
+static const struct hook_symbol jbhook_infodisp_hook_syms[] = {
+    {.name = "?set_angle@infodispcore@@QAEXH@Z",
+     .patch = hook_infodispcore_set_angle},
 };
 
 static DWORD STDCALL my_GetGlyphOutline(
@@ -117,7 +125,17 @@ void jbhook_util_gfx_install_vertical_hooks(void) {
         jbhook1_glhelper_hook_syms,
         lengthof(jbhook1_glhelper_hook_syms));
 
+    hook_table_apply(
+        NULL,
+        "infodisp.dll",
+        jbhook_infodisp_hook_syms,
+        lengthof(jbhook_infodisp_hook_syms));
+
     log_info("Inserted vertical display hooks");
+}
+
+static void hook_infodispcore_set_angle(void* this, int angle) {
+    // ignore
 }
 
 // Welcome to OpenGL land! There is a ton of boilerplate needed here "just" to
