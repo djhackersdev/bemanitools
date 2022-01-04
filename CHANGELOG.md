@@ -3,6 +3,9 @@ Note for CI/CD: Ensure the version formatting in the sections is kept identical 
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
 ## 5.37
+* jbhook1: Support jubeat (1) and ripples
+* jbhook2: Support jubeat knit and copious
+* jbhook3: Support jubeat saucer, prop, qubell, clan and festo
 
 ## 5.36
 * iidxhook9: Support for IIDX28
