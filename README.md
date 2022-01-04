@@ -58,11 +58,15 @@ The tl;dr version and golden rules of the sections in the document:
     * Beatmania IIDX 27 Heroic Verse (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
     * Beatmania IIDX 28 BISTROVER (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
 * jubeat
-    * jubeat (experimental/buggy) (jb-01.zip) using [jbhook1](doc/jbhook1/jbhook1.md)
-    * jubeat saucer (fulfill) (jb-05-to-07.zip) using jbhook
-    * jubeat prop (jb-05-to-07.zip) using jbhook
-    * jubeat Qubell (jb-05-to-07.zip) using jbhook
-    * jubeat clan (jb-08.zip) using jbhook
+    * jubeat (jb-01.zip) using [jbhook1](doc/jbhook/jbhook1.md)
+    * jubeat ripples (jb-02.zip) using [jbhook1](doc/jbhook/jbhook1.md)
+    * jubeat knit (jb-03.zip) using [jbhook2](doc/jbhook/jbhook2.md)
+    * jubeat copious (jb-04.zip) using [jbhook2](doc/jbhook/jbhook2.md)
+    * jubeat saucer (fulfill) (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat prop (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat qubell (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat clan (jb-08.zip) using [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat festo (jb-08.zip) using [jbhook3](doc/jbhook/jbhook3.md)
 * SOUND VOLTEX
     * SOUND VOLTEX BOOTH (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX II -infinite infection- (sdvx-01-to-04.zip) using sdvxhook
