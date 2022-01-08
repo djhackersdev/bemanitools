@@ -18,6 +18,8 @@
 #include "hook/iohook.h"
 #include "hook/table.h"
 
+#include "util/log.h"
+
 /* Helpers */
 
 static void iohook_init(void);
@@ -223,15 +225,14 @@ static void iohook_init(void)
     if (iohook_initted) {
         return;
     }
+    log_warning("*** 1");
     InitializeCriticalSection(&iohook_lock);
+        log_warning("*** 2");
     EnterCriticalSection(&iohook_lock);
-
+    log_warning("*** 3");
     /* we do this first, so that any hooks that fire while we're applying
        get caught by the critical section. */
     iohook_initted = true;
-
-    InitializeCriticalSection(&iohook_lock);
-    EnterCriticalSection(&iohook_lock);
 
     /* Splice iohook into IAT entries referencing Win32 I/O APIs */
 
@@ -240,7 +241,7 @@ static void iohook_init(void)
             "kernel32.dll",
             iohook_kernel32_syms,
             _countof(iohook_kernel32_syms));
-
+    log_warning("*** 4");
     /* Here be dragons:
 
        The hook table mechanism will populate our next_ function pointers with
@@ -281,12 +282,7 @@ static void iohook_init(void)
                 kernel32,
                 "SetFilePointerEx");
     }
-
-<<<<<<< HEAD
-=======
-    iohook_initted = true;
-
->>>>>>> b1cdef2 (wip pnm)
+    log_warning("*** 5");
     LeaveCriticalSection(&iohook_lock);
 }
 
@@ -312,8 +308,9 @@ HRESULT iohook_open_nul_fd(HANDLE *out)
     assert(out != NULL);
 
     *out = NULL;
+    log_warning("*******");
     iohook_init();
-
+   log_warning("*******");
     fd = next_CreateFileW(
             L"NUL",
             GENERIC_READ | GENERIC_WRITE,

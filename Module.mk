@@ -690,13 +690,6 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-27-to-28.zip \
 		$(zipdir)/iidx-hwio-x86.zip \
 		$(zipdir)/iidx-hwio-x64.zip \
-		$(zipdir)/jb-01.zip \
-		$(zipdir)/jb-02.zip \
-		$(zipdir)/jb-03.zip \
-		$(zipdir)/jb-04.zip \
-		$(zipdir)/jb-05-to-07.zip \
-		$(zipdir)/jb-08.zip \
-		$(zipdir)/jb-hwio.zip \
 		$(zipdir)/pnm-15.zip \
 		$(zipdir)/pnm-25.zip \
 		$(zipdir)/sdvx-01-to-04.zip \

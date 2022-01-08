@@ -32,7 +32,10 @@ static struct ac_io_emu_icca ac_io_emu_icca;
 
 void ac_io_port_init(void)
 {
+    log_info("@@@@@ bla");
     ac_io_emu_init(&ac_io_emu, L"COM1");
+    
+    log_info("@@@@@ jasd");
     ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
 }
 

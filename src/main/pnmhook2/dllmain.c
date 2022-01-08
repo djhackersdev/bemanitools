@@ -18,7 +18,6 @@
 
 #include "imports/avs.h"
 
-#include "iidxhook-util/acio.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
@@ -84,16 +83,19 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     // using settings_hook_init is good enough here, copy paste the code later in its own pnm utils
     // module
     // TODO e/up needs to be manually deleted after each boot, otherwise the game gets stuck during boot
+   
+   
     settings_hook_init();
+   
     //iohook_push_handler(settings_hook_dispatch_irp);
 
-    log_info("asdf");
+    log_info("asdf1111");
     log_info(">>>>>");
 
     config = cconfig_init();
-
+    log_info(">>>>>");
     iidxhook_config_gfx_init(config);
-
+    log_info(">>>>>");
     if (!cconfig_hook_config_init(
             config,
             IIDXHOOK7_INFO_HEADER "\n" IIDXHOOK7_CMD_USAGE,
@@ -103,34 +105,32 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         exit(EXIT_FAILURE);
     }
 
-
+    log_info(">>>>>");
     iidxhook_config_gfx_get(&config_gfx, config);
-
+    log_info(">>>>>");
     cconfig_finit(config);
-
+    log_info(">>>>>");
     iidxhook7_setup_d3d9_hooks(&config_gfx);
-
+    log_info(">>>>>");
     /* Start up EAMIO.DLL */
     log_misc("Initializing card reader backend");
-log_info(">>>>");
 
     eam_io_set_loggers(
         log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-log_info(">>>>");
+log_info(">>>> 222223333");
     // TODO gets stuck
     if (!eam_io_init(thread_create, thread_join, thread_destroy)) {
         log_fatal("Initializing card reader backend failed");
     }
 log_info(">>>>");
+
     iohook_push_handler(ac_io_port_dispatch_irp);
 
-    // TODO this triggers the assertion in iohook.c:381 claiming the module is not initialized
-    // iohook_push_handler(iidxhook_util_acio_dispatch_irp);
-log_info(">>>>");
+log_info(">>>>333");
    /* Card reader emulation, same issue with hooking as IO emulation */
     rs232_hook_init();
 log_info(">>>>");
-    /* Do not use legacy mode, wave pass readers */
+
     ac_io_port_init();
 log_info(">>>>");
     log_info("-------------------------------------------------------------");

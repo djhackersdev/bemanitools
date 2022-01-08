@@ -120,8 +120,12 @@ static CRITICAL_SECTION hooked_port_fds_cs;
 
 void rs232_hook_init(void)
 {
+    log_info("2222");
+
     array_init(&hooked_port_fds);
     InitializeCriticalSection(&hooked_port_fds_cs);
+
+    log_info("4444");
 
     hook_table_apply(NULL, "kernel32.dll", rs232_syms, lengthof(rs232_syms));
     log_info("IO Hook RS232 ioctl subsystem initialized");
