@@ -295,18 +295,6 @@ static void init_real_ezusb()
         }
 */
 
-        log_info("Loading setupapi.dll");
-
-        if (LoadLibraryA("setupapi.dll") == NULL) {
-            log_fatal("Loading setupapi.dll failed");
-        }
-
-        hook_table_apply(
-            NULL, "setupapi.dll", setupapi_hook_syms, lengthof(setupapi_hook_syms));
-
-        log_info("test call setupdigetclassdevsa");
-        SetupDiGetClassDevsA(0, 0, 0, 0x573573);
-
         log_info("Loading real ezusb library");
 
         GetCurrentDirectoryA(MAX_PATH, buffer);
@@ -314,7 +302,7 @@ static void init_real_ezusb()
         log_info(">>>> %s", buffer);
 
         // module = LoadLibraryA("ezusb-orig.dll");
-        
+
         // TODO according to the docs, this does not resolve dependencies, so loading of the
         // original ezusb might be incomplete
         module = LoadLibraryEx("ezusb-orig.dll", NULL, DONT_RESOLVE_DLL_REFERENCES);
@@ -329,6 +317,20 @@ static void init_real_ezusb()
                 log_fatal("Could not load ezusb-orig.dll (%08lX).", error);
             }
         }
+        
+        log_info("Loading setupapi.dll");
+
+        if (LoadLibraryA("setupapi.dll") == NULL) {
+            log_fatal("Loading setupapi.dll failed");
+        }
+
+        hook_table_apply(
+            NULL, "setupapi.dll", setupapi_hook_syms, lengthof(setupapi_hook_syms));
+
+        log_info("test call setupdigetclassdevsa");
+        SetupDiGetClassDevsA(0, 0, 0, 0x573573);
+
+
 
         // Use mangled symbol names because these are the full export names
         // Otherwise, lookups result in functions not being found
@@ -356,6 +358,29 @@ static void init_real_ezusb()
         real_usbWdtStartDone = (usbWdtStartDone_t) get_proc_address(module, "?usbWdtStartDone@@YAHXZ");
 
         dll_main = get_dll_main_address(module);
+
+        log_info("Waiting for debugger to be attached");
+
+        HANDLE cur_process = GetCurrentProcess();
+
+        BOOL result;
+
+        while (true) {
+            result = FALSE;
+
+            if (!CheckRemoteDebuggerPresent(cur_process, &result)) {
+                log_fatal(
+                    "ERROR: CheckRemoteDebuggerPresent failed: %08x",
+                    (unsigned int) GetLastError());
+            }
+
+            if (result) {
+                log_info("Remote debugger attached, resuming");
+                break;
+            }
+
+            Sleep(1000);
+        }
 
         log_info("Calling ezusb-orig DllMain....: %p", dll_main);
 
