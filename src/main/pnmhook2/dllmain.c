@@ -65,12 +65,6 @@ iidxhook7_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
 }
 
-// TODO move to own module
-static void ezusb_proxy_boot() 
-{
-    
-}
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     struct cconfig *config;
