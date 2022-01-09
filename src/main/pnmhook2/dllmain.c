@@ -65,13 +65,24 @@ iidxhook7_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
 }
 
+// TODO move to own module
+static void ezusb_proxy_boot() 
+{
+    
+}
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
 
-    log_server_init();
+    // TODO re-enable once done debugging
+    // TODO note: i have a weird feeling about our log server implemetnation being a source for
+    // several random errors and maybe even performacne issues. removing this and pnmhook2
+    // stopped hanging in the weirdest places that don't make sense
+    //log_server_init();
+    log_to_writer(log_writer_stdout, NULL);
 
     log_info("-------------------------------------------------------------");
     log_info("--------------- Begin pnmhook dll_entry_init ---------------");

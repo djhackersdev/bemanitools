@@ -123,6 +123,8 @@ static void hook_table_apply_to_iid(
             }
         }
     }
+
+    log_misc("Done looping iats");
 }
 
 static bool hook_table_match_module(
