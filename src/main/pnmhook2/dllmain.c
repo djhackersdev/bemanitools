@@ -147,6 +147,10 @@ log_info(">>>> 222223333");
     }
 log_info(">>>>");
 
+    // TODO test to force load setupapi.dll because apparently detouring the functions of the
+    // original instance did not work. ezusb-orig.dll is not calling the detours that are setup
+    // below here because the detour apparently never happened. dived into ezusb-orig.dll with
+    // a debugger to verify the function addresses are still pointing to the real calls
     HANDLE setupapi_handle = LoadLibraryA("setupapi.dll");
 
     if (setupapi_handle == NULL) {
