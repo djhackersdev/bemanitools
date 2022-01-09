@@ -10,6 +10,13 @@
 
 #include "cconfig/cconfig-hook.h"
 
+#include "ezusb-iidx-emu/nodes.h"
+
+#include "ezusb2-emu/desc.h"
+#include "ezusb2-emu/device.h"
+
+#include "ezusb2-iidx-emu/msg.h"
+
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
@@ -117,6 +124,17 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info(">>>>>");
     iidxhook7_setup_d3d9_hooks(&config_gfx);
     log_info(">>>>>");
+
+        log_info("Starting IIDX IO backend");
+
+        iidx_io_set_loggers(
+            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+
+        if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+            log_fatal("Initializing IIDX IO backend failed");
+        }
+
+
     /* Start up EAMIO.DLL */
     log_misc("Initializing card reader backend");
 
@@ -128,6 +146,24 @@ log_info(">>>> 222223333");
         log_fatal("Initializing card reader backend failed");
     }
 log_info(">>>>");
+
+    HANDLE setupapi_handle = LoadLibraryA("setupapi.dll");
+
+    if (setupapi_handle == NULL) {
+        log_fatal("Loading setupapi failed");
+    } else {
+        log_info("Loaded setupapi");
+    }
+
+    /* iohooks are okay, even if emu is diabled since the fake handlers won't be
+     * used */
+    /* Set up IO emulation hooks _after_ IO API setup to allow
+       API implementations with real IO devices */
+    iohook_push_handler(ezusb2_emu_device_dispatch_irp);
+
+// copy paste from iidx
+            hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
+        ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());
 
     iohook_push_handler(ac_io_port_dispatch_irp);
 

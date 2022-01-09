@@ -236,6 +236,29 @@ static void init_real_ezusb()
         DllEntryPoint_t dll_main;
         char buffer[MAX_PATH];
 
+/*
+        HANDLE cur_process = GetCurrentProcess();
+
+        BOOL result;
+
+        while (true) {
+            result = FALSE;
+
+            if (!CheckRemoteDebuggerPresent(cur_process, &result)) {
+                log_fatal(
+                    "ERROR: CheckRemoteDebuggerPresent failed: %08x",
+                    (unsigned int) GetLastError());
+            }
+
+            if (result) {
+                log_info("Remote debugger attached, resuming");
+                break;
+            }
+
+            Sleep(1000);
+        }
+*/
+
         log_info("Loading real ezusb library");
 
         GetCurrentDirectoryA(MAX_PATH, buffer);

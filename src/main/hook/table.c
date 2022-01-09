@@ -49,7 +49,7 @@ static void hook_table_apply_to_all(
             dll = peb_dll_get_next(dll)) {
         pe = peb_dll_get_base(dll);
 
-        log_misc("pe: %p", pe);
+        // log_misc("pe: %p", pe);
 
         if (pe == NULL) {
             continue; /* ?? Happens sometimes. */
@@ -75,7 +75,7 @@ void hook_table_apply(
         /*  Call out, which will then call us back repeatedly. Awkward, but
             viewed from the outside it's good for usability. */
 
-        log_misc("Apply to all started");
+        // log_misc("Apply to all started");
 
         hook_table_apply_to_all(depname, syms, nsyms);
     } else {
@@ -84,7 +84,7 @@ void hook_table_apply(
                 iid = pe_iid_get_next(target, iid)) {
             iid_name = pe_iid_get_name(target, iid);
 
-            log_misc("Module: %s", iid_name);
+            // log_misc("Module: %s", iid_name);
 
             if (hook_table_match_module(target, iid_name, depname)) {
                 hook_table_apply_to_iid(target, iid, syms, nsyms);
@@ -107,7 +107,7 @@ static void hook_table_apply_to_iid(
     i = 0;
 
     while (pe_iid_get_iat_entry(target, iid, i++, &iate) == S_OK) {
-        log_misc("IAT entry: %s %d, nsyms: %d", iate.name, iate.ordinal, nsyms);
+        // log_misc("IAT entry: %s %d, nsyms: %d", iate.name, iate.ordinal, nsyms);
 
         for (j = 0 ; j < nsyms ; j++) {
             sym = &syms[j];
@@ -117,14 +117,14 @@ static void hook_table_apply_to_iid(
                     *sym->link = *iate.ppointer;
                 }
 
-                log_misc("patch");
+                // log_misc("patch");
 
                 pe_patch(iate.ppointer, &sym->patch, sizeof(sym->patch));
             }
         }
     }
 
-    log_misc("Done looping iats");
+    // log_misc("Done looping iats");
 }
 
 static bool hook_table_match_module(

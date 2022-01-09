@@ -8,11 +8,17 @@ deplibs_pnmhook2   := \
 
 libs_pnmhook2      := \
     iidxhook-util \
+    ezusb-emu \
+    ezusb2-emu \
+    ezusb2-iidx-emu \
+    ezusb-iidx-emu \
+    security \
     cconfig \
     eamio \
     acioemu \
     hook \
     hooklib \
+    iidxio \
     util \
     ezusb \
 
