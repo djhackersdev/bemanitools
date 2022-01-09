@@ -1,6 +1,7 @@
 #define LOG_MODULE "ezusb-proxy"
 
 #include <windows.h>
+#include <setupapi.h>
 
 #include <dbghelp.h>
 
@@ -8,9 +9,23 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "hook/table.h"
+
 #include "ezusb-proxy/ezusb-proxy.h"
 
 #include "util/log.h"
+
+static HDEVINFO STDCALL my_SetupDiGetClassDevsA(
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags);
+
+static HDEVINFO(STDCALL *real_SetupDiGetClassDevsA)(
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags);
+
+static const struct hook_symbol setupapi_hook_syms[] = {
+    {.name = "SetupDiGetClassDevsA",
+     .patch = my_SetupDiGetClassDevsA,
+     .link = (void **) &real_SetupDiGetClassDevsA},
+};
 
 static usbCheckAlive_t real_usbCheckAlive;
 static usbCheckSecurityNew_t real_usbCheckSecurityNew;
@@ -39,6 +54,27 @@ static FILE* log_file;
 static bool real_ezusb_initialized;
 
 static void init_real_ezusb();
+
+static HDEVINFO STDCALL my_SetupDiGetClassDevsA(
+    const GUID *class_guid, const char *enumerator, HWND hwnd, DWORD flags)
+{
+    /* That's how iidx 9-13 detected the old C02 IO. That doesn't work
+       on iidx 14 anymore... */
+    /*
+    if (class_guid != NULL
+            && memcmp(class_guid, &hook_setupapi_data->device_guid,
+            sizeof(hook_setupapi_data->device_guid)) == 0) {
+    */
+
+   if (flags == 0x573573) {
+       log_info("!!!!!!!!!!!!");
+       return 0;
+   }
+
+    log_misc("my_SetupDiGetClassDevsA");
+
+    return real_SetupDiGetClassDevsA(class_guid, enumerator, hwnd, flags);
+}
 
 int usbCheckAlive()
 {
@@ -259,14 +295,29 @@ static void init_real_ezusb()
         }
 */
 
+        log_info("Loading setupapi.dll");
+
+        if (LoadLibraryA("setupapi.dll") == NULL) {
+            log_fatal("Loading setupapi.dll failed");
+        }
+
+        hook_table_apply(
+            NULL, "setupapi.dll", setupapi_hook_syms, lengthof(setupapi_hook_syms));
+
+        log_info("test call setupdigetclassdevsa");
+        SetupDiGetClassDevsA(0, 0, 0, 0x573573);
+
         log_info("Loading real ezusb library");
 
         GetCurrentDirectoryA(MAX_PATH, buffer);
 
         log_info(">>>> %s", buffer);
 
-        module = LoadLibraryA("ezusb-orig.dll");
-        // module = LoadLibraryEx("ezusb-orig.dll", NULL, DONT_RESOLVE_DLL_REFERENCES);
+        // module = LoadLibraryA("ezusb-orig.dll");
+        
+        // TODO according to the docs, this does not resolve dependencies, so loading of the
+        // original ezusb might be incomplete
+        module = LoadLibraryEx("ezusb-orig.dll", NULL, DONT_RESOLVE_DLL_REFERENCES);
         DWORD error = GetLastError();
 
         log_misc("loadlibrarya: ezusb-orig.dll: %p", module);
@@ -279,28 +330,30 @@ static void init_real_ezusb()
             }
         }
 
-        real_usbCheckAlive = (usbCheckAlive_t) get_proc_address(module, "usbCheckAlive");
-        real_usbCheckSecurityNew = (usbCheckSecurityNew_t) get_proc_address(module, "usbCheckSecurityNew");
-        real_usbCoinGet = (usbCoinGet_t) get_proc_address(module, "usbCoinGet");
-        real_usbCoinMode = (usbCoinMode_t) get_proc_address(module, "usbCoinMode");
-        real_usbEnd = (usbEnd_t) get_proc_address(module, "usbEnd");
-        real_usbFirmResult = (usbFirmResult_t) get_proc_address(module, "usbFirmResult");
-        real_usbGetKEYID = (usbGetKEYID_t) get_proc_address(module, "usbGetKEYID");
-        real_usbGetSecurity = (usbGetSecurity_t) get_proc_address(module, "usbGetSecurity");
-        real_usbLamp = (usbLamp_t) get_proc_address(module, "usbLamp");
-        real_usbPadRead = (usbPadRead_t) get_proc_address(module, "usbPadRead");
-        real_usbPadReadLast = (usbPadReadLast_t) get_proc_address(module, "usbPadReadLast");
-        real_usbSecurityInit = (usbSecurityInit_t) get_proc_address(module, "usbSecurityInit");
-        real_usbSecurityInitDone = (usbSecurityInitDone_t) get_proc_address(module, "usbSecurityInitDone");
-        real_usbSecuritySearch = (usbSecuritySearch_t) get_proc_address(module, "usbSecuritySearch");
-        real_usbSecuritySearchDone = (usbSecuritySearchDone_t) get_proc_address(module, "usbSecuritySearchDone");
-        real_usbSecuritySelect = (usbSecuritySelect_t) get_proc_address(module, "usbSecuritySelect");
-        real_usbSecuritySelectDone = (usbSecuritySelectDone_t) get_proc_address(module, "usbSecuritySelectDone");
-        real_usbSetExtIo = (usbSetExtIo_t) get_proc_address(module, "usbSetExtIo");
-        real_usbStart = (usbStart_t) get_proc_address(module, "usbStart");
-        real_usbWdtReset = (usbWdtReset_t) get_proc_address(module, "usbWdtReset");
-        real_usbWdtStart = (usbWdtStart_t) get_proc_address(module, "usbWdtStart");
-        real_usbWdtStartDone = (usbWdtStartDone_t) get_proc_address(module, "usbWdtStartDone");
+        // Use mangled symbol names because these are the full export names
+        // Otherwise, lookups result in functions not being found
+        real_usbCheckAlive = (usbCheckAlive_t) get_proc_address(module, "?usbCheckAlive@@YAHXZ");
+        real_usbCheckSecurityNew = (usbCheckSecurityNew_t) get_proc_address(module, "?usbCheckSecurityNew@@YAHH@Z");
+        real_usbCoinGet = (usbCoinGet_t) get_proc_address(module, "?usbCoinGet@@YAHH@Z");
+        real_usbCoinMode = (usbCoinMode_t) get_proc_address(module, "?usbCoinMode@@YAHH@Z");
+        real_usbEnd = (usbEnd_t) get_proc_address(module, "?usbEnd@@YAHXZ");
+        real_usbFirmResult = (usbFirmResult_t) get_proc_address(module, "?usbFirmResult@@YAHXZ");
+        real_usbGetKEYID = (usbGetKEYID_t) get_proc_address(module, "?usbGetKEYID@@YAHPAEH@Z");
+        real_usbGetSecurity = (usbGetSecurity_t) get_proc_address(module, "?usbGetSecurity@@YAHHPAE@Z");
+        real_usbLamp = (usbLamp_t) get_proc_address(module, "?usbLamp@@YAHH@Z");
+        real_usbPadRead = (usbPadRead_t) get_proc_address(module, "?usbPadRead@@YAHPAK@Z");
+        real_usbPadReadLast = (usbPadReadLast_t) get_proc_address(module, "?usbPadReadLast@@YAHPAE@Z");
+        real_usbSecurityInit = (usbSecurityInit_t) get_proc_address(module, "?usbSecurityInit@@YAHXZ");
+        real_usbSecurityInitDone = (usbSecurityInitDone_t) get_proc_address(module, "?usbSecurityInitDone@@YAHXZ");
+        real_usbSecuritySearch = (usbSecuritySearch_t) get_proc_address(module, "?usbSecuritySearch@@YAHXZ");
+        real_usbSecuritySearchDone = (usbSecuritySearchDone_t) get_proc_address(module, "?usbSecuritySearchDone@@YAHXZ");
+        real_usbSecuritySelect = (usbSecuritySelect_t) get_proc_address(module, "?usbSecuritySelect@@YAHH@Z");
+        real_usbSecuritySelectDone = (usbSecuritySelectDone_t) get_proc_address(module, "?usbSecuritySelectDone@@YAHXZ");
+        real_usbSetExtIo = (usbSetExtIo_t) get_proc_address(module, "?usbSetExtIo@@YAHH@Z");
+        real_usbStart = (usbStart_t) get_proc_address(module, "?usbStart@@YAHH@Z");
+        real_usbWdtReset = (usbWdtReset_t) get_proc_address(module, "?usbWdtReset@@YAHXZ");
+        real_usbWdtStart = (usbWdtStart_t) get_proc_address(module, "?usbWdtStart@@YAHH@Z");
+        real_usbWdtStartDone = (usbWdtStartDone_t) get_proc_address(module, "?usbWdtStartDone@@YAHXZ");
 
         dll_main = get_dll_main_address(module);
 
