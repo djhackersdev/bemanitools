@@ -11,6 +11,9 @@ struct sdvxhook2_config_io {
     bool disable_poll_limiter;
     bool force_headphones;
     bool disable_file_hooks;
+    bool disable_power_hooks;
+    bool disable_nvapi_hooks;
+    bool com1_card_reader;
 };
 
 void sdvxhook2_config_io_init(struct cconfig *config);

@@ -517,7 +517,7 @@ $(zipdir)/sdvx-01-to-04.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/sdvx-05.zip: \
+$(zipdir)/sdvx-05-to-06.zip: \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/avs2_1700-64/sdvxhook2.dll \
 		build/bin/indep-64/config.exe \
@@ -671,7 +671,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-08.zip \
 		$(zipdir)/jb-hwio.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
-		$(zipdir)/sdvx-05.zip \
+		$(zipdir)/sdvx-05-to-06.zip \
 		$(zipdir)/sdvx-05-cn.zip \
 		$(zipdir)/sdvx-hwio-x86.zip \
 		$(zipdir)/sdvx-hwio-x64.zip \
