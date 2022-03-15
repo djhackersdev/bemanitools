@@ -28,3 +28,5 @@ src_sdvxhook2       := \
     bi2a.c \
     dllmain.c \
     config-io.c \
+    nvapi.c \
+    power.c \
