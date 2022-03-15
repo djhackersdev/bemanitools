@@ -17,10 +17,8 @@
 
 #include "util/log.h"
 
-static HMODULE my_LoadLibraryExW(const wchar_t *name, HANDLE hFile, DWORD dwFlags);
 static void *my_GetProcAddress(HMODULE dll, const char *name);
 
-static HMODULE(*real_LoadLibraryExW)(const wchar_t *name, HANDLE hFile, DWORD dwFlags);
 static void *(*real_GetProcAddress)(HMODULE dll, const char *name);
 
 // nvapi64.dll
@@ -28,29 +26,13 @@ static void *my_nvapi_QueryInterface(uint32_t FunctionOffset);
 static void *(*real_nvapi_QueryInterface)(uint32_t FunctionOffset);
 
 static struct hook_symbol nvapihook_kernel_syms[] = {
-    {.name = "LoadLibraryExW",
-     .patch = my_LoadLibraryExW,
-     .link = (void *) &real_LoadLibraryExW},
     {.name = "GetProcAddress",
      .patch = my_GetProcAddress,
      .link = (void *) &real_GetProcAddress},
 };
 
-static HMODULE my_LoadLibraryExW(const wchar_t *name, HANDLE hFile, DWORD dwFlags)
-{
-    // if (wcsicmp(name, L"nvpowerapi.dll") == 0 || wcsicmp(name, L"nvapi64.dll") == 0)) {
-    //     return NULL;
-    // }
-
-    return real_LoadLibraryExW(name, hFile, dwFlags);
-}
-
 static void *my_GetProcAddress(HMODULE dll, const char *name)
 {
-    // if (dll != NULL) {
-    //     return real_GetProcAddress(dll, name);
-    // }
-
     if (strcmp("nvapi_QueryInterface", name) == 0) {
         log_info("Request for stub %s", name);
         real_nvapi_QueryInterface = real_GetProcAddress(dll, name);

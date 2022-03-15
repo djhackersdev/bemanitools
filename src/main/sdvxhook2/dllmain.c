@@ -152,17 +152,14 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         ac_io_port_init(config_io.com1_card_reader);
     }
 
-    // camera hooks
     if (!config_cam.disable_emu) {
         camhook_init(&config_cam);
     }
 
-    // power hooks
     if (!config_io.disable_power_hooks) {
         powerhook_init();
     }
 
-    // nvapi hooks
     if (!config_io.disable_nvapi_hooks) {
         nvapihook_init();
     }
