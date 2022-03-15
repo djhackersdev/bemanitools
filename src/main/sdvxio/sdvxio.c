@@ -67,7 +67,7 @@ bool sdvx_io_read_input(void)
     sdvx_io_gpio[0] = (pack >> 8) & 0x00FF;
     sdvx_io_gpio[1] = (pack >> 16) & 0x00FF;
 
-    return 0;
+    return true;
 }
 
 uint8_t sdvx_io_get_input_gpio_sys(void)

@@ -22,6 +22,8 @@
 #include "sdvxhook2/acio.h"
 #include "sdvxhook2/bi2a.h"
 #include "sdvxhook2/config-io.h"
+#include "sdvxhook2/nvapi.h"
+#include "sdvxhook2/power.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -147,12 +149,22 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     if (!config_io.disable_card_reader_emu) {
-        ac_io_port_init();
+        ac_io_port_init(config_io.com1_card_reader);
     }
 
     // camera hooks
     if (!config_cam.disable_emu) {
         camhook_init(&config_cam);
+    }
+
+    // power hooks
+    if (!config_io.disable_power_hooks) {
+        powerhook_init();
+    }
+
+    // nvapi hooks
+    if (!config_io.disable_nvapi_hooks) {
+        nvapihook_init();
     }
 
     adapter_hook_override(config_adapter.override_ip);

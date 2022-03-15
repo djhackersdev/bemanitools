@@ -30,11 +30,16 @@
 static struct ac_io_emu ac_io_emu;
 static struct ac_io_emu_icca ac_io_emu_icca;
 
-void ac_io_port_init(void)
+void ac_io_port_init(bool use_new_reader)
 {
-    ac_io_emu_init(&ac_io_emu, L"\\\\.\\COM2");
-
-    ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
+    if (use_new_reader) {
+        ac_io_emu_init(&ac_io_emu, L"COM1");
+        ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
+        ac_io_emu_icca_set_version(&ac_io_emu_icca, v170);
+    } else {
+        ac_io_emu_init(&ac_io_emu, L"\\\\.\\COM2");
+        ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
+    }
 
     rs232_hook_add_fd(ac_io_emu.fd);
 }

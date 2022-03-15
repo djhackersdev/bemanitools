@@ -52,7 +52,7 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         config,
         D3D9EXHOOK_CONFIG_GFX_CONFINED_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_CONFINED_VALUE,
-        "Confine mouse coursor to window");
+        "Confine mouse cursor to window");
 
     cconfig_util_set_int(
         config,
