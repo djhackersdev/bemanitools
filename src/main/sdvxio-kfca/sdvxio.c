@@ -120,9 +120,24 @@ bool sdvx_io_init(
     if (kfca_node_id != -1) {
         log_warning("Using KFCA on node: %d", kfca_node_id);
 
-        bool init_result = aciodrv_kfca_init(
+        uint8_t primary = 0;
+        uint8_t headphone = 0;
+        uint8_t subwoofer = 0;
+
+        if (config_kfca.override_main_volume >= 0) {
+            primary = config_kfca.override_main_volume;
+        }
+        if (config_kfca.override_headphone_volume >= 0) {
+            headphone = config_kfca.override_headphone_volume;
+        }
+        if (config_kfca.override_sub_volume >= 0) {
+            subwoofer = config_kfca.override_sub_volume;
+        }
+
+        bool init_result = aciodrv_kfca_amp(
             aciomgr_port_checkout(acio_manager_ctx),
-            kfca_node_id);
+            kfca_node_id,
+            primary, headphone, 0, subwoofer);
         aciomgr_port_checkin(acio_manager_ctx);
 
         if (!init_result) {
@@ -240,7 +255,7 @@ bool sdvx_io_set_amp_volume(
     bool amp_result = aciodrv_kfca_amp(
         aciomgr_port_checkout(acio_manager_ctx),
         kfca_node_id,
-        primary, 96, headphone, subwoofer);
+        primary, headphone, 96, subwoofer);
     aciomgr_port_checkin(acio_manager_ctx);
 
     if (!amp_result) {
