@@ -1,7 +1,7 @@
 # Bemanitools 5
 [![pipeline status](https://dev.s-ul.net/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.net/djhackers/bemanitools/commits/master)
 
-Version: 5.37
+Version: 5.38
 
 [Release history](CHANGELOG.md)
 
@@ -72,7 +72,8 @@ The tl;dr version and golden rules of the sections in the document:
     * SOUND VOLTEX II -infinite infection- (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX III GRAVITY WARS (sdvx-01-to-04.zip) using sdvxhook
     * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx-01-to-04.zip) using sdvxhook
-    * SOUND VOLTEX Vivid Wave (sdvx-05.zip) using sdvxhook2
+    * SOUND VOLTEX Vivid Wave (sdvx-05-to-06) using sdvxhook2
+    * SOUND VOLTEX EXCEED GEAR (sdvx-05-to-06) using sdvxhook2
 
 ## ViGEm clients: Expose BT5 APIs as XBOX game controllers
 Play your favorite non-bemani arcade games with any hardware, e.g. real cabinet hardware, that
