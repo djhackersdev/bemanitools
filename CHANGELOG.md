@@ -2,6 +2,9 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.38
+* sdvxhook2: Support sound voltex exceed gear
+
 ## 5.37
 * jbhook1: Support jubeat (1) and ripples
 * jbhook2: Support jubeat knit and copious
