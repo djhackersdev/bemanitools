@@ -14,6 +14,7 @@ libs_jbhook2       := \
     eamio \
     jbio \
     jbhook-util \
+    jbhook-util-p3io \
     p3ioemu \
     p3io \
     p4ioemu \
