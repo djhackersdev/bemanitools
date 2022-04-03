@@ -41,15 +41,6 @@
 
 static struct options options;
 
-static const struct security_mcode security_mcode_j44 = {
-    .header = SECURITY_MCODE_HEADER,
-    .unkn = SECURITY_MCODE_UNKN_C,
-    .game = SECURITY_MCODE_GAME_JB_3,
-    .region = SECURITY_MCODE_REGION_JAPAN,
-    .cabinet = SECURITY_MCODE_CABINET_C,
-    .revision = SECURITY_MCODE_REVISION_A,
-};
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     bool eam_io_ok;
@@ -60,6 +51,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- Begin jbhook dll_entry_init ---");
 
+    log_assert(sidcode != NULL);
+
     if(options.vertical) {
         jbhook_util_gfx_install_vertical_hooks();
     }
@@ -68,12 +61,20 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         iohook_push_handler(p3io_emu_dispatch_irp);
         p3io_setupapi_insert_hooks(NULL);
 
-        log_assert(sidcode != NULL);
-
         // pcbid and eamid are only used here for sec check, the ones used for
         // network access are taken from ea3-config.xml.
         // When booting knit append (and on no other version), the code must
-        // actually match, so the ID used is for append (JCA)
+        // actually match, so we use the one from ea3-config as well.
+        // Example sidcode format: `K44JBA2012072301`
+        struct security_mcode security_mcode_j44 = {
+            .header = SECURITY_MCODE_HEADER,
+            .unkn = SECURITY_MCODE_UNKN_C,
+            .game = {sidcode[0], sidcode[1], sidcode[2]},
+            .region = sidcode[3],
+            .cabinet = sidcode[4],
+            .revision = sidcode[5],
+        };
+
         jbhook_util_p3io_init(
             &security_mcode_j44,
             &security_id_default, &security_id_default);
@@ -112,7 +113,21 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("---  End  jbhook dll_entry_init ---");
 
+    char *sidcode_in_ea3_config = strdup(sidcode);
+
     bool ret = app_hook_invoke_init(sidcode, param);
+
+    // If the game is append, the mcode `cabinet` is forced to C. This is bad if
+    // p3io was configured to respond as A! Help the user help themsevles...
+    if(strcmp(sidcode_in_ea3_config, sidcode) != 0) {
+        log_warning("sidcode changed after running game DLL init (%s -> %s)", sidcode_in_ea3_config, sidcode);
+        log_warning("This will trigger a security error. Modify ea3-config.xml <soft> section to match the second value!");
+
+        // abort the boot
+        return false;
+    }
+
+    free(sidcode_in_ea3_config);
 
     return ret;
 
