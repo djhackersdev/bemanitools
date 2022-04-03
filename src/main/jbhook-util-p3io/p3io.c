@@ -5,7 +5,7 @@
 
 #include "bemanitools/jbio.h"
 
-#include "jbhook-util/p3io.h"
+#include "jbhook-util-p3io/p3io.h"
 
 #include "p3ioemu/emu.h"
 #include "p3ioemu/uart.h"

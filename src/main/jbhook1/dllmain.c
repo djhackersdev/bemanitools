@@ -24,9 +24,10 @@
 
 #include "jbhook-util/acio.h"
 #include "jbhook-util/eamuse.h"
-#include "jbhook-util/gfx.h"
-#include "jbhook-util/mixer.h"
-#include "jbhook-util/p3io.h"
+
+#include "jbhook-util-p3io/gfx.h"
+#include "jbhook-util-p3io/mixer.h"
+#include "jbhook-util-p3io/p3io.h"
 
 #include "p3ioemu/devmgr.h"
 #include "p3ioemu/emu.h"

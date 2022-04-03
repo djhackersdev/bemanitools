@@ -142,6 +142,7 @@ include src/main/jbio-p4io/Module.mk
 include src/main/jbio/Module.mk
 include src/main/jbiotest/Module.mk
 include src/main/jbhook-util/Module.mk
+include src/main/jbhook-util-p3io/Module.mk
 include src/main/jbhook1/Module.mk
 include src/main/jbhook2/Module.mk
 include src/main/jbhook3/Module.mk

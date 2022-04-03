@@ -2,7 +2,7 @@ avsdlls += jbhook1
 imps += glhelper
 
 deplibs_jbhook1	:= \
-	avs \
+    avs \
     glhelper \
 
 ldflags_jbhook1   := \
@@ -15,7 +15,8 @@ libs_jbhook1       := \
     cconfig \
     eamio \
     jbio \
-	jbhook-util \
+    jbhook-util \
+    jbhook-util-p3io \
     p3ioemu \
     p3io \
     hook \

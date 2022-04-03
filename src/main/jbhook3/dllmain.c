@@ -21,7 +21,6 @@
 
 #include "jbhook-util/acio.h"
 #include "jbhook-util/eamuse.h"
-#include "jbhook-util/gfx.h"
 #include "jbhook-util/p4io.h"
 
 #include "p4ioemu/device.h"
@@ -143,7 +142,6 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         adapter_hook_init();
     }
 
-    jbhook_util_gfx_hook_init();
     jbhook_util_eamuse_hook_init();
 
     return TRUE;
