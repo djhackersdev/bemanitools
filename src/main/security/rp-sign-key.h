@@ -11,23 +11,55 @@ struct security_rp_sign_key {
 };
 
 /**
- * Signing key used to create eeprom signitures for all white eamuse dongles.
+ * Signing key used to create eeprom signatures for all white eamuse dongles
  */
 extern const struct security_rp_sign_key security_rp_sign_key_white_eamuse;
 
 /**
- * Signing key used to create eeprom signitures for all black dongles used
- * on PS2 games (as far as we are aware of).
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on Python 2 games.
  */
-extern const struct security_rp_sign_key security_rp_sign_key_black_ps2;
+extern const struct security_rp_sign_key security_rp_sign_key_black_python2;
 
 /**
- * Signing key used to create eeprom signitures for all black dongles used
+ * Signing key used to create eeprom signatures for all black dongles used
  * on the following games:
  *
- * - GF & DM V4 to V8 (TODO needs verification)
+ * - GF & DM V4 to V7
  * - jubeat (1)
  */
 extern const struct security_rp_sign_key security_rp_sign_key_black_gfdmv4;
+
+/**
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on the following games:
+ *
+ * - GF & DM V8, XG to XG3, Gitadora series
+ */
+extern const struct security_rp_sign_key security_rp_sign_key_black_gfdmv8;
+
+/**
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on the following games:
+ *
+ * - DDR X
+ */
+extern const struct security_rp_sign_key security_rp_sign_key_black_ddrx;
+
+/**
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on the following games:
+ *
+ * - IIDX 14 to 17
+ */
+extern const struct security_rp_sign_key security_rp_sign_key_black_iidx;
+
+/**
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on the following games:
+ *
+ * - pop'n music 15 to 17
+ */
+extern const struct security_rp_sign_key security_rp_sign_key_black_popn;
 
 #endif

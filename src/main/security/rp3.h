@@ -11,7 +11,7 @@
 
 /**
  * Structure for data which is usually stored in the eeprom section of the
- * dongle. This contains a signiture to verify the ROM's contents as well as
+ * dongle. This contains a signature to verify the ROM's contents as well as
  * the game this dongle is signed for.
  */
 struct security_rp3_eeprom {
@@ -26,11 +26,16 @@ struct security_rp3_eeprom {
  * to pass security checks on games using black (game specific) and white
  * (eamuse) roundplugs.
  *
+ * Algorithm is the same as RP2 but plug ID is handled in reverse order
+ * and response has additional padding + checksum at the end of the message.
+ *
  * Used on the following games:
- * - jubeat
+ * - jubeat series
+ * - DDR series
+ * - GFDM V series, XG series, Gitadora series
  *
  * @param type Type of plug to sign eeprom data for (black or white).
- * @param sign_key The key to use for generating the signiture.
+ * @param sign_key The key to use for generating the signature.
  *        This key can be extracted from the executables of the games and might
  *        be re-used for multiple games of the same series or generation.
  * @param plug_mcode The mcode of the game to boot. Typically, this code is
