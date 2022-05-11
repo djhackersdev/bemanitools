@@ -5,6 +5,7 @@
 
 #include "security/id.h"
 #include "security/mcode.h"
+#include "security/rp-sign-key.h"
 
 /**
  * Set the boot version of the game. The boot version mcode is used for
@@ -22,6 +23,22 @@ void ezusb_iidx_emu_node_security_plug_set_boot_version(
  * @param seeds Pointer to an array of three boot seeds to set.
  */
 void ezusb_iidx_emu_node_security_plug_set_boot_seeds(const uint32_t *seeds);
+
+/**
+ * Set the signing key for the black dongle.
+ *
+ * @param sign_key Pointer to the black dongle sign key.
+ */
+void ezusb_iidx_emu_node_security_plug_set_plug_black_sign_key(
+    const struct security_rp_sign_key *sign_key);
+
+/**
+ * Set the signing key for the white dongle.
+ *
+ * @param sign_key Pointer to the white dongle sign key.
+ */
+void ezusb_iidx_emu_node_security_plug_set_plug_white_sign_key(
+    const struct security_rp_sign_key *sign_key);
 
 /**
  * The mcode of the target game to boot. This mcode is typically printed onto

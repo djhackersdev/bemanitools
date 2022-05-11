@@ -10,7 +10,7 @@
 
 /**
  * Structure for data which is usually stored in the eeprom section of the
- * dongle. This contains a signiture to verify the ROM's contents as well as
+ * dongle. This contains a signature to verify the ROM's contents as well as
  * the game this dongle is signed for.
  */
 struct security_rp_eeprom {

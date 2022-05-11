@@ -38,6 +38,8 @@
 #include "iidxhook-util/eamuse.h"
 #include "iidxhook-util/settings.h"
 
+#include "security/rp-sign-key.h"
+
 #include "util/log.h"
 #include "util/str.h"
 #include "util/thread.h"
@@ -163,6 +165,10 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     ezusb_iidx_emu_node_security_plug_set_boot_version(
         &config_sec.boot_version);
     ezusb_iidx_emu_node_security_plug_set_boot_seeds(config_sec.boot_seeds);
+    ezusb_iidx_emu_node_security_plug_set_plug_black_sign_key(
+        &security_rp_sign_key_black_iidx);
+    ezusb_iidx_emu_node_security_plug_set_plug_white_sign_key(
+        &security_rp_sign_key_white_eamuse);
     ezusb_iidx_emu_node_security_plug_set_plug_black_mcode(
         &config_sec.black_plug_mcode);
     ezusb_iidx_emu_node_security_plug_set_plug_white_mcode(
@@ -235,7 +241,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         log_to_writer(log_writer_debug, NULL);
-        
+
         /* Bootstrap hook for further init tasks (see above) */
 
         hook_table_apply(

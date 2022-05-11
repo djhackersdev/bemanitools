@@ -6,11 +6,12 @@
 
 #include "security/id.h"
 #include "security/mcode.h"
+#include "security/rp-sign-key.h"
 #include "security/rp-util.h"
 
 /**
  * Structure for data which is usually stored in the eeprom section of the
- * dongle. This contains a signiture to verify the ROM's contents as well as
+ * dongle. This contains a signature to verify the ROM's contents as well as
  * the game this dongle is signed for.
  */
 struct security_rp2_eeprom {
@@ -19,14 +20,30 @@ struct security_rp2_eeprom {
 };
 
 /**
+ * Generates the signature for the given plug id. Used by both rp2 and rp3.
+ *
+ * @param plug_id The scrambled form of the plug id stored on the plug.
+ * @param sign_key_packed The packed key to use for generating the signature.
+ * @param out Pointer to the buffer for the resulting data.
+ */
+void security_rp2_create_signature(
+    const uint8_t *plug_id_enc,
+    const uint8_t *sign_key_packed,
+    uint8_t *out);
+
+/**
  * Generate signed eeprom data from non encrypted and unobfuscated data required
  * to pass security checks on games using black (game specific) and white
  * (eamuse) roundplugs.
  *
  * This implementation (rp 2) is used by the following games
  * - iidx 14 to 17
+ * - pop'n music 15 to 18
  *
  * @param type Type of plug to sign eeprom data for (black or white).
+ * @param sign_key The key to use for generating the signature.
+ *        This key can be extracted from the executables of the games and might
+ *        be re-used for multiple games of the same series or generation.
  * @param boot_version The boot version mcode that is used for bootstrapping
  *                     the security backend (of the ezusb.dll).
  * @param plug_mcode The mcode of the game to boot. Typically, this code is
@@ -39,7 +56,7 @@ struct security_rp2_eeprom {
  */
 void security_rp2_generate_signed_eeprom_data(
     enum security_rp_util_rp_type type,
-    const struct security_mcode *boot_version,
+    const struct security_rp_sign_key *sign_key,
     const struct security_mcode *plug_mcode,
     const struct security_id *plug_id,
     struct security_rp2_eeprom *out);

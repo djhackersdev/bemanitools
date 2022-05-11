@@ -16,6 +16,9 @@
 static struct security_mcode ezusb_iidx_emu_node_security_plug_boot_version;
 static uint32_t ezusb_iidx_emu_node_security_plug_boot_seeds[3];
 
+static struct security_rp_sign_key ezusb_iidx_emu_node_security_plug_black_sign_key;
+static struct security_rp_sign_key ezusb_iidx_emu_node_security_plug_white_sign_key;
+
 static struct security_mcode ezusb_iidx_emu_node_security_plug_black_mcode;
 static struct security_mcode ezusb_iidx_emu_node_security_plug_white_mcode;
 
@@ -60,6 +63,28 @@ void ezusb_iidx_emu_node_security_plug_set_boot_seeds(const uint32_t *seeds)
         &ezusb_iidx_emu_node_security_plug_boot_seeds,
         seeds,
         sizeof(ezusb_iidx_emu_node_security_plug_boot_seeds));
+}
+
+void ezusb_iidx_emu_node_security_plug_set_plug_black_sign_key(
+    const struct security_rp_sign_key *sign_key)
+{
+    log_misc("black sign key: %s", sign_key->data);
+
+    memcpy(
+        &ezusb_iidx_emu_node_security_plug_black_sign_key,
+        sign_key,
+        sizeof(struct security_rp_sign_key));
+}
+
+void ezusb_iidx_emu_node_security_plug_set_plug_white_sign_key(
+    const struct security_rp_sign_key *sign_key)
+{
+    log_misc("white sign key: %s", sign_key->data);
+
+    memcpy(
+        &ezusb_iidx_emu_node_security_plug_white_sign_key,
+        sign_key,
+        sizeof(struct security_rp_sign_key));
 }
 
 void ezusb_iidx_emu_node_security_plug_set_plug_black_mcode(
@@ -373,7 +398,7 @@ bool ezusb_iidx_emu_node_security_plug_read_packet_v2(
 
         security_rp2_generate_signed_eeprom_data(
             SECURITY_RP_UTIL_RP_TYPE_BLACK,
-            &ezusb_iidx_emu_node_security_plug_boot_version,
+            &ezusb_iidx_emu_node_security_plug_black_sign_key,
             &ezusb_iidx_emu_node_security_plug_black_mcode,
             &ezusb_iidx_emu_node_security_plug_pcbid,
             (struct security_rp2_eeprom *) pkg->payload);
@@ -415,7 +440,7 @@ bool ezusb_iidx_emu_node_security_plug_read_packet_v2(
 
         security_rp2_generate_signed_eeprom_data(
             SECURITY_RP_UTIL_RP_TYPE_WHITE,
-            &ezusb_iidx_emu_node_security_plug_boot_version,
+            &ezusb_iidx_emu_node_security_plug_white_sign_key,
             &ezusb_iidx_emu_node_security_plug_white_mcode,
             &ezusb_iidx_emu_node_security_plug_eamid,
             (struct security_rp2_eeprom *) pkg->payload);
