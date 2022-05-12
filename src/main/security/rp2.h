@@ -20,16 +20,22 @@ struct security_rp2_eeprom {
 };
 
 /**
- * Generates the signature for the given plug id. Used by both rp2 and rp3.
+ * This is the core of the algorithm shared between rp2 and rp3 dongles.
+ * The keys passed to this function are assumed to already be mutated
+ * as required.
  *
- * @param plug_id The scrambled form of the plug id stored on the plug.
- * @param sign_key_packed The packed key to use for generating the signature.
- * @param out Pointer to the buffer for the resulting data.
+ * @param sign_key The key to use for generating the signature.
+ * @param plug_mcode The mcode of the game to boot.
+ * @param plug_id The id stored on the plug.
+ * @param signature Pointer to the signature buffer for the resulting data.
+ * @param packed_payload Pointer to the payload buffer for the resulting data.
  */
-void security_rp2_create_signature(
-    const uint8_t *plug_id_enc,
-    const uint8_t *sign_key_packed,
-    uint8_t *out);
+void security_rp2_generate_signed_eeprom_data_core(
+    const uint8_t *sign_key,
+    const uint8_t *plug_mcode,
+    const uint8_t *plug_id,
+    uint8_t *signature,
+    uint8_t *packed_payload);
 
 /**
  * Generate signed eeprom data from non encrypted and unobfuscated data required
@@ -44,8 +50,6 @@ void security_rp2_create_signature(
  * @param sign_key The key to use for generating the signature.
  *        This key can be extracted from the executables of the games and might
  *        be re-used for multiple games of the same series or generation.
- * @param boot_version The boot version mcode that is used for bootstrapping
- *                     the security backend (of the ezusb.dll).
  * @param plug_mcode The mcode of the game to boot. Typically, this code is
  *                   printed onto the housing of the black dongle. For white
  *                   dongles, the "mcode" @@@@@@@@ is used.

@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "security/rp2.h"
 #include "security/rp-util.h"
 #include "security/util.h"
@@ -48,6 +50,19 @@ void security_rp2_create_signature(
     }
 }
 
+void security_rp2_generate_signed_eeprom_data_core(
+    const uint8_t *sign_key,
+    const uint8_t *plug_mcode,
+    const uint8_t *plug_id,
+    uint8_t *signature,
+    uint8_t *packed_payload)
+{
+    uint8_t sign_key_tmp[8];
+    security_util_8_to_6_encode(sign_key, sign_key_tmp);
+    security_rp2_create_signature(plug_id, sign_key_tmp, signature);
+    security_util_8_to_6_encode(plug_mcode, packed_payload);
+}
+
 void security_rp2_generate_signed_eeprom_data(
     enum security_rp_util_rp_type type,
     const struct security_rp_sign_key *sign_key,
@@ -57,37 +72,29 @@ void security_rp2_generate_signed_eeprom_data(
 {
     uint8_t sign_key_tmp[8];
     uint8_t plug_id_enc[8];
+    const uint8_t *plug_mcode_raw = (const uint8_t *) plug_mcode;
 
     log_assert(sign_key);
     log_assert(plug_mcode);
     log_assert(plug_id);
     log_assert(out);
 
-    memcpy(sign_key_tmp, sign_key, sizeof(sign_key_tmp));
+    for (int i = 0; i < sizeof(sign_key_tmp); i++) {
+        sign_key_tmp[i] = sign_key->data[i] ^ 0x40;
 
-    if (type == SECURITY_RP_UTIL_RP_TYPE_BLACK) {
-        for (int i = 0; i < sizeof(sign_key_tmp); i++) {
-            sign_key_tmp[i] ^= ((const uint8_t *) plug_mcode)[i];
+        if (type == SECURITY_RP_UTIL_RP_TYPE_BLACK) {
+            sign_key_tmp[i] ^= plug_mcode_raw[i];
         }
     }
 
-    for (uint8_t i = 0; i < sizeof(sign_key_tmp); i++) {
-        sign_key_tmp[i] ^= 0x40;
-    }
-
-    security_util_8_to_6_encode(sign_key_tmp, sign_key_tmp);
-
     plug_id_enc[0] = plug_id->checksum;
-    plug_id_enc[1] = plug_id->id[2];
-    plug_id_enc[2] = plug_id->id[3];
-    plug_id_enc[3] = plug_id->id[4];
-    plug_id_enc[4] = plug_id->id[5];
-    plug_id_enc[5] = plug_id->id[6];
-    plug_id_enc[6] = plug_id->id[7];
+    memcpy(&plug_id_enc[1], &plug_id->id[2], 6);
     plug_id_enc[7] = plug_id->id[1];
 
-    security_rp2_create_signature(plug_id_enc, sign_key_tmp, (uint8_t *) out);
-
-    security_util_8_to_6_encode(
-        (const uint8_t *) plug_mcode, out->packed_payload);
+    security_rp2_generate_signed_eeprom_data_core(
+        sign_key_tmp,
+        plug_mcode_raw,
+        plug_id_enc,
+        out->signature,
+        out->packed_payload);
 }
