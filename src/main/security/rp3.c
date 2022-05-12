@@ -1,10 +1,11 @@
+#include <string.h>
+
 #include "security/rp2.h"
 #include "security/rp3.h"
 #include "security/rp-util.h"
 #include "security/util.h"
 
 #include "util/crc.h"
-#include "util/crypto.h"
 #include "util/log.h"
 
 void security_rp3_generate_signed_eeprom_data(
@@ -16,6 +17,7 @@ void security_rp3_generate_signed_eeprom_data(
 {
     uint8_t sign_key_tmp[8];
     uint8_t plug_id_reversed[8];
+    const uint8_t *plug_mcode_raw = (const uint8_t *) plug_mcode;
 
     log_assert(sign_key);
     log_assert(plug_mcode);
@@ -23,24 +25,23 @@ void security_rp3_generate_signed_eeprom_data(
     log_assert(out);
 
     memcpy(sign_key_tmp, sign_key, sizeof(sign_key_tmp));
-
     if (type == SECURITY_RP_UTIL_RP_TYPE_BLACK) {
         for (int i = 0; i < sizeof(sign_key_tmp); i++) {
-            sign_key_tmp[i] ^= ((const uint8_t *) plug_mcode)[i];
+            sign_key_tmp[i] ^= plug_mcode_raw[i];
         }
     }
-
-    security_util_8_to_6_encode(sign_key_tmp, sign_key_tmp);
 
     for (int i = 0; i < sizeof(plug_id_reversed); i++) {
         plug_id_reversed[i] = plug_id->id[7 - i];
     }
 
-    security_util_8_to_6_encode(
-        (const uint8_t *) plug_mcode, out->packed_payload);
-    memset(out->zeros, 0, sizeof(out->zeros));
+    security_rp2_generate_signed_eeprom_data_core(
+        sign_key_tmp,
+        plug_mcode_raw,
+        plug_id_reversed,
+        out->signature,
+        out->packed_payload);
 
-    security_rp2_create_signature(
-        plug_id_reversed, sign_key_tmp, out->signature);
+    memset(out->zeros, 0, sizeof(out->zeros));
     out->crc = crc8((uint8_t *) out, sizeof(*out) - 1, 0);
 }
