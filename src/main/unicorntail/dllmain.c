@@ -2,9 +2,6 @@
 
 #include <stdbool.h>
 
-#include "ddrhook/p3io.h"
-#include "ddrhook/usbmem.h"
-
 #include "hook/iohook.h"
 
 #include "hooklib/app.h"

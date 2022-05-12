@@ -15,11 +15,6 @@ libs_ddrhook		:= \
 	ddrio \
 
 src_ddrhook		:= \
-	extio.c \
 	dllmain.c \
-	_com4.c \
 	master.c \
-	p3io.c \
-	usbmem.c \
-	spike.c
 
