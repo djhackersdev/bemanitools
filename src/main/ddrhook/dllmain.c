@@ -5,14 +5,14 @@
 #include "bemanitools/ddrio.h"
 #include "bemanitools/eamio.h"
 
+#include "ddrhook-util/_com4.h"
+#include "ddrhook-util/extio.h"
 #include "ddrhook-util/gfx.h"
+#include "ddrhook-util/p3io.h"
+#include "ddrhook-util/spike.h"
+#include "ddrhook-util/usbmem.h"
 
-#include "ddrhook/_com4.h"
-#include "ddrhook/extio.h"
 #include "ddrhook/master.h"
-#include "ddrhook/p3io.h"
-#include "ddrhook/spike.h"
-#include "ddrhook/usbmem.h"
 
 #include "hook/iohook.h"
 

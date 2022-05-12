@@ -15,6 +15,9 @@ const struct security_rp_sign_key security_rp_sign_key_black_gfdmv8 = {
 const struct security_rp_sign_key security_rp_sign_key_black_ddrx = {
     .data = "573PROJE"};
 
+const struct security_rp_sign_key security_rp_sign_key_black_ddrx2 = {
+    .data = "BMPDDRAC"};
+
 const struct security_rp_sign_key security_rp_sign_key_black_iidx = {
     .data = "2DXGLDAC"};
 

@@ -11,3 +11,8 @@ src_ddrhook-util     := \
 	guid.c \
 	misc.c \
 	monitor.c \
+	extio.c \
+	_com4.c \
+	usbmem.c \
+	spike.c \
+	p3io.c \

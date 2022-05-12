@@ -71,6 +71,10 @@ static HRESULT(STDCALL *real_DrawPrimitiveUP)(
     const void *data,
     UINT stride);
 
+static HRESULT(STDCALL *real_Reset)(
+    IDirect3DDevice9 *self,
+    D3DPRESENT_PARAMETERS *pp);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -136,6 +140,10 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
     const void *data,
     UINT stride);
 
+static HRESULT STDCALL my_Reset(
+    IDirect3DDevice9 *self,
+    D3DPRESENT_PARAMETERS *pp);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -194,6 +202,9 @@ hook_d3d9_irp_handler_real_dev_set_render_state(struct hook_d3d9_irp *irp);
 static HRESULT
 hook_d3d9_irp_handler_real_dev_draw_primitive_up(struct hook_d3d9_irp *irp);
 
+static HRESULT
+hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -218,6 +229,8 @@ static const hook_d3d9_irp_handler_t hook_d3d9_irp_real_handlers[] = {
         hook_d3d9_irp_handler_real_dev_set_render_state,
     [HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP] =
         hook_d3d9_irp_handler_real_dev_draw_primitive_up,
+    [HOOK_D3D9_IRP_OP_DEV_RESET] =
+        hook_d3d9_irp_handler_real_dev_reset,
 };
 
 static const hook_d3d9_irp_handler_t *hook_d3d9_handlers;
@@ -488,6 +501,24 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
     return hr;
 }
 
+static HRESULT STDCALL my_Reset(
+    IDirect3DDevice9 *self,
+    D3DPRESENT_PARAMETERS *pp)
+{
+    struct hook_d3d9_irp irp;
+    HRESULT hr;
+
+    memset(&irp, 0, sizeof(irp));
+
+    irp.op = HOOK_D3D9_IRP_OP_DEV_RESET;
+    irp.args.dev_reset.self = self;
+    irp.args.dev_reset.pp = pp;
+
+    hr = hook_d3d9_irp_invoke_next(&irp);
+
+    return hr;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -528,7 +559,7 @@ static HRESULT hook_d3d9_irp_handler_real_ctx_create(struct hook_d3d9_irp *irp)
     }
 
     res = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
-    
+
     if (res != S_OK) {
         log_fatal("Wrapping com proxy failed: %08lx", res);
     }
@@ -657,6 +688,9 @@ hook_d3d9_irp_handler_real_dev_create_device(struct hook_d3d9_irp *irp)
     real_DrawPrimitiveUP = api_vtbl->DrawPrimitiveUP;
     api_vtbl->DrawPrimitiveUP = my_DrawPrimitiveUP;
 
+    real_Reset = api_vtbl->Reset;
+    api_vtbl->Reset = my_Reset;
+
     *irp->args.ctx_create_device.pdev = (IDirect3DDevice9 *) api_proxy;
 
     return hr;
@@ -729,6 +763,16 @@ hook_d3d9_irp_handler_real_dev_draw_primitive_up(struct hook_d3d9_irp *irp)
         irp->args.dev_draw_primitive_up.primitive_count,
         irp->args.dev_draw_primitive_up.data,
         irp->args.dev_draw_primitive_up.stride);
+}
+
+static HRESULT
+hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp)
+{
+    log_assert(irp);
+
+    return real_Reset(
+        irp->args.dev_reset.self,
+        irp->args.dev_reset.pp);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------

@@ -19,7 +19,7 @@
 
 #include "bemanitools/ddrio.h"
 
-#include "ddrhook/_com4.h"
+#include "ddrhook-util/_com4.h"
 
 #include "hook/iohook.h"
 

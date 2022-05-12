@@ -33,6 +33,7 @@ enum hook_d3d9_irp_op {
     HOOK_D3D9_IRP_OP_DEV_PRESENT = 9,
     HOOK_D3D9_IRP_OP_DEV_SET_RENDER_STATE = 10,
     HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP = 11,
+    HOOK_D3D9_IRP_OP_DEV_RESET = 12,
 };
 
 /**
@@ -161,6 +162,14 @@ struct hook_d3d9_irp {
             const void *data;
             UINT stride;
         } dev_draw_primitive_up;
+
+        /**
+         * Params of IDirect3DDevice9_Reset.
+         */
+        struct {
+            IDirect3DDevice9 *self;
+            D3DPRESENT_PARAMETERS *pp;
+        } dev_reset;
     } args;
 
     size_t next_handler;

@@ -50,6 +50,14 @@ extern const struct security_rp_sign_key security_rp_sign_key_black_ddrx;
  * Signing key used to create eeprom signatures for all black dongles used
  * on the following games:
  *
+ * - DDR X2 and beyond
+ */
+extern const struct security_rp_sign_key security_rp_sign_key_black_ddrx2;
+
+/**
+ * Signing key used to create eeprom signatures for all black dongles used
+ * on the following games:
+ *
  * - IIDX 14 to 17
  */
 extern const struct security_rp_sign_key security_rp_sign_key_black_iidx;

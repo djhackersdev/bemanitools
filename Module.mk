@@ -94,6 +94,7 @@ include src/main/config/Module.mk
 include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
 include src/main/ddrhook/Module.mk
+include src/main/ddrhookx/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddrio/Module.mk
@@ -562,6 +563,25 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-11.zip: \
+		build/bin/indep-32/inject.exe \
+		build/bin/avs2_803-32/ddrhookx.dll \
+		build/bin/avs2_803-32/unicorntail.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/ddrio.dll \
+		build/bin/indep-32/ddrio-mm.dll \
+		build/bin/indep-32/ddrio-smx.dll \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/geninput.dll \
+		dist/ddr/config.bat \
+		dist/ddr/gamestart-11.bat \
+		dist/ddr/gamestart-11-us.bat \
+		dist/ddr/ddr-11.conf \
+		dist/ddr/ddr-11-us.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
