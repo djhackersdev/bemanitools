@@ -22,4 +22,5 @@ libs_jbhook3       := \
 
 src_jbhook3        := \
     dllmain.c \
+	gfx.c \
     options.c

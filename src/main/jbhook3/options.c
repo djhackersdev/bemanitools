@@ -34,10 +34,10 @@ void options_init_from_cmdline(struct options *options)
 void options_init(struct options *options)
 {
     options->windowed = false;
-    options->window_framed = false;
     options->disable_p4ioemu = false;
     options->disable_cardemu = false;
     options->disable_adapteremu = false;
+    options->show_cursor = false;
 }
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
@@ -60,11 +60,6 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                 break;
             }
 
-            case 'f': {
-                options->window_framed = true;
-                break;
-            }
-
             case 'a': {
                 options->disable_adapteremu = true;
                 break;
@@ -77,6 +72,11 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
             case 'p': {
                 options->disable_p4ioemu = true;
+                break;
+            }
+            
+            case 's': {
+                options->show_cursor = true;
                 break;
             }
         }
@@ -95,13 +95,13 @@ void options_print_usage(void)
                 "\n"
                 "       -h                  Print this usage message\n"
                 "       -w                  Run the game windowed\n"
-                "       -f                  Run the game in a framed window (needs -w option)\n"
                 "       -a                  Disable adapter hook\n"
                 "       -c                  Disable card emulation (e.g. when running on a "
                 "real cab)\n"
                 "       -p                  Disable p4io emulation (e.g. when running on a "
                 "real cab or on a bare "
-                "p4io)\n");
+                "p4io)\n"
+                "       -s                  Show mouse cursor on game window\n");
 }
 
 void options_fini(struct options *options)

@@ -9,6 +9,7 @@
 #include "bemanitools/jbio.h"
 
 #include "hook/iohook.h"
+#include "hook/table.h"
 
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
@@ -17,6 +18,7 @@
 
 #include "imports/avs.h"
 
+#include "jbhook3/gfx.h"
 #include "jbhook3/options.h"
 
 #include "jbhook-util/acio.h"
@@ -46,6 +48,16 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iohook_push_handler(p4ioemu_dispatch_irp);
     iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
+
+    jbhook3_gfx_init();
+
+    if(options.windowed) {
+        jbhook3_gfx_set_windowed();
+    }
+
+    if(options.show_cursor) {
+        jbhook3_gfx_set_show_cursor();
+    }
 
     if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
@@ -119,7 +131,7 @@ static bool my_dll_entry_main(void)
     if (!options.disable_p4ioemu) {
         p4ioemu_fini();
     }
-
+	
     options_fini(&options);
 
     return result;
@@ -141,7 +153,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     if (!options.disable_adapteremu) {
         adapter_hook_init();
     }
-
+	
     jbhook_util_eamuse_hook_init();
 
     return TRUE;

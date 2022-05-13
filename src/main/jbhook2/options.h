@@ -6,11 +6,11 @@
 
 struct options {
     bool windowed;
-    bool window_framed;
     bool vertical;
     bool disable_p3ioemu;
     bool disable_cardemu;
     bool disable_adapteremu;
+    bool show_cursor;
 };
 
 void options_init_from_cmdline(struct options *options);
