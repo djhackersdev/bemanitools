@@ -199,6 +199,10 @@ static HWND CDECL my_mwindow_create(
         window_height = tmp;
     }
 
+    if(options.show_cursor) {
+        ShowCursor(TRUE);
+    }
+	
     fullscreen = !options.windowed;
 
     return real_mwindow_create(
