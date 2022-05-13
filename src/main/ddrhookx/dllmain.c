@@ -146,7 +146,7 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
         &security_rp_sign_key_black_ddrx,
         &security_rp_sign_key_white_eamuse);
     extio_init();
-    usbmem_init();
+    usbmem_init(config_ddrhookx.usbmem_path);
     spike_init();
     com4_init();
 
