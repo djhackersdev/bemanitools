@@ -40,11 +40,11 @@ void get_launcher_path_parts(char **output_path, char **output_foldername) {
     if (output_foldername != NULL)
         *output_foldername = NULL;
 
-    if (GetModuleFileNameA(NULL, module_path, MAX_PATH) == 0)
+    if (GetModuleFileNameA(NULL, module_path, sizeof(module_path)) == 0)
         return;
 
     char *filename_ptr = NULL;
-    if (GetFullPathNameA(module_path, MAX_PATH, launcher_path, &filename_ptr) == 0)
+    if (GetFullPathNameA(module_path, sizeof(launcher_path), launcher_path, &filename_ptr) == 0)
         return;
 
     if (filename_ptr != NULL)

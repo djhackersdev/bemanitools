@@ -172,18 +172,20 @@ FILE *fopen_appdata(const char *vendor, const char *filename, const char *mode)
 
 bool path_mkdir(const char *path)
 {
+    bool success;
     char buf[MAX_PATH];
     char *pos;
 
     str_cpy(buf, lengthof(buf), path);
 
     for (pos = path_next_element(buf); pos; pos = path_next_element(pos + 1)) {
+        char c = *pos;
         *pos = '\0';
 
-        if (strlen(buf) != 2 || buf[1] != ':') {
-            CreateDirectory(buf, NULL);
+        if (strlen(buf) != 2 || (strlen(buf) >= 2 && buf[1] != ':')) {
+            success = CreateDirectory(buf, NULL);
 
-            if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            if (!success && GetLastError() != ERROR_ALREADY_EXISTS) {
                 log_warning(
                     "%s: Cannot create directory: %#x",
                     buf,
@@ -193,12 +195,12 @@ bool path_mkdir(const char *path)
             }
         }
 
-        *pos = '/';
+        *pos = c;
     }
 
-    CreateDirectory(buf, NULL);
+    success = CreateDirectory(buf, NULL);
 
-    if (GetLastError() != ERROR_ALREADY_EXISTS) {
+    if (!success && GetLastError() != ERROR_ALREADY_EXISTS) {
         log_warning(
             "%s: Cannot create directory: %#x",
             buf,

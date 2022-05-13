@@ -1,6 +1,8 @@
 #ifndef DDRHOOKX_CONFIG_DDRHOOKX_H
 #define DDRHOOKX_CONFIG_DDRHOOKX_H
 
+#include <windows.h>
+
 #include "cconfig/cconfig.h"
 
 /**
@@ -9,6 +11,7 @@
 struct ddrhookx_config_ddrhookx {
     bool use_com4_emu;
     bool standard_def;
+    char usbmem_path[MAX_PATH];
 };
 
 /**
