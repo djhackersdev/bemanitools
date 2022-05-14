@@ -32,6 +32,8 @@ EXPORTS
     property_node_type
     property_node_traversal
     property_node_refdata
+    property_psmap_export
+    property_psmap_import
     std_getenv
-    std_setenv    
+    std_setenv
 

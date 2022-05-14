@@ -586,7 +586,39 @@ $(zipdir)/ddr-11.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/ddr-12-to-16.zip: \
+$(zipdir)/ddr-12.zip: \
+		build/bin/avs2_1002-32/launcher.exe \
+		build/bin/avs2_1002-32/ddrhook.dll \
+		build/bin/avs2_1002-32/unicorntail.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/ddrio.dll \
+		build/bin/indep-32/ddrio-mm.dll \
+		build/bin/indep-32/ddrio-smx.dll \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/geninput.dll \
+		dist/ddr/config.bat \
+		dist/ddr/gamestart-12.bat \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-13.zip: \
+		build/bin/avs2_1304-32/launcher.exe \
+		build/bin/avs2_1304-32/ddrhook.dll \
+		build/bin/avs2_1304-32/unicorntail.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/ddrio.dll \
+		build/bin/indep-32/ddrio-mm.dll \
+		build/bin/indep-32/ddrio-smx.dll \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/geninput.dll \
+		dist/ddr/config.bat \
+		dist/ddr/gamestart-13.bat \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-14-to-16.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/avs2_1508-32/ddrhook.dll \
 		build/bin/avs2_1508-32/unicorntail.dll \
@@ -597,8 +629,6 @@ $(zipdir)/ddr-12-to-16.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
-		dist/ddr/gamestart-12.bat \
-		dist/ddr/gamestart-13.bat \
 		dist/ddr/gamestart-14.bat \
 		dist/ddr/gamestart-15.bat \
 		dist/ddr/gamestart-16.bat \
