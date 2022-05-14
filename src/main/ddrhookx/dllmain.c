@@ -23,7 +23,7 @@
 #include "ddrhookx/master.h"
 
 #include "hook/iohook.h"
-#include "hook/table.h"
+#include "hook/process.h"
 
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
@@ -48,22 +48,14 @@
 bool standard_def;
 bool _15khz;
 
+static DWORD STDCALL my_main();
+static DWORD(STDCALL *real_main)();
+
 static const hook_d3d9_irp_handler_t ddrhookx_d3d9_handlers[] = {
     ddrhookx_d3d9_irp_handler,
 };
 
-static DWORD STDCALL my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-static DWORD(STDCALL *real_GetModuleFileNameA)(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-
 static bool ddrhookx_init_check = false;
-
-static const struct hook_symbol init_hook_syms[] = {
-    {
-        .name = "GetModuleFileNameA",
-        .patch = my_GetModuleFileNameA,
-        .link = (void **) &real_GetModuleFileNameA,
-    },
-};
 
 static void ddrhookx_setup_d3d9_hooks(
     const struct ddrhookx_config_gfx *config_gfx)
@@ -77,8 +69,7 @@ static void ddrhookx_setup_d3d9_hooks(
     hook_d3d9_init(ddrhookx_d3d9_handlers, lengthof(ddrhookx_d3d9_handlers));
 }
 
-static DWORD STDCALL
-my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
+static DWORD STDCALL my_main()
 {
     bool ok;
     struct cconfig *config;
@@ -176,7 +167,7 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
     log_info("--- End ddrhookx GetModuleFileNameA ---");
 
 skip:
-    return real_GetModuleFileNameA(hModule, lpFilename, nSize);
+    return real_main();
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
@@ -184,8 +175,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     if (reason == DLL_PROCESS_ATTACH) {
         log_to_writer(log_writer_debug, NULL);
 
-        hook_table_apply(
-            NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));
+        process_hijack_startup(my_main, &real_main);
 
         master_insert_hooks(NULL);
         filesystem_hook_init();
