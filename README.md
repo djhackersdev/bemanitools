@@ -31,11 +31,13 @@ The tl;dr version and golden rules of the sections in the document:
     * BeatStream (bst.zip) using bsthook
     * BeatStream アニムトライヴ (bst.zip) using bsthook
 * Dance Dance Revolution
-    * Dance Dance Revolution X2 (ddr-12-to-16.zip) using ddrhook
-    * Dance Dance Revolution X3 vs. 2ndMIX (ddr-12-to-16.zip) using ddrhook
-    * Dance Dance Revolution 2013 (ddr-12-to-16.zip) using ddrhook
-    * Dance Dance Revolution 2014 (ddr-12-to-16.zip) using ddrhook
-    * Dance Dance Revolution A (ddr-12-to-16.zip) using ddrhook
+    * Dance Dance Revolution X (ddr-11.zip) using ddrhookx
+    * Dance Dance Revolution X2 (ddr-12.zip) using ddrhook
+    * Dance Dance Revolution X2 (ddr-13.zip) using ddrhook
+    * Dance Dance Revolution X3 vs. 2ndMIX (ddr-14-to-16.zip) using ddrhook
+    * Dance Dance Revolution 2013 (ddr-14-to-16.zip) using ddrhook
+    * Dance Dance Revolution 2014 (ddr-14-to-16.zip) using ddrhook
+    * Dance Dance Revolution A (ddr-14-to-16.zip) using ddrhook
 * Beatmania IIDX
     * Beatmania IIDX 9th Style (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
     * Beatmania IIDX 10th Style (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
