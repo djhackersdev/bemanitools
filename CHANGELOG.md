@@ -2,6 +2,8 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.40
+
 ## 5.39
 * jbhook3: Fix window mode, remove window frame option, add show cursor on window option
 * Code simplification and cleanup round plug modules
