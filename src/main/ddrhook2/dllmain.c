@@ -33,10 +33,6 @@ static bool my_dll_entry_main(void);
 bool standard_def;
 bool _15khz;
 
-static const hook_d3d9_irp_handler_t ddrhook2_d3d9_handlers[] = {
-    gfx_d3d9_irp_handler,
-};
-
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     int argc;
@@ -87,6 +83,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     args_free(argc, argv);
 
+    #if AVS_VERSION >= 1508
+    gfx_set_is_modern();
+    #endif
+
     iohook_push_handler(p3io_emu_dispatch_irp);
     iohook_push_handler(extio_dispatch_irp);
     iohook_push_handler(spike_dispatch_irp);
@@ -96,8 +96,6 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         /* See ddrhook2/p3io.c for details. */
         iohook_push_handler(com4_dispatch_irp);
     }
-
-    hook_d3d9_init(ddrhook2_d3d9_handlers, lengthof(ddrhook2_d3d9_handlers));
 
     rs232_hook_init();
 

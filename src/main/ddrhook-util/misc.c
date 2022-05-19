@@ -13,6 +13,7 @@
 
 static LRESULT(STDCALL *real_SendMessageW)(
     HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 static HWND(STDCALL *real_CreateWindowExW)(
     DWORD dwExStyle,
     LPCWSTR lpClassName,
@@ -30,6 +31,7 @@ static HWND(STDCALL *real_CreateWindowExW)(
 static SHORT STDCALL my_GetKeyState(int vk);
 static LRESULT STDCALL
 my_SendMessageW(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 static HWND STDCALL my_CreateWindowExA(
     DWORD dwExStyle,
     LPCSTR lpClassName,
@@ -92,6 +94,23 @@ static HWND STDCALL my_CreateWindowExW(
     HINSTANCE hInstance,
     LPVOID lpParam)
 {
+    // This breaks DDR X, X2 and X3
+    if (gfx_get_is_modern()) {
+        return real_CreateWindowExW(
+            dwExStyle,
+            lpClassName,
+            lpWindowName,
+            dwStyle,
+            X,
+            Y,
+            nWidth,
+            nHeight,
+            hWndParent,
+            hMenu,
+            hInstance,
+            lpParam);
+    }
+
     if (gfx_get_windowed()) {
         /* use a different style */
         dwStyle |= WS_OVERLAPPEDWINDOW;

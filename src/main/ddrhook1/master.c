@@ -1,6 +1,7 @@
 #include "ddrhook1/master.h"
 
 #include "ddrhook-util/dinput.h"
+#include "ddrhook-util/gfx.h"
 #include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
@@ -52,6 +53,7 @@ void ddrhook1_master_insert_hooks(HMODULE target)
 
     p3io_setupapi_insert_hooks(target);
     monitor_setupapi_insert_hooks(target);
+    gfx_insert_hooks(target);
     dinput_init(target);
 
     /* Insert dynamic loader hooks so that we can hook late-loaded modules */

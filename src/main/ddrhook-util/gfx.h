@@ -13,6 +13,9 @@ struct ddrhook1_d3d9_config {
 bool gfx_get_windowed(void);
 void gfx_set_windowed(void);
 
+bool gfx_get_is_modern(void);
+void gfx_set_is_modern(void);
+
 void gfx_d3d9_calc_win_size_with_framed(
     HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, LPWINDOWPOS wp);
 
