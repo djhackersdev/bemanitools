@@ -13,6 +13,7 @@ libs_ddrhook2		:= \
 	util \
 	eamio \
 	ddrio \
+	security \
 
 src_ddrhook2		:= \
 	dllmain.c \
