@@ -18,9 +18,10 @@
 #include "ddrhook1/config-eamuse.h"
 #include "ddrhook1/config-gfx.h"
 #include "ddrhook1/config-security.h"
-#include "ddrhook1/d3d9.h"
 #include "ddrhook1/filesystem.h"
 #include "ddrhook1/master.h"
+
+#include "ddrhook-util/gfx.h"
 
 #include "hook/iohook.h"
 #include "hook/process.h"
@@ -40,10 +41,10 @@
 #include "util/thread.h"
 
 #define DDRHOOK1_INFO_HEADER \
-    "ddrhookx for DDR X"    \
+    "ddrhook1 for DDR X"    \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define DDRHOOK1_CMD_USAGE \
-    "Usage: inject.exe ddrhookx.dll <ddr.exe> [options...]"
+    "Usage: inject.exe ddrhook1.dll <ddr.exe> [options...]"
 
 bool standard_def;
 bool _15khz;
@@ -52,29 +53,17 @@ static DWORD STDCALL my_main();
 static DWORD(STDCALL *real_main)();
 
 static const hook_d3d9_irp_handler_t ddrhook1_d3d9_handlers[] = {
-    ddrhook1_d3d9_irp_handler,
+    gfx_d3d9_irp_handler,
 };
 
 static bool ddrhook1_init_check = false;
-
-static void ddrhook1_setup_d3d9_hooks(
-    const struct ddrhook1_config_gfx *config_gfx)
-{
-    struct ddrhook1_d3d9_config d3d9_config;
-
-    d3d9_config.windowed = config_gfx->windowed;
-
-    ddrhook1_d3d9_configure(&d3d9_config);
-
-    hook_d3d9_init(ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
-}
 
 static DWORD STDCALL my_main()
 {
     bool ok;
     struct cconfig *config;
 
-    struct ddrhook1_config_ddrhookx config_ddrhookx;
+    struct ddrhook1_config_ddrhook1 config_ddrhook1;
     struct ddrhook1_config_eamuse config_eamuse;
     struct ddrhook1_config_gfx config_gfx;
     struct ddrhook1_config_security config_security;
@@ -82,7 +71,7 @@ static DWORD STDCALL my_main()
     if (ddrhook1_init_check)
         goto skip;
 
-    log_info("--- Begin ddrhookx GetModuleFileNameA ---");
+    log_info("--- Begin ddrhook1 main ---");
 
     ddrhook1_init_check = true;
 
@@ -101,17 +90,18 @@ static DWORD STDCALL my_main()
         exit(EXIT_FAILURE);
     }
 
-    ddrhook1_config_ddrhook1_get(&config_ddrhookx, config);
+    ddrhook1_config_ddrhook1_get(&config_ddrhook1, config);
     ddrhook1_config_eamuse_get(&config_eamuse, config);
     ddrhook1_config_gfx_get(&config_gfx, config);
     ddrhook1_config_security_get(&config_security, config);
 
     cconfig_finit(config);
 
-    standard_def = config_ddrhookx.standard_def;
+    standard_def = config_ddrhook1.standard_def;
+    _15khz = config_ddrhook1.use_15khz;
 
     log_info(DDRHOOK1_INFO_HEADER);
-    log_info("Initializing ddrhookx...");
+    log_info("Initializing ddrhook1...");
 
     ddrhook1_avs_boot_init();
     ddrhook1_avs_boot_set_eamuse_addr(&config_eamuse.server);
@@ -121,12 +111,14 @@ static DWORD STDCALL my_main()
     iohook_push_handler(spike_dispatch_irp);
     iohook_push_handler(usbmem_dispatch_irp);
 
-    if (config_ddrhookx.use_com4_emu) {
-        /* See ddrhook2/p3io.c for details. */
+    if (config_ddrhook1.use_com4_emu) {
+        /* See ddrhook-util/p3io.c for details. */
         iohook_push_handler(com4_dispatch_irp);
     }
 
-    ddrhook1_setup_d3d9_hooks(&config_gfx);
+    if (config_gfx.windowed) {
+        gfx_set_windowed();
+    }
 
     rs232_hook_init();
 
@@ -137,7 +129,7 @@ static DWORD STDCALL my_main()
         &security_rp_sign_key_black_ddrx,
         &security_rp_sign_key_white_eamuse);
     extio_init();
-    usbmem_init(config_ddrhookx.usbmem_path);
+    usbmem_init(config_ddrhook1.usbmem_path);
     spike_init();
     com4_init();
 
@@ -150,7 +142,7 @@ static DWORD STDCALL my_main()
         return false;
     }
 
-    if (config_ddrhookx.use_com4_emu) {
+    if (config_ddrhook1.use_com4_emu) {
         log_info("Initializing card reader backend");
 
         eam_io_set_loggers(
@@ -164,7 +156,7 @@ static DWORD STDCALL my_main()
         }
     }
 
-    log_info("--- End ddrhookx GetModuleFileNameA ---");
+    log_info("--- End ddrhook1 main ---");
 
 skip:
     return real_main();
@@ -180,7 +172,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         ddrhook1_master_insert_hooks(NULL);
         ddrhook1_filesystem_hook_init();
 
-        ddrhook1_d3d9_hook_init();
+        hook_d3d9_init(ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
     }
 
     return TRUE;

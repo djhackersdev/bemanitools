@@ -11,8 +11,6 @@
 #include "util/log.h"
 #include "util/str.h"
 
-static LONG(STDCALL *real_ChangeDisplaySettingsExA)(
-    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
 static LRESULT(STDCALL *real_SendMessageW)(
     HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 static HWND(STDCALL *real_CreateWindowExW)(
@@ -28,13 +26,7 @@ static HWND(STDCALL *real_CreateWindowExW)(
     HMENU hMenu,
     HINSTANCE hInstance,
     LPVOID lpParam);
-static LONG(STDCALL *real_SetWindowLongW)(
-    HWND hWnd, int nIndex, LONG dwNewLong);
-static BOOL(STDCALL *real_SetWindowPos)(
-    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
-static LONG STDCALL my_ChangeDisplaySettingsExA(
-    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param);
 static SHORT STDCALL my_GetKeyState(int vk);
 static LRESULT STDCALL
 my_SendMessageW(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -64,16 +56,8 @@ static HWND STDCALL my_CreateWindowExW(
     HMENU hMenu,
     HINSTANCE hInstance,
     LPVOID lpParam);
-static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong);
-static BOOL STDCALL my_SetWindowPos(
-    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
 static const struct hook_symbol misc_user32_syms[] = {
-    {
-        .name = "ChangeDisplaySettingsExA",
-        .patch = my_ChangeDisplaySettingsExA,
-        .link = (void **) &real_ChangeDisplaySettingsExA,
-    },
     {
         .name = "SendMessageW",
         .patch = my_SendMessageW,
@@ -92,81 +76,7 @@ static const struct hook_symbol misc_user32_syms[] = {
         .patch = my_CreateWindowExW,
         .link = (void **) &real_CreateWindowExW,
     },
-    {
-        .name = "SetWindowLongW",
-        .patch = my_SetWindowLongW,
-        .link = (void **) &real_SetWindowLongW,
-    },
-    {
-        .name = "SetWindowPos",
-        .patch = my_SetWindowPos,
-        .link = (void **) &real_SetWindowPos,
-    },
 };
-
-static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
-{
-    if (nIndex == GWL_STYLE)
-        dwNewLong |= WS_OVERLAPPEDWINDOW;
-    return real_SetWindowLongW(hWnd, nIndex, dwNewLong);
-}
-
-static BOOL STDCALL my_SetWindowPos(
-    HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
-{
-    return true;
-}
-
-static LONG STDCALL my_ChangeDisplaySettingsExA(
-    char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param)
-{
-    if (gfx_get_windowed()) {
-        return DISP_CHANGE_SUCCESSFUL;
-    } else {
-        return real_ChangeDisplaySettingsExA(
-            dev_name, dev_mode, hwnd, flags, param);
-    }
-}
-
-static void calc_win_size_with_framed(
-    HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, LPWINDOWPOS wp)
-{
-    /* taken from dxwnd */
-    RECT rect;
-    DWORD style;
-    int max_x, max_y;
-    HMENU menu;
-
-    rect.left = x;
-    rect.top = y;
-    max_x = width;
-    max_y = height;
-    rect.right = x + max_x;
-    rect.bottom = y + max_y;
-
-    style = GetWindowLong(hwnd, GWL_STYLE);
-    menu = GetMenu(hwnd);
-    AdjustWindowRect(&rect, style, (menu != NULL));
-
-    /* shift down-right so that the border is visible
-       and also update the iPosX,iPosY upper-left coordinates
-       of the client area */
-
-    if (rect.left < 0) {
-        rect.right -= rect.left;
-        rect.left = 0;
-    }
-
-    if (rect.top < 0) {
-        rect.bottom -= rect.top;
-        rect.top = 0;
-    }
-
-    wp->x = rect.left;
-    wp->y = rect.top;
-    wp->cx = rect.right - rect.left;
-    wp->cy = rect.bottom - rect.top;
-}
 
 static HWND STDCALL my_CreateWindowExW(
     DWORD dwExStyle,
@@ -215,7 +125,7 @@ static HWND STDCALL my_CreateWindowExW(
            slightly bigger than the rendering resolution (window caption and
            stuff is included in the window size) */
         WINDOWPOS wp;
-        calc_win_size_with_framed(hwnd, X, Y, nWidth, nHeight, &wp);
+        gfx_d3d9_calc_win_size_with_framed(hwnd, X, Y, nWidth, nHeight, &wp);
         SetWindowPos(hwnd, 0, wp.x, wp.y, wp.cx, wp.cy, 0);
         X = wp.x;
         Y = wp.y;
