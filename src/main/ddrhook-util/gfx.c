@@ -225,6 +225,9 @@ static void gfx_d3d9_create_device_apply_window_mode(
     if (gfx_get_windowed()) {
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
+    } else if (pp->Windowed == FALSE) {
+        /* 64bit builds show the cursor even during fullscreen */
+        ShowCursor(FALSE);
     }
 }
 
