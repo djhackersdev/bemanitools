@@ -33,8 +33,7 @@ The tl;dr version and golden rules of the sections in the document:
 * Dance Dance Revolution
     * Dance Dance Revolution X (ddr-11.zip) using ddrhook1
     * Dance Dance Revolution X2 (ddr-12.zip) using ddrhook2
-    * Dance Dance Revolution X2 (ddr-13.zip) using ddrhook2
-    * Dance Dance Revolution X3 vs. 2ndMIX (ddr-14-to-16.zip) using ddrhook2
+    * Dance Dance Revolution X3 vs. 2ndMIX (ddr-13.zip) using ddrhook2
     * Dance Dance Revolution 2013 (ddr-14-to-16.zip) using ddrhook2
     * Dance Dance Revolution 2014 (ddr-14-to-16.zip) using ddrhook2
     * Dance Dance Revolution A (ddr-14-to-16.zip) using ddrhook2
