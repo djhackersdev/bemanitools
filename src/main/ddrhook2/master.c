@@ -16,6 +16,11 @@ static HMODULE(STDCALL *real_LoadLibraryA)(const char *name);
 
 static HMODULE STDCALL my_LoadLibraryA(const char *name);
 
+
+static const hook_d3d9_irp_handler_t ddrhook2_d3d9_handlers[] = {
+    gfx_d3d9_irp_handler,
+};
+
 static const struct hook_symbol master_kernel32_syms[] = {
     {
         .name = "LoadLibraryA",
@@ -57,6 +62,8 @@ void ddrhook2_master_insert_hooks(HMODULE target)
     misc_insert_hooks(target);
     dinput_init(target);
     gfx_insert_hooks(target);
+
+    hook_d3d9_init(ddrhook2_d3d9_handlers, lengthof(ddrhook2_d3d9_handlers));
 
     /* Insert dynamic loader hooks so that we can hook late-loaded modules */
 

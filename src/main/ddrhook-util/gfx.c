@@ -35,8 +35,9 @@ static BOOL STDCALL my_SetWindowPos(
     HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
 static bool gfx_windowed;
+static bool gfx_is_modern;
 
-static const struct hook_symbol misc_user32_syms[] = {
+static const struct hook_symbol gfx_user32_syms[] = {
     {
         .name = "ChangeDisplaySettingsExA",
         .patch = my_ChangeDisplaySettingsExA,
@@ -121,6 +122,11 @@ static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 static BOOL STDCALL my_SetWindowPos(
     HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
+    // Causes DDR A to have a really wide window
+    if (gfx_get_is_modern()) {
+        return true;
+    }
+
     if (gfx_get_windowed()) {
         WINDOWPOS wp;
 
@@ -138,7 +144,7 @@ static BOOL STDCALL my_SetWindowPos(
 void gfx_insert_hooks(HMODULE target)
 {
     hook_table_apply(
-        target, "user32.dll", misc_user32_syms, lengthof(misc_user32_syms));
+        target, "user32.dll", gfx_user32_syms, lengthof(gfx_user32_syms));
 
     log_info("Initialized d3d9 hooks");
 }
@@ -151,6 +157,16 @@ bool gfx_get_windowed(void)
 void gfx_set_windowed(void)
 {
     gfx_windowed = true;
+}
+
+bool gfx_get_is_modern(void)
+{
+    return gfx_is_modern;
+}
+
+void gfx_set_is_modern(void)
+{
+    gfx_is_modern = true;
 }
 
 /* ------------------------------------------------------------------------- */
