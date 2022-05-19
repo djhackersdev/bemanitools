@@ -1,5 +1,5 @@
-#ifndef DDRHOOKX_CONFIG_DDRHOOKX_H
-#define DDRHOOKX_CONFIG_DDRHOOKX_H
+#ifndef DDRHOOK1_CONFIG_DDRHOOK1_H
+#define DDRHOOK1_CONFIG_DDRHOOK1_H
 
 #include <windows.h>
 
@@ -8,9 +8,10 @@
 /**
  * Struct holding configuration values for game-specific items.
  */
-struct ddrhookx_config_ddrhookx {
+struct ddrhook1_config_ddrhookx {
     bool use_com4_emu;
     bool standard_def;
+    bool use_15khz;
     char usbmem_path[MAX_PATH];
 };
 
@@ -18,7 +19,7 @@ struct ddrhookx_config_ddrhookx {
  * Initialize a cconfig structure with the basic structure and default values
  * of this configuration.
  */
-void ddrhookx_config_ddrhookx_init(struct cconfig *config);
+void ddrhook1_config_ddrhook1_init(struct cconfig *config);
 
 /**
  * Read the module specific config struct values from the provided cconfig
@@ -28,7 +29,7 @@ void ddrhookx_config_ddrhookx_init(struct cconfig *config);
  *                   values to.
  * @param config cconfig struct holding the intermediate data to read from.
  */
-void ddrhookx_config_ddrhookx_get(
-    struct ddrhookx_config_ddrhookx *config_ddrhookx, struct cconfig *config);
+void ddrhook1_config_ddrhook1_get(
+    struct ddrhook1_config_ddrhookx *config_ddrhookx, struct cconfig *config);
 
 #endif

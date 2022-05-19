@@ -1,5 +1,5 @@
-#ifndef DDRHOOK_P3IO_H
-#define DDRHOOK_P3IO_H
+#ifndef DDRHOOK_UTIL_P3IO_H
+#define DDRHOOK_UTIL_P3IO_H
 
 #include <windows.h>
 

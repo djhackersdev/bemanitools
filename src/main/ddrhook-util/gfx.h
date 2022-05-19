@@ -1,5 +1,5 @@
-#ifndef DDRHOOK_GFX_H
-#define DDRHOOK_GFX_H
+#ifndef DDRHOOK_UTIL_GFX_H
+#define DDRHOOK_UTIL_GFX_H
 
 #include <windows.h>
 

@@ -14,7 +14,7 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "ddrhookx/d3d9.h"
+#include "ddrhook1/d3d9.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -34,7 +34,7 @@ static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong);
 static BOOL STDCALL my_SetWindowPos(
     HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 
-static struct ddrhookx_d3d9_config ddrhookx_d3d9_config;
+static struct ddrhook1_d3d9_config ddrhook1_d3d9_config;
 
 static const struct hook_symbol misc_user32_syms[] = {
     {
@@ -56,7 +56,7 @@ static const struct hook_symbol misc_user32_syms[] = {
 
 /* ------------------------------------------------------------------------- */
 
-static void ddrhookx_d3d9_calc_win_size_with_framed(
+static void ddrhook1_d3d9_calc_win_size_with_framed(
     HWND hwnd, DWORD x, DWORD y, DWORD width, DWORD height, LPWINDOWPOS wp)
 {
     /* taken from dxwnd */
@@ -100,7 +100,7 @@ static void ddrhookx_d3d9_calc_win_size_with_framed(
 
 static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 {
-    if (ddrhookx_d3d9_config.windowed && nIndex == GWL_STYLE) {
+    if (ddrhook1_d3d9_config.windowed && nIndex == GWL_STYLE) {
         dwNewLong |= WS_OVERLAPPEDWINDOW;
     }
 
@@ -110,10 +110,10 @@ static LONG STDCALL my_SetWindowLongW(HWND hWnd, int nIndex, LONG dwNewLong)
 static BOOL STDCALL my_SetWindowPos(
     HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         WINDOWPOS wp;
 
-        ddrhookx_d3d9_calc_win_size_with_framed(hWnd, X, Y, cx, cy, &wp);
+        ddrhook1_d3d9_calc_win_size_with_framed(hWnd, X, Y, cx, cy, &wp);
 
         return real_SetWindowPos(
             hWnd, hWndInsertAfter, wp.x, wp.y, wp.cx, wp.cy, uFlags);
@@ -125,7 +125,7 @@ static BOOL STDCALL my_SetWindowPos(
 static LONG STDCALL my_ChangeDisplaySettingsExA(
     char *dev_name, DEVMODE *dev_mode, HWND hwnd, DWORD flags, void *param)
 {
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         return DISP_CHANGE_SUCCESSFUL;
     }
 
@@ -136,22 +136,22 @@ static LONG STDCALL my_ChangeDisplaySettingsExA(
 /* ------------------------------------------------------------------------- */
 
 static void
-ddrhookx_d3d9_log_config(const struct ddrhookx_d3d9_config *config)
+ddrhook1_d3d9_log_config(const struct ddrhook1_d3d9_config *config)
 {
     log_misc(
-        "ddrhookx_d3d9_config\n"
+        "ddrhook1_d3d9_config\n"
         "windowed: %d\n",
         config->windowed);
 }
 
-void ddrhookx_d3d9_init_config(struct ddrhookx_d3d9_config *config)
+void ddrhook1_d3d9_init_config(struct ddrhook1_d3d9_config *config)
 {
     config->windowed = false;
 }
 
-void ddrhookx_d3d9_hook_init()
+void ddrhook1_d3d9_hook_init()
 {
-    ddrhookx_d3d9_init_config(&ddrhookx_d3d9_config);
+    ddrhook1_d3d9_init_config(&ddrhook1_d3d9_config);
 
     hook_table_apply(
         NULL, "user32.dll", misc_user32_syms, lengthof(misc_user32_syms));
@@ -161,25 +161,25 @@ void ddrhookx_d3d9_hook_init()
 
 /* ------------------------------------------------------------------------- */
 
-void ddrhookx_d3d9_configure(
-    const struct ddrhookx_d3d9_config *config)
+void ddrhook1_d3d9_configure(
+    const struct ddrhook1_d3d9_config *config)
 {
     log_assert(config);
 
-    ddrhookx_d3d9_log_config(config);
+    ddrhook1_d3d9_log_config(config);
 
     memcpy(
-        &ddrhookx_d3d9_config,
+        &ddrhook1_d3d9_config,
         config,
-        sizeof(struct ddrhookx_d3d9_config));
+        sizeof(struct ddrhook1_d3d9_config));
 }
 
-static void ddrhookx_d3d9_patch_window(struct hook_d3d9_irp *irp)
+static void ddrhook1_d3d9_patch_window(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         /* use a different style */
         irp->args.create_window_ex.style |= WS_OVERLAPPEDWINDOW;
 
@@ -189,18 +189,18 @@ static void ddrhookx_d3d9_patch_window(struct hook_d3d9_irp *irp)
 }
 
 static void
-ddrhookx_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
+ddrhook1_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         /* we have to adjust the window size, because the window needs to be a
            slightly bigger than the rendering resolution (window caption and
            stuff is included in the window size) */
         WINDOWPOS wp;
 
-        ddrhookx_d3d9_calc_win_size_with_framed(
+        ddrhook1_d3d9_calc_win_size_with_framed(
             irp->args.create_window_ex.result,
             irp->args.create_window_ex.x,
             irp->args.create_window_ex.y,
@@ -218,34 +218,34 @@ ddrhookx_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
     }
 }
 
-static void ddrhookx_d3d9_create_device_apply_window_mode(
+static void ddrhook1_d3d9_create_device_apply_window_mode(
     struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
     D3DPRESENT_PARAMETERS *pp = irp->args.ctx_create_device.pp;
 
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
     }
 }
 
-static void ddrhookx_d3d9_reset_apply_window_mode(
+static void ddrhook1_d3d9_reset_apply_window_mode(
     struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_RESET);
     D3DPRESENT_PARAMETERS *pp = irp->args.dev_reset.pp;
 
-    if (ddrhookx_d3d9_config.windowed) {
+    if (ddrhook1_d3d9_config.windowed) {
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
     }
 }
 
 HRESULT
-ddrhookx_d3d9_irp_handler(struct hook_d3d9_irp *irp)
+ddrhook1_d3d9_irp_handler(struct hook_d3d9_irp *irp)
 {
     HRESULT hr;
 
@@ -253,23 +253,23 @@ ddrhookx_d3d9_irp_handler(struct hook_d3d9_irp *irp)
 
     switch (irp->op) {
         case HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX:
-            ddrhookx_d3d9_patch_window(irp);
+            ddrhook1_d3d9_patch_window(irp);
 
             hr = hook_d3d9_irp_invoke_next(irp);
 
             if (hr == S_OK) {
-                ddrhookx_d3d9_fix_window_size_and_pos(irp);
+                ddrhook1_d3d9_fix_window_size_and_pos(irp);
             }
 
             return hr;
 
         case HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE:
-            ddrhookx_d3d9_create_device_apply_window_mode(irp);
+            ddrhook1_d3d9_create_device_apply_window_mode(irp);
             hr = hook_d3d9_irp_invoke_next(irp);
             return hr;
 
         case HOOK_D3D9_IRP_OP_DEV_RESET:
-            ddrhookx_d3d9_reset_apply_window_mode(irp);
+            ddrhook1_d3d9_reset_apply_window_mode(irp);
             hr = hook_d3d9_irp_invoke_next(irp);
             return hr;
 

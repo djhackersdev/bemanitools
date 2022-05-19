@@ -12,7 +12,7 @@
 #include "ddrhook-util/spike.h"
 #include "ddrhook-util/usbmem.h"
 
-#include "ddrhook/master.h"
+#include "ddrhook2/master.h"
 
 #include "hook/iohook.h"
 
@@ -89,13 +89,13 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     iohook_push_handler(usbmem_dispatch_irp);
 
     if (com4) {
-        /* See ddrhook/p3io.c for details. */
+        /* See ddrhook2/p3io.c for details. */
         iohook_push_handler(com4_dispatch_irp);
     }
 
     rs232_hook_init();
 
-    master_insert_hooks(NULL);
+    ddrhook2_master_insert_hooks(NULL);
     p3io_ddr_init();
     extio_init();
     usbmem_init(usbmem_data_path);

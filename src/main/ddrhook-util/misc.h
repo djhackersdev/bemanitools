@@ -1,5 +1,5 @@
-#ifndef HOOK_MISC_H
-#define HOOK_MISC_H
+#ifndef DDRHOOK_UTIL_MISC_H
+#define DDRHOOK_UTIL_MISC_H
 
 #include <windows.h>
 

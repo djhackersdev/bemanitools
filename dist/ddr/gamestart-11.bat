@@ -8,4 +8,4 @@ if not exist conf\raw mkdir conf\raw
 
 regsvr32 /s xactengine2_10.dll
 
-inject ddrhookx.dll DDR.exe --config ddr-11.conf %*
+inject ddrhook1.dll DDR.exe --config ddr-11.conf %*

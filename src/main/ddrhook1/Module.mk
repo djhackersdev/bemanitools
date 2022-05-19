@@ -1,9 +1,9 @@
-avsdlls			+= ddrhookx
+avsdlls			+= ddrhook1
 
-deplibs_ddrhookx	:= \
+deplibs_ddrhook1	:= \
 	avs \
 
-libs_ddrhookx		:= \
+libs_ddrhook1		:= \
 	acioemu \
 	cconfig \
 	ddrhook-util \
@@ -16,10 +16,10 @@ libs_ddrhookx		:= \
 	ddrio \
 	security \
 
-src_ddrhookx		:= \
+src_ddrhook1		:= \
 	avs-boot.c \
 	dllmain.c \
-	config-ddrhookx.c \
+	config-ddrhook1.c \
 	config-eamuse.c \
 	config-gfx.c \
 	config-security.c \

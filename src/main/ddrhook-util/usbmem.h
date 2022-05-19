@@ -1,5 +1,5 @@
-#ifndef HOOK_USBMEM_H
-#define HOOK_USBMEM_H
+#ifndef DDRHOOK_UTIL_USBMEM_H
+#define DDRHOOK_UTIL_USBMEM_H
 
 void usbmem_init(const char *path);
 void usbmem_fini(void);

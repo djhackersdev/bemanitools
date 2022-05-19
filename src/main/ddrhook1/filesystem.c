@@ -22,13 +22,7 @@ static const struct hook_symbol filesystem_hook_syms[] = {
     },
 };
 
-void get_launcher_path_parts(char **output_path, char **output_foldername) {
-    // DDR sets the current directory on boot to "D:/HDX" and then uses
-    // relative file paths for everything else.
-    // This function is a helper function to make it easier to turn a path
-    // into an absolute path relative to the launcher ("D:/HDX/ddr_datecode")
-    // and not the current working directory ("D:/HDX") so that settings
-    // can be saved in the same manner as every other game.
+void ddrhook1_get_launcher_path_parts(char **output_path, char **output_foldername) {
     char module_path[MAX_PATH];
     char launcher_path[MAX_PATH];
 
@@ -93,7 +87,7 @@ static BOOL STDCALL my_SetCurrentDirectoryA(LPCTSTR lpPathName)
     if (stricmp(lpPathName, "D:/HDX") == 0
     || stricmp(lpPathName, "D:\\HDX") == 0) {
         char *new_path;
-        get_launcher_path_parts(&new_path, NULL);
+        ddrhook1_get_launcher_path_parts(&new_path, NULL);
 
         if (new_path != NULL) {
             bool r = real_SetCurrentDirectoryA(new_path);
@@ -106,7 +100,7 @@ static BOOL STDCALL my_SetCurrentDirectoryA(LPCTSTR lpPathName)
     return real_SetCurrentDirectoryA(lpPathName);
 }
 
-void filesystem_hook_init()
+void ddrhook1_filesystem_hook_init()
 {
     hook_table_apply(
         NULL, "kernel32.dll", filesystem_hook_syms, lengthof(filesystem_hook_syms));

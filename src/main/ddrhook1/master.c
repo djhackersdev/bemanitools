@@ -1,4 +1,4 @@
-#include "ddrhookx/master.h"
+#include "ddrhook1/master.h"
 
 #include "ddrhook-util/dinput.h"
 #include "ddrhook-util/monitor.h"
@@ -41,12 +41,12 @@ static HMODULE STDCALL my_LoadLibraryA(const char *name)
         return result;
     }
 
-    master_insert_hooks(result);
+    ddrhook1_master_insert_hooks(result);
 
     return result;
 }
 
-void master_insert_hooks(HMODULE target)
+void ddrhook1_master_insert_hooks(HMODULE target)
 {
     /* Insert all other hooks here */
 

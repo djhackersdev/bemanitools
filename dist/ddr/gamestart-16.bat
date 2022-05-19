@@ -12,4 +12,4 @@ if not exist conf\raw mkdir conf\raw
 regsvr32 /s com\k-clvsd.dll
 regsvr32 /s com\xactengine2_10.dll
 
-.\launcher.exe -H 33554432 -K .\ddrhook.dll .\arkmdxp3.dll %*
+.\launcher.exe -H 33554432 -K .\ddrhook2.dll .\arkmdxp3.dll %*

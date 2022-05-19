@@ -13,14 +13,14 @@
 #include "ddrhook-util/spike.h"
 #include "ddrhook-util/usbmem.h"
 
-#include "ddrhookx/avs-boot.h"
-#include "ddrhookx/config-ddrhookx.h"
-#include "ddrhookx/config-eamuse.h"
-#include "ddrhookx/config-gfx.h"
-#include "ddrhookx/config-security.h"
-#include "ddrhookx/d3d9.h"
-#include "ddrhookx/filesystem.h"
-#include "ddrhookx/master.h"
+#include "ddrhook1/avs-boot.h"
+#include "ddrhook1/config-ddrhook1.h"
+#include "ddrhook1/config-eamuse.h"
+#include "ddrhook1/config-gfx.h"
+#include "ddrhook1/config-security.h"
+#include "ddrhook1/d3d9.h"
+#include "ddrhook1/filesystem.h"
+#include "ddrhook1/master.h"
 
 #include "hook/iohook.h"
 #include "hook/process.h"
@@ -39,10 +39,10 @@
 #include "util/log.h"
 #include "util/thread.h"
 
-#define DDRHOOKX_INFO_HEADER \
+#define DDRHOOK1_INFO_HEADER \
     "ddrhookx for DDR X"    \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
-#define DDRHOOKX_CMD_USAGE \
+#define DDRHOOK1_CMD_USAGE \
     "Usage: inject.exe ddrhookx.dll <ddr.exe> [options...]"
 
 bool standard_def;
@@ -51,22 +51,22 @@ bool _15khz;
 static DWORD STDCALL my_main();
 static DWORD(STDCALL *real_main)();
 
-static const hook_d3d9_irp_handler_t ddrhookx_d3d9_handlers[] = {
-    ddrhookx_d3d9_irp_handler,
+static const hook_d3d9_irp_handler_t ddrhook1_d3d9_handlers[] = {
+    ddrhook1_d3d9_irp_handler,
 };
 
-static bool ddrhookx_init_check = false;
+static bool ddrhook1_init_check = false;
 
-static void ddrhookx_setup_d3d9_hooks(
-    const struct ddrhookx_config_gfx *config_gfx)
+static void ddrhook1_setup_d3d9_hooks(
+    const struct ddrhook1_config_gfx *config_gfx)
 {
-    struct ddrhookx_d3d9_config d3d9_config;
+    struct ddrhook1_d3d9_config d3d9_config;
 
     d3d9_config.windowed = config_gfx->windowed;
 
-    ddrhookx_d3d9_configure(&d3d9_config);
+    ddrhook1_d3d9_configure(&d3d9_config);
 
-    hook_d3d9_init(ddrhookx_d3d9_handlers, lengthof(ddrhookx_d3d9_handlers));
+    hook_d3d9_init(ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
 }
 
 static DWORD STDCALL my_main()
@@ -74,47 +74,47 @@ static DWORD STDCALL my_main()
     bool ok;
     struct cconfig *config;
 
-    struct ddrhookx_config_ddrhookx config_ddrhookx;
-    struct ddrhookx_config_eamuse config_eamuse;
-    struct ddrhookx_config_gfx config_gfx;
-    struct ddrhookx_config_security config_security;
+    struct ddrhook1_config_ddrhookx config_ddrhookx;
+    struct ddrhook1_config_eamuse config_eamuse;
+    struct ddrhook1_config_gfx config_gfx;
+    struct ddrhook1_config_security config_security;
 
-    if (ddrhookx_init_check)
+    if (ddrhook1_init_check)
         goto skip;
 
     log_info("--- Begin ddrhookx GetModuleFileNameA ---");
 
-    ddrhookx_init_check = true;
+    ddrhook1_init_check = true;
 
     config = cconfig_init();
 
-    ddrhookx_config_ddrhookx_init(config);
-    ddrhookx_config_eamuse_init(config);
-    ddrhookx_config_gfx_init(config);
-    ddrhookx_config_security_init(config);
+    ddrhook1_config_ddrhook1_init(config);
+    ddrhook1_config_eamuse_init(config);
+    ddrhook1_config_gfx_init(config);
+    ddrhook1_config_security_init(config);
 
     if (!cconfig_hook_config_init(
             config,
-            DDRHOOKX_INFO_HEADER "\n" DDRHOOKX_CMD_USAGE,
+            DDRHOOK1_INFO_HEADER "\n" DDRHOOK1_CMD_USAGE,
             CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
         exit(EXIT_FAILURE);
     }
 
-    ddrhookx_config_ddrhookx_get(&config_ddrhookx, config);
-    ddrhookx_config_eamuse_get(&config_eamuse, config);
-    ddrhookx_config_gfx_get(&config_gfx, config);
-    ddrhookx_config_security_get(&config_security, config);
+    ddrhook1_config_ddrhook1_get(&config_ddrhookx, config);
+    ddrhook1_config_eamuse_get(&config_eamuse, config);
+    ddrhook1_config_gfx_get(&config_gfx, config);
+    ddrhook1_config_security_get(&config_security, config);
 
     cconfig_finit(config);
 
     standard_def = config_ddrhookx.standard_def;
 
-    log_info(DDRHOOKX_INFO_HEADER);
+    log_info(DDRHOOK1_INFO_HEADER);
     log_info("Initializing ddrhookx...");
 
-    ddrhookx_avs_boot_init();
-    ddrhookx_avs_boot_set_eamuse_addr(&config_eamuse.server);
+    ddrhook1_avs_boot_init();
+    ddrhook1_avs_boot_set_eamuse_addr(&config_eamuse.server);
 
     iohook_push_handler(p3io_emu_dispatch_irp);
     iohook_push_handler(extio_dispatch_irp);
@@ -122,11 +122,11 @@ static DWORD STDCALL my_main()
     iohook_push_handler(usbmem_dispatch_irp);
 
     if (config_ddrhookx.use_com4_emu) {
-        /* See ddrhook/p3io.c for details. */
+        /* See ddrhook2/p3io.c for details. */
         iohook_push_handler(com4_dispatch_irp);
     }
 
-    ddrhookx_setup_d3d9_hooks(&config_gfx);
+    ddrhook1_setup_d3d9_hooks(&config_gfx);
 
     rs232_hook_init();
 
@@ -177,10 +177,10 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 
         process_hijack_startup(my_main, &real_main);
 
-        master_insert_hooks(NULL);
-        filesystem_hook_init();
+        ddrhook1_master_insert_hooks(NULL);
+        ddrhook1_filesystem_hook_init();
 
-        ddrhookx_d3d9_hook_init();
+        ddrhook1_d3d9_hook_init();
     }
 
     return TRUE;

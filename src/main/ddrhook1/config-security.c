@@ -2,14 +2,14 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "ddrhookx/config-security.h"
+#include "ddrhook1/config-security.h"
 
 #include "security/mcode.h"
 
 #include "util/log.h"
 #include "util/net.h"
 
-#define DDRHOOKX_CONFIG_SECURITY_MCODE_KEY "security.mcode"
+#define DDRHOOK1_CONFIG_SECURITY_MCODE_KEY "security.mcode"
 
 static const struct security_mcode security_mcode_ddr_x = {
     .header = SECURITY_MCODE_HEADER,
@@ -20,7 +20,7 @@ static const struct security_mcode security_mcode_ddr_x = {
     .revision = SECURITY_MCODE_REVISION_A,
 };
 
-void ddrhookx_config_security_init(struct cconfig *config)
+void ddrhook1_config_security_init(struct cconfig *config)
 {
     char *tmp;
 
@@ -28,15 +28,15 @@ void ddrhookx_config_security_init(struct cconfig *config)
 
     cconfig_util_set_str(
         config,
-        DDRHOOKX_CONFIG_SECURITY_MCODE_KEY,
+        DDRHOOK1_CONFIG_SECURITY_MCODE_KEY,
         tmp,
         "Mcode of the game to run.");
 
     free(tmp);
 }
 
-void ddrhookx_config_security_get(
-    struct ddrhookx_config_security *config_security, struct cconfig *config)
+void ddrhook1_config_security_get(
+    struct ddrhook1_config_security *config_security, struct cconfig *config)
 {
     char *tmp_default;
     char mcode[9];
@@ -46,14 +46,14 @@ void ddrhookx_config_security_get(
 
     if (!cconfig_util_get_str(
             config,
-            DDRHOOKX_CONFIG_SECURITY_MCODE_KEY,
+            DDRHOOK1_CONFIG_SECURITY_MCODE_KEY,
             mcode,
             sizeof(mcode) - 1,
             tmp_default)) {
         log_warning(
             "Invalid value for key '%s' specified, fallback "
             "to default '%s'",
-            DDRHOOKX_CONFIG_SECURITY_MCODE_KEY,
+            DDRHOOK1_CONFIG_SECURITY_MCODE_KEY,
             tmp_default);
     }
 
