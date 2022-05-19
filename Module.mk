@@ -93,8 +93,8 @@ include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
 include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
-include src/main/ddrhook/Module.mk
-include src/main/ddrhookx/Module.mk
+include src/main/ddrhook1/Module.mk
+include src/main/ddrhook2/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddrio/Module.mk
@@ -569,7 +569,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 
 $(zipdir)/ddr-11.zip: \
 		build/bin/indep-32/inject.exe \
-		build/bin/avs2_803-32/ddrhookx.dll \
+		build/bin/avs2_803-32/ddrhook1.dll \
 		build/bin/avs2_803-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
@@ -588,7 +588,7 @@ $(zipdir)/ddr-11.zip: \
 
 $(zipdir)/ddr-12.zip: \
 		build/bin/avs2_1002-32/launcher.exe \
-		build/bin/avs2_1002-32/ddrhook.dll \
+		build/bin/avs2_1002-32/ddrhook2.dll \
 		build/bin/avs2_1002-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
@@ -604,7 +604,7 @@ $(zipdir)/ddr-12.zip: \
 
 $(zipdir)/ddr-13.zip: \
 		build/bin/avs2_1304-32/launcher.exe \
-		build/bin/avs2_1304-32/ddrhook.dll \
+		build/bin/avs2_1304-32/ddrhook2.dll \
 		build/bin/avs2_1304-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
@@ -620,7 +620,7 @@ $(zipdir)/ddr-13.zip: \
 
 $(zipdir)/ddr-14-to-16.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
-		build/bin/avs2_1508-32/ddrhook.dll \
+		build/bin/avs2_1508-32/ddrhook2.dll \
 		build/bin/avs2_1508-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
@@ -638,7 +638,7 @@ $(zipdir)/ddr-14-to-16.zip: \
 
 $(zipdir)/ddr-16-x64.zip: \
 		build/bin/avs2_1603-64/launcher.exe \
-		build/bin/avs2_1603-64/ddrhook.dll \
+		build/bin/avs2_1603-64/ddrhook2.dll \
 		build/bin/avs2_1603-64/unicorntail.dll \
 		build/bin/indep-64/config.exe \
 		build/bin/indep-64/ddrio.dll \

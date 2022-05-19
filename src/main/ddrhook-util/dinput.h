@@ -1,5 +1,5 @@
-#ifndef HOOK_DINPUT_H
-#define HOOK_DINPUT_H
+#ifndef DDRHOOK_UTIL_DINPUT_H
+#define DDRHOOK_UTIL_DINPUT_H
 
 #include <windows.h>
 

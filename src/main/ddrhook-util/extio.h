@@ -1,5 +1,5 @@
-#ifndef DDRHOOK_EXTIO_H
-#define DDRHOOK_EXTIO_H
+#ifndef DDRHOOK_UTIL_EXTIO_H
+#define DDRHOOK_UTIL_EXTIO_H
 
 #include <windows.h>
 

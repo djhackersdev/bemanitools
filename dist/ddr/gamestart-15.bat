@@ -11,4 +11,4 @@ if not exist conf\raw mkdir conf\raw
 regsvr32 /s k-clvsd.dll
 regsvr32 /s xactengine2_10.dll
 
-.\launcher.exe -K .\ddrhook.dll .\mdxja_945.dll %*
+.\launcher.exe -K .\ddrhook2.dll .\mdxja_945.dll %*

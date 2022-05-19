@@ -1,4 +1,4 @@
-LIBRARY ddrhook
+LIBRARY ddrhook2
 
 EXPORTS
     DllMain@12 @1 NONAME

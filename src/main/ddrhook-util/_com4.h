@@ -1,5 +1,5 @@
-#ifndef IIDXHOOK_COM4_H
-#define IIDXHOOK_COM4_H
+#ifndef DDRHOOK_UTIL_COM4_H
+#define DDRHOOK_UTIL_COM4_H
 
 #include "hook/iohook.h"
 

@@ -1,5 +1,5 @@
-#ifndef DDRHOOK_MONITOR_H
-#define DDRHOOK_MONITOR_H
+#ifndef DDRHOOK_UTIL_MONITOR_H
+#define DDRHOOK_UTIL_MONITOR_H
 
 #include <windows.h>
 

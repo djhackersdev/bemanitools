@@ -10,8 +10,8 @@
 
 #include "imports/avs.h"
 
-#include "ddrhookx/avs-boot.h"
-#include "ddrhookx/filesystem.h"
+#include "ddrhook1/avs-boot.h"
+#include "ddrhook1/filesystem.h"
 
 #include "util/log.h"
 #include "util/str.h"
@@ -36,7 +36,7 @@ static void my_avs_boot(
     size_t sz_avs_heap,
     avs_log_writer_t log_writer,
     void *log_context);
-static struct net_addr ddrhookx_avs_boot_eamuse_server_addr;
+static struct net_addr ddrhook1_avs_boot_eamuse_server_addr;
 
 static const struct hook_symbol ddrxhook_avs_hook_syms[] = {
     {.name = "avs_boot",
@@ -44,7 +44,7 @@ static const struct hook_symbol ddrxhook_avs_hook_syms[] = {
      .link = (void **) &real_avs_boot},
 };
 
-static const struct hook_symbol ddrhookx_avs_ea3_hook_syms[] = {
+static const struct hook_symbol ddrhook1_avs_ea3_hook_syms[] = {
     {.name = "ea3_boot",
      .patch = my_ea3_boot,
      .link = (void **) &real_ea3_boot},
@@ -85,7 +85,7 @@ static void my_avs_boot(
     // Using the full path as part of the AVS paths seems to break on long paths.
     // So instead, just take the launcher folder relative to the main game directory.
     char *launcher_folder;
-    get_launcher_path_parts(NULL, &launcher_folder);
+    ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
 
     if (launcher_folder) {
         strcpy(nvram_path, launcher_folder);
@@ -123,10 +123,10 @@ static int my_ea3_boot(struct property_node *config)
 
     log_info("Called my_ea3_boot");
 
-    if (ddrhookx_avs_boot_eamuse_server_addr.type != NET_ADDR_TYPE_INVALID) {
+    if (ddrhook1_avs_boot_eamuse_server_addr.type != NET_ADDR_TYPE_INVALID) {
         log_misc("Injecting network server address");
 
-        server_addr = net_addr_to_str(&ddrhookx_avs_boot_eamuse_server_addr);
+        server_addr = net_addr_to_str(&ddrhook1_avs_boot_eamuse_server_addr);
 
         avs_boot_replace_property_str(config, "network/services", server_addr);
 
@@ -136,7 +136,7 @@ static int my_ea3_boot(struct property_node *config)
     return real_ea3_boot(config);
 }
 
-void ddrhookx_avs_boot_init()
+void ddrhook1_avs_boot_init()
 {
     hook_table_apply(
         NULL,
@@ -147,15 +147,15 @@ void ddrhookx_avs_boot_init()
     hook_table_apply(
         NULL,
         "libavs-win32-ea3.dll",
-        ddrhookx_avs_ea3_hook_syms,
-        lengthof(ddrhookx_avs_ea3_hook_syms));
+        ddrhook1_avs_ea3_hook_syms,
+        lengthof(ddrhook1_avs_ea3_hook_syms));
 
-    memset(&ddrhookx_avs_boot_eamuse_server_addr, 0, sizeof(struct net_addr));
+    memset(&ddrhook1_avs_boot_eamuse_server_addr, 0, sizeof(struct net_addr));
 
     log_info("Inserted avs log hooks");
 }
 
-void ddrhookx_avs_boot_set_eamuse_addr(const struct net_addr *server_addr)
+void ddrhook1_avs_boot_set_eamuse_addr(const struct net_addr *server_addr)
 {
     char *str;
 
@@ -164,7 +164,7 @@ void ddrhookx_avs_boot_set_eamuse_addr(const struct net_addr *server_addr)
     free(str);
 
     memcpy(
-        &ddrhookx_avs_boot_eamuse_server_addr,
+        &ddrhook1_avs_boot_eamuse_server_addr,
         server_addr,
         sizeof(struct net_addr));
 }

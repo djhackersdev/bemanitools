@@ -1,5 +1,5 @@
-#ifndef DDRHOOK_SPIKE_H
-#define DDRHOOK_SPIKE_H
+#ifndef DDRHOOK_UTIL_SPIKE_H
+#define DDRHOOK_UTIL_SPIKE_H
 
 #include <windows.h>
 
