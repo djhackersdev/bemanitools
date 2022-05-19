@@ -23,6 +23,5 @@ src_ddrhook1		:= \
 	config-eamuse.c \
 	config-gfx.c \
 	config-security.c \
-	d3d9.c \
 	master.c \
 	filesystem.c \

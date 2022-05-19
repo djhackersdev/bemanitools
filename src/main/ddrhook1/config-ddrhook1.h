@@ -8,7 +8,7 @@
 /**
  * Struct holding configuration values for game-specific items.
  */
-struct ddrhook1_config_ddrhookx {
+struct ddrhook1_config_ddrhook1 {
     bool use_com4_emu;
     bool standard_def;
     bool use_15khz;
@@ -25,11 +25,11 @@ void ddrhook1_config_ddrhook1_init(struct cconfig *config);
  * Read the module specific config struct values from the provided cconfig
  * struct.
  *
- * @param config_ddrhookx Target module specific struct to read configuration
+ * @param config_ddrhook1 Target module specific struct to read configuration
  *                   values to.
  * @param config cconfig struct holding the intermediate data to read from.
  */
 void ddrhook1_config_ddrhook1_get(
-    struct ddrhook1_config_ddrhookx *config_ddrhookx, struct cconfig *config);
+    struct ddrhook1_config_ddrhook1 *config_ddrhook1, struct cconfig *config);
 
 #endif
