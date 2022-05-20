@@ -172,6 +172,9 @@ static uint8_t assign_light(uint32_t gpio_lights, uint32_t shift)
     return 0;
 }
 
+/* Blue generator lights are gpio, while the red and green are pwm on the KFCA.
+   Tested this on a gen 1 sdvx pcb, and indeed the blue lights are only on/off,
+   while the red & green can fade. */
 void sdvx_io_set_gpio_lights(uint32_t gpio_lights)
 {
     pout_staging.gpio[0] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_START);
@@ -181,6 +184,7 @@ void sdvx_io_set_gpio_lights(uint32_t gpio_lights)
     pout_staging.gpio[4] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_D);
     pout_staging.gpio[5] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_L);
     pout_staging.gpio[6] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_R);
+    pout_staging.generator[2] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_GENERATOR_B);
 }
 
 void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
@@ -206,6 +210,12 @@ void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
                 break;
             case 17:
                 pout_staging.controller[2] = intensity;
+                break;
+            case 18:
+                pout_staging.generator[0] = intensity;
+                break;
+            case 19:
+                pout_staging.generator[1] = intensity;
                 break;
             default:
                 break;

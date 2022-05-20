@@ -33,6 +33,7 @@ enum sdvx_io_out_gpio_bit {
     SDVX_IO_OUT_GPIO_D = 0,
     SDVX_IO_OUT_GPIO_FX_L = 1,
     SDVX_IO_OUT_GPIO_FX_R = 2,
+    SDVX_IO_OUT_GPIO_GENERATOR_B = 3,
     SDVX_IO_OUT_GPIO_START = 12,
     SDVX_IO_OUT_GPIO_A = 13,
     SDVX_IO_OUT_GPIO_B = 14,

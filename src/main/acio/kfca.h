@@ -41,8 +41,7 @@ struct ac_io_kfca_poll_in {
 
 struct ac_io_kfca_poll_out {
     uint32_t gpio;
-    uint8_t pwm[18];
-    uint8_t unk[2];
+    uint8_t pwm[20];
 };
 
 #pragma pack(pop)
