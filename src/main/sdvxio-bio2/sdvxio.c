@@ -234,6 +234,10 @@ bool sdvx_io_write_output(void)
     pout_ready.wingLower[1] = wing_staging[7] / 2 + wing_staging[10] / 2;
     pout_ready.wingLower[2] = wing_staging[8] / 2 + wing_staging[11] / 2;
 
+    pout_ready.gpio2[0] = 127;
+    pout_ready.gpio2[1] = 127;
+    pout_ready.gpio2[2] = 127;
+
     return true;
 }
 
