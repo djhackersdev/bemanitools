@@ -1,4 +1,4 @@
-#define LOG_MODULE "power-hook"
+#define LOG_MODULE "nvapi-hook"
 
 // clang-format off
 // Don't format because the order is important here
@@ -33,10 +33,14 @@ static struct hook_symbol nvapihook_kernel_syms[] = {
 
 static void *my_GetProcAddress(HMODULE dll, const char *name)
 {
-    if (strcmp("nvapi_QueryInterface", name) == 0) {
-        log_info("Request for stub %s", name);
-        real_nvapi_QueryInterface = real_GetProcAddress(dll, name);
-        return &my_nvapi_QueryInterface;
+    if (name != NULL && ((intptr_t) name) > UINT16_MAX) {
+        // only strcmp is non-ordinal
+        // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
+        if (strcmp("nvapi_QueryInterface", name) == 0) {
+            log_info("Request for stub %s", name);
+            real_nvapi_QueryInterface = real_GetProcAddress(dll, name);
+            return &my_nvapi_QueryInterface;
+        }
     }
 
     // log_warning("Request for unknown stub %s", name);
