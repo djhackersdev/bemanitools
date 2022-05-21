@@ -85,9 +85,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     args_free(argc, argv);
 
-    #if AVS_VERSION >= 1508
     gfx_set_is_modern();
-    #endif
 
     iohook_push_handler(p3io_emu_dispatch_irp);
     iohook_push_handler(extio_dispatch_irp);
