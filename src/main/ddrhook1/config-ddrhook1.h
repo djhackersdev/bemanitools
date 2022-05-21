@@ -12,6 +12,7 @@ struct ddrhook1_config_ddrhook1 {
     bool use_com4_emu;
     bool standard_def;
     bool use_15khz;
+    bool usbmem_enabled;
     char usbmem_path[MAX_PATH];
 };
 
