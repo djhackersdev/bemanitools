@@ -129,7 +129,7 @@ static DWORD STDCALL my_main()
         &security_rp_sign_key_black_ddrx,
         &security_rp_sign_key_white_eamuse);
     extio_init();
-    usbmem_init(config_ddrhook1.usbmem_path);
+    usbmem_init(config_ddrhook1.usbmem_path, config_ddrhook1.usbmem_enabled);
     spike_init();
     com4_init();
 

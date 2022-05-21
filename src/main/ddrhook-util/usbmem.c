@@ -28,6 +28,7 @@ static HANDLE usbmem_fd;
 static char usbmem_response[USBMEM_DATA_BUF_SIZE];
 static bool usbmem_pending;
 static size_t usbmem_response_length;
+static bool usbmem_enabled;
 
 static HRESULT usbmem_open(struct irp *irp);
 static HRESULT usbmem_close(struct irp *irp);
@@ -44,6 +45,7 @@ typedef enum {
 struct USBMEM_STATE {
     bool connected;
     bool opened;
+    bool errored;
     USBMEM_FILE_TYPE file_type;
 
     char path[MAX_PATH];
@@ -73,7 +75,7 @@ static void usbmem_reset_file_state(int port)
     usbmem_state[port].file_type = USBMEM_FILE_TYPE_NONE;
 }
 
-void usbmem_init(const char *path)
+void usbmem_init(const char *path, const bool enabled)
 {
     log_assert(usbmem_fd == NULL);
 
@@ -85,20 +87,24 @@ void usbmem_init(const char *path)
         log_fatal("Opening nul fd failed: %08lx", hr);
     }
 
+    usbmem_enabled = enabled;
+
     GetFullPathNameA(path, sizeof(usb_data_path), usb_data_path, NULL);
     log_misc("USB memory data path: %s", usb_data_path);
+
+    if (!path_exists(usb_data_path)) {
+        log_warning("USB memory data path does not exist, disabling");
+        usbmem_enabled = false;
+    }
 
     target_device_id = -1;
     for (int i = 0; i < USBMEM_DEVICE_COUNT; i++) {
         char subpath[MAX_PATH];
         snprintf(subpath, sizeof(subpath), "%s\\p%d", usb_data_path, i + 1);
 
-        if (!path_exists(subpath)) {
-            path_mkdir(subpath);
-        }
-
         usbmem_state[i].connected = false;
         usbmem_state[i].opened = false;
+        usbmem_state[i].errored = false;
         memset(usbmem_state[i].path, 0, sizeof(usbmem_state[i].path));
         memset(usbmem_state[i].filename, 0, sizeof(usbmem_state[i].filename));
         usbmem_reset_file_state(i);
@@ -231,6 +237,13 @@ static HRESULT usbmem_write(struct irp *irp)
             str_cpy(usbmem_response, sizeof(usbmem_response), "done");
         } else if (target_device_id < 0 || target_device_id >= USBMEM_DEVICE_COUNT) {
             str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+        } else if ((target_device_val == 'a' || target_device_val == 'b') && usbmem_state[target_device_id].errored) {
+            // If the device went through the entire process once and the file didn't exist
+            // then just force it to be disabled because otherwise it'll get stuck in a loop.
+            str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
+        } else if (!usbmem_enabled) {
+            // Ignore all other USB device specific commands and pretend a device isn't plugged in.
+            str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
         } else if (str_eq(request, "on_a") || str_eq(request, "on_b")) {
             usbmem_state[target_device_id].connected = true;
             usbmem_reset_file_state(target_device_id);
@@ -282,7 +295,7 @@ static HRESULT usbmem_write(struct irp *irp)
 
                 if (!path_exists(temp)) {
                     log_warning("Couldn't find path %s\n", temp);
-                    str_cpy(usbmem_response, sizeof(usbmem_response), "not exist");
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "done");
                 } else {
                     log_misc("Changing path to %s\n", temp);
                     str_cpy(usbmem_state[target_device_id].path, sizeof(usbmem_state[target_device_id].path), temp);
@@ -316,6 +329,9 @@ static HRESULT usbmem_write(struct irp *irp)
                 if (!path_exists(temp)) {
                     log_warning("Couldn't find file %s\n", temp);
                     str_cpy(usbmem_response, sizeof(usbmem_response), "not exist");
+                    usbmem_state[target_device_id].connected = false;
+                    usbmem_state[target_device_id].opened = false;
+                    usbmem_state[target_device_id].errored = true;
                 } else {
                     bool loaded = file_load(temp, (void**)&usbmem_state[target_device_id].buffer,
                         &usbmem_state[target_device_id].buffer_len, false);
