@@ -129,7 +129,7 @@ static char *ddrhook1_filesystem_get_path(LPCTSTR path)
 {
     char *new_path = NULL;
 
-    // Hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw
+    // Hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw, F:/update
     if (stricmp(path, "D:/HDX") == 0
     || stricmp(path, "D:\\HDX") == 0) {
         ddrhook1_get_launcher_path_parts(&new_path, NULL);
@@ -140,6 +140,18 @@ static char *ddrhook1_filesystem_get_path(LPCTSTR path)
 
         ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
         conf_path = strstr(path, "conf");
+
+        if (conf_path && launcher_folder) {
+            new_path = (char*)xmalloc(MAX_PATH);
+            sprintf(new_path, "%s\\%s", launcher_folder, conf_path);
+        }
+    } else if (stricmp(path, "F:/update") == 0
+    || stricmp(path, "F:\\update") == 0) {
+        char *launcher_folder;
+        char *conf_path;
+
+        ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
+        conf_path = strstr(path, "update");
 
         if (conf_path && launcher_folder) {
             new_path = (char*)xmalloc(MAX_PATH);
