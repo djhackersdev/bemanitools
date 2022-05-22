@@ -136,26 +136,26 @@ static char *ddrhook1_filesystem_get_path(LPCTSTR path)
     } else if (strnicmp(path, "E:/conf", 7) == 0
     || strnicmp(path, "E:\\conf", 7) == 0) {
         char *launcher_folder;
-        char *conf_path;
+        char *sub_path;
 
         ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
-        conf_path = strstr(path, "conf");
+        sub_path = strstr(path, "conf");
 
-        if (conf_path && launcher_folder) {
+        if (sub_path && launcher_folder) {
             new_path = (char*)xmalloc(MAX_PATH);
-            sprintf(new_path, "%s\\%s", launcher_folder, conf_path);
+            sprintf(new_path, "%s\\%s", launcher_folder, sub_path);
         }
     } else if (stricmp(path, "F:/update") == 0
     || stricmp(path, "F:\\update") == 0) {
         char *launcher_folder;
-        char *conf_path;
+        char *sub_path;
 
         ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
-        conf_path = strstr(path, "update");
+        sub_path = strstr(path, "update");
 
-        if (conf_path && launcher_folder) {
+        if (sub_path && launcher_folder) {
             new_path = (char*)xmalloc(MAX_PATH);
-            sprintf(new_path, "%s\\%s", launcher_folder, conf_path);
+            sprintf(new_path, "%s\\%s", launcher_folder, sub_path);
         }
     }
 
@@ -187,7 +187,7 @@ static HANDLE STDCALL my_FindFirstFileA(
             new_path,
             lpFindFileData);
 
-        log_misc("FindFirstFileA remapped path: %s -> %s\n", lpFileName, new_path);
+        log_misc("FindFirstFileA remapped path: %s -> %s", lpFileName, new_path);
 
         free(new_path);
         return r;

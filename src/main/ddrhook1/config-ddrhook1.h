@@ -13,7 +13,8 @@ struct ddrhook1_config_ddrhook1 {
     bool standard_def;
     bool use_15khz;
     bool usbmem_enabled;
-    char usbmem_path[MAX_PATH];
+    char usbmem_path_p1[MAX_PATH];
+    char usbmem_path_p2[MAX_PATH];
 };
 
 /**
