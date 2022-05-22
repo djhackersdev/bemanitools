@@ -40,7 +40,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     bool com4;
     bool ok;
     int i;
-    char usbmem_data_path[MAX_PATH] = "";
+    char usbmem_data_path_p1[MAX_PATH] = "";
+    char usbmem_data_path_p2[MAX_PATH] = "";
     bool usbmem_enabled = false;
 
     log_info("--- Begin ddrhook dll_entry_init ---");
@@ -71,10 +72,20 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
                 break;
 
-            case 'm':
-                /* Specify a USB memory path */
+            case 'a':
+                /* Specify a USB memory path for P1 */
                 if (i + 1 < argc) {
-                    strcpy(usbmem_data_path, argv[i+1]);
+                    strcpy(usbmem_data_path_p1, argv[i+1]);
+                    usbmem_enabled = true;
+                    i++; // Move forward one to skip the path parameter
+                }
+
+                break;
+
+            case 'b':
+                /* Specify a USB memory path for P2 */
+                if (i + 1 < argc) {
+                    strcpy(usbmem_data_path_p2, argv[i+1]);
                     usbmem_enabled = true;
                     i++; // Move forward one to skip the path parameter
                 }
@@ -102,7 +113,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     ddrhook2_master_insert_hooks(NULL);
     p3io_ddr_init();
     extio_init();
-    usbmem_init(usbmem_data_path, usbmem_enabled);
+    usbmem_init(usbmem_data_path_p1, usbmem_data_path_p2, usbmem_enabled);
     spike_init();
     com4_init();
 

@@ -48,6 +48,7 @@ struct USBMEM_STATE {
     bool errored;
     USBMEM_FILE_TYPE file_type;
 
+    char basepath[MAX_PATH];
     char path[MAX_PATH];
     char filename[MAX_PATH];
 
@@ -56,8 +57,6 @@ struct USBMEM_STATE {
     size_t buffer_index;
     int buffer_frame;
 };
-
-static char usb_data_path[MAX_PATH];
 
 static int target_device_id;
 static struct USBMEM_STATE usbmem_state[USBMEM_DEVICE_COUNT];
@@ -75,11 +74,12 @@ static void usbmem_reset_file_state(int port)
     usbmem_state[port].file_type = USBMEM_FILE_TYPE_NONE;
 }
 
-void usbmem_init(const char *path, const bool enabled)
+void usbmem_init(const char *path_p1, const char *path_p2, const bool enabled)
 {
     log_assert(usbmem_fd == NULL);
 
     HRESULT hr;
+    char usb_data_path[USBMEM_DEVICE_COUNT][MAX_PATH];
 
     hr = iohook_open_nul_fd(&usbmem_fd);
 
@@ -89,22 +89,23 @@ void usbmem_init(const char *path, const bool enabled)
 
     usbmem_enabled = enabled;
 
-    GetFullPathNameA(path, sizeof(usb_data_path), usb_data_path, NULL);
-    log_misc("USB memory data path: %s", usb_data_path);
+    GetFullPathNameA(path_p1, sizeof(usb_data_path[0]), usb_data_path[0], NULL);
+    log_misc("USB memory data path (P1): %s", usb_data_path[0]);
 
-    if (!path_exists(usb_data_path)) {
+    GetFullPathNameA(path_p2, sizeof(usb_data_path[1]), usb_data_path[1], NULL);
+    log_misc("USB memory data path (P2): %s", usb_data_path[1]);
+
+    if (enabled && !path_exists(usb_data_path[0]) && !path_exists(usb_data_path[1])) {
         log_warning("USB memory data path does not exist, disabling");
         usbmem_enabled = false;
     }
 
     target_device_id = -1;
     for (int i = 0; i < USBMEM_DEVICE_COUNT; i++) {
-        char subpath[MAX_PATH];
-        snprintf(subpath, sizeof(subpath), "%s\\p%d", usb_data_path, i + 1);
-
         usbmem_state[i].connected = false;
         usbmem_state[i].opened = false;
         usbmem_state[i].errored = false;
+        strcpy(usbmem_state[i].basepath, usb_data_path[i]);
         memset(usbmem_state[i].path, 0, sizeof(usbmem_state[i].path));
         memset(usbmem_state[i].filename, 0, sizeof(usbmem_state[i].filename));
         usbmem_reset_file_state(i);
@@ -183,7 +184,7 @@ static HRESULT usbmem_write(struct irp *irp)
     if (!usbmem_pending && target_device_id >= 0 && target_device_id < USBMEM_DEVICE_COUNT && usbmem_state[target_device_id].file_type == USBMEM_FILE_TYPE_READ) {
         memset(usbmem_response, 0, sizeof(usbmem_response));
 
-        log_misc("Read progress %08x/%08x bytes", usbmem_state[target_device_id].buffer_index, usbmem_state[target_device_id].buffer_len);
+        // log_misc("Read progress %08x/%08x bytes", usbmem_state[target_device_id].buffer_index, usbmem_state[target_device_id].buffer_len);
 
         if (usbmem_state[target_device_id].buffer_index < usbmem_state[target_device_id].buffer_len) {
             usbmem_response_length = sizeof(usbmem_response);
@@ -223,11 +224,7 @@ static HRESULT usbmem_write(struct irp *irp)
             target_device_val = *(target_device_id_ptr - 1);
         }
 
-        // Counterintuitively, b is P1 and a is P2
-        if (target_device_val == 'a' || target_device_val == 'b') {
-            target_device_id = target_device_val - 'a';
-        }
-
+        // TODO: Rewrite this code to more cleanly handle hotplugging USB drives
         if (str_eq(request, "sver")) {
             str_cpy(
                 usbmem_response,
@@ -235,129 +232,134 @@ static HRESULT usbmem_write(struct irp *irp)
                 "done GQHDXJAA DJHACKRS");
         } else if (str_eq(request, "init") || str_eq(request, "start")) {
             str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-        } else if (target_device_id < 0 || target_device_id >= USBMEM_DEVICE_COUNT) {
-            str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
-        } else if ((target_device_val == 'a' || target_device_val == 'b') && usbmem_state[target_device_id].errored) {
-            // If the device went through the entire process once and the file didn't exist
-            // then just force it to be disabled because otherwise it'll get stuck in a loop.
-            str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-        } else if (!usbmem_enabled) {
-            // Ignore all other USB device specific commands and pretend a device isn't plugged in.
-            str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-        } else if (str_eq(request, "on_a") || str_eq(request, "on_b")) {
-            usbmem_state[target_device_id].connected = true;
-            usbmem_reset_file_state(target_device_id);
-            str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-        } else if (str_eq(request, "offa") || str_eq(request, "offb")) {
-            usbmem_state[target_device_id].connected = false;
-            usbmem_reset_file_state(target_device_id);
-            str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-        } else if (str_eq(request, "opna") || str_eq(request, "opnb")) {
-            char temp[MAX_PATH];
-            snprintf(temp, sizeof(temp), "%s\\p%d", usb_data_path, 2 - (request[3] - 'a'));
+        } else if (target_device_val == 'a' || target_device_val == 'b') {
+            // Counterintuitively, b is P1 and a is P2
+            target_device_id = target_device_val == 'b' ? 0 : 1;
 
-            usbmem_state[target_device_id].opened = false;
+            if (!usbmem_enabled) {
+                // Ignore all other USB device specific commands and pretend a device isn't plugged in
+                // when USB memory emulation is disabled.
+                str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+            } else if (usbmem_state[target_device_id].errored) {
+                // If the device went through the entire process once and the file didn't exist
+                // then just force it to be disabled until the game is restarted because otherwise
+                // it'll get stuck in a loop.
+                // TODO: This could be better emulated by using a keybind to simulate inserting and
+                // ejecting the USB drive to additionally clear the error flag.
+                str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+            } else if (str_eq(request, "on_a") || str_eq(request, "on_b")) {
+                usbmem_state[target_device_id].connected = path_exists(usbmem_state[target_device_id].basepath);
+                usbmem_state[target_device_id].errored = false;
 
-            if (usbmem_state[target_device_id].connected != true || !path_exists(temp)) {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-            } else {
-                usbmem_state[target_device_id].opened = true;
-                str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-            }
-        } else if (str_eq(request, "clsa") || str_eq(request, "clsb")) {
-            if (usbmem_state[target_device_id].connected != true) {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-            } else if (usbmem_state[target_device_id].opened != true) {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "already");
-            } else {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-            }
+                usbmem_reset_file_state(target_device_id);
 
-            usbmem_state[target_device_id].opened = false;
-            usbmem_reset_file_state(target_device_id);
-        } else if (strncmp(request, "cda ", 4) == 0 || strncmp(request, "cdb ", 4) == 0) {
-            char *path = request + 4;
-            int path_target_device_id = -1;
-
-            if (path[0] == 'a' || path[0] == 'b') {
-                path_target_device_id = path[0] - 'a';
-            }
-
-            if (usbmem_state[target_device_id].connected != true || usbmem_state[target_device_id].opened != true) {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-            } else if (path_target_device_id == -1 || path_target_device_id != target_device_id) {
-                // Don't allow access to another drive
-                str_cpy(usbmem_response, sizeof(usbmem_response), "illegal");
-            } else if (path[1] == ':') {
-                // Absolute path
-                char temp[MAX_PATH];
-                snprintf(temp, sizeof(temp), "%s\\p%d\\%s", usb_data_path, 2 - target_device_id, path + 3);
-
-                if (!path_exists(temp)) {
-                    log_warning("Couldn't find path %s\n", temp);
+                if (usbmem_state[target_device_id].connected)
                     str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-                } else {
-                    log_misc("Changing path to %s\n", temp);
-                    str_cpy(usbmem_state[target_device_id].path, sizeof(usbmem_state[target_device_id].path), temp);
+                else
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
+            } else if (str_eq(request, "offa") || str_eq(request, "offb")) {
+                if (usbmem_state[target_device_id].connected)
                     str_cpy(usbmem_response, sizeof(usbmem_response), "done");
-                }
-            } else {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "illegal");
-            }
-        } else if (strncmp(request, "rda ", 4) == 0 || strncmp(request, "rdb ", 4) == 0) {
-            usbmem_reset_file_state(target_device_id);
+                else
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
 
-            if (usbmem_state[target_device_id].connected != true || usbmem_state[target_device_id].opened != true) {
-                str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
-            } else {
-                char temp[MAX_PATH] = {0};
-                char *filename = request + 4;
+                usbmem_state[target_device_id].connected = false;
+                usbmem_reset_file_state(target_device_id);
+            } else if (str_eq(request, "opna") || str_eq(request, "opnb")) {
+                bool basepath_exists = path_exists(usbmem_state[target_device_id].basepath);
 
-                snprintf(temp, sizeof(temp), "%s\\%s", usbmem_state[target_device_id].path, filename);
-
-                if (usbmem_state[target_device_id].buffer) {
-                    free(usbmem_state[target_device_id].buffer);
-                    usbmem_state[target_device_id].buffer = NULL;
-                }
-
-                usbmem_state[target_device_id].file_type = USBMEM_FILE_TYPE_NONE;
-                usbmem_state[target_device_id].buffer_len = 0;
-                usbmem_state[target_device_id].buffer_index = 0;
-                usbmem_state[target_device_id].buffer_frame = 0;
-                memset(usbmem_state[target_device_id].filename, 0, sizeof(usbmem_state[target_device_id].filename));
-
-                if (!path_exists(temp)) {
-                    log_warning("Couldn't find file %s\n", temp);
-                    str_cpy(usbmem_response, sizeof(usbmem_response), "not exist");
-                    usbmem_state[target_device_id].connected = false;
+                if (!usbmem_state[target_device_id].connected || !basepath_exists) {
                     usbmem_state[target_device_id].opened = false;
-                    usbmem_state[target_device_id].errored = true;
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
                 } else {
-                    bool loaded = file_load(temp, (void**)&usbmem_state[target_device_id].buffer,
-                        &usbmem_state[target_device_id].buffer_len, false);
+                    usbmem_state[target_device_id].opened = true;
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "done");
+                }
+            } else if (str_eq(request, "clsa") || str_eq(request, "clsb")) {
+                if (usbmem_state[target_device_id].opened)
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "done");
+                else
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "not connected");
 
-                    if (loaded) {
-                        log_misc("Reading file %s\n", temp);
-                        usbmem_state[target_device_id].file_type = USBMEM_FILE_TYPE_READ;
+                usbmem_state[target_device_id].opened = false;
+                usbmem_reset_file_state(target_device_id);
+            } else if (strncmp(request, "cda ", 4) == 0 || strncmp(request, "cdb ", 4) == 0) {
+                char *path = request + 4;
 
-                        str_cpy(usbmem_state[target_device_id].filename, sizeof(usbmem_state[target_device_id].filename), filename);
-                        str_cpy(usbmem_response, sizeof(usbmem_response), "start");
+                if (!usbmem_state[target_device_id].connected || !usbmem_state[target_device_id].opened) {
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "done");
+                } else if (path[1] == ':') {
+                    // Absolute path
+                    char temp[MAX_PATH];
+                    snprintf(temp, sizeof(temp), "%s\\%s", usbmem_state[target_device_id].basepath, path + 3);
+
+                    if (!path_exists(temp)) {
+                        log_warning("Couldn't find path %s", temp);
+                        str_cpy(usbmem_response, sizeof(usbmem_response), "done");
                     } else {
-                        log_warning("Couldn't read file %s\n", temp);
+                        log_misc("Changing path to %s", temp);
+                        str_cpy(usbmem_state[target_device_id].path, sizeof(usbmem_state[target_device_id].path), temp);
+                        str_cpy(usbmem_response, sizeof(usbmem_response), "done");
+                    }
+                } else {
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+                }
+            } else if (strncmp(request, "rda ", 4) == 0 || strncmp(request, "rdb ", 4) == 0) {
+                usbmem_reset_file_state(target_device_id);
+
+                if (!usbmem_state[target_device_id].connected || !usbmem_state[target_device_id].opened) {
+                    str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+                } else {
+                    char temp[MAX_PATH] = {0};
+                    char *filename = request + 4;
+
+                    snprintf(temp, sizeof(temp), "%s\\%s", usbmem_state[target_device_id].path, filename);
+
+                    if (usbmem_state[target_device_id].buffer) {
+                        free(usbmem_state[target_device_id].buffer);
+                        usbmem_state[target_device_id].buffer = NULL;
+                    }
+
+                    usbmem_state[target_device_id].file_type = USBMEM_FILE_TYPE_NONE;
+                    usbmem_state[target_device_id].buffer_len = 0;
+                    usbmem_state[target_device_id].buffer_index = 0;
+                    usbmem_state[target_device_id].buffer_frame = 0;
+                    memset(usbmem_state[target_device_id].filename, 0, sizeof(usbmem_state[target_device_id].filename));
+
+                    if (!path_exists(temp)) {
+                        log_warning("Couldn't find file %s", temp);
                         str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+                        usbmem_state[target_device_id].errored = true;
+                    } else {
+                        bool loaded = file_load(temp, (void**)&usbmem_state[target_device_id].buffer,
+                            &usbmem_state[target_device_id].buffer_len, false);
+
+                        if (loaded) {
+                            log_misc("Reading file %s", temp);
+                            usbmem_state[target_device_id].file_type = USBMEM_FILE_TYPE_READ;
+
+                            str_cpy(usbmem_state[target_device_id].filename, sizeof(usbmem_state[target_device_id].filename), filename);
+                            str_cpy(usbmem_response, sizeof(usbmem_response), "start");
+                        } else {
+                            log_warning("Couldn't read file %s", temp);
+                            str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
+                            usbmem_state[target_device_id].errored = true;
+                        }
                     }
                 }
+            } else if (strncmp(request, "wra ", 4) == 0 || strncmp(request, "wrb ", 4) == 0) {
+                // Open file for writing
+                usbmem_reset_file_state(target_device_id);
+                str_cpy(usbmem_response, sizeof(usbmem_response), "not supported");
+            } else if (strncmp(request, "wha ", 4) == 0 || strncmp(request, "whb ", 4) == 0) {
+                // Something relating to writing?
+                str_cpy(usbmem_response, sizeof(usbmem_response), "not supported");
+            } else if (strncmp(request, "lma ", 4) == 0 || strncmp(request, "lmb ", 4) == 0) {
+                // What is "lm"?
+                str_cpy(usbmem_response, sizeof(usbmem_response), "done");
+            } else {
+                str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
             }
-        } else if (strncmp(request, "wra ", 4) == 0 || strncmp(request, "wrb ", 4) == 0) {
-            // Open file for writing
-            usbmem_reset_file_state(target_device_id);
-            str_cpy(usbmem_response, sizeof(usbmem_response), "not supported");
-        } else if (strncmp(request, "wha ", 4) == 0 || strncmp(request, "whb ", 4) == 0) {
-            // Something relating to writing?
-            str_cpy(usbmem_response, sizeof(usbmem_response), "not supported");
-        } else if (strncmp(request, "lma ", 4) == 0 || strncmp(request, "lmb ", 4) == 0) {
-            // What is "lm"?
-            str_cpy(usbmem_response, sizeof(usbmem_response), "done");
         } else {
             str_cpy(usbmem_response, sizeof(usbmem_response), "fail");
         }
