@@ -12,8 +12,10 @@
 #include "util/log.h"
 
 static HMODULE(STDCALL *real_LoadLibraryA)(const char *name);
+static BOOL(STDCALL *real_IsDebuggerPresent)();
 
 static HMODULE STDCALL my_LoadLibraryA(const char *name);
+static BOOL STDCALL my_IsDebuggerPresent();
 
 static const struct hook_symbol master_kernel32_syms[] = {
     {
@@ -21,7 +23,22 @@ static const struct hook_symbol master_kernel32_syms[] = {
         .patch = my_LoadLibraryA,
         .link = (void **) &real_LoadLibraryA,
     },
+    {
+        .name = "IsDebuggerPresent",
+        .patch = my_IsDebuggerPresent,
+        .link = (void **) &real_IsDebuggerPresent,
+    },
 };
+
+static BOOL STDCALL my_IsDebuggerPresent()
+{
+    // DDR X has different code paths for when a debugger is attached,
+    // but we want the normal path and not the debugger path.
+    // The biggest noticeable difference is that when a debugger is attached
+    // it will show fway.mpg (a car driving) instead of the sky background
+    // on the menus.
+    return FALSE;
+}
 
 static HMODULE STDCALL my_LoadLibraryA(const char *name)
 {
