@@ -11,42 +11,43 @@
 #include "util/defs.h"
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/str.h"
 
-static BOOL STDCALL my_SetCurrentDirectoryA(LPCTSTR lpPathName);
-static HANDLE STDCALL my_FindFirstFileA(
-    LPCSTR lpFileName,
+static BOOL STDCALL my_SetCurrentDirectoryA(LPCSTR lpPathName);
+static HANDLE STDCALL my_FindFirstFileW(
+    LPCWSTR lpFileName,
     LPWIN32_FIND_DATAA lpFindFileData);
-static HANDLE STDCALL my_CreateFileA(
-    LPCSTR lpFileName,
+static HANDLE STDCALL my_CreateFileW(
+    LPCWSTR lpFileName,
     DWORD dwDesiredAccess,
     DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes,
     DWORD dwCreationDisposition,
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
-static BOOL WINAPI my_CreateDirectoryA(
-    LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+static BOOL WINAPI my_CreateDirectoryW(
+    LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
-static BOOL(STDCALL *real_SetCurrentDirectoryA)(LPCTSTR lpPathName);
-static HANDLE(STDCALL *real_FindFirstFileA)(
-    LPCSTR lpFileName,
+static BOOL(STDCALL *real_SetCurrentDirectoryA)(LPCSTR lpPathName);
+static HANDLE(STDCALL *real_FindFirstFileW)(
+    LPCWSTR lpFileName,
     LPWIN32_FIND_DATAA lpFindFileData);
-static HANDLE(STDCALL *real_CreateFileA)(
-    LPCSTR lpFileName,
+static HANDLE(STDCALL *real_CreateFileW)(
+    LPCWSTR lpFileName,
     DWORD dwDesiredAccess,
     DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes,
     DWORD dwCreationDisposition,
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
-static BOOL(WINAPI *real_CreateDirectoryA)(
-    LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+static BOOL(WINAPI *real_CreateDirectoryW)(
+    LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 static const struct hook_symbol filesystem_hook_syms[] = {
     {
-        .name = "CreateFileA",
-        .patch = my_CreateFileA,
-        .link = (void **) &real_CreateFileA
+        .name = "CreateFileW",
+        .patch = my_CreateFileW,
+        .link = (void **) &real_CreateFileW
     },
     {
         .name = "SetCurrentDirectoryA",
@@ -54,14 +55,14 @@ static const struct hook_symbol filesystem_hook_syms[] = {
         .link = (void **) &real_SetCurrentDirectoryA,
     },
     {
-        .name = "FindFirstFileA",
-        .patch = my_FindFirstFileA,
-        .link = (void **) &real_FindFirstFileA
+        .name = "FindFirstFileW",
+        .patch = my_FindFirstFileW,
+        .link = (void **) &real_FindFirstFileW
     },
     {
-        .name = "CreateDirectoryA",
-        .patch = my_CreateDirectoryA,
-        .link = (void **) &real_CreateDirectoryA
+        .name = "CreateDirectoryW",
+        .patch = my_CreateDirectoryW,
+        .link = (void **) &real_CreateDirectoryW
     },
 };
 
@@ -108,7 +109,7 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
         if (len < 0)
             len = 0;
 
-        *output_foldername = (char*)xmalloc(len + 1);
+        *output_foldername = (char*)xmalloc(len + 2);
         memset(*output_foldername, 0, len + 1);
         strncpy(*output_foldername, launcher_path + idx_folder, len);
     }
@@ -125,46 +126,98 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
     }
 }
 
-static char *ddrhook1_filesystem_get_path(LPCTSTR path)
+static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
 {
-    char *new_path = NULL;
+    wchar_t *new_path = NULL;
 
-    // Hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw, F:/update
-    if (stricmp(path, "D:/HDX") == 0
-    || stricmp(path, "D:\\HDX") == 0) {
-        ddrhook1_get_launcher_path_parts(&new_path, NULL);
-    } else if (strnicmp(path, "E:/conf", 7) == 0
-    || strnicmp(path, "E:\\conf", 7) == 0) {
-        char *launcher_folder;
-        char *sub_path;
+    // char *tmp;
+    // wstr_narrow(path, &tmp);
+    // log_misc("path: %s", tmp);
+    // free(tmp);
 
-        ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
-        sub_path = strstr(path, "conf");
+    // Deal with hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw, F:/update, ...
+    if (wstr_insensitive_eq(path, L"D:/HDX") || wstr_insensitive_eq(path, L"D:\\HDX")
+    || wstr_insensitive_eq(path, L"D:/JDX") || wstr_insensitive_eq(path, L"D:\\JDX")) {
+        char *_new_path;
+        ddrhook1_get_launcher_path_parts(&_new_path, NULL);
 
-        if (sub_path && launcher_folder) {
-            new_path = (char*)xmalloc(MAX_PATH);
-            sprintf(new_path, "%s\\%s", launcher_folder, sub_path);
+        if (_new_path) {
+            new_path = str_widen(_new_path);
+            return new_path;
         }
-    } else if (stricmp(path, "F:/update") == 0
-    || stricmp(path, "F:\\update") == 0) {
+    } else if (wcslen(path) >= 7 && (wcsnicmp(path, L"E:/conf", 7) == 0
+    || wcsnicmp(path, L"E:\\conf", 7) == 0)) {
         char *launcher_folder;
-        char *sub_path;
+        wchar_t *sub_path;
 
         ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
-        sub_path = strstr(path, "update");
+        sub_path = wcsstr(path, L"conf");
 
         if (sub_path && launcher_folder) {
-            new_path = (char*)xmalloc(MAX_PATH);
-            sprintf(new_path, "%s\\%s", launcher_folder, sub_path);
+            wchar_t *launcher_folder_w = str_widen(launcher_folder);
+            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            return new_path;
+        }
+    } else if (wstr_insensitive_eq(path, L"F:/update")
+    || wstr_insensitive_eq(path, L"F:\\update")
+    || wstr_insensitive_eq(path, L".\\F:/update")
+    || wstr_insensitive_eq(path, L".\\F:\\update")) {
+        char *launcher_folder;
+        wchar_t *sub_path;
+
+        ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
+        sub_path = wcsstr(path, L"update");
+
+        if (sub_path && launcher_folder) {
+            wchar_t *launcher_folder_w = str_widen(launcher_folder);
+            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            return new_path;
+        }
+    } else if (wcslen(path) >= 24 && (wcsnicmp(path, L"D:/JDX/JDX-001/contents/", 24) == 0
+    || wcsnicmp(path, L"D:\\JDX\\JDX-001\\contents\\", 24) == 0)) {
+        char *content_path;
+
+        ddrhook1_get_launcher_path_parts(&content_path, NULL);
+
+        if (content_path) {
+            wchar_t *content_path_w = str_widen(content_path);
+            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 24);
+            return new_path;
+        }
+    } else if (wcslen(path) >= 7 && (wcsnicmp(path, L"D:/HDX/", 7) == 0 || wcsnicmp(path, L"D:\\HDX\\", 7) == 0
+    || wcsnicmp(path, L"D:/JDX/", 7) == 0 || wcsnicmp(path, L"D:\\JDX\\", 7) == 0)) {
+        char *content_path;
+
+        ddrhook1_get_launcher_path_parts(&content_path, NULL);
+
+        if (content_path) {
+            wchar_t *content_path_w = str_widen(content_path);
+            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 7);
+            return new_path;
         }
     }
 
-    return new_path;
+    return NULL;
 }
 
-static BOOL STDCALL my_SetCurrentDirectoryA(LPCTSTR lpPathName)
+static BOOL STDCALL my_SetCurrentDirectoryA(LPCSTR lpPathName)
 {
-    char *new_path = ddrhook1_filesystem_get_path(lpPathName);
+    wchar_t *_lpPathName = str_widen(lpPathName);
+    wchar_t *_new_path = ddrhook1_filesystem_get_path(_lpPathName);
+    char *new_path = NULL;
+
+    if (_lpPathName != NULL) {
+        free(_lpPathName);
+    }
+
+    if (_new_path != NULL) {
+        wstr_narrow(_new_path, &new_path);
+        free(_new_path);
+    }
 
     if (new_path != NULL) {
         bool r = real_SetCurrentDirectoryA(new_path);
@@ -176,30 +229,33 @@ static BOOL STDCALL my_SetCurrentDirectoryA(LPCTSTR lpPathName)
     return real_SetCurrentDirectoryA(lpPathName);
 }
 
-static HANDLE STDCALL my_FindFirstFileA(
-    LPCSTR lpFileName,
+static HANDLE STDCALL my_FindFirstFileW(
+    LPCWSTR lpFileName,
     LPWIN32_FIND_DATAA lpFindFileData)
 {
-    char *new_path = ddrhook1_filesystem_get_path(lpFileName);
+    wchar_t *new_path = ddrhook1_filesystem_get_path(lpFileName);
 
     if (new_path) {
-        HANDLE r = real_FindFirstFileA(
+        HANDLE r = real_FindFirstFileW(
             new_path,
             lpFindFileData);
 
-        log_misc("FindFirstFileA remapped path: %s -> %s", lpFileName, new_path);
+        char *tmp;
+        wstr_narrow(new_path, &tmp);
+        log_misc("FindFirstFileW remapped path: %s", tmp);
+        free(tmp);
 
         free(new_path);
         return r;
     }
 
-    return real_FindFirstFileA(
+    return real_FindFirstFileW(
         lpFileName,
         lpFindFileData);
 }
 
-static HANDLE STDCALL my_CreateFileA(
-    LPCSTR lpFileName,
+static HANDLE STDCALL my_CreateFileW(
+    LPCWSTR lpFileName,
     DWORD dwDesiredAccess,
     DWORD dwShareMode,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes,
@@ -207,10 +263,10 @@ static HANDLE STDCALL my_CreateFileA(
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
 {
-    char *new_path = ddrhook1_filesystem_get_path(lpFileName);
+    wchar_t *new_path = ddrhook1_filesystem_get_path(lpFileName);
 
     if (new_path) {
-        HANDLE r = real_CreateFileA(
+        HANDLE r = real_CreateFileW(
             new_path,
             dwDesiredAccess,
             dwShareMode,
@@ -219,13 +275,16 @@ static HANDLE STDCALL my_CreateFileA(
             dwFlagsAndAttributes,
             hTemplateFile);
 
-        log_misc("CreateFileA remapped path %s -> %s", lpFileName, new_path);
+        // char *tmp;
+        // wstr_narrow(new_path, &tmp);
+        // log_misc("CreateFileW remapped path %s", tmp);
+        // free(tmp);
 
         free(new_path);
         return r;
     }
 
-    return real_CreateFileA(
+    return real_CreateFileW(
         new_path ? new_path : lpFileName,
         dwDesiredAccess,
         dwShareMode,
@@ -235,21 +294,24 @@ static HANDLE STDCALL my_CreateFileA(
         hTemplateFile);
 }
 
-BOOL WINAPI my_CreateDirectoryA(
-    LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
+BOOL WINAPI my_CreateDirectoryW(
+    LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
 {
-    char *new_path = ddrhook1_filesystem_get_path(lpPathName);
+    wchar_t *new_path = ddrhook1_filesystem_get_path(lpPathName);
 
     if (new_path) {
-        BOOL r = real_CreateDirectoryA(new_path, lpSecurityAttributes);
+        BOOL r = real_CreateDirectoryW(new_path, lpSecurityAttributes);
 
-        log_misc("CreateDirectoryA remapped path %s -> %s", lpPathName, new_path);
+        char *tmp;
+        wstr_narrow(new_path, &tmp);
+        log_misc("CreateDirectoryW remapped path %s", tmp);
+        free(tmp);
 
         free(new_path);
         return r;
     }
 
-    return real_CreateDirectoryA(lpPathName, lpSecurityAttributes);
+    return real_CreateDirectoryW(lpPathName, lpSecurityAttributes);
 }
 
 void ddrhook1_filesystem_hook_init()

@@ -79,6 +79,8 @@ static void my_avs_boot(
 {
     log_info("Called my_avs_boot");
 
+#if AVS_VERSION < 1002
+    // Only need to add these hooks for DDR X
     char nvram_path[MAX_PATH] = {0};
     char raw_path[MAX_PATH] = {0};
 
@@ -106,6 +108,7 @@ static void my_avs_boot(
         config, "/fs/nvram/device", nvram_path);
     avs_boot_replace_property_str(
         config, "/fs/raw/device", raw_path);
+#endif
 
     real_avs_boot(
         config,

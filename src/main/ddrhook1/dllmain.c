@@ -112,6 +112,8 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
     log_info(DDRHOOK1_INFO_HEADER);
     log_info("Initializing ddrhook1...");
 
+    ddrhook1_filesystem_hook_init();
+
     ddrhook1_avs_boot_init();
     ddrhook1_avs_boot_set_eamuse_addr(&config_eamuse.server);
 
@@ -135,7 +137,11 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
         &config_security.mcode,
         &config_eamuse.pcbid,
         &config_eamuse.eamid,
+#if AVS_VERSION >= 1002
+        &security_rp_sign_key_black_ddrx2,
+#else
         &security_rp_sign_key_black_ddrx,
+#endif
         &security_rp_sign_key_white_eamuse);
     extio_init();
     usbmem_init(config_ddrhook1.usbmem_path_p1, config_ddrhook1.usbmem_path_p2,

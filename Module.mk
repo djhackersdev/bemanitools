@@ -586,6 +586,23 @@ $(zipdir)/ddr-11.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/ddr-12-us.zip: \
+		build/bin/indep-32/inject.exe \
+		build/bin/avs2_1002-32/ddrhook1.dll \
+		build/bin/avs2_1002-32/unicorntail.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/ddrio.dll \
+		build/bin/indep-32/ddrio-mm.dll \
+		build/bin/indep-32/ddrio-smx.dll \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/geninput.dll \
+		dist/ddr/config.bat \
+		dist/ddr/gamestart-12-us.bat \
+		dist/ddr/ddr-12-us.conf \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/ddr-12.zip: \
 		build/bin/avs2_1002-32/launcher.exe \
 		build/bin/avs2_1002-32/ddrhook2.dll \
