@@ -719,6 +719,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/bst.zip \
 		$(zipdir)/ddr-11.zip \
 		$(zipdir)/ddr-12.zip \
+		$(zipdir)/ddr-12-us.zip \
 		$(zipdir)/ddr-13.zip \
 		$(zipdir)/ddr-14-to-16.zip \
 		$(zipdir)/ddr-16-x64.zip \
