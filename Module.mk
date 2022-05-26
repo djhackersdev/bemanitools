@@ -598,7 +598,9 @@ $(zipdir)/ddr-12-us.zip: \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-12-us.bat \
+		dist/ddr/gamestart-12-eu.bat \
 		dist/ddr/ddr-12-us.conf \
+		dist/ddr/ddr-12-eu.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
