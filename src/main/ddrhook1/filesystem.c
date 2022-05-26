@@ -157,6 +157,7 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
             wchar_t *launcher_folder_w = str_widen(launcher_folder);
             new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            free(launcher_folder_w);
             return new_path;
         }
     } else if (wstr_insensitive_eq(path, L"F:/update")
@@ -173,6 +174,7 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
             wchar_t *launcher_folder_w = str_widen(launcher_folder);
             new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            free(launcher_folder_w);
             return new_path;
         }
     } else if (wcslen(path) >= 24 && (wcsnicmp(path, L"D:/JDX/JDX-001/contents/", 24) == 0
@@ -185,6 +187,7 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
             wchar_t *content_path_w = str_widen(content_path);
             new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 24);
+            free(content_path_w);
             return new_path;
         }
     } else if (wcslen(path) >= 7 && (wcsnicmp(path, L"D:/HDX/", 7) == 0 || wcsnicmp(path, L"D:\\HDX\\", 7) == 0
@@ -197,6 +200,7 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
             wchar_t *content_path_w = str_widen(content_path);
             new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 7);
+            free(content_path_w);
             return new_path;
         }
     }
