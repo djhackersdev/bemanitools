@@ -32,14 +32,14 @@ The following games are supported with their corresponding hook-libraries.
 * BeatStream
     * BeatStream (`bst.zip`): bsthook
     * BeatStream アニムトライヴ (`bst.zip`): bsthook
-* Dance Dance Revolution
+* [Dance Dance Revolution](doc/ddrhook/README.md)
     * Dance Dance Revolution X (`ddr-11.zip`): [ddrhook1](doc/ddrhook/ddrhook1.md)
     * Dance Dance Revolution X2 (`ddr-12.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution X3 vs. 2ndMIX (`ddr-13.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution 2013 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution 2014 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution A (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
-* Beatmania IIDX
+* [Beatmania IIDX](doc/iidxhook/README.md)
     * Beatmania IIDX 9th Style (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
     * Beatmania IIDX 10th Style (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
     * Beatmania IIDX 11 IIDX RED (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
@@ -60,7 +60,7 @@ The following games are supported with their corresponding hook-libraries.
     * Beatmania IIDX 26 Rootage (`iidx-25-to-26.zip`): [iidxhook8](doc/iidxhook/iidxhook8.md)
     * Beatmania IIDX 27 Heroic Verse (`iidx-27-to-28.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
     * Beatmania IIDX 28 BISTROVER (`iidx-27-to-28.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
-* jubeat
+* [jubeat](doc/jbhook/README.md)
     * jubeat (`jb-01.zip`): [jbhook1](doc/jbhook/jbhook1.md)
     * jubeat ripples (`jb-02.zip`): [jbhook1](doc/jbhook/jbhook1.md)
     * jubeat knit (`jb-03.zip`): [jbhook2](doc/jbhook/jbhook2.md)
