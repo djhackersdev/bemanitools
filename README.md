@@ -26,55 +26,57 @@ The tl;dr version and golden rules of the sections in the document:
 * [Everyone is allowed to submit changes which are not just limited to code by opening merge requests](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
 * [Documentation improvements can and even should be contributed by non developers](CONTRIBUTING.md#pull-requests-bugfixes-new-features-or-other-code-contributions)
 
-## List of supported games (hook libraries)
+## Supported games
+The following games are supported with their corresponding hook-libraries.
+
 * BeatStream
-    * BeatStream (bst.zip) using bsthook
-    * BeatStream アニムトライヴ (bst.zip) using bsthook
+    * BeatStream (`bst.zip`): bsthook
+    * BeatStream アニムトライヴ (`bst.zip`): bsthook
 * Dance Dance Revolution
-    * Dance Dance Revolution X (ddr-11.zip) using ddrhook1
-    * Dance Dance Revolution X2 (ddr-12.zip) using ddrhook2
-    * Dance Dance Revolution X3 vs. 2ndMIX (ddr-13.zip) using ddrhook2
-    * Dance Dance Revolution 2013 (ddr-14-to-16.zip) using ddrhook2
-    * Dance Dance Revolution 2014 (ddr-14-to-16.zip) using ddrhook2
-    * Dance Dance Revolution A (ddr-14-to-16.zip) using ddrhook2
+    * Dance Dance Revolution X (`ddr-11.zip`): [ddrhook1](doc/ddrhook/ddrhook1.md)
+    * Dance Dance Revolution X2 (`ddr-12.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
+    * Dance Dance Revolution X3 vs. 2ndMIX (`ddr-13.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
+    * Dance Dance Revolution 2013 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
+    * Dance Dance Revolution 2014 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
+    * Dance Dance Revolution A (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
 * Beatmania IIDX
-    * Beatmania IIDX 9th Style (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
-    * Beatmania IIDX 10th Style (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
-    * Beatmania IIDX 11 IIDX RED (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
-    * Beatmania IIDX 12 HAPPY SKY (iidx-09-to-12.zip) using [iidxhook1](doc/iidxhook/iidxhook1.md)
-    * Beatmania IIDX 13 DistorteD (iidx-13.zip) using [iidxhook2](doc/iidxhook/iidxhook2.md)
-    * Beatmania IIDX 14 GOLD (iidx-14-to-17.zip) using [iidxhook3](doc/iidxhook/iidxhook3.md)
-    * Beatmania IIDX 15 DJ TROOPERS (iidx-14-to-17.zip) using [iidxhook3](doc/iidxhook/iidxhook3.md)
-    * Beatmania IIDX 16 EMPRESS (iidx-14-to-17.zip) using [iidxhook3](doc/iidxhook/iidxhook3.md)
-    * Beatmania IIDX 17 SIRIUS (iidx-14-to-17.zip) using [iidxhook3](doc/iidxhook/iidxhook3.md)
-    * Beatmania IIDX 18 Resort Anthem (iidx-18.zip) using [iidxhook4](doc/iidxhook/iidxhook4.md)
-    * Beatmania IIDX 19 Lincle (iidx-19.zip) using [iidxhook5](doc/iidxhook/iidxhook5.md)
-    * Beatmania IIDX 20 Tricoro (iidx-20.zip) using [iidxhook6](doc/iidxhook/iidxhook6.md)
-    * Beatmania IIDX 21 SPADA (iidx-21-to-24.zip) using [iidxhook7](doc/iidxhook/iidxhook7.md)
-    * Beatmania IIDX 22 PENDUAL (iidx-21-to-24.zip) using [iidxhook7](doc/iidxhook/iidxhook7.md)
-    * Beatmania IIDX 23 copula (iidx-21-to-24.zip) using [iidxhook7](doc/iidxhook/iidxhook7.md)
-    * Beatmania IIDX 24 SINOBUZ (iidx-21-to-24.zip) using [iidxhook7](doc/iidxhook/iidxhook7.md)
-    * Beatmania IIDX 25 CANNON BALLERS (iidx-25-to-26.zip) using [iidxhook8](doc/iidxhook/iidxhook8.md)
-    * Beatmania IIDX 26 Rootage (iidx-25-to-26.zip) using [iidxhook8](doc/iidxhook/iidxhook8.md)
-    * Beatmania IIDX 27 Heroic Verse (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
-    * Beatmania IIDX 28 BISTROVER (iidx-27-to-28.zip) using [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 9th Style (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
+    * Beatmania IIDX 10th Style (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
+    * Beatmania IIDX 11 IIDX RED (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
+    * Beatmania IIDX 12 HAPPY SKY (`iidx-09-to-12.zip`): [iidxhook1](doc/iidxhook/iidxhook1.md)
+    * Beatmania IIDX 13 DistorteD (`iidx-13.zip`): [iidxhook2](doc/iidxhook/iidxhook2.md)
+    * Beatmania IIDX 14 GOLD (`iidx-14-to-17.zip`): [iidxhook3](doc/iidxhook/iidxhook3.md)
+    * Beatmania IIDX 15 DJ TROOPERS (`iidx-14-to-17.zip`): [iidxhook3](doc/iidxhook/iidxhook3.md)
+    * Beatmania IIDX 16 EMPRESS (`iidx-14-to-17.zip`): [iidxhook3](doc/iidxhook/iidxhook3.md)
+    * Beatmania IIDX 17 SIRIUS (`iidx-14-to-17.zip`): [iidxhook3](doc/iidxhook/iidxhook3.md)
+    * Beatmania IIDX 18 Resort Anthem (`iidx-18.zip`): [iidxhook4](doc/iidxhook/iidxhook4.md)
+    * Beatmania IIDX 19 Lincle (`iidx-19.zip`): [iidxhook5](doc/iidxhook/iidxhook5.md)
+    * Beatmania IIDX 20 Tricoro (`iidx-20.zip`): [iidxhook6](doc/iidxhook/iidxhook6.md)
+    * Beatmania IIDX 21 SPADA (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
+    * Beatmania IIDX 22 PENDUAL (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
+    * Beatmania IIDX 23 copula (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
+    * Beatmania IIDX 24 SINOBUZ (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
+    * Beatmania IIDX 25 CANNON BALLERS (`iidx-25-to-26.zip`): [iidxhook8](doc/iidxhook/iidxhook8.md)
+    * Beatmania IIDX 26 Rootage (`iidx-25-to-26.zip`): [iidxhook8](doc/iidxhook/iidxhook8.md)
+    * Beatmania IIDX 27 Heroic Verse (`iidx-27-to-28.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 28 BISTROVER (`iidx-27-to-28.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
 * jubeat
-    * jubeat (jb-01.zip) using [jbhook1](doc/jbhook/jbhook1.md)
-    * jubeat ripples (jb-02.zip) using [jbhook1](doc/jbhook/jbhook1.md)
-    * jubeat knit (jb-03.zip) using [jbhook2](doc/jbhook/jbhook2.md)
-    * jubeat copious (jb-04.zip) using [jbhook2](doc/jbhook/jbhook2.md)
-    * jubeat saucer (fulfill) (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
-    * jubeat prop (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
-    * jubeat qubell (jb-05-to-07.zip) using [jbhook3](doc/jbhook/jbhook3.md)
-    * jubeat clan (jb-08.zip) using [jbhook3](doc/jbhook/jbhook3.md)
-    * jubeat festo (jb-08.zip) using [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat (`jb-01.zip`): [jbhook1](doc/jbhook/jbhook1.md)
+    * jubeat ripples (`jb-02.zip`): [jbhook1](doc/jbhook/jbhook1.md)
+    * jubeat knit (`jb-03.zip`): [jbhook2](doc/jbhook/jbhook2.md)
+    * jubeat copious (`jb-04.zip`): [jbhook2](doc/jbhook/jbhook2.md)
+    * jubeat saucer (fulfill) (`jb-05-to-07.zip`): [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat prop (`jb-05-to-07.zip`): [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat qubell (`jb-05-to-07.zip`): [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat clan (`jb-08.zip`): [jbhook3](doc/jbhook/jbhook3.md)
+    * jubeat festo (`jb-08.zip`): [jbhook3](doc/jbhook/jbhook3.md)
 * SOUND VOLTEX
-    * SOUND VOLTEX BOOTH (sdvx-01-to-04.zip) using sdvxhook
-    * SOUND VOLTEX II -infinite infection- (sdvx-01-to-04.zip) using sdvxhook
-    * SOUND VOLTEX III GRAVITY WARS (sdvx-01-to-04.zip) using sdvxhook
-    * SOUND VOLTEX IV HEAVENLY HAVEN (sdvx-01-to-04.zip) using sdvxhook
-    * SOUND VOLTEX Vivid Wave (sdvx-05-to-06) using sdvxhook2
-    * SOUND VOLTEX EXCEED GEAR (sdvx-05-to-06) using sdvxhook2
+    * SOUND VOLTEX BOOTH (`sdvx-01-to-04.zip`): sdvxhook
+    * SOUND VOLTEX II -infinite infection- (`sdvx-01-to-04.zip`): sdvxhook
+    * SOUND VOLTEX III GRAVITY WARS (`sdvx-01-to-04.zip`): sdvxhook
+    * SOUND VOLTEX IV HEAVENLY HAVEN (`sdvx-01-to-04.zip`): sdvxhook
+    * SOUND VOLTEX Vivid Wave (`sdvx-05-to-06`): sdvxhook2
+    * SOUND VOLTEX EXCEED GEAR (`sdvx-05-to-06`): sdvxhook2
 
 ## ViGEm clients: Expose BT5 APIs as XBOX game controllers
 Play your favorite non-bemani arcade games with any hardware, e.g. real cabinet hardware, that
