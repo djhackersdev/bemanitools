@@ -34,8 +34,8 @@ The following games are supported with their corresponding hook-libraries.
     * BeatStream アニムトライヴ (`bst.zip`): bsthook
 * [Dance Dance Revolution](doc/ddrhook/README.md)
     * Dance Dance Revolution X (`ddr-11.zip`): [ddrhook1](doc/ddrhook/ddrhook1.md)
-    * Dance Dance Revolution X2 (`ddr-12.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
-    * Dance Dance Revolution X3 vs. 2ndMIX (`ddr-13.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
+    * Dance Dance Revolution X2 (US/EU regions) (`ddr-12-us.zip`): [ddrhook1](doc/ddrhook/ddrhook1.md)
+    * Dance Dance Revolution X2 (JP region) (`ddr-12.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution 2013 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution 2014 (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
     * Dance Dance Revolution A (`ddr-14-to-16.zip`): [ddrhook2](doc/ddrhook/ddrhook2.md)
