@@ -4,7 +4,7 @@
 
 The following games are supported by this hook library:
 
-* Dance Dance Revolution X2
+* Dance Dance Revolution X2 (JP region)
 * Dance Dance Revolution X3 vs. 2ndMIX
 * Dance Dance Revolution 2013
 * Dance Dance Revolution 2014

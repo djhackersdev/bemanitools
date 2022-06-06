@@ -5,6 +5,7 @@
 The following games are supported with this hook library:
 
 * Dance Dance Revolution X
+* Dance Dance Revolution X2 (US/EU regions)
 
 The games must be bootstrapped using [inject](../inject.md).
 
@@ -80,7 +81,7 @@ Set-up your folder mappings in the
 * Set P1 USB memory data path pointing to local folder `usbmem_p2` next to `DDR.EXE`:
   `ddrhook1.usbmem_path_p1=usbmem_p2`
 * Have/create a subfolder called `DDR_EDIT` on any location/USB drive you want to use
-* Name your edit data file either `DDR_EDIT_J.DAT` (for JP version) or `DDR_EDIT_US.DAT`
+* Name your edit data file either `DDR_EDIT_J.DAT` (for JP version) or `DDR_EDIT_U.DAT`
   (for US version) and place it in the `DDR_EDIT` directory.
 
 For the example setup above, the full relative path of the edit file should be
