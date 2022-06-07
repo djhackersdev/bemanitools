@@ -1,5 +1,8 @@
 avsdlls			+= ddrhook1
 
+ldflags_ddrhook1   := \
+    -lws2_32 \
+
 deplibs_ddrhook1	:= \
 	avs \
 
