@@ -3,6 +3,9 @@ Note for CI/CD: Ensure the version formatting in the sections is kept identical 
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
 ## 5.40
+* Feature: Support DDR X and X2 US/EU using ddrhook1 including memory card emulation
+* Fix: sdvxhook2 crashing on some OS versions
+* Feature: Support sdvx generator lights in sdvxio
 
 ## 5.39
 * jbhook3: Fix window mode, remove window frame option, add show cursor on window option
