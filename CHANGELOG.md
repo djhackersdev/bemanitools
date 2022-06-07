@@ -2,6 +2,8 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.41
+
 ## 5.40
 * Feature: Support DDR X and X2 US/EU using ddrhook1 including memory card emulation
 * Fix: sdvxhook2 crashing on some OS versions
