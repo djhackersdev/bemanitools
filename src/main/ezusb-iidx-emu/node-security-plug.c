@@ -174,8 +174,8 @@ uint8_t ezusb_iidx_emu_node_security_plug_process_cmd_v1(
                 EZUSB_IIDX_SECPLUG_DONGLE_MEM_DATA;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V1_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V1_SECURITY_CONVERSION:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_SECURITY_CONVERSION");
+        case EZUSB_IIDX_SECPLUG_CMD_V1_WRITE_DATA:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_WRITE_DATA");
             /* TODO ? */
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V1_OK;
 
@@ -201,40 +201,57 @@ uint8_t ezusb_iidx_emu_node_security_plug_process_cmd_v2(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
-        case EZUSB_IIDX_SECPLUG_CMD_V2_INIT:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_INIT");
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SEARCH:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SEARCH");
             ezusb_iidx_emu_node_security_plug_active_dongle_mem =
                 EZUSB_IIDX_SECPLUG_DONGLE_MEM_ROM;
             ezusb_iidx_emu_node_security_plug_enc_rom_data_seed = cmd_data;
-            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_OK;
+            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SEARCH_OK;
 
         case EZUSB_IIDX_SECPLUG_CMD_V2_READ_DATA:
             log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_READ_DATA");
             ezusb_iidx_emu_node_security_plug_active_dongle_mem =
                 EZUSB_IIDX_SECPLUG_DONGLE_MEM_DATA;
-            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_DATA_OK;
+            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_READ_DATA_OK;
 
         case EZUSB_IIDX_SECPLUG_CMD_V2_READ_ROM:
             log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_READ_ROM");
             ezusb_iidx_emu_node_security_plug_active_dongle_mem =
                 EZUSB_IIDX_SECPLUG_DONGLE_MEM_ROM;
             ezusb_iidx_emu_node_security_plug_enc_rom_data_seed = cmd_data;
-            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_ROM_OK;
+            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_READ_ROM_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_WHITE_DONGLE_2:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_WHITE_DONGLE_2");
+        // pop'n music only ever uses slot 2 (white) and slot 4 (black).
+        // If the configuration does not match then it will error out.
+        // IIDX uses slots 2 and 3 and detects what is plugged into each slot so ordering isn't important.
+        // IIDX also reads slot 1's data section but doesn't care what dongle it is?
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_1:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_1");
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =
                 EZUSB_IIDX_SECPLUG_DONGLE_SLOT_WHITE;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SECURITY_SEL_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_BLACK_DONGLE:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_BLACK_DONGLE");
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_2:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_2");
+            ezusb_iidx_emu_node_security_plug_active_dongle_slot =
+                EZUSB_IIDX_SECPLUG_DONGLE_SLOT_WHITE;
+            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SECURITY_SEL_OK;
+
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_3:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_3");
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =
                 EZUSB_IIDX_SECPLUG_DONGLE_SLOT_BLACK;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SECURITY_SEL_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_WHITE_DONGLE:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_WHITE_DONGLE");
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_4:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_4");
+            ezusb_iidx_emu_node_security_plug_active_dongle_slot =
+                EZUSB_IIDX_SECPLUG_DONGLE_SLOT_BLACK;
+            return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SECURITY_SEL_OK;
+
+        case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_5:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_5");
+            // Unknown, not encountered during testing
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =
                 EZUSB_IIDX_SECPLUG_DONGLE_SLOT_WHITE;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V2_SECURITY_SEL_OK;

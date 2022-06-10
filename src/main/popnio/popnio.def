@@ -1,0 +1,12 @@
+LIBRARY popnio
+
+EXPORTS
+    popn_io_get_buttons
+    popn_io_set_top_lights
+    popn_io_set_side_lights
+    popn_io_set_button_lights
+    popn_io_set_coin_blocker_light
+    popn_io_set_coin_counter_light
+    popn_io_fini
+    popn_io_init
+    popn_io_set_loggers

@@ -54,6 +54,8 @@ void options_print_usage(void)
         "You can specify one or multiple hook.dll files, e.g. inject.exe "
         "hook1.dll hook2.dll app.exe"
         "\n"
+        "An IAT replacement early injection can be specified using the syntax orig.dll=hook.dll"
+        "\n"
         "       The following options can be specified after the exe path:\n"
         "\n"
         "       -D Enable debugging output\n"

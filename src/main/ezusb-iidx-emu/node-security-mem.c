@@ -54,9 +54,9 @@ uint8_t ezusb_iidx_emu_node_security_mem_v1_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
-        case EZUSB_IIDX_SECMEM_CMD_WRITE:
-            log_misc("EZUSB_SECURITY_MEM_V1_CMD_WRITE");
-            return EZUSB_IIDX_SECMEM_CMD_STATUS_V1_WRITE_OK;
+        case EZUSB_IIDX_SECMEM_CMD_INIT:
+            log_misc("EZUSB_SECURITY_MEM_V1_CMD_INIT");
+            return EZUSB_IIDX_SECMEM_CMD_STATUS_V1_INIT_OK;
 
         default:
             log_warning(
@@ -69,9 +69,9 @@ uint8_t ezusb_iidx_emu_node_security_mem_v2_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
 {
     switch (cmd_id) {
-        case EZUSB_IIDX_SECMEM_CMD_WRITE:
-            log_misc("EZUSB_SECURITY_MEM_V2_CMD_WRITE");
-            return EZUSB_IIDX_SECMEM_CMD_STATUS_V2_WRITE_OK;
+        case EZUSB_IIDX_SECMEM_CMD_INIT:
+            log_misc("EZUSB_SECURITY_MEM_V2_CMD_INIT");
+            return EZUSB_IIDX_SECMEM_CMD_STATUS_V2_INIT_OK;
 
         default:
             log_warning(

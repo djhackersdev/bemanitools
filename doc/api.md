@@ -12,7 +12,7 @@ If you want to write an implementation for your own custom piece of hardware, ch
 sub-folder) in the source code (src.zip).
 
 ## Implementations
-The following implementations are already shipped with BT5. 
+The following implementations are already shipped with BT5.
 
 * BeatStream
     * bstio.dll (default): Keyboard, joystick and mouse input
@@ -27,13 +27,15 @@ The following implementations are already shipped with BT5.
     * [iidxio-ezusb2.dll](iidxhook/iidxio-ezusb2.md): Ezusb FX2 (IO2) driver
 * jubeat
     * jbio.dll (default): Keyboard, joystick and mouse input
+* pop'n music
+    * popnio.dll (default): Keyboard, joystick and mouse input
 * SOUND VOLTEX
     * sdvxio.dll (default): Keyboard, joystick and mouse input
     * [sdvxio-bio2.dll](sdvxhook/sdvxio-bio2.md): BIO2 driver
     * [sdvxio-kfca.dll](sdvxhook/sdvxio-kfca.md): KFCA IO board driver
 
 Eamuse hardware support is implemented separately:
-* eamio.dll (default): Keyboard and joystick input 
+* eamio.dll (default): Keyboard and joystick input
 
 ## Development notes
 A DEF file for geninput.dll is included. To convert the DEF into an import library suitable for use with Visual C++, run

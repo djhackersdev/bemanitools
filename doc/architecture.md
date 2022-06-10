@@ -51,7 +51,7 @@ Modules that make use of this:
 * ezusb2-emu/device
 * acioemu/emu
 
-## Bemanitools's hook libraries, let's glue everything together 
+## Bemanitools's hook libraries, let's glue everything together
 Bemanitools dlls to be injected into target game processes are refered to as "hook dlls" and come in different flavours
 targetting different games and often different versions of the same game (series), for example:
 * ddrhook: Hook dll for Dance Dance Revolution games
@@ -69,13 +69,13 @@ TODO
 
 ### iidxhook
 IIDX went through so many hard- and software iterations, it's actually amazing that the development team(s) refactored
-and improved parts of the game and hardware with each iteration. However, when facing emulation and supporting 
+and improved parts of the game and hardware with each iteration. However, when facing emulation and supporting
 compatibility to legacy OS platforms, it can't get any worse. On the bright side, IIDX helped shaping Bemanitools a lot
 and created a solid foundation other games can build on.
 
 Because of that, we have 8 iidxhook implementations supporting sometimes different software features/fixes and
 hardware. The following sub-sub-sections list the most relevant aspects and modules to point out common and different
-higher level features. 
+higher level features.
 
 Essentially, the main module file of each iidxhook implementation just glues the APIs of the modules it requires
 together. An additional configuration layer allows users to tweak some of the features.
@@ -88,7 +88,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
     * Setupapi emulation
     * Full security emulation with SRAM and round plugs
     * Full serial emulation for magstripe card readers
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * d3d8 patching and extended features (superseded by d3d9 hook module + d3d8to9 wrapper)
 * clock patching
 * Font patching for Japanese chars
@@ -99,7 +99,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 * Ezusb C02 I/O emulation
     * Setupapi emulation
     * Full security emulation with SRAM and round plugs
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, slotted readers
 * d3d8 patching and extended features (superseded by d3d9 hook module + d3d8to9 wrapper)
 * clock patching
@@ -111,7 +111,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
     * Full security emulation with SRAM and round plugs
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, slotted readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
@@ -121,7 +121,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 #### iidxhook4 (18)
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, slotted readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
@@ -130,7 +130,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 #### iidxhook5 (19)
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, wave pass readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
@@ -139,7 +139,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 #### iidxhook6 (20)
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, wave pass readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
@@ -147,7 +147,7 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 #### iidxhook7 (21-24)
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, wave pass readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
@@ -155,12 +155,15 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 #### iidxhook8 (25-26)
 * ACIO BIO2 I/O emulation
     * Setupapi emulation
-    * Full game essential I/O emulation 
+    * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, wave pass readers
 * d3d9 patching and extended features
 * Font patching for Japanese chars
 
 ### jbhook
+TODO
+
+### popnhook
 TODO
 
 ### sdvxhook

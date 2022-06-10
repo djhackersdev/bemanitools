@@ -220,3 +220,96 @@ HRESULT pe_patch(void *dest, const void *src, size_t nbytes)
 
     return S_OK;
 }
+
+const pe_thunk_t *pe_thunk_get_first(HMODULE pe, const pe_iid_t *iid)
+{
+    pe_thunk_t *thunk;
+
+    assert(pe != NULL);
+    assert(iid != NULL);
+
+    thunk = pe_offset(pe, iid->FirstThunk);
+
+    if (thunk == NULL || thunk->u1.AddressOfData == 0) {
+        return NULL;
+    }
+
+    return thunk;
+}
+
+const pe_thunk_t *pe_thunk_get_next(const pe_thunk_t *thunk)
+{
+    const IMAGE_THUNK_DATA *thunk_next;
+
+    assert(thunk != NULL);
+
+    thunk_next = thunk + 1;
+
+    if (thunk_next == NULL || thunk_next->u1.AddressOfData == 0) {
+        return NULL;
+    }
+
+    return thunk_next;
+}
+
+void *pe_thunk_get_resolved_function(HMODULE target_pe, HMODULE import_pe, const pe_thunk_t *thunk)
+{
+    void *addr;
+
+    assert(target_pe != NULL);
+    assert(import_pe != NULL);
+    assert(thunk != NULL);
+
+    if (thunk->u1.AddressOfData != 0) {
+        if (IMAGE_SNAP_BY_ORDINAL(thunk->u1.Ordinal)) {
+            LPCSTR functionOrdinal = (LPCSTR)IMAGE_ORDINAL(thunk->u1.Ordinal);
+            addr = (void *)GetProcAddress(import_pe, functionOrdinal);
+        } else {
+            PIMAGE_IMPORT_BY_NAME functionName = pe_offset(target_pe, thunk->u1.AddressOfData);
+            addr = (void *)GetProcAddress(import_pe, functionName->Name);
+        }
+    } else {
+        addr = NULL;
+    }
+
+    return addr;
+}
+
+void pe_resolve_imports(HMODULE target_pe)
+{
+    for (const pe_iid_t *iid = pe_iid_get_first(target_pe); iid != NULL; iid = pe_iid_get_next(target_pe, iid)) {
+        const char *iid_name;
+        HMODULE imported_pe;
+
+        iid_name = pe_iid_get_name(target_pe, iid);
+        imported_pe = LoadLibraryA(iid_name);
+        assert(imported_pe != NULL);
+
+        for (const pe_thunk_t *thunk = pe_thunk_get_first(target_pe, iid); thunk != NULL; thunk = pe_thunk_get_next(thunk)) {
+            void *addr;
+
+            addr = pe_thunk_get_resolved_function(target_pe, imported_pe, thunk);
+
+            if (addr != NULL) {
+                pe_patch((void*)&thunk->u1.Function, &addr, sizeof(PDWORD));
+            }
+        }
+    }
+}
+
+HRESULT pe_hijack_entrypoint(const char *filename, dll_entry_t *orig_entry)
+{
+    HMODULE pe;
+
+    pe = LoadLibraryExA(filename, NULL, DONT_RESOLVE_DLL_REFERENCES);
+
+    if (!pe) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    pe_resolve_imports(pe);
+
+    *orig_entry = pe_get_entry_point(pe);
+
+    return S_OK;
+}
