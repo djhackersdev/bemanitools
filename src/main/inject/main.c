@@ -80,8 +80,15 @@ verify_hook_dlls_exist(int argc, char **argv, uint32_t hook_dll_count)
     DWORD dll_path_length;
 
     for (uint32_t i = 0; i < hook_dll_count; i++) {
-        dll_path_length =
-            SearchPath(NULL, argv[i + 1], NULL, MAX_PATH, dll_path, NULL);
+        char *iat_hook = strstr(argv[i + 1], "=");
+
+        if (iat_hook) {
+            dll_path_length =
+                SearchPath(NULL, iat_hook + 1, NULL, MAX_PATH, dll_path, NULL);
+        } else {
+            dll_path_length =
+                SearchPath(NULL, argv[i + 1], NULL, MAX_PATH, dll_path, NULL);
+        }
 
         if (dll_path_length == 0) {
             log_warning(
@@ -94,6 +101,26 @@ verify_hook_dlls_exist(int argc, char **argv, uint32_t hook_dll_count)
     return true;
 }
 
+static bool inject_iat_hook_dlls(uint32_t hooks, char **argv)
+{
+    log_assert(argv);
+
+    log_info("Injecting IAT hook DLLs...");
+
+    for (int i = 0; i < hooks; i++) {
+        char *iat_hook = strstr(argv[i + 1], "=");
+
+        if (!iat_hook)
+            continue;
+
+        *iat_hook = '\0';
+        debugger_replace_dll_iat(argv[i + 1], iat_hook+1);
+        *iat_hook = '=';
+    }
+
+    return true;
+}
+
 static bool inject_hook_dlls(uint32_t hooks, char **argv)
 {
     log_assert(argv);
@@ -101,6 +128,11 @@ static bool inject_hook_dlls(uint32_t hooks, char **argv)
     log_info("Injecting hook DLLs...");
 
     for (int i = 0; i < hooks; i++) {
+        char *iat_hook = strstr(argv[i + 1], "=");
+
+        if (iat_hook)
+            continue;
+
         if (!debugger_inject_dll(argv[i + 1])) {
             return false;
         }
@@ -153,6 +185,10 @@ int main(int argc, char **argv)
 
     if (!debugger_init(local_debugger, argv[exec_arg_pos], cmd_line)) {
         goto debugger_init_fail;
+    }
+
+    if (!inject_iat_hook_dlls(hooks, argv)) {
+        goto inject_hook_dlls_fail;
     }
 
     if (!inject_hook_dlls(hooks, argv)) {

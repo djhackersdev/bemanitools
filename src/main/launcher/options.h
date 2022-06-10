@@ -18,6 +18,7 @@ struct options {
     const char *logfile;
     struct array hook_dlls;
     struct array before_hook_dlls;
+    struct array iat_hook_dlls;
     bool remote_debugger;
     const char *override_service;
     bool override_urlslash_enabled;

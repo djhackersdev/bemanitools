@@ -214,7 +214,11 @@ int main(int argc, const char **argv)
 
     /* Load game DLL */
 
-    module_context_init(&module, options.module);
+    if (options.iat_hook_dlls.nitems > 0) {
+        module_context_init_with_iat_hooks(&module, options.module, &options.iat_hook_dlls);
+    } else {
+        module_context_init(&module, options.module);
+    }
 
     /* Load hook DLLs */
 

@@ -16,6 +16,8 @@
 #include "util/signal.h"
 #include "util/str.h"
 
+#define MM_ALLOCATION_GRANULARITY 0x10000
+
 struct debugger_thread_params {
     const char *app_name;
     char *cmd_line;
@@ -26,6 +28,14 @@ static HANDLE debugger_thread_handle;
 static HANDLE debugger_ready_event;
 
 static PROCESS_INFORMATION pi;
+
+static PVOID load_nt_header_from_process(HANDLE hProcess,
+                                         HMODULE hModule,
+                                         PIMAGE_NT_HEADERS32 pNtHeader);
+
+static HMODULE enumerate_modules_in_process(HANDLE hProcess,
+                                            HMODULE hModuleLast,
+                                            PIMAGE_NT_HEADERS32 pNtHeader);
 
 // Source:
 // https://docs.microsoft.com/en-us/windows/win32/memory/obtaining-a-file-name-from-a-file-handle
@@ -548,6 +558,156 @@ alloc_fail:
     return false;
 }
 
+HRESULT debugger_pe_patch_remote(HANDLE hProcess, void *dest, const void *src, size_t nbytes)
+{
+    DWORD old_protect;
+    BOOL ok;
+
+    log_assert(dest != NULL);
+    log_assert(src != NULL);
+
+    ok = VirtualProtectEx(
+            hProcess,
+            dest,
+            nbytes,
+            PAGE_EXECUTE_READWRITE,
+            &old_protect);
+
+    if (!ok) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    ok = WriteProcessMemory(
+        hProcess, dest, src, nbytes, NULL);
+
+    if (!ok) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    ok = VirtualProtectEx(
+            hProcess,
+            dest,
+            nbytes,
+            old_protect,
+            &old_protect);
+
+    if (!ok) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    return S_OK;
+}
+
+bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_path_dll)
+{
+    log_assert(expected_dll);
+    log_assert(replacement_path_dll);
+
+    HMODULE hModule = NULL;
+    HMODULE hLast = NULL;
+    void *remote_addr;
+
+    // Find EXE base in process memory
+    IMAGE_NT_HEADERS inh;
+    for (;;) {
+        memset(&inh, 0, sizeof(IMAGE_NT_HEADERS));
+
+        if ((hLast = enumerate_modules_in_process(pi.hProcess, hLast, &inh)) == NULL) {
+            break;
+        }
+
+        if ((inh.FileHeader.Characteristics & IMAGE_FILE_DLL) == 0) {
+            hModule = hLast;
+            break;
+        }
+    }
+
+    if (hModule == NULL) {
+        log_warning("Couldn't find target EXE for hooking");
+        goto inject_fail;
+    }
+
+    // Search through import table if it exists and replace the target DLL with our DLL filename
+    PBYTE pbModule = (PBYTE)hModule;
+    PIMAGE_SECTION_HEADER pRemoteSectionHeaders
+    = (PIMAGE_SECTION_HEADER)((PBYTE)pbModule
+                                + sizeof(inh.Signature)
+                                + sizeof(inh.FileHeader)
+                                + inh.FileHeader.SizeOfOptionalHeader);
+    size_t total_size = inh.OptionalHeader.SizeOfHeaders;
+
+    IMAGE_SECTION_HEADER header;
+    for (DWORD n = 0; n < inh.FileHeader.NumberOfSections; ++n) {
+        if (!ReadProcessMemory(pi.hProcess, pRemoteSectionHeaders + n, &header, sizeof(header), NULL)) {
+            log_warning("Couldn't read section header: %lu", GetLastError());
+            goto inject_fail;
+        }
+
+        size_t new_total_size = header.VirtualAddress + header.Misc.VirtualSize;
+        if (new_total_size > total_size)
+            total_size = new_total_size;
+    }
+
+    remote_addr = VirtualAllocEx(
+        pi.hProcess,
+        pbModule + total_size + MM_ALLOCATION_GRANULARITY,
+        strlen(replacement_path_dll) + 1,
+        MEM_RESERVE | MEM_COMMIT,
+        PAGE_READWRITE);
+
+    log_assert(remote_addr != NULL);
+
+    debugger_pe_patch_remote(
+        pi.hProcess, remote_addr, replacement_path_dll, strlen(replacement_path_dll));
+
+    if (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0) {
+        PIMAGE_IMPORT_DESCRIPTOR pImageImport = (PIMAGE_IMPORT_DESCRIPTOR)(pbModule
+        + inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+
+        DWORD size = 0;
+        while (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size == 0
+        || size < inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size) {
+            IMAGE_IMPORT_DESCRIPTOR ImageImport;
+            if (!ReadProcessMemory(pi.hProcess, pImageImport, &ImageImport, sizeof(ImageImport), NULL)) {
+                log_warning("Couldn't read import: %lu", GetLastError());
+                goto inject_fail;
+            }
+
+            if (ImageImport.Name == 0) {
+                break;
+            }
+
+            char name[MAX_PATH] = {0};
+            if (ReadProcessMemory(pi.hProcess, pbModule + ImageImport.Name, name, sizeof(name), NULL)) {
+                // log_misc("\tImport DLL: %ld %s", ImageImport.Name, name);
+
+                if (strcmp(name, expected_dll) == 0) {
+                    //log_misc("Replacing %s with %s", name, replacement_path_dll, (void*)pImageImport);
+
+                    ImageImport.Name = (DWORD)((PBYTE)remote_addr - pbModule);
+
+                    debugger_pe_patch_remote(
+                        pi.hProcess,
+                        pImageImport,
+                        &ImageImport,
+                        sizeof(ImageImport));
+                }
+            }
+
+            pImageImport++;
+            size += sizeof(IMAGE_IMPORT_DESCRIPTOR);
+        }
+    } else {
+        log_warning("Couldn't find import table, can't hook DLL\n");
+        goto inject_fail;
+    }
+
+    return true;
+
+inject_fail:
+    return false;
+}
+
 bool debugger_resume_process()
 {
     log_info("Resuming remote process...");
@@ -592,4 +752,91 @@ void debugger_finit(bool failure)
 
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
+}
+
+// Helper functions based on Microsoft Detours
+static PVOID load_nt_header_from_process(HANDLE hProcess,
+                                         HMODULE hModule,
+                                         PIMAGE_NT_HEADERS32 pNtHeader)
+{
+    PBYTE pbModule = (PBYTE)hModule;
+
+    memset(pNtHeader, 0, sizeof(*pNtHeader));
+
+    if (pbModule == NULL) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+        return NULL;
+    }
+
+    MEMORY_BASIC_INFORMATION mbi;
+    memset(&mbi, 0, sizeof(mbi));
+
+    if (VirtualQueryEx(hProcess, hModule, &mbi, sizeof(mbi)) == 0) {
+        return NULL;
+    }
+
+    IMAGE_DOS_HEADER idh;
+    if (!ReadProcessMemory(hProcess, pbModule, &idh, sizeof(idh), NULL)) {
+        log_warning("Could not read DOS header: %lu", GetLastError());
+        return NULL;
+    }
+
+    if (idh.e_magic != IMAGE_DOS_SIGNATURE ||
+        (DWORD)idh.e_lfanew > mbi.RegionSize ||
+        (DWORD)idh.e_lfanew < sizeof(idh)) {
+        return NULL;
+    }
+
+    if (!ReadProcessMemory(hProcess, pbModule + idh.e_lfanew,
+                           pNtHeader, sizeof(*pNtHeader), NULL)) {
+        log_warning("Could not read NT header: %lu", GetLastError());
+        return NULL;
+    }
+
+    if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
+        return NULL;
+    }
+
+    return pbModule + idh.e_lfanew;
+}
+
+static HMODULE enumerate_modules_in_process(HANDLE hProcess,
+                                            HMODULE hModuleLast,
+                                            PIMAGE_NT_HEADERS32 pNtHeader)
+{
+    PBYTE pbLast = (PBYTE)hModuleLast + MM_ALLOCATION_GRANULARITY;
+
+    memset(pNtHeader, 0, sizeof(*pNtHeader));
+
+    MEMORY_BASIC_INFORMATION mbi;
+    memset(&mbi, 0, sizeof(mbi));
+
+    // Find the next memory region that contains a mapped PE image.
+    for (;; pbLast = (PBYTE)mbi.BaseAddress + mbi.RegionSize) {
+        if (VirtualQueryEx(hProcess, (PVOID)pbLast, &mbi, sizeof(mbi)) == 0) {
+            break;
+        }
+
+        // Usermode address space has such an unaligned region size always at the
+        // end and only at the end.
+        if ((mbi.RegionSize & 0xfff) == 0xfff) {
+            break;
+        }
+        if (((PBYTE)mbi.BaseAddress + mbi.RegionSize) < pbLast) {
+            break;
+        }
+
+        // Skip uncommitted regions and guard pages.
+        if ((mbi.State != MEM_COMMIT) ||
+            ((mbi.Protect & 0xff) == PAGE_NOACCESS) ||
+            (mbi.Protect & PAGE_GUARD)) {
+            continue;
+        }
+
+        if (load_nt_header_from_process(hProcess, (HMODULE)pbLast, pNtHeader)) {
+            return (HMODULE)pbLast;
+        }
+    }
+
+    return NULL;
 }

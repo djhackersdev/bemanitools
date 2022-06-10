@@ -8,8 +8,8 @@ libs_inject     := \
     util \
 
 src_inject      := \
+    main.c \
     debugger.c \
     logger.c \
-    main.c \
     options.c \
     version.c \

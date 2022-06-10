@@ -7,6 +7,7 @@
 #include "launcher/options.h"
 
 #include "util/array.h"
+#include "util/log.h"
 #include "util/str.h"
 
 #define DEFAULT_HEAP_SIZE 16777216
@@ -25,6 +26,7 @@ void options_init(struct options *options)
     options->remote_debugger = false;
     array_init(&options->hook_dlls);
     array_init(&options->before_hook_dlls);
+    array_init(&options->iat_hook_dlls);
 
     options->override_service = NULL;
     options->override_urlslash_enabled = false;
@@ -131,6 +133,19 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     break;
 
+                case 'I': {
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    const char *dll = argv[++i];
+                    log_assert(strstr(dll, "=") != NULL);
+
+                    *array_append(const char *, &options->iat_hook_dlls) = dll;
+
+                    break;
+                }
+
                 case 'Y':
                     if (i + 1 >= argc) {
                         return false;
@@ -218,6 +233,8 @@ void options_print_usage(void)
         "times)\n"
         "       -B [filename]   Load pre-hook DLL loaded before avs boot "
         "(can be specified multiple times)\n"
+        "       -I [filename]   Load pre-hook DLL that overrides IAT reference before execution"
+        "(can be specified multiple times)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
         "       -D              Halt the launcher before bootstrapping AVS "
         "until a"
@@ -228,4 +245,5 @@ void options_fini(struct options *options)
 {
     array_fini(&options->hook_dlls);
     array_fini(&options->before_hook_dlls);
+    array_fini(&options->iat_hook_dlls);
 }

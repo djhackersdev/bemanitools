@@ -70,6 +70,11 @@ The following games are supported with their corresponding hook-libraries.
     * jubeat qubell (`jb-05-to-07.zip`): [jbhook3](doc/jbhook/jbhook3.md)
     * jubeat clan (`jb-08.zip`): [jbhook3](doc/jbhook/jbhook3.md)
     * jubeat festo (`jb-08.zip`): [jbhook3](doc/jbhook/jbhook3.md)
+* [pop'n music](doc/popnhook/README.md)
+    * pop'n music 15 ADVENTURE (`popn-15-to-18.zip`) using [popnhook1](doc/popnhook/popnhook1.md)
+    * pop'n music 16 PARTY♪ (`popn-15-to-18.zip`) using [popnhook1](doc/popnhook/popnhook1.md)
+    * pop'n music 17 THE MOVIE (`popn-15-to-18.zip`) using [popnhook1](doc/popnhook/popnhook1.md)
+    * pop'n music 18 せんごく列伝 (`popn-15-to-18.zip`) using [popnhook1](doc/popnhook/popnhook1.md)
 * SOUND VOLTEX
     * SOUND VOLTEX BOOTH (`sdvx-01-to-04.zip`): sdvxhook
     * SOUND VOLTEX II -infinite infection- (`sdvx-01-to-04.zip`): sdvxhook
@@ -91,7 +96,7 @@ change in the future. Many games also run on very recent Windows 10 builds but b
 with Windows updates breaking legacy software.
 
 ## Distribution contents
-Check the [list of supported games](#list-of-supported-games) to grab the right files for your game. BT5 also includes
+Check the [list of supported games](#supported-games) to grab the right files for your game. BT5 also includes
 a *tools* subpackage (tools.zip) as well as the full source code (src.zip).
 
 You will find *.md files in various sub-packages that give you further instructions for setup, usage, error information

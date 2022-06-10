@@ -12,6 +12,7 @@ Table of contents:
   * [ddrhook](ddrhook/README.md): Documentation relevant to `ddrhook` implementations
   * [iidxhook](iidxhook/README.md): Documentation relevant to `iidxhook` implementations
   * [jbhook](jbhook/README.md): Documentation relevant to `jbhook` implementations
+  * [popnhook](popnhook/README.md): Documentation relevant to `popnhook` implementations
   * [sdvxhook](sdvxhook/README.md): Documentation relevant to `sdvxhook` implementations
 * Development
   * [API](api.md): Available APIs for BT5 and instructions how to use them

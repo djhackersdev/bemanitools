@@ -21,12 +21,19 @@
 #
 #  4:   Patch 2:    beatmania IIDX 14 GOLD
 #
+#  4:   Patch 3:    pop'n music 15 ADVENTURE
+#
 #  6:   Patch 5:    beatmania IIDX 15 DJ Troopers
+#
+#  7:   Patch 1:    pop'n music 16 PARTY
 #
 #  8:   Patch 3:    beatmania IIDX 16 Empress
 #                   jubeat
 #
-# 10:   Patch 2:    jubeat Knit
+#  9:   Patch 0:    pop'n music 17 THE MOVIE
+#
+# 10:   Patch 1:    pop'n music 18 Sengoku Retsuden
+#       Patch 2:    jubeat Knit
 #       Patch 4:    DanceDanceRevolution X2
 #
 # 11:   Patch 1:    beatmania IIDX 18 Resort Anthem
@@ -113,6 +120,8 @@ include src/main/ezusb2-dbg-hook/Module.mk
 include src/main/ezusb2-emu/Module.mk
 include src/main/ezusb2-iidx-emu/Module.mk
 include src/main/ezusb2-iidx/Module.mk
+include src/main/ezusb2-popn-emu/Module.mk
+include src/main/ezusb2-popn-shim/Module.mk
 include src/main/ezusb2-tool/Module.mk
 include src/main/ezusb2/Module.mk
 include src/main/geninput/Module.mk
@@ -154,6 +163,9 @@ include src/main/p3io/Module.mk
 include src/main/p3ioemu/Module.mk
 include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
+include src/main/popnhook-util/Module.mk
+include src/main/popnhook1/Module.mk
+include src/main/popnio/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
@@ -685,6 +697,26 @@ $(zipdir)/bst.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/popn-15-to-18.zip: \
+		build/bin/avs2_803-32/popnhook1.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/inject.exe \
+		build/bin/indep-32/geninput.dll \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/popnio.dll \
+		build/bin/indep-32/ezusb2-popn-shim.dll \
+		dist/popn/gamestart-15.bat \
+		dist/popn/gamestart-16.bat \
+		dist/popn/gamestart-17.bat \
+		dist/popn/gamestart-18.bat \
+		dist/popn/popnhook-15.conf \
+		dist/popn/popnhook-16.conf \
+		dist/popn/popnhook-17.conf \
+		dist/popn/popnhook-18.conf \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/doc.zip: \
 		doc/ \
 		| $(zipdir)/
@@ -744,6 +776,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/jb-05-to-07.zip \
 		$(zipdir)/jb-08.zip \
 		$(zipdir)/jb-hwio.zip \
+		$(zipdir)/popn-15-to-18.zip \
 		$(zipdir)/sdvx-01-to-04.zip \
 		$(zipdir)/sdvx-05-to-06.zip \
 		$(zipdir)/sdvx-05-cn.zip \
