@@ -1,0 +1,4 @@
+LIBRARY iidxhook5-cn
+
+EXPORTS
+    DllMain@12 @1 NONAME
