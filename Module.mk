@@ -137,6 +137,7 @@ include src/main/iidxhook2/Module.mk
 include src/main/iidxhook3/Module.mk
 include src/main/iidxhook4/Module.mk
 include src/main/iidxhook5/Module.mk
+include src/main/iidxhook5-cn/Module.mk
 include src/main/iidxhook6/Module.mk
 include src/main/iidxhook7/Module.mk
 include src/main/iidxhook8/Module.mk
@@ -338,6 +339,22 @@ $(zipdir)/iidx-20.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20.bat \
 		dist/iidx/iidxhook-20.conf \
+		dist/iidx/vefx.txt \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/iidx-20-cn.zip: \
+		build/bin/avs2_1304-32/iidxhook5-cn.dll \
+		build/bin/indep-32/config.exe \
+		build/bin/indep-32/eamio.dll \
+		build/bin/indep-32/geninput.dll \
+		build/bin/indep-32/iidxio.dll \
+		build/bin/indep-32/vefxio.dll \
+		build/bin/indep-32/inject.exe \
+		dist/iidx/config.bat \
+		dist/iidx/gamestart-20-cn.bat \
+		dist/iidx/iidxhook-20-cn.conf \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -764,6 +781,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-18.zip \
 		$(zipdir)/iidx-19.zip \
 		$(zipdir)/iidx-20.zip \
+		$(zipdir)/iidx-20-cn.zip \
 		$(zipdir)/iidx-21-to-24.zip \
 		$(zipdir)/iidx-25-to-26.zip \
 		$(zipdir)/iidx-27-to-28.zip \

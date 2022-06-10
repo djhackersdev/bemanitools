@@ -17,6 +17,7 @@ EXPORTS
     property_destroy @264 NONAME
     property_insert_read @23 NONAME
     property_node_create @316 NONAME
+    property_node_datasize @249 NONAME
     property_node_refer @268 NONAME
     property_node_remove @129 NONAME
     property_psmap_import @102 NONAME
