@@ -34,6 +34,8 @@ enum hook_d3d9_irp_op {
     HOOK_D3D9_IRP_OP_DEV_SET_RENDER_STATE = 10,
     HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP = 11,
     HOOK_D3D9_IRP_OP_DEV_RESET = 12,
+    HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT = 13,
+    HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER = 14,
 };
 
 /**
@@ -170,6 +172,22 @@ struct hook_d3d9_irp {
             IDirect3DDevice9 *self;
             D3DPRESENT_PARAMETERS *pp;
         } dev_reset;
+
+        /**
+         * Params of IDIrect3DDevice9_SetViewport
+         */
+        struct {
+            IDirect3DDevice9 *self;
+            const D3DVIEWPORT9 *pViewport;
+        } dev_set_viewport;
+
+        /**
+         * Params of IDIrect3DDevice9_SetVertexShader
+         */
+        struct {
+            IDirect3DDevice9 *self;
+            IDirect3DVertexShader9 *pShader;
+        } dev_set_vertex_shader;
     } args;
 
     size_t next_handler;

@@ -13,6 +13,7 @@
 #include "hook/table.h"
 
 #include "iidxhook-util/d3d9.h"
+#include "iidxhook-util/vertex-shader.h"
 
 #include "util/defs.h"
 #include "util/log.h"
@@ -63,6 +64,8 @@ static struct {
 
     D3DTEXTUREFILTERTYPE filter;
 } iidxhook_util_d3d9_back_buffer_scaling;
+
+static IDirect3DVertexShader9* vertex_shader;
 
 /* ------------------------------------------------------------------------------------------------------------------
  */
@@ -901,6 +904,45 @@ iidxhook_util_d3d9_scale_render_target_to_back_buffer(struct hook_d3d9_irp *irp)
     }
 }
 
+static void
+iidxhook_util_d3d9_iidx18_and_19_fix_diagonal_tearing(struct hook_d3d9_irp *irp)
+{
+    HRESULT hr;
+
+    log_assert(irp);
+    log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT || irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER);
+
+    if (!iidxhook_util_d3d9_config.iidx18_and_19_diagonal_tearing_fix)
+    {
+        return;
+    }
+
+    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT)
+    {
+        const D3DVIEWPORT9 *pViewport = irp->args.dev_set_viewport.pViewport;
+        const float fix_offset[2] = {-1.0F / (float)pViewport->Width, -1.0F / (float)pViewport->Height};
+
+        hr = IDirect3DDevice9_SetVertexShaderConstantF(irp->args.dev_set_viewport.self, 63, fix_offset, lengthof(fix_offset));
+        if (hr != S_OK) {
+            log_warning("SetVertexShaderConstantF failed: %lX", hr);
+        }
+    }
+
+    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER)
+    {
+        if (!vertex_shader) {
+            hr = IDirect3DDevice9_CreateVertexShader(irp->args.dev_set_vertex_shader.self, (const DWORD*) g_vs11_vs_main, &vertex_shader);
+            if (hr != S_OK) {
+                log_fatal("CreateVertexShader failed: %lX", hr);
+            }
+        }
+
+        if (irp->args.dev_set_vertex_shader.pShader != NULL) {
+            irp->args.dev_set_vertex_shader.pShader = vertex_shader;
+        }
+    }
+}
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -921,6 +963,7 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         "iidx12_fix_song_select_bg: %d\n"
         "iidx13_fix_song_select_bg: %d\n"
         "iidx14_to_19_nvidia_fix: %d\n"
+        "iidx18_and_19_diagonal_tearing_fix: %d\n"
         "scale_back_buffer_width: %d\n"
         "scale_back_buffer_height: %d\n"
         "scale_back_buffer_filter: %d\n"
@@ -938,6 +981,7 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         config->iidx12_fix_song_select_bg,
         config->iidx13_fix_song_select_bg,
         config->iidx14_to_19_nvidia_fix,
+        config->iidx18_and_19_diagonal_tearing_fix,
         config->scale_back_buffer_width,
         config->scale_back_buffer_height,
         config->scale_back_buffer_filter,
@@ -1002,6 +1046,7 @@ void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config *config)
     config->iidx12_fix_song_select_bg = false;
     config->iidx13_fix_song_select_bg = false;
     config->iidx14_to_19_nvidia_fix = false;
+    config->iidx18_and_19_diagonal_tearing_fix = false;
     config->scale_back_buffer_width = 0;
     config->scale_back_buffer_height = 0;
     config->scale_back_buffer_filter =
@@ -1109,6 +1154,12 @@ iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
 
         case HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP:
             iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(irp);
+
+            return hook_d3d9_irp_invoke_next(irp);
+
+        case HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT:
+        case HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER:
+            iidxhook_util_d3d9_iidx18_and_19_fix_diagonal_tearing(irp);
 
             return hook_d3d9_irp_invoke_next(irp);
 

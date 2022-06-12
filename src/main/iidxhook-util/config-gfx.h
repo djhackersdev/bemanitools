@@ -21,6 +21,7 @@ struct iidxhook_config_gfx {
     enum iidxhook_util_d3d9_back_buffer_scale_filter scale_back_buffer_filter;
     int32_t forced_refresh_rate;
     int32_t device_adapter;
+    bool diagonal_tearing_fix;
 };
 
 void iidxhook_config_gfx_init(struct cconfig *config);
