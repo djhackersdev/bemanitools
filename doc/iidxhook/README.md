@@ -18,6 +18,7 @@ games:
 * [iidxhook3](iidxhook3.md): GOLD, DJ TROOPERS, EMPRESS, SIRIUS
 * [iidxhook4](iidxhook4.md): Resort Anthem
 * [iidxhook5](iidxhook5.md): Lincle
+* [iidxhook5-cn](iidxhook5-cn.md): tricoro CN (狂热节拍 IIDX 2) 
 * [iidxhook6](iidxhook6.md): Tricoro
 * [iidxhook7](iidxhook7.md): SPADA, PENDUAL, copula, SINOBUZ
 * [iidxhook8](iidxhook8.md): CANNON BALLERS, Rootage
