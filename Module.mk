@@ -722,6 +722,7 @@ $(zipdir)/popn-15-to-18.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/popnio.dll \
 		build/bin/indep-32/ezusb2-popn-shim.dll \
+		dist/popn/config.bat \
 		dist/popn/gamestart-15.bat \
 		dist/popn/gamestart-16.bat \
 		dist/popn/gamestart-17.bat \
