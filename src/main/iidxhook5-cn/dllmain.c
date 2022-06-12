@@ -81,6 +81,7 @@ iidxhook5_cn_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.device_adapter = config_gfx->device_adapter;
     /* Required for GOLD (and newer?) to not crash with NVIDIA cards */
     d3d9_config.iidx14_to_19_nvidia_fix = true;
+    d3d9_config.iidx18_and_19_diagonal_tearing_fix = config_gfx->diagonal_tearing_fix;
 
     iidxhook_util_d3d9_configure(&d3d9_config);
 

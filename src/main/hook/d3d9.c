@@ -75,6 +75,12 @@ static HRESULT(STDCALL *real_Reset)(
     IDirect3DDevice9 *self,
     D3DPRESENT_PARAMETERS *pp);
 
+static HRESULT (STDCALL *real_SetViewport)(
+    IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
+
+static HRESULT (STDCALL *real_SetVertexShader)(
+    IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -144,6 +150,12 @@ static HRESULT STDCALL my_Reset(
     IDirect3DDevice9 *self,
     D3DPRESENT_PARAMETERS *pp);
 
+static HRESULT STDCALL my_SetViewport(
+    IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
+
+static HRESULT STDCALL my_SetVertexShader(
+    IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -205,6 +217,12 @@ hook_d3d9_irp_handler_real_dev_draw_primitive_up(struct hook_d3d9_irp *irp);
 static HRESULT
 hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp);
 
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_viewport(struct hook_d3d9_irp *irp);
+
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_vertex_shader(struct hook_d3d9_irp *irp);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -231,6 +249,10 @@ static const hook_d3d9_irp_handler_t hook_d3d9_irp_real_handlers[] = {
         hook_d3d9_irp_handler_real_dev_draw_primitive_up,
     [HOOK_D3D9_IRP_OP_DEV_RESET] =
         hook_d3d9_irp_handler_real_dev_reset,
+    [HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT] =
+        hook_d3d9_irp_handler_real_dev_set_viewport,
+    [HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER] =
+        hook_d3d9_irp_handler_real_dev_set_vertex_shader,
 };
 
 static const hook_d3d9_irp_handler_t *hook_d3d9_handlers;
@@ -501,6 +523,40 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
     return hr;
 }
 
+static HRESULT STDCALL my_SetViewport(
+    IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport)
+{
+    struct hook_d3d9_irp irp;
+    HRESULT hr;
+
+    memset(&irp, 0, sizeof(irp));
+
+    irp.op = HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT;
+    irp.args.dev_set_viewport.self = self;
+    irp.args.dev_set_viewport.pViewport = pViewport;
+
+    hr = hook_d3d9_irp_invoke_next(&irp);
+
+    return hr;
+}
+
+static HRESULT STDCALL my_SetVertexShader(
+    IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader)
+{
+    struct hook_d3d9_irp irp;
+    HRESULT hr;
+
+    memset(&irp, 0, sizeof(irp));
+
+    irp.op = HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER;
+    irp.args.dev_set_vertex_shader.self = self;
+    irp.args.dev_set_vertex_shader.pShader = pShader;
+
+    hr = hook_d3d9_irp_invoke_next(&irp);
+
+    return hr;
+}
+
 static HRESULT STDCALL my_Reset(
     IDirect3DDevice9 *self,
     D3DPRESENT_PARAMETERS *pp)
@@ -691,6 +747,12 @@ hook_d3d9_irp_handler_real_dev_create_device(struct hook_d3d9_irp *irp)
     real_Reset = api_vtbl->Reset;
     api_vtbl->Reset = my_Reset;
 
+    real_SetViewport = api_vtbl->SetViewport;
+    api_vtbl->SetViewport = my_SetViewport;
+
+    real_SetVertexShader = api_vtbl->SetVertexShader;
+    api_vtbl->SetVertexShader = my_SetVertexShader;
+
     *irp->args.ctx_create_device.pdev = (IDirect3DDevice9 *) api_proxy;
 
     return hr;
@@ -773,6 +835,26 @@ hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp)
     return real_Reset(
         irp->args.dev_reset.self,
         irp->args.dev_reset.pp);
+}
+
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_viewport(struct hook_d3d9_irp *irp)
+{
+    log_assert(irp);
+
+    return real_SetViewport(
+        irp->args.dev_set_viewport.self,
+        irp->args.dev_set_viewport.pViewport);
+}
+
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_vertex_shader(struct hook_d3d9_irp *irp)
+{
+    log_assert(irp);
+
+    return real_SetVertexShader(
+        irp->args.dev_set_vertex_shader.self,
+        irp->args.dev_set_vertex_shader.pShader);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------

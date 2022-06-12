@@ -22,6 +22,7 @@
     "gfx.scale_back_buffer_filter"
 #define IIDXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
+#define IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY "gfx.diagonal_tearing_fix"
 
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_BGVIDEO_UV_FIX_VALUE false
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
@@ -36,6 +37,7 @@
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_SCALE_BACK_BUFFER_FILTER_VALUE "none"
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE -1
+#define IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE false
 
 void iidxhook_config_gfx_init(struct cconfig *config)
 {
@@ -159,6 +161,13 @@ void iidxhook_config_gfx_init(struct cconfig *config)
         IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
         "D3D9 device adapter (monitor), -1 to use default, "
         "0, 1, 2 etc. to use specified adapter");
+    
+    cconfig_util_set_bool(
+        config,
+        IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY,
+        IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE,
+        "Fix diagonal tearing with video cards "
+        "other than Radeon X1300 and HD3450");
 }
 
 void iidxhook_config_gfx_get(
@@ -366,5 +375,17 @@ void iidxhook_config_gfx_get(
             "to default '%d'",
             IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY,
             IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE);
+    }
+
+    if (!cconfig_util_get_bool(
+            config,
+            IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY,
+            &config_gfx->diagonal_tearing_fix,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY,
+            IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE);
     }
 }

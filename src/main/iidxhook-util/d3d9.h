@@ -132,6 +132,11 @@ struct iidxhook_util_d3d9_config {
     bool iidx14_to_19_nvidia_fix;
 
     /**
+     * Fix diagonal tearing with video cards other than Radeon X1300 and HD3450
+     */
+    bool iidx18_and_19_diagonal_tearing_fix;
+
+    /**
      * Scale the back buffer after a frame got rendered. This allows you to
      * up-/downscale the final frame to display arbitrary resolutions, e.g.
      * 640x480 -> 1920x1080 to allow displaying the game in the monitor's native
