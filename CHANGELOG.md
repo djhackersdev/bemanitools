@@ -2,6 +2,8 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.42
+
 ## 5.41
 * Feature: Support pop'n music 15-18 using popnhook1
 * Feature: Support IIDX tricoro CN using iidxhook5-cn
