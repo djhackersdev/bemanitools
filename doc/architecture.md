@@ -127,11 +127,29 @@ TODO go into some more detail about some differences in the hook modules, e.g. 1
 * Font patching for Japanese chars
 * Filesystem patches to detour E and F backup drives for settings
 
+#### iidxhook4-cn (18 CN)
+* Ezusb IO2 I/O emulation
+  * Setupapi emulation
+  * Full security emulation with SRAM and round plugs
+  * Full game essential I/O emulation
+* d3d9 patching and extended features
+* Font patching for Japanese chars
+* Filesystem patches to detour E and F backup drives for settings
+
 #### iidxhook5 (19)
 * Ezusb IO2 I/O emulation
     * Setupapi emulation
     * Full game essential I/O emulation
 * ACIO ICCA card reader emulation, wave pass readers
+* d3d9 patching and extended features
+* Font patching for Japanese chars
+* Filesystem patches to detour E and F backup drives for settings
+
+#### iidxhook5-cn (20 CN)
+* Ezusb IO2 I/O emulation
+  * Setupapi emulation
+  * Full security emulation with SRAM and round plugs
+  * Full game essential I/O emulation
 * d3d9 patching and extended features
 * Font patching for Japanese chars
 * Filesystem patches to detour E and F backup drives for settings
