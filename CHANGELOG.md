@@ -3,6 +3,9 @@ Note for CI/CD: Ensure the version formatting in the sections is kept identical 
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
 ## 5.41
+* Feature: Support pop'n music 15-18 using popnhook1
+* Feature: Support IIDX tricoro CN using iidxhook5-cn
+* Various documentation improvements
 
 ## 5.40
 * Feature: Support DDR X and X2 US/EU using ddrhook1 including memory card emulation
