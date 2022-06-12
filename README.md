@@ -51,6 +51,7 @@ The following games are supported with their corresponding hook-libraries.
     * Beatmania IIDX 17 SIRIUS (`iidx-14-to-17.zip`): [iidxhook3](doc/iidxhook/iidxhook3.md)
     * Beatmania IIDX 18 Resort Anthem (`iidx-18.zip`): [iidxhook4](doc/iidxhook/iidxhook4.md)
     * Beatmania IIDX 19 Lincle (`iidx-19.zip`): [iidxhook5](doc/iidxhook/iidxhook5.md)
+    * Beatmania IIDX tricoro CN (狂热节拍 IIDX 2) (`iidx-20-cn.zip`): [iidxhook5-cn](doc/iidxhook/iidxhook5-cn.md)
     * Beatmania IIDX 20 Tricoro (`iidx-20.zip`): [iidxhook6](doc/iidxhook/iidxhook6.md)
     * Beatmania IIDX 21 SPADA (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
     * Beatmania IIDX 22 PENDUAL (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
