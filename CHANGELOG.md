@@ -2,6 +2,8 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.43
+
 ## 5.42
 * Bugfix: Fix diagonal texture tearing on IIDX 18 and 19 based games
 * Feature: Add support for IIDX Resort Anthem CN using iidxhook4-cn 
