@@ -3,6 +3,11 @@ Note for CI/CD: Ensure the version formatting in the sections is kept identical 
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
 ## 5.42
+* Bugfix: Fix diagonal texture tearing on IIDX 18 and 19 based games
+* Feature: Add support for IIDX Resort Anthem CN using iidxhook4-cn 
+* Feature/bugfix: Enable "nvidia fix" for iidxhook4, 5 and 5-cn. Should fix crashing on some/all
+  nvidia cards
+* Various minor fixes
 
 ## 5.41
 * Feature: Support pop'n music 15-18 using popnhook1
