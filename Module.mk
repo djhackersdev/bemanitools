@@ -347,7 +347,6 @@ $(zipdir)/iidx-20.zip: \
 $(zipdir)/iidx-20-cn.zip: \
 		build/bin/avs2_1304-32/iidxhook5-cn.dll \
 		build/bin/indep-32/config.exe \
-		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
