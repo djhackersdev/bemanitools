@@ -13,8 +13,6 @@ libs_iidxhook5-cn      := \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \
     security \
-    eamio \
-    acioemu \
     hook \
     hooklib \
     iidxio \

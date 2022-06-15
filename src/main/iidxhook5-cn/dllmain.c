@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bemanitools/eamio.h"
 #include "bemanitools/iidxio.h"
 
 #include "cconfig/cconfig-hook.h"
@@ -26,7 +25,6 @@
 #include "iidxhook5-cn/avs-boot.h"
 #include "iidxhook5-cn/path.h"
 
-#include "iidxhook-util/acio.h"
 #include "iidxhook-util/config-eamuse.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
@@ -106,7 +104,7 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     iidxhook_init_check = true;
 
     log_info("-------------------------------------------------------------");
-    log_info("--------------- Begin iidxhook RegisterClassA ---------------");
+    log_info("------------- Begin iidxhook my_RegisterClassA --------------");
     log_info("-------------------------------------------------------------");
 
     config = cconfig_init();
@@ -164,24 +162,9 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
         log_info("IIDX IO emulation backend disabled");
     }
 
-    if (!config_io.disable_card_reader_emu) {
-        log_misc("Initializing card reader backend");
-
-        eam_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-
-        if (!eam_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
-            log_fatal("Initializing card reader backend failed");
-        }
-    } else {
-        log_info("Card reader emulation backend disabled");
-    }
-
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
     iohook_push_handler(ezusb2_emu_device_dispatch_irp);
-    iohook_push_handler(iidxhook_util_acio_dispatch_irp);
     iohook_push_handler(settings_hook_dispatch_irp);
 
     if (!config_io.disable_io_emu) {
@@ -190,7 +173,7 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     }
 
     log_info("-------------------------------------------------------------");
-    log_info("---------------- End iidxhook RegisterClassA ----------------");
+    log_info("-------------- End iidxhook my_RegisterClassA ---------------");
     log_info("-------------------------------------------------------------");
 
     return real_RegisterClassA(lpWndClass);
