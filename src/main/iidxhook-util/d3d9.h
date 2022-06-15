@@ -127,7 +127,7 @@ struct iidxhook_util_d3d9_config {
 
     /**
      * Fixes a parameter on CreateTexture calls causing the game to crash with
-     * NVIDIA cards (on GOLD and possible newer)
+     * NVIDIA cards on all games from GOLD to Lincle including.
      */
     bool iidx14_to_19_nvidia_fix;
 
