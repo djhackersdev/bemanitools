@@ -193,7 +193,7 @@ static HRESULT usbmem_write(struct irp *irp)
             usbmem_response[2] = ~usbmem_response[1];
 
             if (usbmem_state[target_device_id].buffer_frame == 0) {
-                snprintf(usbmem_response + 4, sizeof(usbmem_response) - 5, "%d ", usbmem_state[target_device_id].buffer_len);
+                snprintf(usbmem_response + 4, sizeof(usbmem_response) - 5, "%Iu ", usbmem_state[target_device_id].buffer_len);
             } else {
                 size_t len = sizeof(usbmem_response) - 5;
 
