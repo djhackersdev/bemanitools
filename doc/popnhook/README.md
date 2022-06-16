@@ -1,6 +1,6 @@
 # popnhook
 
-popnhook is a collection of hook libraries for jubeat providing
+popnhook is a collection of hook libraries for pop'n music providing
 emulation and various patches to run these games on non BemaniPC hardware and
 newer Windows versions.
 
