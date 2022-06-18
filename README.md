@@ -110,9 +110,12 @@ consumer version of Windows XP. Newer versions of Windows, e.g. Windows 7, 8 and
 as well. Some hooks also include fixes required to run the games on a more recent version.
 
 Depending on the game, you also need the following dependencies installed:
-* DirectX 9 runtime
-* Microsoft Visual C++ Redistributables 2010 **and** 2013: Depends on the game and age but both
-should cover most if not all of the games so far
+
+* The 32-bit (x86) version of
+  [Microsoft Visual C++ 2010 Service Pack 1 Redistributable Package MFC Security Update](https://www.microsoft.com/en-sg/download/details.aspx?id=26999)
+* The 32-bit (x86) and 64-bit (x64) versions of
+  [Microsoft Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-sg/download/details.aspx?id=40784)
+* The [DirectX 9 End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
 
 ## Development
 ### Building
