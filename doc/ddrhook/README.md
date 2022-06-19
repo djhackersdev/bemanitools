@@ -47,3 +47,7 @@ IO hardware you want to use:
 game controllers
 * ddrio-mm: Support Minimaid custom interface
 * [ddrio-smx](ddrhook/ddrio-smx.md): Support for StepManiaX dance platforms
+
+## Unicorntail
+
+[Instructions how to run on Chimera PCBs](unicorntail.md).
