@@ -17,6 +17,73 @@ different versions. See different distribution packages, e.g. `ddr-12.zip`,
 Depending on the game version, earlier versions are bootstrapped using
 [inject](../inject.md) while later versions require [launcher](../launcher.md).
 
+## Setup A20+
+
+### Data and folder structure
+
+The following assumes you are using vanilla and unpacked/decrypted data. Copy/unpack the data
+to a destination of your choice. Expect to have the following root folder structure:
+
+```
+arkdata
+com
+data
+dev
+modules
+prop
+```
+
+* Copy the contents of `modules` to the root folder that the dll-files are next to the folders
+  `arkdata`, `com`, etc.
+* Unpack the contents of `ddr-14-to-16.zip` to the root folder. `luncher.exe` should be located
+  next to `arkdata`, `com` and all the dll-files
+
+#### Configuring eamuse settings
+
+You need to create a `prop/ea3-config.xml` configuration file which provides properties for
+connecting to a network of your choice (and allows the game to boot).
+
+Take the `prop/eamuse.xml` as a base and make a copy of it called `prop/ea3-config.xml`.
+
+Add the software identifier as a child to the `<ea3>` parent node:
+
+```xml
+<soft>
+  <model __type="str">MDX</model>
+  <dest __type="str">J</dest>
+  <spec __type="str">A</spec>
+  <rev __type="str">A</rev>
+  <ext __type="str">2022020200</ext>
+</soft>
+```
+
+Replace the identifiers according to the version you are using.
+
+Add your PCBID as a child to the `<ea3>` parent node:
+
+```xml
+<id>
+  <pcbid __type="str">00010203040506070809</pcbid>
+  <hardid __type="str">00010203040506070809</hardid>
+</id>
+```
+
+Replace the values accordingly with your actual PCBID registered with your target network.
+
+Add network settings (note this might already exist, replace existing or delete old one) as a child
+to the `<ea3>` parent node:
+
+```xml
+<network>
+  <sz_xrpc_buf __type="u32">102400</sz_xrpc_buf>
+  <ssl __type="bool">0</ssl>
+  <services>http://eamuse.konami.fun/service/services/services/</services>
+</network>
+```
+
+Replace the properties accordingly with the settings provided by your network provider, e.g. the
+URL, further settings like ssl etc.
+
 ## Running
 
 Run `gamestart-XX.bat`, where `XX` corresponds to the version of the game you
@@ -69,6 +136,9 @@ Run the following commands either from a command line (`cmd.exe`) or from
 
 * Register `regsvr32 D:\MDX\contents\k-clvsd.dll`
 * Register `regsvr32 D:\MDX\contents\xactengine2_10.dll`
+
+The `gamestart-XX.bat` scripts should already take care of this by executing the listed commands
+when launched.
 
 Note: The one that comes with IIDX will hang DDR at startup. The opposite is not true:
 IIDX works just fine with this CLVSD.
