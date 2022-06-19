@@ -117,6 +117,10 @@ Depending on the game, you also need the following dependencies installed:
   [Microsoft Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-sg/download/details.aspx?id=40784)
 * The [DirectX 9 End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
 
+See also
+[bemanitools-supplements](https://dev.s-ul.net/djhackers/bemanitools-supplement/-/blob/master/misc/win-runtime/README.md)
+for files.
+
 ## Development
 ### Building
 See the [development document](doc/development.md).
