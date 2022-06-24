@@ -10,12 +10,11 @@
 
 #include "ezusb-emu/msg.h"
 
-#include "ezusb-iidx-emu/msg.h"
-#include "ezusb-iidx-emu/nodes.h"
-#include "ezusb-iidx-emu/node-none.h"
-#include "ezusb-iidx-emu/node-coin.h"
-#include "ezusb-iidx-emu/node-security-mem.h"
-#include "ezusb-iidx-emu/node-security-plug.h"
+#include "ezusb-emu/nodes.h"
+#include "ezusb-emu/node-none.h"
+#include "ezusb-emu/node-coin.h"
+#include "ezusb-emu/node-security-mem.h"
+#include "ezusb-emu/node-security-plug.h"
 
 #include "ezusb2-popn/msg.h"
 

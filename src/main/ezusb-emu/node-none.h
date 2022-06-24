@@ -1,7 +1,7 @@
 #ifndef EZUSB_IIDX_EMU_NODE_NONE_H
 #define EZUSB_IIDX_EMU_NODE_NONE_H
 
-#include "ezusb-iidx-emu/node.h"
+#include "ezusb-emu/node.h"
 
 uint8_t ezusb_iidx_emu_node_none_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2);

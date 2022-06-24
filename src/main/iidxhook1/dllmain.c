@@ -11,9 +11,9 @@
 
 #include "ezusb-emu/desc.h"
 #include "ezusb-emu/device.h"
+#include "ezusb-emu/node-security-plug.h"
 
 #include "ezusb-iidx-emu/msg.h"
-#include "ezusb-iidx-emu/node-security-plug.h"
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx-emu/nodes.h"
 

@@ -1,9 +1,9 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-sram"
+#define LOG_MODULE "ezusb-emu-node-sram"
 
 #include <string.h>
 
-#include "ezusb-iidx-emu/conf.h"
-#include "ezusb-iidx-emu/node-sram.h"
+#include "ezusb-emu/conf.h"
+#include "ezusb-emu/node-sram.h"
 #include "ezusb-iidx/sram-cmd.h"
 
 #include "util/fs.h"
