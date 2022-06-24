@@ -10,9 +10,7 @@
 
 #include "ezusb-emu/msg.h"
 #include "ezusb-emu/nodes.h"
-
-#include "ezusb-iidx-emu/msg.h"
-#include "ezusb-iidx-emu/nodes.h"
+#include "ezusb-iidx-16seg-emu/nodes.h"
 
 #include "ezusb2-iidx/msg.h"
 

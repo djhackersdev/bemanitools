@@ -5,18 +5,9 @@
 
 #include "ezusb-iidx/msg.h"
 
-#include "ezusb-iidx-emu/node-16seg.h"
 #include "ezusb-iidx-emu/node-fpga.h"
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx-emu/nodes.h"
-
-/* All IIDX games */
-const struct ezusb_iidx_emu_node ezusb_iidx_emu_node_16seg = {
-    .node_id = EZUSB_IIDX_MSG_NODE_16SEG,
-    .init_node = NULL,
-    .process_cmd = ezusb_iidx_emu_node_16seg_process_cmd,
-    .read_packet = ezusb_iidx_emu_node_16seg_read_packet,
-    .write_packet = ezusb_iidx_emu_node_16seg_write_packet};
 
 /* Used on 9th to DistorteD */
 const struct ezusb_iidx_emu_node ezusb_iidx_emu_node_fpga_v1 = {

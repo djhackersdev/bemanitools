@@ -18,6 +18,8 @@
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx-emu/nodes.h"
 
+#include "ezusb-iidx-16seg-emu/nodes.h"
+
 #include "util/hex.h"
 #include "util/log.h"
 

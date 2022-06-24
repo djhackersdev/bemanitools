@@ -10,6 +10,7 @@ libs_iidxhook7      := \
     iidxhook-util \
     cconfig \
     ezusb-emu \
+    ezusb-iidx-16seg-emu \
     ezusb2-emu \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \

@@ -9,11 +9,10 @@ deplibs_iidxhook5-cn   := \
 
 libs_iidxhook5-cn      := \
     iidxhook-util \
-    eamio \
     ezusb-emu \
+    ezusb-iidx-16seg-emu \
     ezusb2-emu \
     ezusb2-iidx-emu \
-    ezusb-iidx-emu \
     security \
     hook \
     hooklib \

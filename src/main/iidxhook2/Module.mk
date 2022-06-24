@@ -7,6 +7,7 @@ ldflags_iidxhook2   := \
 libs_iidxhook2      := \
     iidxhook-util \
     ezusb-emu \
+    ezusb-iidx-16seg-emu \
     ezusb-iidx-emu \
     security \
     eamio \
