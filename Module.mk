@@ -110,6 +110,7 @@ include src/main/eamio-icca/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamiotest/Module.mk
 include src/main/ezusb-emu/Module.mk
+include src/main/ezusb-iidx-16seg-emu/Module.mk
 include src/main/ezusb-iidx-emu/Module.mk
 include src/main/ezusb-iidx-fpga-flash/Module.mk
 include src/main/ezusb-iidx-sram-flash/Module.mk
