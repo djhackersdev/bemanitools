@@ -1,8 +1,8 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-eeprom"
+#define LOG_MODULE "ezusb-emu-node-eeprom"
 
 #include <string.h>
 
-#include "ezusb-iidx-emu/node-eeprom.h"
+#include "ezusb-emu/node-eeprom.h"
 
 #include "ezusb-iidx/eeprom-cmd.h"
 

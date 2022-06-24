@@ -9,7 +9,7 @@
 
 #include "cconfig/cconfig-hook.h"
 
-#include "ezusb-iidx-emu/node-security-plug.h"
+#include "ezusb-emu/node-security-plug.h"
 
 #include "ezusb2-emu/desc.h"
 #include "ezusb2-emu/device.h"

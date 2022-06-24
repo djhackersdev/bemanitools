@@ -1,8 +1,8 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-sec-mem"
+#define LOG_MODULE "ezusb-emu-node-sec-mem"
 
 #include <string.h>
 
-#include "ezusb-iidx-emu/node-security-mem.h"
+#include "ezusb-emu/node-security-mem.h"
 #include "ezusb-iidx/secmem-cmd.h"
 
 #include "util/log.h"

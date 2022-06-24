@@ -1,7 +1,7 @@
 #ifndef EZUSB_IIDX_EMU_NODE_SECURITY_PLUG_H
 #define EZUSB_IIDX_EMU_NODE_SECURITY_PLUG_H
 
-#include "ezusb-iidx-emu/node.h"
+#include "ezusb-emu/node.h"
 
 #include "security/id.h"
 #include "security/mcode.h"

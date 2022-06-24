@@ -1,10 +1,10 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-sec-plug"
+#define LOG_MODULE "ezusb-emu-node-sec-plug"
 
 #include <string.h>
 
-#include "ezusb-iidx-emu/node-eeprom.h"
-#include "ezusb-iidx-emu/node-security-mem.h"
-#include "ezusb-iidx-emu/node-security-plug.h"
+#include "ezusb-emu/node-eeprom.h"
+#include "ezusb-emu/node-security-mem.h"
+#include "ezusb-emu/node-security-plug.h"
 #include "ezusb-iidx/secplug-cmd.h"
 
 #include "security/rp.h"

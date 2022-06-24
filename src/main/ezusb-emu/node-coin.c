@@ -1,6 +1,6 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-coin"
+#define LOG_MODULE "ezusb-emu-node-coin"
 
-#include "ezusb-iidx-emu/node-coin.h"
+#include "ezusb-emu/node-coin.h"
 
 #include "ezusb-iidx/coin-cmd.h"
 

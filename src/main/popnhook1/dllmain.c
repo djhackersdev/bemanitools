@@ -10,8 +10,7 @@
 
 #include "cconfig/cconfig-hook.h"
 
-#include "ezusb-iidx-emu/node-security-plug.h"
-#include "ezusb-iidx-emu/nodes.h"
+#include "ezusb-emu/node-security-plug.h"
 
 #include "hook/d3d9.h"
 #include "hook/table.h"

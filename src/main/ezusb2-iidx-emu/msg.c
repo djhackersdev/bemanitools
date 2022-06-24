@@ -9,6 +9,7 @@
 #include "hook/iohook.h"
 
 #include "ezusb-emu/msg.h"
+#include "ezusb-emu/nodes.h"
 
 #include "ezusb-iidx-emu/msg.h"
 #include "ezusb-iidx-emu/nodes.h"

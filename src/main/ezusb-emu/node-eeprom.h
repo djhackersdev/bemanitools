@@ -1,7 +1,7 @@
 #ifndef EZUSB_IIDX_EMU_NODE_EEPROM_H
 #define EZUSB_IIDX_EMU_NODE_EEPROM_H
 
-#include "ezusb-iidx-emu/node.h"
+#include "ezusb-emu/node.h"
 
 void ezusb_iidx_emu_node_eeprom_init(void);
 /* Used on 9th to DistorteD */

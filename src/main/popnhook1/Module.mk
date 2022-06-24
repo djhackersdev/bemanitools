@@ -9,7 +9,7 @@ ldflags_popnhook1   := \
 
 libs_popnhook1		:= \
     iidxhook-util \
-    ezusb-iidx-emu \
+    ezusb-emu \
     ezusb2-popn-emu \
     ezusb2-emu \
     security \

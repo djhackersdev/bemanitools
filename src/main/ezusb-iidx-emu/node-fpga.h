@@ -1,7 +1,7 @@
 #ifndef EZUSB_IIDX_EMU_NODE_FPGA_H
 #define EZUSB_IIDX_EMU_NODE_FPGA_H
 
-#include "ezusb-iidx-emu/node.h"
+#include "ezusb-emu/node.h"
 
 /* Used on 9th to DistorteD */
 uint8_t ezusb_iidx_emu_node_fpga_v1_process_cmd(

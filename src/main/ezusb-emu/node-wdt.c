@@ -1,6 +1,6 @@
-#define LOG_MODULE "ezusb-iidx-emu-node-wdt"
+#define LOG_MODULE "ezusb-emu-node-wdt"
 
-#include "ezusb-iidx-emu/node-wdt.h"
+#include "ezusb-emu/node-wdt.h"
 #include "ezusb-iidx/wdt-cmd.h"
 
 #include "util/log.h"
