@@ -7,6 +7,7 @@ ldflags_iidxhook3   := \
 libs_iidxhook3      := \
     iidxhook-util \
     ezusb-emu \
+    ezusb-iidx-16seg-emu \
     ezusb2-emu \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \

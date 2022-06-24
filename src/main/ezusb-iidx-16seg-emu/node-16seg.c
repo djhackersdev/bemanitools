@@ -1,6 +1,6 @@
 #define LOG_MODULE "ezusb-iidx-emu-node-16seg"
 
-#include "ezusb-iidx-emu/node-16seg.h"
+#include "ezusb-iidx-16seg-emu/node-16seg.h"
 
 #include <string.h>
 

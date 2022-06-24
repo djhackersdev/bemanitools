@@ -9,6 +9,7 @@ deplibs_iidxhook5   := \
 libs_iidxhook5      := \
     iidxhook-util \
     ezusb-emu \
+    ezusb-iidx-16seg-emu \
     ezusb2-emu \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \
