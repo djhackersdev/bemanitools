@@ -104,6 +104,7 @@ include src/main/ddrhook1/Module.mk
 include src/main/ddrhook2/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk
+include src/main/ddriotest/Module.mk
 include src/main/ddrio/Module.mk
 include src/main/dinput/Module.mk
 include src/main/eamio-icca/Module.mk
@@ -163,6 +164,7 @@ include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
 include src/main/p3io/Module.mk
+include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
 include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
@@ -203,6 +205,7 @@ $(zipdir)/:
 
 $(zipdir)/tools.zip: \
 		build/bin/indep-32/aciotest.exe \
+		build/bin/indep-32/ddriotest.exe \
 		build/bin/indep-32/eamiotest.exe \
 		build/bin/indep-32/ezusb-iidx-fpga-flash.exe \
 		build/bin/indep-32/ezusb-iidx-sram-flash.exe \
@@ -224,6 +227,7 @@ $(zipdir)/tools.zip: \
 
 $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/aciotest.exe \
+		build/bin/indep-64/ddriotest.exe \
 		build/bin/indep-64/eamiotest.exe \
 		build/bin/indep-64/iidxiotest.exe \
 		build/bin/indep-64/iidx-bio2-exit-hook.dll \
