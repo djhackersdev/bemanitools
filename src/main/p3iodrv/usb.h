@@ -11,6 +11,7 @@ bool p3io_usb_read_jamma(HANDLE interrupt_handle, uint32_t jamma[3]);
 
 // Not necessarily supported by all drivers but, for example, by a 64-bit driver
 bool p3io_usb_read_version(HANDLE bulk_handle, char version[128]);
+/*
 bool p3io_usb_transfer(
     HANDLE bulk_handle,
     uint8_t cmd,
@@ -20,6 +21,6 @@ bool p3io_usb_transfer(
     void *resp_payload,
     size_t *resp_payload_len
 );
-
+*/
 
 #endif

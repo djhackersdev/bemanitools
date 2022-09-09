@@ -103,7 +103,7 @@ bool p3io_usb_read_version(HANDLE bulk_handle, char version[128])
     return true;
 }
 
-
+/*
 bool p3io_usb_transfer(
     HANDLE bulk_handle,
     uint8_t cmd,
@@ -115,22 +115,23 @@ bool p3io_usb_transfer(
 )
 {
     DWORD bytes_processed;
-    union p3io_req_any req;
+    union p3io_req_any req_buf;
+    union p3io_resp_any resp_buf;
     HRESULT res;
 
-    if(req_payload_len > sizeof(req)) {
+    if(req_payload_len > sizeof(req_buf)) {
         log_warning("request too big");
         return false;
     }
 
-    res = p3io_frame_encode(&req, req_payload, req_payload_len);
+    res = p3io_frame_encode(&req_buf, req_payload, req_payload_len);
 
     if (res != S_OK) {
         log_warning("Encoding payload failed: %X", res);
         return false;
     }
 
-    if(!WriteFile(bulk_handle, &req, req_payload_len, &bytes_processed, 0)) {
+    if(!WriteFile(bulk_handle, &req_buf, req_payload_len, &bytes_processed, 0)) {
         log_warning("WriteFile failed");
         return false;
     }
@@ -141,12 +142,14 @@ bool p3io_usb_transfer(
     }
 
     // must be 65 bytes or requests can stall - only 64 will ever be returned
-    if(!ReadFile(bulk_handle, &cmd_buf, 65, &bytes_processed, 0)) {
+    if(!ReadFile(bulk_handle, &resp_buf, 65, &bytes_processed, 0)) {
         log_warning("ReadFile (%u) failed", (unsigned)resp_payload_len);
         return false;
     }
 
-    if(bytes_xferred >= sizeof(struct p4io_cmd_header)) {
+    p3io_frame_decode(resp_payload, resp_buf)
+
+    if(bytes_processed >= sizeof(struct p4io_cmd_header)) {
         memcpy(resp_payload, cmd_buf.payload, *resp_payload_len);
         *resp_payload_len = cmd_buf.header.payload_len;
 
