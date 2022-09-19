@@ -57,6 +57,7 @@
 #                   beatmania IIDX 22 PENDUAL
 #					beatmania IIDX 23 copula
 #                   beatmania IIDX 24 SINOBUZ
+#       Patch 3:    DanceDanceRevoluion A20+ (64-bit)
 #     "Patch" 3:    Silent Scope Bone Eater (compatible with p7)
 #	  "Patch" 7:    Steel Chronicle VicTroopers (not a Bemani, w/e)
 #
