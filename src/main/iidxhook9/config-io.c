@@ -28,7 +28,7 @@ void iidxhook9_config_io_init(struct cconfig *config)
         IIDXHOOK9_CONFIG_IO_DISABLE_CARD_READER_EMU_KEY,
         IIDXHOOK9_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE,
         "Disable card reader emulation and enable usage of real card reader "
-        "hardware on COM0 (for games supporting slotted readers)");
+        "hardware on COM1 (for games supporting slotted readers)");
 
     cconfig_util_set_bool(
         config,
