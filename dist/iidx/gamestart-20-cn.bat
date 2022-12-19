@@ -11,4 +11,7 @@ if not exist e\avs_conf\CONF mkdir e\avs_conf\CONF
 if not exist e\avs_conf\CONF\NVRAM mkdir e\avs_conf\CONF\NVRAM
 if not exist e\avs_conf\CONF\RAW mkdir e\avs_conf\CONF\RAW
 
+if not exist dev\nvram mkdir dev\nvram
+if not exist dev\raw mkdir dev\raw
+
 inject iidxhook5-cn.dll bm2dx.exe -D --config iidxhook-20-cn.conf %*
