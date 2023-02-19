@@ -4,3 +4,4 @@ build/
 .vscode
 .vs
 version
+.DS_Store
