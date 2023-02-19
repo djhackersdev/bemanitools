@@ -13,6 +13,7 @@
 
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/proc.h"
 #include "util/signal.h"
 #include "util/str.h"
 
@@ -246,7 +247,7 @@ static bool debugger_create_process(
     return true;
 }
 
-static bool debugger_loop()
+static uint32_t debugger_loop()
 {
     DEBUG_EVENT de;
     DWORD continue_status;
@@ -259,7 +260,7 @@ static bool debugger_loop()
             log_warning(
                 "ERROR: WaitForDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
-            return false;
+            return 1;
         }
 
         // Changed if applicable, e.g. on exceptions
@@ -326,7 +327,7 @@ static bool debugger_loop()
                     "EXIT_PROCESS_DEBUG_EVENT(pid %ld, tid %ld)",
                     de.dwProcessId,
                     de.dwThreadId);
-                return true;
+                return 0;
 
             case LOAD_DLL_DEBUG_EVENT:
                 if (!debugger_get_file_name_from_handle(
@@ -377,13 +378,15 @@ static bool debugger_loop()
             log_warning(
                 "ERROR: ContinueDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
-            return false;
+            return 1;
         }
     }
 }
 
 static DWORD WINAPI debugger_proc(LPVOID param)
 {
+    uint32_t debugger_loop_exit_code;
+
     struct debugger_thread_params *params;
 
     params = (struct debugger_thread_params *) param;
@@ -401,14 +404,24 @@ static DWORD WINAPI debugger_proc(LPVOID param)
     // Don't run our local debugger loop if the user wants to attach a remote
     // debugger or debugger is disabled
     if (params->local_debugger) {
-        debugger_loop();
+        debugger_loop_exit_code = debugger_loop();
+
+        free(params);
+
+        log_misc("Debugger loop quit");
+        log_info("Terminating process, exit code: %d", debugger_loop_exit_code);
+
+        proc_terminate_current_process(debugger_loop_exit_code);
+
+        // Never reached
+        return 0;
+    } else {
+        free(params);
+
+        log_misc("Debugger thread end");
+
+        return 0;
     }
-
-    free(params);
-
-    log_misc("Debugger thread end");
-
-    return 0;
 }
 
 bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line)
