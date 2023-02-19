@@ -11,5 +11,5 @@ void proc_terminate_current_process(uint32_t exit_code)
         TRUE,
         GetCurrentProcessId());
         
-    TerminateProcess(hnd, 0);
+    TerminateProcess(hnd, exit_code);
 }
