@@ -181,6 +181,12 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     eamuse_set_addr(&config_eamuse.server);
     eamuse_check_connection();
 
+    /* Settings paths */
+
+    if (strlen(config_misc.settings_path) > 0) {
+        settings_hook_set_path(config_misc.settings_path);
+    }
+
     /* Direct3D and USER32 hooks */
 
     iidxhook3_setup_d3d9_hooks(&config_gfx);

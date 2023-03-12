@@ -29,6 +29,7 @@
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
+#include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
 #include "iidxhook-util/settings.h"
@@ -100,6 +101,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
+    struct iidxhook_config_misc config_misc;
 
     log_server_init();
     log_info("-------------------------------------------------------------");
@@ -110,6 +112,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook_config_gfx_init(config);
     iidxhook_config_io_init(config);
+    iidxhook_config_misc_init(config);
 
     if (!cconfig_hook_config_init(
             config,
@@ -122,6 +125,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook_config_io_get(&config_io, config);
+    iidxhook_config_misc_get(&config_misc, config);
 
     cconfig_finit(config);
 
@@ -129,6 +133,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("Initializing iidxhook...");
 
     iidxhook4_setup_d3d9_hooks(&config_gfx);
+
+    if (strlen(config_misc.settings_path) > 0) {
+        settings_hook_set_path(config_misc.settings_path);
+    }
 
     if (!config_io.disable_io_emu) {
         log_info("Starting IIDX IO backend");
