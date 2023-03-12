@@ -29,6 +29,7 @@
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
 #include "iidxhook-util/config-sec.h"
+#include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/settings.h"
 
@@ -98,6 +99,7 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     struct iidxhook_util_config_eamuse config_eamuse;
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook_config_sec config_sec;
+    struct iidxhook_config_misc config_misc;
 
     if (iidxhook_init_check) {
         return real_RegisterClassA(lpWndClass);
@@ -115,6 +117,7 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     iidxhook_config_gfx_init(config);
     iidxhook_config_io_init(config);
     iidxhook_config_sec_init(config);
+    iidxhook_config_misc_init(config);
 
     if (!cconfig_hook_config_init(
             config,
@@ -128,6 +131,7 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook_config_io_get(&config_io, config);
     iidxhook_config_sec_get(&config_sec, config);
+    iidxhook_config_misc_get(&config_misc, config);
 
     cconfig_finit(config);
 
@@ -149,6 +153,10 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     ezusb_iidx_emu_node_security_plug_set_pcbid(&config_eamuse.pcbid);
 
     iidxhook5_cn_setup_d3d9_hooks(&config_gfx);
+
+    if (strlen(config_misc.settings_path) > 0) {
+        settings_hook_set_path(config_misc.settings_path);
+    }
 
     if (!config_io.disable_io_emu) {
         log_info("Starting IIDX IO backend");
