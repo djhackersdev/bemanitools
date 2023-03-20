@@ -7,8 +7,8 @@
 
 /* 9th to DD */
 #define IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13 59.95
-/* GOLD to Resort Anthem */
-#define IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA 60.05
+/* GOLD to Lincle */
+#define IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_19_VGA 60.05
 
 /**
  * Install hooks to intercept chart file loading. This allows you to patch

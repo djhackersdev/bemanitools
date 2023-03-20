@@ -26,6 +26,7 @@
 #include "hooklib/setupapi.h"
 
 #include "iidxhook-util/acio.h"
+#include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
 #include "iidxhook-util/config-misc.h"
@@ -72,6 +73,23 @@ iidxhook5_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.device_adapter = config_gfx->device_adapter;
     d3d9_config.iidx14_to_19_nvidia_fix = true;
     d3d9_config.iidx18_and_19_diagonal_tearing_fix = config_gfx->diagonal_tearing_fix;
+
+    if (config_gfx->monitor_check == 0) {
+        log_info("Auto monitor check enabled");
+
+        d3d9_config.iidx09_to_19_monitor_check_cb =
+            iidxhook_util_chart_patch_set_refresh_rate;
+        iidxhook_util_chart_patch_init(
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_19_VGA);
+    } else if (config_gfx->monitor_check > 0) {
+        log_info(
+            "Manual monitor check, resulting refresh rate: %f",
+            config_gfx->monitor_check);
+
+        iidxhook_util_chart_patch_init(
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_19_VGA);
+        iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
+    }
 
     iidxhook_util_d3d9_configure(&d3d9_config);
 
@@ -150,6 +168,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
        API implementations with real IO devices */
     iohook_push_handler(ezusb2_emu_device_dispatch_irp);
     iohook_push_handler(iidxhook_util_acio_dispatch_irp);
+    iohook_push_handler(iidxhook_util_chart_patch_dispatch_irp);
     iohook_push_handler(settings_hook_dispatch_irp);
 
     if (!config_io.disable_io_emu) {

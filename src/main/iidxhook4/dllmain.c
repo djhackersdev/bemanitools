@@ -80,14 +80,14 @@ iidxhook4_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
         d3d9_config.iidx09_to_19_monitor_check_cb =
             iidxhook_util_chart_patch_set_refresh_rate;
         iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_19_VGA);
     } else if (config_gfx->monitor_check > 0) {
         log_info(
             "Manual monitor check, resulting refresh rate: %f",
             config_gfx->monitor_check);
 
         iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_18_VGA);
+            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_14_TO_19_VGA);
         iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
     }
 
