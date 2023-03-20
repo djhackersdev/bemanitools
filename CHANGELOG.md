@@ -2,6 +2,30 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.44
+### Features
+* feat(doc): ezusb dev journal entry, 10th style ezusb boot up and security setup
+* feat(iidx 09/10): ezusb API call monitoring module and configuration flag
+* feat(iidx 19): Add back btools monitor check for iidxhook5
+* feat(iidx 9-19): Add configurable settings path hook. Redirect settings paths, i.e. `d/`, `e/` and
+  `f/` drive "folders" to an arbitrary path on any partition, e.g. writable partition
+* feat(iidx 9/10): Improve commandline script for irbeat-patch 09 and 10, add interactive mode
+
+### Fixes
+* fix(iidx 10): SQ-INIT error caused by incorrect security configuration
+* fix(iidx 9-24): Wire up coin input in ezusb1/2 IO emulation layer
+* fix(pnm 15-18): Fix IO buffer inconsistency causing random input misfiring
+* fix(jb 1-8): Fix IO buffer inconsistency causing random input misfiring
+* fix(iidx 9-24): Fix IO buffer inconsistency causing random input misfiring
+* fix(iidx 19): imagefs override strategy with local file redir. Required to enable monitor-check
+  on all chart files
+* fix(iidx 9-19): Code synchronization issue causing deadlock resulting in game hang/stuck on boot
+* fix(iidx 9-19): Fix broken settings path handling with mixed / and \
+* fix(iidx 27): Align disabled cam connection config defaults with 28/29
+* fix(inject): Fix missing forwarding of exit code
+* fix(inject): Getting stuck when game exits cleanly due to locked up debugger thread.
+* fix(iidx 18/19 CN): gamestart.bat creating dev/nvram and dev/raw folders
+
 ## 5.43
 * iidx29: (Officially) support IIDX CASTHOUR
 * Code structure maintenance
