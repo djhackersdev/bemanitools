@@ -16,7 +16,6 @@ bool p4io_usb_transfer(
     const void *req_payload,
     size_t req_payload_len,
     void *resp_payload,
-    size_t *resp_payload_len
-);
+    size_t *resp_payload_len);
 
 #endif

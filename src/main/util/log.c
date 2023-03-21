@@ -59,7 +59,8 @@ static void log_builtin_format(
     result = str_format(
         line, sizeof(line), "%c:%s: %s\n", chars[msg_level], module, msg);
 
-    // TODO move this up because there is no reason to format and do all the above if disabled
+    // TODO move this up because there is no reason to format and do all the
+    // above if disabled
     if (msg_level <= log_level) {
         log_writer(log_writer_ctx, line, result);
     }

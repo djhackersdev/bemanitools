@@ -8,9 +8,7 @@
 #include "util/log.h"
 
 static bool aciodrv_rvol_change_expand_mode(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id,
-    uint8_t mode)
+    struct aciodrv_device_ctx *device, uint8_t node_id, uint8_t mode)
 {
     struct ac_io_message msg;
 
@@ -28,15 +26,12 @@ static bool aciodrv_rvol_change_expand_mode(
         return false;
     }
 
-    log_info("I/O expand mode set %d, mode: %d",
-        node_id, mode);
+    log_info("I/O expand mode set %d, mode: %d", node_id, mode);
 
     return true;
 }
 
-bool aciodrv_rvol_init(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+bool aciodrv_rvol_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     log_assert(device);
 

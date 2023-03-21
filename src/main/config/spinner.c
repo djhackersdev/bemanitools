@@ -24,7 +24,7 @@ void spinner_init(HINSTANCE inst)
     wcx.cbSize = sizeof(wcx);
     wcx.lpfnWndProc = spinner_wnd_proc;
     wcx.hInstance = inst;
-    wcx.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcx.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     wcx.lpszClassName = spinner_cls;
 
     RegisterClassEx(&wcx);

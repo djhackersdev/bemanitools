@@ -51,11 +51,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     jbhook3_gfx_init();
 
-    if(options.windowed) {
+    if (options.windowed) {
         jbhook3_gfx_set_windowed();
     }
 
-    if(options.show_cursor) {
+    if (options.show_cursor) {
         jbhook3_gfx_set_show_cursor();
     }
 
@@ -131,7 +131,7 @@ static bool my_dll_entry_main(void)
     if (!options.disable_p4ioemu) {
         p4ioemu_fini();
     }
-	
+
     options_fini(&options);
 
     return result;
@@ -153,7 +153,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     if (!options.disable_adapteremu) {
         adapter_hook_init();
     }
-	
+
     jbhook_util_eamuse_hook_init();
 
     return TRUE;

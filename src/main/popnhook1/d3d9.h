@@ -28,8 +28,8 @@ struct popnhook1_d3d9_config {
     uint16_t override_window_height;
 
     /**
-     * Fix an issue with CreateTexture on later versions of Windows that prevents
-     * the games from launching.
+     * Fix an issue with CreateTexture on later versions of Windows that
+     * prevents the games from launching.
      */
     bool texture_usage_fix;
 };

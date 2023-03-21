@@ -16,7 +16,6 @@ static HMODULE(STDCALL *real_LoadLibraryA)(const char *name);
 
 static HMODULE STDCALL my_LoadLibraryA(const char *name);
 
-
 static const hook_d3d9_irp_handler_t ddrhook2_d3d9_handlers[] = {
     gfx_d3d9_irp_handler,
 };

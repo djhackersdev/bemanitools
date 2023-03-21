@@ -41,7 +41,7 @@
 #include "util/thread.h"
 
 #define DDRHOOK1_INFO_HEADER \
-    "ddrhook1 for DDR X"    \
+    "ddrhook1 for DDR X"     \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define DDRHOOK1_CMD_USAGE \
     "Usage: inject.exe ddrhook1.dll <ddr.exe> [options...]"
@@ -53,8 +53,10 @@ static const hook_d3d9_irp_handler_t ddrhook1_d3d9_handlers[] = {
     gfx_d3d9_irp_handler,
 };
 
-static DWORD STDCALL my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-static DWORD(STDCALL *real_GetModuleFileNameA)(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+static DWORD STDCALL
+my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+static DWORD(STDCALL *real_GetModuleFileNameA)(
+    HMODULE hModule, LPSTR lpFilename, DWORD nSize);
 
 static bool ddrhook1_init_check = false;
 
@@ -144,7 +146,9 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
 #endif
         &security_rp_sign_key_white_eamuse);
     extio_init();
-    usbmem_init(config_ddrhook1.usbmem_path_p1, config_ddrhook1.usbmem_path_p2,
+    usbmem_init(
+        config_ddrhook1.usbmem_path_p1,
+        config_ddrhook1.usbmem_path_p2,
         config_ddrhook1.usbmem_enabled);
     spike_init();
     com4_init();
@@ -189,7 +193,8 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         ddrhook1_master_insert_hooks(NULL);
         ddrhook1_filesystem_hook_init();
 
-        hook_d3d9_init(ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
+        hook_d3d9_init(
+            ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
     }
 
     return TRUE;

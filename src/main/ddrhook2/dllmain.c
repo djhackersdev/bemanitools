@@ -75,7 +75,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
             case 'a':
                 /* Specify a USB memory path for P1 */
                 if (i + 1 < argc) {
-                    strcpy(usbmem_data_path_p1, argv[i+1]);
+                    strcpy(usbmem_data_path_p1, argv[i + 1]);
                     usbmem_enabled = true;
                     i++; // Move forward one to skip the path parameter
                 }
@@ -85,7 +85,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
             case 'b':
                 /* Specify a USB memory path for P2 */
                 if (i + 1 < argc) {
-                    strcpy(usbmem_data_path_p2, argv[i+1]);
+                    strcpy(usbmem_data_path_p2, argv[i + 1]);
                     usbmem_enabled = true;
                     i++; // Move forward one to skip the path parameter
                 }
@@ -134,7 +134,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         eam_io_set_loggers(
             log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
-        ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        ok =
+            eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
 
         if (!ok) {
             return false;

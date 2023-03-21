@@ -12,24 +12,18 @@
 #include "hook/pe.h"
 #include "hook/process.h"
 
-static bool thread_match_startup(
-        const CONTEXT *ctx,
-        void *ntstart,
-        void *exe_entry)
+static bool
+thread_match_startup(const CONTEXT *ctx, void *ntstart, void *exe_entry)
 {
 #ifdef _M_AMD64
-    return  ctx->Rip == (DWORD64) ntstart &&
-            ctx->Rcx == (DWORD64) exe_entry;
+    return ctx->Rip == (DWORD64) ntstart && ctx->Rcx == (DWORD64) exe_entry;
 #else
-    return  ctx->Eip == (DWORD) ntstart &&
-            ctx->Eax == (DWORD) exe_entry;
+    return ctx->Eip == (DWORD) ntstart && ctx->Eax == (DWORD) exe_entry;
 #endif
 }
 
 static void thread_patch_startup(
-        process_entry_t new_entry,
-        process_entry_t *orig_entry,
-        CONTEXT *ctx)
+    process_entry_t new_entry, process_entry_t *orig_entry, CONTEXT *ctx)
 {
 #ifdef _M_AMD64
     *orig_entry = (void *) ctx->Rcx;
@@ -41,9 +35,7 @@ static void thread_patch_startup(
 }
 
 static HRESULT process_hijack_try_thread(
-        process_entry_t new_entry,
-        process_entry_t *orig_entry,
-        DWORD thread_id)
+    process_entry_t new_entry, process_entry_t *orig_entry, DWORD thread_id)
 {
     CONTEXT ctx;
     HMODULE exe;
@@ -85,10 +77,8 @@ static HRESULT process_hijack_try_thread(
         goto end;
     }
 
-    thread = OpenThread(
-            THREAD_GET_CONTEXT | THREAD_SET_CONTEXT,
-            FALSE,
-            thread_id);
+    thread =
+        OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT, FALSE, thread_id);
 
     if (thread == NULL) {
         hr = HRESULT_FROM_WIN32(GetLastError());
@@ -134,9 +124,8 @@ end:
     return hr;
 }
 
-HRESULT process_hijack_startup(
-        process_entry_t new_entry,
-        process_entry_t *orig_entry)
+HRESULT
+process_hijack_startup(process_entry_t new_entry, process_entry_t *orig_entry)
 {
     THREADENTRY32 thread;
     HANDLE snap;
@@ -175,9 +164,7 @@ HRESULT process_hijack_startup(
         }
 
         hr = process_hijack_try_thread(
-                new_entry,
-                orig_entry,
-                thread.th32ThreadID);
+            new_entry, orig_entry, thread.th32ThreadID);
 
         if (hr == S_OK) {
             /* Main thread successfully hijacked, finish up */

@@ -171,7 +171,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     options->override_urlslash_enabled = true;
 
-                    const char * urlslash_value = argv[++i];
+                    const char *urlslash_value = argv[++i];
 
                     options->override_urlslash_value = false;
                     if (_stricmp(urlslash_value, "1") == 0) {
@@ -233,7 +233,8 @@ void options_print_usage(void)
         "times)\n"
         "       -B [filename]   Load pre-hook DLL loaded before avs boot "
         "(can be specified multiple times)\n"
-        "       -I [filename]   Load pre-hook DLL that overrides IAT reference before execution"
+        "       -I [filename]   Load pre-hook DLL that overrides IAT reference "
+        "before execution"
         "(can be specified multiple times)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
         "       -D              Halt the launcher before bootstrapping AVS "

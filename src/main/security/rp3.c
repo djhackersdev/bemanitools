@@ -1,8 +1,8 @@
 #include <string.h>
 
+#include "security/rp-util.h"
 #include "security/rp2.h"
 #include "security/rp3.h"
-#include "security/rp-util.h"
 #include "security/util.h"
 
 #include "util/crc.h"

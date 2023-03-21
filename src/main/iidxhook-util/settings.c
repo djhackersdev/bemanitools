@@ -95,8 +95,8 @@ void settings_hook_init(void)
     log_info("Inserted settings hooks, settings path: %s", settings_path);
 }
 
-void settings_hook_set_path(const char* path)
-{    
+void settings_hook_set_path(const char *path)
+{
     size_t len;
 
     len = strlen(path);
@@ -121,9 +121,9 @@ HRESULT
 settings_hook_dispatch_irp(struct irp *irp)
 {
     if (irp->op == IRP_OP_OPEN &&
-            (irp->open_filename[0] == L'd' || irp->open_filename[0] == L'e' ||
-            irp->open_filename[0] == L'f') &&
-            irp->open_filename[1] == L':') {
+        (irp->open_filename[0] == L'd' || irp->open_filename[0] == L'e' ||
+         irp->open_filename[0] == L'f') &&
+        irp->open_filename[1] == L':') {
         HRESULT result;
         char new_path[MAX_PATH];
         const wchar_t *old_filename_wstr;
@@ -161,7 +161,8 @@ settings_hook_dispatch_irp(struct irp *irp)
                 new_path_folder[settings_path_len + 2] = '\0';
 
                 if (!path_exists(new_path_folder)) {
-                    log_misc("Creating local settings folder %s", new_path_folder);
+                    log_misc(
+                        "Creating local settings folder %s", new_path_folder);
                     CreateDirectoryA(new_path_folder, NULL);
                 }
             }

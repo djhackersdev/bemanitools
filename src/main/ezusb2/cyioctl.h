@@ -125,12 +125,13 @@ typedef struct _SET_TRANSFER_SIZE_INFO {
 //
 #ifdef WIN_98_DDK
 #define DEVICE_TYPE_FROM_CTL_CODE(ctrlCode) \
-    (((ULONG)(ctrlCode & 0xffff0000)) >> 16)
+    (((ULONG) (ctrlCode & 0xffff0000)) >> 16)
 #endif
-#define FUNCTION_FROM_CTL_CODE(ctrlCode) (((ULONG)(ctrlCode & 0x00003FFC)) >> 2)
-#define ACCESS_FROM_CTL_CODE(ctrlCode) (((ULONG)(ctrlCode & 0x000C0000)) >> 14)
-//#define METHOD_FROM_CTL_CODE(ctrlCode)       (((ULONG)(ctrlCode &
-// 0x00000003)))
+#define FUNCTION_FROM_CTL_CODE(ctrlCode) \
+    (((ULONG) (ctrlCode & 0x00003FFC)) >> 2)
+#define ACCESS_FROM_CTL_CODE(ctrlCode) (((ULONG) (ctrlCode & 0x000C0000)) >> 14)
+// #define METHOD_FROM_CTL_CODE(ctrlCode)       (((ULONG)(ctrlCode &
+//  0x00000003)))
 
 #define IOCTL_ADAPT_INDEX 0x0000
 

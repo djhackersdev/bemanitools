@@ -202,9 +202,9 @@ static void analog_mapping_update(struct analog_mapping *am)
 
     if (am->absolute) {
         tmp = (value - am->affine_bias) / am->affine_scale;
-        am->pos = (uint8_t)((tmp + 0.5) * 256.0);
+        am->pos = (uint8_t) ((tmp + 0.5) * 256.0);
     } else {
-        am->pos += (int8_t)(value * exp(am->sensitivity / 256.0));
+        am->pos += (int8_t) (value * exp(am->sensitivity / 256.0));
     }
 }
 
@@ -306,7 +306,7 @@ static void light_mapping_send(struct light_mapping *lm, const struct mapper *m)
 
     intensity = m->lights[lm->game_light];
     tmp = (intensity / 256.0) * lm->affine_scale;
-    value = (int32_t)(tmp + 0.5) + lm->affine_bias;
+    value = (int32_t) (tmp + 0.5) + lm->affine_bias;
 
     hid_stub_set_light(lm->dest.hid, lm->dest.light_no, value);
 }
@@ -432,7 +432,7 @@ uint8_t mapper_impl_get_npages(struct mapper *m)
         }
     }
 
-    return (uint8_t)(max_page + 1);
+    return (uint8_t) (max_page + 1);
 }
 
 action_iter_t mapper_impl_iterate_actions(struct mapper *m)

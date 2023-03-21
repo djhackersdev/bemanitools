@@ -161,7 +161,7 @@ void iidxhook_config_gfx_init(struct cconfig *config)
         IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE,
         "D3D9 device adapter (monitor), -1 to use default, "
         "0, 1, 2 etc. to use specified adapter");
-    
+
     cconfig_util_set_bool(
         config,
         IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY,

@@ -106,7 +106,8 @@ void jb_io_set_rgb_led(
 
 bool jb_io_write_lights(void);
 
-/* Select operating mode for the panel. Should be immediately sent to the IOPCB */
+/* Select operating mode for the panel. Should be immediately sent to the IOPCB
+ */
 
 bool jb_io_set_panel_mode(enum jb_io_panel_mode mode);
 

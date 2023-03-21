@@ -150,7 +150,7 @@ void arc4_apply(struct arc4 *arc4, uint8_t *bytes, size_t nbytes)
 
         SWAP(arc4->S[arc4->i], arc4->S[arc4->j], tmp);
 
-        bytes[i] ^= arc4->S[(uint8_t)(arc4->S[arc4->i] + arc4->S[arc4->j])];
+        bytes[i] ^= arc4->S[(uint8_t) (arc4->S[arc4->i] + arc4->S[arc4->j])];
     }
 }
 

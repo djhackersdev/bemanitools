@@ -30,7 +30,8 @@ void iidxhook_config_misc_init(struct cconfig *config)
         config,
         IIDXHOOK_CONFIG_MISC_SETTINGS_PATH_STUB_KEY,
         IIDXHOOK_CONFIG_MISC_DEFAULT_SETTINGS_PATH_STUB_VALUE,
-        "Path to store the settings, e.g. bookkeeping, operator settings. d:, e: and f: drive configuration/settings data");
+        "Path to store the settings, e.g. bookkeeping, operator settings. d:, "
+        "e: and f: drive configuration/settings data");
 }
 
 void iidxhook_config_misc_get(

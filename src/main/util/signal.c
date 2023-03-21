@@ -7,7 +7,7 @@
 
 static signal_shutdown_handler_t shutdown_handler;
 
-static const char* control_code_to_str(DWORD ctrl_code)
+static const char *control_code_to_str(DWORD ctrl_code)
 {
     switch (ctrl_code) {
         case CTRL_C_EVENT:
@@ -28,7 +28,8 @@ static const char* control_code_to_str(DWORD ctrl_code)
 
 static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType)
 {
-    log_misc("Console ctrl handler called: %s", control_code_to_str(dwCtrlType));
+    log_misc(
+        "Console ctrl handler called: %s", control_code_to_str(dwCtrlType));
 
     if (dwCtrlType == CTRL_C_EVENT) {
         if (shutdown_handler) {
@@ -44,20 +45,25 @@ static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType)
     return FALSE;
 }
 
-static LONG WINAPI unhandled_exception_filter(struct _EXCEPTION_POINTERS *ExceptionInfo)
+static LONG WINAPI
+unhandled_exception_filter(struct _EXCEPTION_POINTERS *ExceptionInfo)
 {
     // no exception info provided
     if (ExceptionInfo != NULL) {
-        struct _EXCEPTION_RECORD *ExceptionRecord = ExceptionInfo->ExceptionRecord;
+        struct _EXCEPTION_RECORD *ExceptionRecord =
+            ExceptionInfo->ExceptionRecord;
 
         log_warning(
-            "Exception raised: %s", 
+            "Exception raised: %s",
             signal_exception_code_to_str(ExceptionRecord->ExceptionCode));
 
-        struct _EXCEPTION_RECORD *record_cause = ExceptionRecord->ExceptionRecord;
+        struct _EXCEPTION_RECORD *record_cause =
+            ExceptionRecord->ExceptionRecord;
 
         while (record_cause != NULL) {
-            log_warning("Caused by: %s", signal_exception_code_to_str(record_cause->ExceptionCode));
+            log_warning(
+                "Caused by: %s",
+                signal_exception_code_to_str(record_cause->ExceptionCode));
             record_cause = record_cause->ExceptionRecord;
         }
 
@@ -84,7 +90,7 @@ void signal_register_shutdown_handler(signal_shutdown_handler_t handler)
     log_misc("Registered shutdown handler");
 }
 
-const char* signal_exception_code_to_str(DWORD code)
+const char *signal_exception_code_to_str(DWORD code)
 {
     switch (code) {
         case EXCEPTION_ACCESS_VIOLATION:

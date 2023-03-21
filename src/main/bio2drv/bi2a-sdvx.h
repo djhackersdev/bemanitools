@@ -15,9 +15,7 @@
  *       device driver foundation.
  * @see driver.h
  */
-bool bio2drv_bi2a_sdvx_init(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id);
+bool bio2drv_bi2a_sdvx_init(struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Poll the  board

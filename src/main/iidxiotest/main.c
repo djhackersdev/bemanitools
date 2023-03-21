@@ -23,7 +23,8 @@ static uint8_t _fix_top_lamps_order(uint8_t top_lamps)
 
     out |= ((1 << 4) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_BLUE) : 0;
     out |= ((1 << 5) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_GREEN) : 0;
-    out |= ((1 << 6) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW) : 0;
+    out |=
+        ((1 << 6) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW) : 0;
     out |= ((1 << 7) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_RED) : 0;
 
     return out;
@@ -36,11 +37,12 @@ static void _all_lights_off_shutdown()
     iidx_io_ep1_set_top_lamps(0);
     iidx_io_ep1_set_top_neons(false);
 
-    // Depending on the IO, pushing the state to the actual outputs, e.g. lights on/off
-    // can be a bit finicky. Do a few times to "enforce" the state 
+    // Depending on the IO, pushing the state to the actual outputs, e.g. lights
+    // on/off can be a bit finicky. Do a few times to "enforce" the state
     for (uint8_t i = 0; i < 3; i++) {
         iidx_io_ep1_send();
-        // Required to handle iidxio-ezusb specific quirks with flushing 16seg text
+        // Required to handle iidxio-ezusb specific quirks with flushing 16seg
+        // text
         iidx_io_ep2_recv();
         iidx_io_ep3_write_16seg("         ");
 

@@ -78,9 +78,8 @@ bool iidx_io_init(
         }
     }
 
-    // Random data returned by device, likely not properly initalized on device side
-    // Triggers random inputs and lights
-    // Flush that by execute a few polls
+    // Random data returned by device, likely not properly initalized on device
+    // side Triggers random inputs and lights Flush that by execute a few polls
     for (int i = 0; i < 10; i++) {
         iidx_io_ep2_recv();
     }
@@ -90,14 +89,15 @@ bool iidx_io_init(
 
 void iidx_io_fini(void)
 {
-    // Pushing some final state before closing the IO to the actual outputs, e.g. lights on/off
-    // can be a bit finicky. Do a few polls to "enforce"/flush this final state 
+    // Pushing some final state before closing the IO to the actual outputs,
+    // e.g. lights on/off can be a bit finicky. Do a few polls to
+    // "enforce"/flush this final state
     for (uint8_t i = 0; i < 5; i++) {
         iidx_io_ep1_send();
         iidx_io_ep2_recv();
 
         Sleep(10);
-    }    
+    }
 
     ezusb_close(iidx_io_ezusb_handle);
     iidx_io_ezusb_handle = INVALID_HANDLE_VALUE;

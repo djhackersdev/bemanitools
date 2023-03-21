@@ -19,7 +19,7 @@ struct vigem_iidxio_config {
 
         bool debug_output;
     } tt;
-    
+
     struct cab_light {
         bool enable_keylight;
         int32_t light_mode;

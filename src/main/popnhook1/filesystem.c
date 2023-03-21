@@ -24,9 +24,8 @@ static HANDLE STDCALL my_CreateFileA(
     DWORD dwCreationDisposition,
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
-static HANDLE STDCALL my_FindFirstFileA(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+static HANDLE STDCALL
+my_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 
 static HANDLE(STDCALL *real_CreateFileA)(
     LPCSTR lpFileName,
@@ -37,8 +36,7 @@ static HANDLE(STDCALL *real_CreateFileA)(
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
 static HANDLE(STDCALL *real_FindFirstFileA)(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+    LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 
 /* ------------------------------------------------------------------------- */
 
@@ -55,8 +53,10 @@ static const struct hook_symbol settings_hook_syms[] = {
 
 static char *popnhook1_filesystem_get_path(LPCSTR lpFileName)
 {
-    if (lpFileName != NULL && (tolower(lpFileName[0]) == 'd' || tolower(lpFileName[0]) == 'e') && lpFileName[1] == ':') {
-        char *new_path = (char*)xmalloc(MAX_PATH);
+    if (lpFileName != NULL &&
+        (tolower(lpFileName[0]) == 'd' || tolower(lpFileName[0]) == 'e') &&
+        lpFileName[1] == ':') {
+        char *new_path = (char *) xmalloc(MAX_PATH);
 
         char *data_ptr = strstr(lpFileName, "\\data\\");
         if (data_ptr == NULL)
@@ -117,9 +117,8 @@ static HANDLE STDCALL my_CreateFileA(
     return status;
 }
 
-static HANDLE STDCALL my_FindFirstFileA(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData)
+static HANDLE STDCALL
+my_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData)
 {
     // pop'n 15 makes use of FindFirstFileA
     char *new_path = popnhook1_filesystem_get_path(lpFileName);
@@ -127,14 +126,10 @@ static HANDLE STDCALL my_FindFirstFileA(
     if (new_path != NULL) {
         // log_misc("Remapped settings path 2 %s -> %s", lpFileName, new_path);
 
-        return real_FindFirstFileA(
-            new_path,
-            lpFindFileData);
+        return real_FindFirstFileA(new_path, lpFindFileData);
     }
 
-    return real_FindFirstFileA(
-        lpFileName,
-        lpFindFileData);
+    return real_FindFirstFileA(lpFileName, lpFindFileData);
 }
 
 /* ------------------------------------------------------------------------- */

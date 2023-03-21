@@ -8,8 +8,7 @@
 #include "util/log.h"
 
 static bool aciodrv_icca_queue_loop_start(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+    struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 
@@ -21,9 +20,7 @@ static bool aciodrv_icca_queue_loop_start(
     msg.cmd.status = 0;
 
     if (!aciodrv_send_and_recv(
-            device,
-            &msg,
-            offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Starting queue loop failed");
         return false;
     }
@@ -137,16 +134,14 @@ bool aciodrv_icca_read_card(
     return true;
 }
 
-bool aciodrv_icca_is_slotted(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+bool aciodrv_icca_is_slotted(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     const struct aciodrv_device_node_version *version;
     version = aciodrv_device_get_node_product_version(device, node_id);
 
     // current heuristic is to check if version >= 1.5
     if (version) {
-        if (version->major == 1)  {
+        if (version->major == 1) {
             if (version->minor >= 5) {
                 return false;
             }
@@ -157,8 +152,7 @@ bool aciodrv_icca_is_slotted(
 }
 
 bool aciodrv_icca_poll_felica(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+    struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 

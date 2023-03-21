@@ -4,9 +4,9 @@
 #undef WIN32_NO_STATUS
 #include <winternl.h>
 
-#include <winnt.h>
 #include <devioctl.h>
 #include <ntstatus.h>
+#include <winnt.h>
 
 #include <assert.h>
 #include <stdbool.h>
@@ -21,10 +21,8 @@
 /* Helpers */
 
 static void iohook_init(void);
-static BOOL iohook_overlapped_result(
-        uint32_t *syncout,
-        OVERLAPPED *ovl,
-        uint32_t value);
+static BOOL
+iohook_overlapped_result(uint32_t *syncout, OVERLAPPED *ovl, uint32_t value);
 
 static HRESULT iohook_invoke_real(struct irp *irp);
 static HRESULT iohook_invoke_real_open(struct irp *irp);
@@ -41,171 +39,175 @@ static HRESULT iohook_invoke_real_ioctl(struct irp *irp);
 static BOOL WINAPI iohook_CloseHandle(HANDLE fd);
 
 static HANDLE WINAPI iohook_CreateFileW(
-        const wchar_t *lpFileName,
-        uint32_t dwDesiredAccess,
-        uint32_t dwShareMode,
-        SECURITY_ATTRIBUTES *lpSecurityAttributes,
-        uint32_t dwCreationDisposition,
-        uint32_t dwFlagsAndAttributes,
-        HANDLE hTemplateFile);
+    const wchar_t *lpFileName,
+    uint32_t dwDesiredAccess,
+    uint32_t dwShareMode,
+    SECURITY_ATTRIBUTES *lpSecurityAttributes,
+    uint32_t dwCreationDisposition,
+    uint32_t dwFlagsAndAttributes,
+    HANDLE hTemplateFile);
 
 static HANDLE WINAPI iohook_CreateFileA(
-        const char *lpFileName,
-        uint32_t dwDesiredAccess,
-        uint32_t dwShareMode,
-        SECURITY_ATTRIBUTES *lpSecurityAttributes,
-        uint32_t dwCreationDisposition,
-        uint32_t dwFlagsAndAttributes,
-        HANDLE hTemplateFile);
+    const char *lpFileName,
+    uint32_t dwDesiredAccess,
+    uint32_t dwShareMode,
+    SECURITY_ATTRIBUTES *lpSecurityAttributes,
+    uint32_t dwCreationDisposition,
+    uint32_t dwFlagsAndAttributes,
+    HANDLE hTemplateFile);
 
 static BOOL WINAPI iohook_ReadFile(
-        HANDLE hFile,
-        void *lpBuffer,
-        uint32_t nNumberOfBytesToRead,
-        uint32_t *lpNumberOfBytesRead,
-        OVERLAPPED *lpOverlapped);
+    HANDLE hFile,
+    void *lpBuffer,
+    uint32_t nNumberOfBytesToRead,
+    uint32_t *lpNumberOfBytesRead,
+    OVERLAPPED *lpOverlapped);
 
 static BOOL WINAPI iohook_WriteFile(
-        HANDLE hFile,
-        const void *lpBuffer,
-        uint32_t nNumberOfBytesToWrite,
-        uint32_t *lpNumberOfBytesWritten,
-        OVERLAPPED *lpOverlapped);
+    HANDLE hFile,
+    const void *lpBuffer,
+    uint32_t nNumberOfBytesToWrite,
+    uint32_t *lpNumberOfBytesWritten,
+    OVERLAPPED *lpOverlapped);
 
 static DWORD WINAPI iohook_SetFilePointer(
-        HANDLE hFile,
-        int32_t lDistanceToMove,
-        int32_t *lpDistanceToMoveHigh,
-        uint32_t dwMoveMethod);
+    HANDLE hFile,
+    int32_t lDistanceToMove,
+    int32_t *lpDistanceToMoveHigh,
+    uint32_t dwMoveMethod);
 
 static BOOL WINAPI iohook_SetFilePointerEx(
-        HANDLE hFile,
-        int64_t liDistanceToMove,
-        uint64_t *lpNewFilePointer,
-        uint32_t dwMoveMethod);
+    HANDLE hFile,
+    int64_t liDistanceToMove,
+    uint64_t *lpNewFilePointer,
+    uint32_t dwMoveMethod);
 
 static BOOL WINAPI iohook_FlushFileBuffers(HANDLE hFile);
 
 static BOOL WINAPI iohook_DeviceIoControl(
-        HANDLE hFile,
-        uint32_t dwIoControlCode,
-        void *lpInBuffer,
-        uint32_t nInBufferSize,
-        void *lpOutBuffer,
-        uint32_t nOutBufferSize,
-        uint32_t *lpBytesReturned,
-        OVERLAPPED *lpOverlapped);
+    HANDLE hFile,
+    uint32_t dwIoControlCode,
+    void *lpInBuffer,
+    uint32_t nInBufferSize,
+    void *lpOutBuffer,
+    uint32_t nOutBufferSize,
+    uint32_t *lpBytesReturned,
+    OVERLAPPED *lpOverlapped);
 
 /* Links */
 
-static BOOL (WINAPI *next_CloseHandle)(HANDLE fd);
+static BOOL(WINAPI *next_CloseHandle)(HANDLE fd);
 
-static HANDLE (WINAPI *next_CreateFileA)(
-        const char *lpFileName,
-        uint32_t dwDesiredAccess,
-        uint32_t dwShareMode,
-        SECURITY_ATTRIBUTES *lpSecurityAttributes,
-        uint32_t dwCreationDisposition,
-        uint32_t dwFlagsAndAttributes,
-        HANDLE hTemplateFile);
+static HANDLE(WINAPI *next_CreateFileA)(
+    const char *lpFileName,
+    uint32_t dwDesiredAccess,
+    uint32_t dwShareMode,
+    SECURITY_ATTRIBUTES *lpSecurityAttributes,
+    uint32_t dwCreationDisposition,
+    uint32_t dwFlagsAndAttributes,
+    HANDLE hTemplateFile);
 
-static HANDLE (WINAPI *next_CreateFileW)(
-        const wchar_t *filename,
-        uint32_t access,
-        uint32_t share,
-        SECURITY_ATTRIBUTES *sa,
-        uint32_t creation,
-        uint32_t flags,
-        HANDLE tmpl);
+static HANDLE(WINAPI *next_CreateFileW)(
+    const wchar_t *filename,
+    uint32_t access,
+    uint32_t share,
+    SECURITY_ATTRIBUTES *sa,
+    uint32_t creation,
+    uint32_t flags,
+    HANDLE tmpl);
 
-static BOOL (WINAPI *next_DeviceIoControl)(
-        HANDLE fd,
-        uint32_t code,
-        void *in_bytes,
-        uint32_t in_nbytes,
-        void *out_bytes,
-        uint32_t out_nbytes,
-        uint32_t *out_returned,
-        OVERLAPPED *ovl);
+static BOOL(WINAPI *next_DeviceIoControl)(
+    HANDLE fd,
+    uint32_t code,
+    void *in_bytes,
+    uint32_t in_nbytes,
+    void *out_bytes,
+    uint32_t out_nbytes,
+    uint32_t *out_returned,
+    OVERLAPPED *ovl);
 
-static BOOL (WINAPI *next_ReadFile)(
-        HANDLE fd,
-        void *buf,
-        uint32_t nbytes,
-        uint32_t *nread,
-        OVERLAPPED *ovl);
+static BOOL(WINAPI *next_ReadFile)(
+    HANDLE fd, void *buf, uint32_t nbytes, uint32_t *nread, OVERLAPPED *ovl);
 
-static BOOL (WINAPI *next_WriteFile)(
-        HANDLE fd,
-        const void *buf,
-        uint32_t nbytes,
-        uint32_t *nwrit,
-        OVERLAPPED *ovl);
+static BOOL(WINAPI *next_WriteFile)(
+    HANDLE fd,
+    const void *buf,
+    uint32_t nbytes,
+    uint32_t *nwrit,
+    OVERLAPPED *ovl);
 
-static DWORD (WINAPI *next_SetFilePointer)(
-        HANDLE hFile,
-        int32_t lDistanceToMove,
-        int32_t *lpDistanceToMoveHigh,
-        uint32_t dwMoveMethod);
+static DWORD(WINAPI *next_SetFilePointer)(
+    HANDLE hFile,
+    int32_t lDistanceToMove,
+    int32_t *lpDistanceToMoveHigh,
+    uint32_t dwMoveMethod);
 
-static BOOL (WINAPI *next_SetFilePointerEx)(
-        HANDLE hFile,
-        int64_t liDistanceToMove,
-        uint64_t *lpNewFilePointer,
-        uint32_t dwMoveMethod);
+static BOOL(WINAPI *next_SetFilePointerEx)(
+    HANDLE hFile,
+    int64_t liDistanceToMove,
+    uint64_t *lpNewFilePointer,
+    uint32_t dwMoveMethod);
 
-static BOOL (WINAPI *next_FlushFileBuffers)(HANDLE fd);
+static BOOL(WINAPI *next_FlushFileBuffers)(HANDLE fd);
 
 /* Hook symbol table */
 
 static const struct hook_symbol iohook_kernel32_syms[] = {
     {
-        .name   = "CloseHandle",
-        .patch  = iohook_CloseHandle,
-        .link   = (void *) &next_CloseHandle,
-    }, {
-        .name   = "CreateFileA",
-        .patch  = iohook_CreateFileA,
-        .link   = (void *) &next_CreateFileA,
-    }, {
-        .name   = "CreateFileW",
-        .patch  = iohook_CreateFileW,
-        .link   = (void *) &next_CreateFileW,
-    }, {
-        .name   = "DeviceIoControl",
-        .patch  = iohook_DeviceIoControl,
-        .link   = (void *) &next_DeviceIoControl,
-    }, {
-        .name   = "ReadFile",
-        .patch  = iohook_ReadFile,
-        .link   = (void *) &next_ReadFile,
-    }, {
-        .name   = "WriteFile",
-        .patch  = iohook_WriteFile,
-        .link   = (void *) &next_WriteFile,
-    }, {
-        .name   = "SetFilePointer",
-        .patch  = iohook_SetFilePointer,
-        .link   = (void *) &next_SetFilePointer,
-    }, {
-        .name   = "SetFilePointerEx",
-        .patch  = iohook_SetFilePointerEx,
-        .link   = (void *) &next_SetFilePointerEx,
-    }, {
-        .name   = "FlushFileBuffers",
-        .patch  = iohook_FlushFileBuffers,
-        .link   = (void *) &next_FlushFileBuffers,
+        .name = "CloseHandle",
+        .patch = iohook_CloseHandle,
+        .link = (void *) &next_CloseHandle,
+    },
+    {
+        .name = "CreateFileA",
+        .patch = iohook_CreateFileA,
+        .link = (void *) &next_CreateFileA,
+    },
+    {
+        .name = "CreateFileW",
+        .patch = iohook_CreateFileW,
+        .link = (void *) &next_CreateFileW,
+    },
+    {
+        .name = "DeviceIoControl",
+        .patch = iohook_DeviceIoControl,
+        .link = (void *) &next_DeviceIoControl,
+    },
+    {
+        .name = "ReadFile",
+        .patch = iohook_ReadFile,
+        .link = (void *) &next_ReadFile,
+    },
+    {
+        .name = "WriteFile",
+        .patch = iohook_WriteFile,
+        .link = (void *) &next_WriteFile,
+    },
+    {
+        .name = "SetFilePointer",
+        .patch = iohook_SetFilePointer,
+        .link = (void *) &next_SetFilePointer,
+    },
+    {
+        .name = "SetFilePointerEx",
+        .patch = iohook_SetFilePointerEx,
+        .link = (void *) &next_SetFilePointerEx,
+    },
+    {
+        .name = "FlushFileBuffers",
+        .patch = iohook_FlushFileBuffers,
+        .link = (void *) &next_FlushFileBuffers,
     },
 };
 
 static const iohook_fn_t iohook_real_handlers[] = {
-    [IRP_OP_OPEN]   = iohook_invoke_real_open,
-    [IRP_OP_CLOSE]  = iohook_invoke_real_close,
-    [IRP_OP_READ]   = iohook_invoke_real_read,
-    [IRP_OP_WRITE]  = iohook_invoke_real_write,
-    [IRP_OP_SEEK]   = iohook_invoke_real_seek,
-    [IRP_OP_FSYNC]  = iohook_invoke_real_fsync,
-    [IRP_OP_IOCTL]  = iohook_invoke_real_ioctl,
+    [IRP_OP_OPEN] = iohook_invoke_real_open,
+    [IRP_OP_CLOSE] = iohook_invoke_real_close,
+    [IRP_OP_READ] = iohook_invoke_real_read,
+    [IRP_OP_WRITE] = iohook_invoke_real_write,
+    [IRP_OP_SEEK] = iohook_invoke_real_seek,
+    [IRP_OP_FSYNC] = iohook_invoke_real_fsync,
+    [IRP_OP_IOCTL] = iohook_invoke_real_ioctl,
 };
 
 static bool iohook_initted;
@@ -233,10 +235,10 @@ static void iohook_init(void)
     /* Splice iohook into IAT entries referencing Win32 I/O APIs */
 
     hook_table_apply(
-            NULL,
-            "kernel32.dll",
-            iohook_kernel32_syms,
-            _countof(iohook_kernel32_syms));
+        NULL,
+        "kernel32.dll",
+        iohook_kernel32_syms,
+        _countof(iohook_kernel32_syms));
 
     /* Here be dragons:
 
@@ -268,15 +270,12 @@ static void iohook_init(void)
     kernel32 = GetModuleHandleW(L"kernel32.dll");
 
     if (next_CreateFileW == NULL) {
-        next_CreateFileW = (void *) GetProcAddress(
-                kernel32,
-                "CreateFileW");
+        next_CreateFileW = (void *) GetProcAddress(kernel32, "CreateFileW");
     }
 
     if (next_SetFilePointerEx == NULL) {
-        next_SetFilePointerEx = (void *) GetProcAddress(
-                kernel32,
-                "SetFilePointerEx");
+        next_SetFilePointerEx =
+            (void *) GetProcAddress(kernel32, "SetFilePointerEx");
     }
 
     LeaveCriticalSection(&iohook_lock);
@@ -288,13 +287,13 @@ HANDLE iohook_open_dummy_fd(void)
     iohook_init();
 
     return next_CreateFileW(
-            L"NUL",
-            GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_EXISTING,
-            FILE_FLAG_OVERLAPPED,
-            NULL);
+        L"NUL",
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED,
+        NULL);
 }
 
 HRESULT iohook_open_nul_fd(HANDLE *out)
@@ -307,13 +306,13 @@ HRESULT iohook_open_nul_fd(HANDLE *out)
     iohook_init();
 
     fd = next_CreateFileW(
-            L"NUL",
-            GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_EXISTING,
-            FILE_FLAG_OVERLAPPED,
-            NULL);
+        L"NUL",
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED,
+        NULL);
 
     if (fd == NULL) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -351,10 +350,8 @@ HRESULT iohook_push_handler(iohook_fn_t fn)
     return hr;
 }
 
-static BOOL iohook_overlapped_result(
-        uint32_t *syncout,
-        OVERLAPPED *ovl,
-        uint32_t value)
+static BOOL
+iohook_overlapped_result(uint32_t *syncout, OVERLAPPED *ovl, uint32_t value)
 {
     if (ovl != NULL) {
         ovl->Internal = STATUS_SUCCESS;
@@ -429,13 +426,13 @@ static HRESULT iohook_invoke_real_open(struct irp *irp)
     assert(irp != NULL);
 
     fd = next_CreateFileW(
-            irp->open_filename,
-            irp->open_access,
-            irp->open_share,
-            irp->open_sa,
-            irp->open_creation,
-            irp->open_flags,
-            irp->open_tmpl);
+        irp->open_filename,
+        irp->open_access,
+        irp->open_share,
+        irp->open_sa,
+        irp->open_creation,
+        irp->open_flags,
+        irp->open_tmpl);
 
     if (fd == INVALID_HANDLE_VALUE) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -469,11 +466,11 @@ static HRESULT iohook_invoke_real_read(struct irp *irp)
     assert(irp != NULL);
 
     ok = next_ReadFile(
-            irp->fd,
-            &irp->read.bytes[irp->read.pos],
-            irp->read.nbytes - irp->read.pos,
-            &nread,
-            irp->ovl);
+        irp->fd,
+        &irp->read.bytes[irp->read.pos],
+        irp->read.nbytes - irp->read.pos,
+        &nread,
+        irp->ovl);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -492,11 +489,11 @@ static HRESULT iohook_invoke_real_write(struct irp *irp)
     assert(irp != NULL);
 
     ok = next_WriteFile(
-            irp->fd,
-            &irp->write.bytes[irp->write.pos],
-            irp->write.nbytes - irp->write.pos,
-            &nwrit,
-            irp->ovl);
+        irp->fd,
+        &irp->write.bytes[irp->write.pos],
+        irp->write.nbytes - irp->write.pos,
+        &nwrit,
+        irp->ovl);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -514,10 +511,7 @@ static HRESULT iohook_invoke_real_seek(struct irp *irp)
     assert(irp != NULL);
 
     ok = next_SetFilePointerEx(
-            irp->fd,
-            irp->seek_offset,
-            &irp->seek_pos,
-            irp->seek_origin);
+        irp->fd, irp->seek_offset, &irp->seek_pos, irp->seek_origin);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -556,14 +550,14 @@ static HRESULT iohook_invoke_real_ioctl(struct irp *irp)
     assert(irp->read.pos == 0);
 
     ok = next_DeviceIoControl(
-            irp->fd,
-            irp->ioctl,
-            (void *) irp->write.bytes, // Cast off const
-            irp->write.nbytes,
-            irp->read.bytes,
-            irp->read.nbytes,
-            &nread,
-            irp->ovl);
+        irp->fd,
+        irp->ioctl,
+        (void *) irp->write.bytes, // Cast off const
+        irp->write.nbytes,
+        irp->read.bytes,
+        irp->read.nbytes,
+        &nread,
+        irp->ovl);
 
     /* Must be propagated even if there is an error, see
        iohook_DeviceIoControl. */
@@ -578,13 +572,13 @@ static HRESULT iohook_invoke_real_ioctl(struct irp *irp)
 }
 
 static HANDLE WINAPI iohook_CreateFileA(
-        const char *lpFileName,
-        uint32_t dwDesiredAccess,
-        uint32_t dwShareMode,
-        SECURITY_ATTRIBUTES *lpSecurityAttributes,
-        uint32_t dwCreationDisposition,
-        uint32_t dwFlagsAndAttributes,
-        HANDLE hTemplateFile)
+    const char *lpFileName,
+    uint32_t dwDesiredAccess,
+    uint32_t dwShareMode,
+    SECURITY_ATTRIBUTES *lpSecurityAttributes,
+    uint32_t dwCreationDisposition,
+    uint32_t dwFlagsAndAttributes,
+    HANDLE hTemplateFile)
 {
     wchar_t *wfilename;
     int nchars;
@@ -616,12 +610,13 @@ static HANDLE WINAPI iohook_CreateFileA(
     }
 
     fd = iohook_CreateFileW(
-            wfilename,
-            dwDesiredAccess,
-            dwShareMode,
-            lpSecurityAttributes,
-            dwCreationDisposition, dwFlagsAndAttributes,
-            hTemplateFile);
+        wfilename,
+        dwDesiredAccess,
+        dwShareMode,
+        lpSecurityAttributes,
+        dwCreationDisposition,
+        dwFlagsAndAttributes,
+        hTemplateFile);
 
 end:
     free(wfilename);
@@ -630,13 +625,13 @@ end:
 }
 
 static HANDLE WINAPI iohook_CreateFileW(
-        const wchar_t *lpFileName,
-        uint32_t dwDesiredAccess,
-        uint32_t dwShareMode,
-        SECURITY_ATTRIBUTES *lpSecurityAttributes,
-        uint32_t dwCreationDisposition,
-        uint32_t dwFlagsAndAttributes,
-        HANDLE hTemplateFile)
+    const wchar_t *lpFileName,
+    uint32_t dwDesiredAccess,
+    uint32_t dwShareMode,
+    SECURITY_ATTRIBUTES *lpSecurityAttributes,
+    uint32_t dwCreationDisposition,
+    uint32_t dwFlagsAndAttributes,
+    HANDLE hTemplateFile)
 {
     struct irp irp;
     HRESULT hr;
@@ -696,11 +691,11 @@ static BOOL WINAPI iohook_CloseHandle(HANDLE hFile)
 }
 
 static BOOL WINAPI iohook_ReadFile(
-        HANDLE hFile,
-        void *lpBuffer,
-        uint32_t nNumberOfBytesToRead,
-        uint32_t *lpNumberOfBytesRead,
-        OVERLAPPED *lpOverlapped)
+    HANDLE hFile,
+    void *lpBuffer,
+    uint32_t nNumberOfBytesToRead,
+    uint32_t *lpNumberOfBytesRead,
+    OVERLAPPED *lpOverlapped)
 {
     struct irp irp;
     HRESULT hr;
@@ -738,17 +733,15 @@ static BOOL WINAPI iohook_ReadFile(
     assert(irp.read.pos <= irp.read.nbytes);
 
     return iohook_overlapped_result(
-            lpNumberOfBytesRead,
-            lpOverlapped,
-            irp.read.pos);
+        lpNumberOfBytesRead, lpOverlapped, irp.read.pos);
 }
 
 static BOOL WINAPI iohook_WriteFile(
-        HANDLE hFile,
-        const void *lpBuffer,
-        uint32_t nNumberOfBytesToWrite,
-        uint32_t *lpNumberOfBytesWritten,
-        OVERLAPPED *lpOverlapped)
+    HANDLE hFile,
+    const void *lpBuffer,
+    uint32_t nNumberOfBytesToWrite,
+    uint32_t *lpNumberOfBytesWritten,
+    OVERLAPPED *lpOverlapped)
 {
     struct irp irp;
     HRESULT hr;
@@ -786,16 +779,14 @@ static BOOL WINAPI iohook_WriteFile(
     assert(irp.write.pos <= irp.write.nbytes);
 
     return iohook_overlapped_result(
-            lpNumberOfBytesWritten,
-            lpOverlapped,
-            irp.write.pos);
+        lpNumberOfBytesWritten, lpOverlapped, irp.write.pos);
 }
 
 static DWORD WINAPI iohook_SetFilePointer(
-        HANDLE hFile,
-        int32_t lDistanceToMove,
-        int32_t *lpDistanceToMoveHigh,
-        uint32_t dwMoveMethod)
+    HANDLE hFile,
+    int32_t lDistanceToMove,
+    int32_t *lpDistanceToMoveHigh,
+    uint32_t dwMoveMethod)
 {
     struct irp irp;
     HRESULT hr;
@@ -816,10 +807,10 @@ static DWORD WINAPI iohook_SetFilePointer(
        with sign-extension vs zero-extension here. */
 
     if (lpDistanceToMoveHigh != NULL) {
-        irp.seek_offset = ((( int64_t) *lpDistanceToMoveHigh) << 32) |
-                           ((uint64_t) lDistanceToMove      )        ;
+        irp.seek_offset = (((int64_t) *lpDistanceToMoveHigh) << 32) |
+            ((uint64_t) lDistanceToMove);
     } else {
-        irp.seek_offset =   ( int64_t) lDistanceToMove;
+        irp.seek_offset = (int64_t) lDistanceToMove;
     }
 
     hr = iohook_invoke_next(&irp);
@@ -838,10 +829,10 @@ static DWORD WINAPI iohook_SetFilePointer(
 }
 
 static BOOL WINAPI iohook_SetFilePointerEx(
-        HANDLE hFile,
-        int64_t liDistanceToMove,
-        uint64_t *lpNewFilePointer,
-        uint32_t dwMoveMethod)
+    HANDLE hFile,
+    int64_t liDistanceToMove,
+    uint64_t *lpNewFilePointer,
+    uint32_t dwMoveMethod)
 {
     struct irp irp;
     HRESULT hr;
@@ -902,14 +893,14 @@ static BOOL WINAPI iohook_FlushFileBuffers(HANDLE hFile)
 }
 
 static BOOL WINAPI iohook_DeviceIoControl(
-        HANDLE hFile,
-        uint32_t dwIoControlCode,
-        void *lpInBuffer,
-        uint32_t nInBufferSize,
-        void *lpOutBuffer,
-        uint32_t nOutBufferSize,
-        uint32_t *lpBytesReturned,
-        OVERLAPPED *lpOverlapped)
+    HANDLE hFile,
+    uint32_t dwIoControlCode,
+    void *lpInBuffer,
+    uint32_t nInBufferSize,
+    void *lpOutBuffer,
+    uint32_t nOutBufferSize,
+    uint32_t *lpBytesReturned,
+    OVERLAPPED *lpOverlapped)
 {
     struct irp irp;
     HRESULT hr;
@@ -963,7 +954,5 @@ static BOOL WINAPI iohook_DeviceIoControl(
     }
 
     return iohook_overlapped_result(
-            lpBytesReturned,
-            lpOverlapped,
-            irp.read.pos);
+        lpBytesReturned, lpOverlapped, irp.read.pos);
 }

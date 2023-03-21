@@ -74,7 +74,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                 options->disable_p4ioemu = true;
                 break;
             }
-            
+
             case 's': {
                 options->show_cursor = true;
                 break;

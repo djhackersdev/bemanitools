@@ -72,7 +72,8 @@ iidxhook4_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.forced_refresh_rate = config_gfx->forced_refresh_rate;
     d3d9_config.device_adapter = config_gfx->device_adapter;
     d3d9_config.iidx14_to_19_nvidia_fix = true;
-    d3d9_config.iidx18_and_19_diagonal_tearing_fix = config_gfx->diagonal_tearing_fix;
+    d3d9_config.iidx18_and_19_diagonal_tearing_fix =
+        config_gfx->diagonal_tearing_fix;
 
     if (config_gfx->monitor_check == 0) {
         log_info("Auto monitor check enabled");
@@ -140,11 +141,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     if (!config_io.disable_io_emu) {
         log_info("Starting IIDX IO backend");
-        
+
         iidx_io_set_loggers(
             log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!iidx_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     } else {
@@ -153,11 +155,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     if (!config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        
+
         eam_io_set_loggers(
             log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!eam_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing card reader backend failed");
         }
     } else {

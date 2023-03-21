@@ -49,7 +49,4 @@ struct com_proxy {
       unless you provide a custom QueryInterface implementation to prevent them
       from doing so. */
 
-HRESULT com_proxy_wrap(
-        struct com_proxy **out,
-        void *real,
-        size_t vtbl_size);
+HRESULT com_proxy_wrap(struct com_proxy **out, void *real, size_t vtbl_size);

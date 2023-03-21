@@ -215,7 +215,8 @@ int main(int argc, const char **argv)
     /* Load game DLL */
 
     if (options.iat_hook_dlls.nitems > 0) {
-        module_context_init_with_iat_hooks(&module, options.module, &options.iat_hook_dlls);
+        module_context_init_with_iat_hooks(
+            &module, options.module, &options.iat_hook_dlls);
     } else {
         module_context_init(&module, options.module);
     }
@@ -302,9 +303,7 @@ int main(int argc, const char **argv)
         log_info("Overriding service url to: %s", options.override_service);
 
         ea3_ident_replace_property_str(
-            ea3_config_root,
-            "/network/services",
-            options.override_service);
+            ea3_config_root, "/network/services", options.override_service);
     }
 
     /* Start up e-Amusement client */

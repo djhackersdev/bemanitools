@@ -1,7 +1,7 @@
 #define LOG_MODULE "util-iobuf"
 
-#include "util/hex.h"
 #include "util/iobuf.h"
+#include "util/hex.h"
 #include "util/log.h"
 #include "util/mem.h"
 

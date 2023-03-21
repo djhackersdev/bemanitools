@@ -7,9 +7,8 @@
 
 #include "util/log.h"
 
-static bool aciodrv_kfca_watchdog_start(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+static bool
+aciodrv_kfca_watchdog_start(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 
@@ -25,11 +24,15 @@ static bool aciodrv_kfca_watchdog_start(
 
     if (!aciodrv_send_and_recv(
             device, &msg, offsetof(struct ac_io_message, cmd.raw) + 2)) {
-        log_warning("Starting watchdog failed"); return false;
+        log_warning("Starting watchdog failed");
+        return false;
     }
 
-    log_warning("Started watchdog of node %d, sz: %d, status: %d",
-        node_id, msg.cmd.nbytes, msg.cmd.status);
+    log_warning(
+        "Started watchdog of node %d, sz: %d, status: %d",
+        node_id,
+        msg.cmd.nbytes,
+        msg.cmd.status);
 
     return true;
 }
@@ -56,9 +59,7 @@ bool aciodrv_kfca_amp(
     msg.cmd.raw[3] = subwoofer;
 
     if (!aciodrv_send_and_recv(
-            device,
-            &msg,
-            offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Setting AMP failed");
         return false;
     }
@@ -68,9 +69,7 @@ bool aciodrv_kfca_amp(
     return true;
 }
 
-bool aciodrv_kfca_init(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+bool aciodrv_kfca_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     log_assert(device);
 

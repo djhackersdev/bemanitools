@@ -70,9 +70,9 @@ struct ezusb2_popn_msg_interrupt_read_packet {
     union {
         uint32_t inverted_pad;
         struct {
-            uint8_t  sys; /* test/service bitfield */
+            uint8_t sys; /* test/service bitfield */
             uint16_t button; /* button bitfield */
-            uint8_t  dipsw; /* dip switches */
+            uint8_t dipsw; /* dip switches */
         };
     } io;
     uint8_t unk5; /* 0x00 */

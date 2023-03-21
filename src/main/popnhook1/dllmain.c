@@ -43,8 +43,8 @@
 
 #include "security/rp-sign-key.h"
 
-#define POPNHOOK1_INFO_HEADER \
-    "popnhook1 for pop'n music 15, 16, 17, 18"    \
+#define POPNHOOK1_INFO_HEADER                  \
+    "popnhook1 for pop'n music 15, 16, 17, 18" \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define POPNHOOK1_CMD_USAGE \
     "Usage: inject.exe popnhook1.dll <popn.exe> [options...]"
@@ -63,8 +63,7 @@ static const struct hook_symbol init_hook_syms[] = {
 };
 
 static void popnhook_setup_d3d9_hooks(
-    const struct popnhook1_config_gfx *config_gfx,
-    const bool texture_usage_fix)
+    const struct popnhook1_config_gfx *config_gfx, const bool texture_usage_fix)
 {
     struct popnhook1_d3d9_config d3d9_config;
 
@@ -119,9 +118,12 @@ static DWORD STDCALL my_GetStartupInfoA(LPSTARTUPINFOA lpStartupInfo)
 
     popnhook_setup_d3d9_hooks(
         &config_gfx,
-        // pop'n music 16 requires a patch for the texture usage to not crash on newer Windows
-        memcmp(config_sec.black_plug_mcode.game, SECURITY_MCODE_GAME_POPN_16, sizeof(config_sec.black_plug_mcode.game)) == 0
-    );
+        // pop'n music 16 requires a patch for the texture usage to not crash on
+        // newer Windows
+        memcmp(
+            config_sec.black_plug_mcode.game,
+            SECURITY_MCODE_GAME_POPN_16,
+            sizeof(config_sec.black_plug_mcode.game)) == 0);
 
     popnhook1_avs_boot_init();
     popnhook1_avs_boot_set_eamuse_addr(&config_eamuse.server);

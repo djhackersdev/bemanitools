@@ -185,8 +185,7 @@ static void gfx_d3d9_patch_window(struct hook_d3d9_irp *irp)
     }
 }
 
-static void
-gfx_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
+static void gfx_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
@@ -215,8 +214,7 @@ gfx_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
     }
 }
 
-static void gfx_d3d9_create_device_apply_window_mode(
-    struct hook_d3d9_irp *irp)
+static void gfx_d3d9_create_device_apply_window_mode(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
@@ -231,8 +229,7 @@ static void gfx_d3d9_create_device_apply_window_mode(
     }
 }
 
-static void gfx_d3d9_reset_apply_window_mode(
-    struct hook_d3d9_irp *irp)
+static void gfx_d3d9_reset_apply_window_mode(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_RESET);

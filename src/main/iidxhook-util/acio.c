@@ -33,7 +33,6 @@ static struct ac_io_emu_icca iidxhook_util_acio_emu_icca[2];
 static bool iidxhook_util_icca_override_version;
 static enum ac_io_emu_icca_version iidxhook_util_icca_override_version_value;
 
-
 void iidxhook_util_acio_override_version(enum ac_io_emu_icca_version version)
 {
     iidxhook_util_icca_override_version = true;
@@ -56,8 +55,7 @@ void iidxhook_util_acio_init(bool legacy_mode)
         if (iidxhook_util_icca_override_version) {
             ac_io_emu_icca_set_version(
                 &iidxhook_util_acio_emu_icca[i],
-                iidxhook_util_icca_override_version_value
-            );
+                iidxhook_util_icca_override_version_value);
         }
     }
 

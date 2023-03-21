@@ -25,29 +25,37 @@ static bool p4io_transfer(
     const void *req_payload,
     size_t req_payload_len,
     void *resp_payload,
-    size_t resp_payload_len
-) {
+    size_t resp_payload_len)
+{
     size_t transferred_response_payload = resp_payload_len;
-    bool ret = p4io_usb_transfer(ctx->bulk_handle, cmd, ctx->seq_no,
-        req_payload, req_payload_len,
-        resp_payload, &transferred_response_payload);
+    bool ret = p4io_usb_transfer(
+        ctx->bulk_handle,
+        cmd,
+        ctx->seq_no,
+        req_payload,
+        req_payload_len,
+        resp_payload,
+        &transferred_response_payload);
 
     ctx->seq_no++;
 
-    if(!ret) {
+    if (!ret) {
         return false;
     }
 
-    if(resp_payload_len && transferred_response_payload != resp_payload_len) {
-        log_warning("Asked for %u bytes got %u", (unsigned)resp_payload_len,
-            (unsigned)transferred_response_payload);
+    if (resp_payload_len && transferred_response_payload != resp_payload_len) {
+        log_warning(
+            "Asked for %u bytes got %u",
+            (unsigned) resp_payload_len,
+            (unsigned) transferred_response_payload);
         return false;
     }
 
     return true;
 }
 
-struct p4iodrv_ctx *p4iodrv_open(void) {
+struct p4iodrv_ctx *p4iodrv_open(void)
+{
     struct p4iodrv_ctx *ctx = xcalloc(sizeof(struct p4iodrv_ctx));
 
     // jamma is read as fast as possible in its own thread, so having them be
@@ -57,14 +65,15 @@ struct p4iodrv_ctx *p4iodrv_open(void) {
     ctx->bulk_handle = p4io_usb_open();
     ctx->seq_no = 0;
 
-    if(ctx->jamma_handle == INVALID_HANDLE_VALUE || ctx->bulk_handle == INVALID_HANDLE_VALUE) {
+    if (ctx->jamma_handle == INVALID_HANDLE_VALUE ||
+        ctx->bulk_handle == INVALID_HANDLE_VALUE) {
         free(ctx);
         return NULL;
     }
 
     p4io_cmd_init(ctx);
 
-    if(!p4io_print_version(ctx)) {
+    if (!p4io_print_version(ctx)) {
         free(ctx);
         return NULL;
     }
@@ -72,18 +81,21 @@ struct p4iodrv_ctx *p4iodrv_open(void) {
     return ctx;
 }
 
-void p4iodrv_close(struct p4iodrv_ctx *ctx) {
+void p4iodrv_close(struct p4iodrv_ctx *ctx)
+{
     p4io_usb_close(ctx->jamma_handle);
     p4io_usb_close(ctx->bulk_handle);
     free(ctx);
 }
 
-bool p4iodrv_read_jamma(struct p4iodrv_ctx *ctx, uint32_t jamma[4]) {
+bool p4iodrv_read_jamma(struct p4iodrv_ctx *ctx, uint32_t jamma[4])
+{
     return p4io_usb_read_jamma(ctx->jamma_handle, jamma);
 }
 
 // send something you don't expect a response for
-static bool p4io_send(struct p4iodrv_ctx *ctx, uint8_t cmd) {
+static bool p4io_send(struct p4iodrv_ctx *ctx, uint8_t cmd)
+{
     return p4io_transfer(ctx, cmd, NULL, 0, NULL, 0);
 }
 
@@ -91,19 +103,21 @@ static bool p4io_send(struct p4iodrv_ctx *ctx, uint8_t cmd) {
 // Even if we were to check the return value here, the reset command returns a 0
 // byte response - not even an "OK" status, 0 bytes in total. That technically
 // should be raising an error, but because reset is a special case it's ignored
-static void p4io_cmd_init(struct p4iodrv_ctx *ctx) {
+static void p4io_cmd_init(struct p4iodrv_ctx *ctx)
+{
     p4io_send(ctx, P4IO_CMD_INIT);
 }
 
-static bool p4io_print_version(struct p4iodrv_ctx *ctx) {
+static bool p4io_print_version(struct p4iodrv_ctx *ctx)
+{
     char p4io_name[128];
 
-    if(!p4io_usb_read_device_name(ctx->bulk_handle, p4io_name)) {
+    if (!p4io_usb_read_device_name(ctx->bulk_handle, p4io_name)) {
         return false;
     }
 
     struct p4io_resp_device_info dev_info;
-    if(!p4iodrv_cmd_device_info(ctx, &dev_info)) {
+    if (!p4iodrv_cmd_device_info(ctx, &dev_info)) {
         log_warning("p4io get_device_info failed");
         return false;
     }
@@ -113,21 +127,30 @@ static bool p4io_print_version(struct p4iodrv_ctx *ctx) {
 
     log_info("p4io name: %s", p4io_name);
     log_info("p4io type: %08X", dev_info.type);
-    log_info("p4io version: %d.%d.%d", dev_info.version_major, dev_info.version_minor, dev_info.version_revision);
+    log_info(
+        "p4io version: %d.%d.%d",
+        dev_info.version_major,
+        dev_info.version_minor,
+        dev_info.version_revision);
     log_info("p4io product: %.4s", dev_info.product_code);
     log_info("p4io build date: %.16s", dev_info.build_date);
     log_info("p4io build time: %.16s", dev_info.build_time);
     return true;
 }
 
-bool p4iodrv_cmd_device_info(struct p4iodrv_ctx *ctx, struct p4io_resp_device_info *info) {
-    return p4io_transfer(ctx, P4IO_CMD_GET_DEVICE_INFO, NULL, 0, info, sizeof(*info));
+bool p4iodrv_cmd_device_info(
+    struct p4iodrv_ctx *ctx, struct p4io_resp_device_info *info)
+{
+    return p4io_transfer(
+        ctx, P4IO_CMD_GET_DEVICE_INFO, NULL, 0, info, sizeof(*info));
 }
 
-bool p4iodrv_cmd_portout(struct p4iodrv_ctx *ctx, const uint8_t buffer[16]) {
+bool p4iodrv_cmd_portout(struct p4iodrv_ctx *ctx, const uint8_t buffer[16])
+{
     return p4io_transfer(ctx, P4IO_CMD_SET_PORTOUT, buffer, 16, NULL, 0);
 }
 
-bool p4iodrv_cmd_coinstock(struct p4iodrv_ctx *ctx, const uint8_t buffer[4]) {
+bool p4iodrv_cmd_coinstock(struct p4iodrv_ctx *ctx, const uint8_t buffer[4])
+{
     return p4io_transfer(ctx, P4IO_CMD_COINSTOCK, buffer, 4, NULL, 0);
 }

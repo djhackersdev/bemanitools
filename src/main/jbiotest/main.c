@@ -14,11 +14,7 @@ typedef struct {
     uint8_t r, g, b;
 } rgb_t;
 
-enum jbio_light_mode {
-    LIGHTS_OFF,
-    LIGHTS_ON,
-    LIGHTS_INPUT
-};
+enum jbio_light_mode { LIGHTS_OFF, LIGHTS_ON, LIGHTS_INPUT };
 
 #define IS_BIT_SET(var, bit) ((((var) >> (bit)) & 1) > 0)
 
@@ -65,12 +61,12 @@ int main(int argc, char **argv)
             return -2;
         }
 
-        if(panel_corners_animate && (cnt % 50) == 0) {
+        if (panel_corners_animate && (cnt % 50) == 0) {
             panel_mode++;
             panel_mode %= 5;
 
             // skip the all state
-            if(panel_mode == JB_IO_PANEL_MODE_ALL) {
+            if (panel_mode == JB_IO_PANEL_MODE_ALL) {
                 panel_mode++;
             }
 
@@ -79,7 +75,7 @@ int main(int argc, char **argv)
 
         all_text = "   ";
         top_left = top_right = bottom_left = bottom_right = ' ';
-        switch(panel_mode) {
+        switch (panel_mode) {
             case JB_IO_PANEL_MODE_ALL:
                 all_text = "ALL";
                 top_left = top_right = bottom_left = bottom_right = '*';
@@ -269,7 +265,7 @@ int main(int argc, char **argv)
 
                 case '5': {
                     panel_corners_animate = !panel_corners_animate;
-                    if(!panel_corners_animate) {
+                    if (!panel_corners_animate) {
                         panel_mode = JB_IO_PANEL_MODE_ALL;
                         jb_io_set_panel_mode(panel_mode);
                     }

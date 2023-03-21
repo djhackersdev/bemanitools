@@ -103,8 +103,6 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no);
    Range is between 0-96, where 0 is MAX and 96 is LOW. */
 
 bool sdvx_io_set_amp_volume(
-    uint8_t primary,
-    uint8_t headphone,
-    uint8_t subwoofer);
+    uint8_t primary, uint8_t headphone, uint8_t subwoofer);
 
 #endif

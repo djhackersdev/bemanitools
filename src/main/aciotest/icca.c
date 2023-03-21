@@ -5,7 +5,6 @@
 
 #include "aciodrv/icca.h"
 
-
 #define IDLE_RESPONSES_BETWEEN_FELICA_POLLS 5
 
 struct icca_handler_ctx {
@@ -19,7 +18,7 @@ bool aciotest_icca_handler_init(
 {
     *ctx = malloc(sizeof(struct icca_handler_ctx));
 
-    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx*)*ctx;
+    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx *) *ctx;
     icca_ctx->init = false;
 
     icca_ctx->slotted_reader = true;
@@ -34,7 +33,7 @@ bool aciotest_icca_handler_init(
 bool aciotest_icca_handler_update(
     struct aciodrv_device_ctx *device, uint8_t node_id, void *ctx)
 {
-    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx*)ctx;
+    struct icca_handler_ctx *icca_ctx = (struct icca_handler_ctx *) ctx;
 
     if (icca_ctx->init == false) {
         icca_ctx->init = true;

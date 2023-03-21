@@ -12,7 +12,6 @@
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
 
-
 static bool module_replace_dll_iat(HMODULE hModule, struct array *iat_hook_dlls)
 {
     log_assert(hModule);
@@ -21,23 +20,25 @@ static bool module_replace_dll_iat(HMODULE hModule, struct array *iat_hook_dlls)
     if (iat_hook_dlls->nitems == 0)
         return true;
 
-    PBYTE pbModule = (PBYTE)hModule;
+    PBYTE pbModule = (PBYTE) hModule;
 
     // Find EXE base in process memory
     IMAGE_DOS_HEADER *idh = (IMAGE_DOS_HEADER *) pbModule;
     IMAGE_NT_HEADERS *inh = (IMAGE_NT_HEADERS *) (pbModule + idh->e_lfanew);
 
-    // Search through import table if it exists and replace the target DLL with our DLL filename
-    PIMAGE_SECTION_HEADER pRemoteSectionHeaders
-    = (PIMAGE_SECTION_HEADER)((PBYTE)pbModule
-                                + sizeof(inh->Signature)
-                                + sizeof(inh->FileHeader)
-                                + inh->FileHeader.SizeOfOptionalHeader);
+    // Search through import table if it exists and replace the target DLL with
+    // our DLL filename
+    PIMAGE_SECTION_HEADER pRemoteSectionHeaders =
+        (PIMAGE_SECTION_HEADER) ((PBYTE) pbModule + sizeof(inh->Signature) +
+                                 sizeof(inh->FileHeader) +
+                                 inh->FileHeader.SizeOfOptionalHeader);
     size_t total_size = inh->OptionalHeader.SizeOfHeaders;
 
     for (DWORD n = 0; n < inh->FileHeader.NumberOfSections; ++n) {
-        IMAGE_SECTION_HEADER *header = (IMAGE_SECTION_HEADER *)(pRemoteSectionHeaders + n);
-        size_t new_total_size = header->VirtualAddress + header->Misc.VirtualSize;
+        IMAGE_SECTION_HEADER *header =
+            (IMAGE_SECTION_HEADER *) (pRemoteSectionHeaders + n);
+        size_t new_total_size =
+            header->VirtualAddress + header->Misc.VirtualSize;
         if (new_total_size > total_size)
             total_size = new_total_size;
     }
@@ -55,20 +56,29 @@ static bool module_replace_dll_iat(HMODULE hModule, struct array *iat_hook_dlls)
 
     log_assert(remote_addr != NULL);
 
-    if (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0) {
-        PIMAGE_IMPORT_DESCRIPTOR pImageImport = (PIMAGE_IMPORT_DESCRIPTOR)(pbModule
-        + inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    if (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+            .VirtualAddress != 0) {
+        PIMAGE_IMPORT_DESCRIPTOR pImageImport =
+            (PIMAGE_IMPORT_DESCRIPTOR) (pbModule +
+                                        inh->OptionalHeader
+                                            .DataDirectory
+                                                [IMAGE_DIRECTORY_ENTRY_IMPORT]
+                                            .VirtualAddress);
 
         DWORD size = 0;
-        while (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size == 0
-        || size < inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size) {
-            IMAGE_IMPORT_DESCRIPTOR *ImageImport = (IMAGE_IMPORT_DESCRIPTOR *)pImageImport;
+        while (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+                       .Size == 0 ||
+               size < inh->OptionalHeader
+                          .DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+                          .Size) {
+            IMAGE_IMPORT_DESCRIPTOR *ImageImport =
+                (IMAGE_IMPORT_DESCRIPTOR *) pImageImport;
 
             if (ImageImport->Name == 0) {
                 break;
             }
 
-            const char *name = (const char *)(pbModule + ImageImport->Name);
+            const char *name = (const char *) (pbModule + ImageImport->Name);
 
             for (size_t i = 0; i < iat_hook_dlls->nitems; i++) {
                 const char *iat_hook_dll =
@@ -85,11 +95,15 @@ static bool module_replace_dll_iat(HMODULE hModule, struct array *iat_hook_dlls)
                 const char *replacement_path_dll = iat_hook_replacement + 1;
 
                 if (strcmp(name, expected_dll) == 0) {
-                    pe_patch((PBYTE)remote_addr + remote_addr_ptr, replacement_path_dll, strlen(replacement_path_dll));
+                    pe_patch(
+                        (PBYTE) remote_addr + remote_addr_ptr,
+                        replacement_path_dll,
+                        strlen(replacement_path_dll));
 
-                    log_misc("Replacing %s with %s", name, replacement_path_dll);
+                    log_misc(
+                        "Replacing %s with %s", name, replacement_path_dll);
 
-                    DWORD val = (DWORD)((PBYTE)remote_addr - pbModule);
+                    DWORD val = (DWORD) ((PBYTE) remote_addr - pbModule);
                     pe_patch(&ImageImport->Name, &val, sizeof(DWORD));
                     pe_patch(pImageImport, &ImageImport, sizeof(ImageImport));
 
@@ -147,8 +161,10 @@ void module_context_init(struct module_context *module, const char *path)
     module->path = str_dup(path);
 }
 
-
-void module_context_init_with_iat_hooks(struct module_context *module, const char *path, struct array *iat_hook_dlls)
+void module_context_init_with_iat_hooks(
+    struct module_context *module,
+    const char *path,
+    struct array *iat_hook_dlls)
 {
     log_assert(module != NULL);
     log_assert(path != NULL);

@@ -3,12 +3,12 @@
 
 /**
  * Hooks  UNIS support functions
- * 
+ *
  * patches:
  * - unis config path
  * - unis network functions
- * 
+ *
  */
-void unis_version_hook_init(const char* unis_path);
+void unis_version_hook_init(const char *unis_path);
 
 #endif

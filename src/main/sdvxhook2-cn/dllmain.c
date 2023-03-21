@@ -32,7 +32,7 @@
 #include "util/thread.h"
 
 #define SDVXHOOK2_CN_INFO_HEADER \
-    "sdvxhook for VW CN"        \
+    "sdvxhook for VW CN"         \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
 #define SDVXHOOK2_CN_CMD_USAGE \
     "Usage: launcher.exe -K sdvxhook2.dll <soundvoltex.dll> [options...]"

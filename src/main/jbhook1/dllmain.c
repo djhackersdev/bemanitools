@@ -108,7 +108,7 @@ static HWND CDECL my_mwindow_create(
 
     fullscreen = !config_gfx.windowed;
 
-    if(config_gfx.vertical) {
+    if (config_gfx.vertical) {
         DWORD tmp = window_width;
         window_width = window_height;
         window_height = tmp;

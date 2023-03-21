@@ -18,8 +18,10 @@
 #define D3D9EXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define D3D9EXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
 #define D3D9EXHOOK_CONFIG_GFX_FORCE_ORIENTATION_KEY "gfx.force_orientation"
-#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY "gfx.force_screen_res.width"
-#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY "gfx.force_screen_res.height"
+#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY \
+    "gfx.force_screen_res.width"
+#define D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY \
+    "gfx.force_screen_res.height"
 
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_WINDOWED_VALUE false
@@ -103,15 +105,19 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         config,
         D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_WIDTH_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE,
-        "Force a screen resolution (width), -1 to disable. Use this if the game does not auto "
-        "detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720.");
+        "Force a screen resolution (width), -1 to disable. Use this if the "
+        "game does not auto "
+        "detect your monitor's resolution properly, e.g. 1368x768 instead of "
+        "1280x720.");
 
     cconfig_util_set_int(
         config,
         D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY,
         D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE,
-        "Force a screen resolution (height), -1 to disable. Use this if the game does not auto "
-        "detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720.");
+        "Force a screen resolution (height), -1 to disable. Use this if the "
+        "game does not auto "
+        "detect your monitor's resolution properly, e.g. 1368x768 instead of "
+        "1280x720.");
 }
 
 void d3d9exhook_config_gfx_get(

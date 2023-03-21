@@ -105,7 +105,6 @@ struct aciomgr_port_dispatcher *aciomgr_port_init(const char *path, int baud)
         return NULL;
     }
 
-
     struct aciomgr_port_dispatcher *entry;
 
     EnterCriticalSection(&mgr_cs);

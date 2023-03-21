@@ -1,6 +1,6 @@
-#include <windows.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <windows.h>
 
 #include <setupapi.h>
 
@@ -23,8 +23,7 @@ static HMODULE real_pe = NULL;
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    if (reason == DLL_PROCESS_ATTACH && real_pe == NULL)
-    {
+    if (reason == DLL_PROCESS_ATTACH && real_pe == NULL) {
         pe_hijack_entrypoint(EZUSB_REAL_DLL_FILENAME, &real_entrypoint);
 
         real_pe = GetModuleHandleA(EZUSB_REAL_DLL_FILENAME);

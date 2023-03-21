@@ -1,6 +1,6 @@
 #include "security/id.h"
-#include "security/rp2.h"
 #include "security/rp-sign-key.h"
+#include "security/rp2.h"
 
 #include "test/check.h"
 #include "test/test.h"

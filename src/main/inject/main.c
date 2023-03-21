@@ -92,7 +92,8 @@ verify_hook_dlls_exist(int argc, char **argv, uint32_t hook_dll_count)
 
         if (dll_path_length == 0) {
             log_warning(
-                "ERROR: Hook DLL not found: %08x", (unsigned int) GetLastError());
+                "ERROR: Hook DLL not found: %08x",
+                (unsigned int) GetLastError());
 
             return false;
         }
@@ -114,7 +115,7 @@ static bool inject_iat_hook_dlls(uint32_t hooks, char **argv)
             continue;
 
         *iat_hook = '\0';
-        debugger_replace_dll_iat(argv[i + 1], iat_hook+1);
+        debugger_replace_dll_iat(argv[i + 1], iat_hook + 1);
         *iat_hook = '=';
     }
 

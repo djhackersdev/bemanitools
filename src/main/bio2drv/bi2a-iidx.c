@@ -14,9 +14,8 @@
 // in all inputs and outputs (over sub IO) other than 14 keys to not work.
 static const uint8_t _BIO2DR_BI2A_IIDX_INIT_DATA = 0x2D;
 
-static bool bio2drv_bi2a_iidx_init_io(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+static bool
+bio2drv_bi2a_iidx_init_io(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 
@@ -28,9 +27,7 @@ static bool bio2drv_bi2a_iidx_init_io(
     msg.cmd.param = _BIO2DR_BI2A_IIDX_INIT_DATA;
 
     if (!aciodrv_send_and_recv(
-            device,
-            &msg,
-            offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Init node failed");
         return 0;
     }
@@ -41,8 +38,7 @@ static bool bio2drv_bi2a_iidx_init_io(
 }
 
 static bool bio2drv_bi2a_iidx_watchdog_start(
-    struct aciodrv_device_ctx *device,
-    uint8_t node_id)
+    struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     log_assert(device);
 

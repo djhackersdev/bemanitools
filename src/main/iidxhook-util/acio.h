@@ -20,7 +20,6 @@
  */
 void iidxhook_util_acio_init(bool legacy_mode);
 
-
 /**
  * Use the specified ICCA emulation version
  */

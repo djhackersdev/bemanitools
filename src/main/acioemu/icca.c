@@ -147,7 +147,7 @@ void ac_io_emu_icca_dispatch_request(
             break;
 
         case AC_IO_ICCA_CMD_SET_SLOT_STATE: {
-            if(icca->version == v150) {
+            if (icca->version == v150) {
                 ac_io_emu_icca_send_state(icca, req, 0, false);
             } else {
                 struct ac_io_icca_misc *misc =
@@ -267,8 +267,7 @@ static void ac_io_emu_icca_cmd_send_version(
     } else {
         // probably log invalid version here
         log_warning(
-            "Unknown ICCA version: %d emulation requested",
-            icca->version);
+            "Unknown ICCA version: %d emulation requested", icca->version);
     }
 
     resp.cmd.version.revision = 0x00;
@@ -487,7 +486,7 @@ ac_io_emu_icca_cipher(struct ac_io_emu_icca *icca, uint8_t *data, size_t length)
 
         // process data
         data[i] =
-            (uint8_t)(icca->cipher_keys[0] >> (((3 - count4) << 3)) ^ data[i]);
+            (uint8_t) (icca->cipher_keys[0] >> (((3 - count4) << 3)) ^ data[i]);
     }
 }
 
@@ -512,7 +511,7 @@ static void ac_io_emu_icca_cipher_set_key(
     resp.cmd.raw[0] = (reader_key >> 24) & 0xFF;
     resp.cmd.raw[1] = (reader_key >> 16) & 0xFF;
     resp.cmd.raw[2] = (reader_key >> 8) & 0xFF;
-    resp.cmd.raw[3] = (reader_key) & 0xFF;
+    resp.cmd.raw[3] = (reader_key) &0xFF;
 
     // so I looked these constants up, this isn't actually a secure key
     // generator it's actually Marsaglia's "KISS" algorithm with different

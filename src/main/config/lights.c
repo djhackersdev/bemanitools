@@ -382,8 +382,8 @@ static INT_PTR lights_handle_pulse_tick(HWND hwnd)
     }
 
     bias = (float) (ui->lights[light_no].value_min);
-    scale =
-        (float) (ui->lights[light_no].value_max - ui->lights[light_no].value_min);
+    scale = (float) (ui->lights[light_no].value_max -
+                     ui->lights[light_no].value_min);
 
     /* Intensity perception is non-linear. Pulse quadratically. */
 

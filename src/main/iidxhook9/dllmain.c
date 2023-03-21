@@ -61,7 +61,8 @@ static struct bio2emu_port bio2_emu = {
     .dispatcher = bio2_emu_bi2a_dispatch_request,
 };
 
-static bool load_configs() {
+static bool load_configs()
+{
     struct cconfig *config;
     config = cconfig_init();
 
@@ -167,7 +168,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         if (!iidxhook9_config_io.lightning_mode) {
             bio2emu_init();
             bio2_emu_bi2a_set_tt_multiplier(iidxhook9_config_io.tt_multiplier);
-            bio2_emu_bi2a_init(&bio2_emu, iidxhook9_config_io.disable_poll_limiter);
+            bio2_emu_bi2a_init(
+                &bio2_emu, iidxhook9_config_io.disable_poll_limiter);
         }
     }
 
@@ -265,8 +267,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         goto end;
     }
 
-
-    if (avs_is_active()){
+    if (avs_is_active()) {
         // if AVS is loaded, we're likely too late to be a prehook
         // so we warn the user
         // and switch the current logging context to AVS so it shows up in logs

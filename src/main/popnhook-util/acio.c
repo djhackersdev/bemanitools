@@ -33,7 +33,6 @@ static struct ac_io_emu_icca popnhook_acio_emu_icca;
 static bool popnhook_icca_override_version;
 static enum ac_io_emu_icca_version popnhook_icca_override_version_value;
 
-
 void popnhook_acio_override_version(enum ac_io_emu_icca_version version)
 {
     popnhook_icca_override_version = true;
@@ -48,13 +47,10 @@ void popnhook_acio_init(bool legacy_mode)
 
     ac_io_emu_init(&popnhook_acio_emu, L"COM1");
 
-    ac_io_emu_icca_init(
-        &popnhook_acio_emu_icca, &popnhook_acio_emu, 0);
+    ac_io_emu_icca_init(&popnhook_acio_emu_icca, &popnhook_acio_emu, 0);
     if (popnhook_icca_override_version) {
         ac_io_emu_icca_set_version(
-            &popnhook_acio_emu_icca,
-            popnhook_icca_override_version_value
-        );
+            &popnhook_acio_emu_icca, popnhook_icca_override_version_value);
     }
 
     rs232_hook_add_fd(popnhook_acio_emu.fd);
@@ -93,8 +89,7 @@ popnhook_acio_dispatch_irp(struct irp *irp)
                 break;
 
             case 1:
-                ac_io_emu_icca_dispatch_request(
-                    &popnhook_acio_emu_icca, msg);
+                ac_io_emu_icca_dispatch_request(&popnhook_acio_emu_icca, msg);
 
                 break;
 

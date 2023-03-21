@@ -44,7 +44,8 @@ void jbhook_util_ac_io_port_fini(void)
     ac_io_emu_fini(&ac_io_emu);
 }
 
-void jbhook_util_ac_io_set_iccb(void) {
+void jbhook_util_ac_io_set_iccb(void)
+{
     ac_io_emu_icca_set_version(&ac_io_emu_icca, v150);
     ac_io_emu_icca_set_product_code(&ac_io_emu_icca, AC_IO_EMU_PROD_CODE_ICCB);
 }

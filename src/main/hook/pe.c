@@ -94,10 +94,7 @@ const pe_iid_t *pe_iid_get_next(HMODULE pe, const pe_iid_t *iid)
 }
 
 HRESULT pe_iid_get_iat_entry(
-        HMODULE pe,
-        const pe_iid_t *iid,
-        size_t n,
-        struct pe_iat_entry *entry)
+    HMODULE pe, const pe_iid_t *iid, size_t n, struct pe_iat_entry *entry)
 {
     const IMAGE_IMPORT_BY_NAME *import;
     intptr_t *import_rvas;
@@ -153,7 +150,7 @@ void *pe_get_export(HMODULE pe, const char *name, uint16_t ord)
     target_rvas = pe_offsetc(pe, ied->AddressOfFunctions);
 
     if (name != NULL) {
-        for (i = 0 ; i < ied->NumberOfNames ; i++) {
+        for (i = 0; i < ied->NumberOfNames; i++) {
             if (name_rvas[i] == 0) {
                 /* Ordinal-only export, cannot match against this */
                 continue;
@@ -196,11 +193,7 @@ HRESULT pe_patch(void *dest, const void *src, size_t nbytes)
     assert(dest != NULL);
     assert(src != NULL);
 
-    ok = VirtualProtect(
-            dest,
-            nbytes,
-            PAGE_EXECUTE_READWRITE,
-            &old_protect);
+    ok = VirtualProtect(dest, nbytes, PAGE_EXECUTE_READWRITE, &old_protect);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -208,11 +201,7 @@ HRESULT pe_patch(void *dest, const void *src, size_t nbytes)
 
     memcpy(dest, src, nbytes);
 
-    ok = VirtualProtect(
-            dest,
-            nbytes,
-            old_protect,
-            &old_protect);
+    ok = VirtualProtect(dest, nbytes, old_protect, &old_protect);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -252,7 +241,8 @@ const pe_thunk_t *pe_thunk_get_next(const pe_thunk_t *thunk)
     return thunk_next;
 }
 
-void *pe_thunk_get_resolved_function(HMODULE target_pe, HMODULE import_pe, const pe_thunk_t *thunk)
+void *pe_thunk_get_resolved_function(
+    HMODULE target_pe, HMODULE import_pe, const pe_thunk_t *thunk)
 {
     void *addr;
 
@@ -262,11 +252,12 @@ void *pe_thunk_get_resolved_function(HMODULE target_pe, HMODULE import_pe, const
 
     if (thunk->u1.AddressOfData != 0) {
         if (IMAGE_SNAP_BY_ORDINAL(thunk->u1.Ordinal)) {
-            LPCSTR functionOrdinal = (LPCSTR)IMAGE_ORDINAL(thunk->u1.Ordinal);
-            addr = (void *)GetProcAddress(import_pe, functionOrdinal);
+            LPCSTR functionOrdinal = (LPCSTR) IMAGE_ORDINAL(thunk->u1.Ordinal);
+            addr = (void *) GetProcAddress(import_pe, functionOrdinal);
         } else {
-            PIMAGE_IMPORT_BY_NAME functionName = pe_offset(target_pe, thunk->u1.AddressOfData);
-            addr = (void *)GetProcAddress(import_pe, functionName->Name);
+            PIMAGE_IMPORT_BY_NAME functionName =
+                pe_offset(target_pe, thunk->u1.AddressOfData);
+            addr = (void *) GetProcAddress(import_pe, functionName->Name);
         }
     } else {
         addr = NULL;
@@ -277,7 +268,8 @@ void *pe_thunk_get_resolved_function(HMODULE target_pe, HMODULE import_pe, const
 
 void pe_resolve_imports(HMODULE target_pe)
 {
-    for (const pe_iid_t *iid = pe_iid_get_first(target_pe); iid != NULL; iid = pe_iid_get_next(target_pe, iid)) {
+    for (const pe_iid_t *iid = pe_iid_get_first(target_pe); iid != NULL;
+         iid = pe_iid_get_next(target_pe, iid)) {
         const char *iid_name;
         HMODULE imported_pe;
 
@@ -285,13 +277,16 @@ void pe_resolve_imports(HMODULE target_pe)
         imported_pe = LoadLibraryA(iid_name);
         assert(imported_pe != NULL);
 
-        for (const pe_thunk_t *thunk = pe_thunk_get_first(target_pe, iid); thunk != NULL; thunk = pe_thunk_get_next(thunk)) {
+        for (const pe_thunk_t *thunk = pe_thunk_get_first(target_pe, iid);
+             thunk != NULL;
+             thunk = pe_thunk_get_next(thunk)) {
             void *addr;
 
-            addr = pe_thunk_get_resolved_function(target_pe, imported_pe, thunk);
+            addr =
+                pe_thunk_get_resolved_function(target_pe, imported_pe, thunk);
 
             if (addr != NULL) {
-                pe_patch((void*)&thunk->u1.Function, &addr, sizeof(PDWORD));
+                pe_patch((void *) &thunk->u1.Function, &addr, sizeof(PDWORD));
             }
         }
     }

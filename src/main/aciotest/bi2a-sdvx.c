@@ -29,7 +29,6 @@ bool aciotest_bi2a_sdvx_handler_update(
         return false;
     }
 
-    
     pin.raw[0] = ac_io_u16(pin.raw[0]);
     pin.raw[1] = ac_io_u16(pin.raw[1]);
 

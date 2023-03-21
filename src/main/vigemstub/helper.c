@@ -19,7 +19,8 @@ PVIGEM_CLIENT vigem_helper_setup(void)
     VIGEM_ERROR retval = vigem_connect(client);
 
     if (!VIGEM_SUCCESS(retval)) {
-        log_warning("ViGEm Bus connection failed with error code: 0x%x\n", retval);
+        log_warning(
+            "ViGEm Bus connection failed with error code: 0x%x\n", retval);
         return NULL;
     }
 

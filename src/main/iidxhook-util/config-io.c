@@ -24,7 +24,8 @@ void iidxhook_config_io_init(struct cconfig *config)
         config,
         IIDXHOOK_UTIL_CONFIG_IO_DISABLE_IO_EMU_KEY,
         IIDXHOOK_UTIL_CONFIG_IO_DEFAULT_DISABLE_IO_EMU_VALUE,
-        "Disable ezusb IO emulation and enable usage of real ezusb1/2 IO hardware");
+        "Disable ezusb IO emulation and enable usage of real ezusb1/2 IO "
+        "hardware");
 }
 
 void iidxhook_config_io_get(

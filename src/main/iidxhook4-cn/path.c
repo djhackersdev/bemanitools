@@ -1,8 +1,8 @@
 #define LOG_MODULE "path"
 
-#include <windows.h>
 #include <stdint.h>
 #include <string.h>
+#include <windows.h>
 
 #include "hook/table.h"
 
@@ -48,12 +48,10 @@ static HANDLE(WINAPI *real_CreateFileW)(
     DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile);
 
-static HANDLE WINAPI my_FindFirstFileA(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+static HANDLE WINAPI
+my_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 static HANDLE(WINAPI *real_FindFirstFileA)(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+    LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 
 static const struct hook_symbol iidxhook4_cn_path_hook_syms[] = {
     {.name = "CreateFileA",
@@ -131,9 +129,8 @@ static HANDLE WINAPI my_CreateFileW(
         hTemplateFile);
 }
 
-static HANDLE WINAPI my_FindFirstFileA(
-    LPCSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData)
+static HANDLE WINAPI
+my_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData)
 {
     if (lpFileName != NULL && strstr(lpFileName, PATH_A) == lpFileName) {
         char relative_path[MAX_PATH] = ".";

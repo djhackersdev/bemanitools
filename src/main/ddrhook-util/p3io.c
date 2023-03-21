@@ -64,8 +64,14 @@ void p3io_ddr_init_with_plugs(
     memcpy(&p3io_ddr_mcode, mcode, sizeof(struct security_mcode));
     memcpy(&p3io_ddr_pcbid, pcbid, sizeof(struct security_id));
     memcpy(&p3io_ddr_eamid, eamid, sizeof(struct security_id));
-    memcpy(&p3io_black_sign_key, black_sign_key, sizeof(struct security_rp_sign_key));
-    memcpy(&p3io_white_sign_key, white_sign_key, sizeof(struct security_rp_sign_key));
+    memcpy(
+        &p3io_black_sign_key,
+        black_sign_key,
+        sizeof(struct security_rp_sign_key));
+    memcpy(
+        &p3io_white_sign_key,
+        white_sign_key,
+        sizeof(struct security_rp_sign_key));
 
     /* COM4 isn't a real COM port, we configure the core P3IO emulator code to
        generate IRPs addressed to COM4 and then we possibly intercept them in

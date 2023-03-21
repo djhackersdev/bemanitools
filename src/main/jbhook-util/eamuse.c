@@ -1,9 +1,9 @@
 #define LOG_MODULE "eamuse-hook"
 
+#include <iphlpapi.h>
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <iphlpapi.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,11 +30,8 @@ static int STDCALL my_getaddrinfo(
     const ADDRINFOA *pHints,
     PADDRINFOA *ppResult);
 
-static DWORD WINAPI my_GetIpAddrTable(
-  PMIB_IPADDRTABLE pIpAddrTable,
-  PULONG           pdwSize,
-  BOOL             bOrder
-);
+static DWORD WINAPI
+my_GetIpAddrTable(PMIB_IPADDRTABLE pIpAddrTable, PULONG pdwSize, BOOL bOrder);
 
 static const struct hook_symbol eamuse_hook_syms[] = {
     {
@@ -73,7 +70,8 @@ static int STDCALL my_getaddrinfo(
     return real_getaddrinfo(pNodeName, pServiceName, pHints, ppResult);
 }
 
-static DWORD get_best_ip(void) {
+static DWORD get_best_ip(void)
+{
     PIP_ADAPTER_INFO info = NULL;
     struct net_addr addr;
     // fallback to a very obviously wrong value
@@ -86,11 +84,11 @@ static DWORD get_best_ip(void) {
 
     info = malloc(sz);
 
-    if(GetAdaptersInfo(info, &sz) != NO_ERROR) {
+    if (GetAdaptersInfo(info, &sz) != NO_ERROR) {
         goto CLEANUP;
     }
 
-    if(!net_str_parse(info->IpAddressList.IpAddress.String, &addr)) {
+    if (!net_str_parse(info->IpAddressList.IpAddress.String, &addr)) {
         goto CLEANUP;
     }
 
@@ -114,16 +112,14 @@ CLEANUP:
  * check. By also hooking this function, the IP addresses of the two calls will
  * agree.
  */
-static DWORD WINAPI my_GetIpAddrTable(
-  PMIB_IPADDRTABLE pIpAddrTable,
-  PULONG           pdwSize,
-  BOOL             bOrder
-) {
+static DWORD WINAPI
+my_GetIpAddrTable(PMIB_IPADDRTABLE pIpAddrTable, PULONG pdwSize, BOOL bOrder)
+{
     ULONG in = *pdwSize;
     // 1 element return table
     *pdwSize = sizeof(MIB_IPADDRTABLE) + sizeof(MIB_IPADDRROW);
 
-    if(in < *pdwSize) {
+    if (in < *pdwSize) {
         return ERROR_INSUFFICIENT_BUFFER;
     }
 

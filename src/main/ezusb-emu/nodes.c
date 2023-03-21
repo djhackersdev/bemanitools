@@ -12,8 +12,8 @@
 #include "ezusb-emu/node-security-plug.h"
 #include "ezusb-emu/node-sram.h"
 #include "ezusb-emu/node-wdt.h"
-#include "ezusb-emu/nodes.h"
 #include "ezusb-emu/node.h"
+#include "ezusb-emu/nodes.h"
 
 /* All IIDX games */
 const struct ezusb_iidx_emu_node ezusb_iidx_emu_node_coin = {

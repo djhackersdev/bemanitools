@@ -23,8 +23,8 @@
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
 
-#include "bio2emu/emu.h"
 #include "bio2emu-iidx/bi2a.h"
+#include "bio2emu/emu.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -36,7 +36,7 @@
 #include "util/str.h"
 #include "util/thread.h"
 
-#define IIDXHOOK8_INFO_HEADER     \
+#define IIDXHOOK8_INFO_HEADER             \
     "iidxhook for Cannon Ballers/Rootage" \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
 #define IIDXHOOK8_CMD_USAGE \

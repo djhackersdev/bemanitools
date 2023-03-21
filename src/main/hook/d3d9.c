@@ -72,13 +72,12 @@ static HRESULT(STDCALL *real_DrawPrimitiveUP)(
     UINT stride);
 
 static HRESULT(STDCALL *real_Reset)(
-    IDirect3DDevice9 *self,
-    D3DPRESENT_PARAMETERS *pp);
+    IDirect3DDevice9 *self, D3DPRESENT_PARAMETERS *pp);
 
-static HRESULT (STDCALL *real_SetViewport)(
+static HRESULT(STDCALL *real_SetViewport)(
     IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
 
-static HRESULT (STDCALL *real_SetVertexShader)(
+static HRESULT(STDCALL *real_SetVertexShader)(
     IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
 
 /* ------------------------------------------------------------------------------------------------------------------
@@ -146,15 +145,14 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
     const void *data,
     UINT stride);
 
-static HRESULT STDCALL my_Reset(
-    IDirect3DDevice9 *self,
-    D3DPRESENT_PARAMETERS *pp);
+static HRESULT STDCALL
+my_Reset(IDirect3DDevice9 *self, D3DPRESENT_PARAMETERS *pp);
 
-static HRESULT STDCALL my_SetViewport(
-    IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
+static HRESULT STDCALL
+my_SetViewport(IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
 
-static HRESULT STDCALL my_SetVertexShader(
-    IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
+static HRESULT STDCALL
+my_SetVertexShader(IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
 
 /* ------------------------------------------------------------------------------------------------------------------
  */
@@ -214,8 +212,7 @@ hook_d3d9_irp_handler_real_dev_set_render_state(struct hook_d3d9_irp *irp);
 static HRESULT
 hook_d3d9_irp_handler_real_dev_draw_primitive_up(struct hook_d3d9_irp *irp);
 
-static HRESULT
-hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp);
+static HRESULT hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp);
 
 static HRESULT
 hook_d3d9_irp_handler_real_dev_set_viewport(struct hook_d3d9_irp *irp);
@@ -247,8 +244,7 @@ static const hook_d3d9_irp_handler_t hook_d3d9_irp_real_handlers[] = {
         hook_d3d9_irp_handler_real_dev_set_render_state,
     [HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP] =
         hook_d3d9_irp_handler_real_dev_draw_primitive_up,
-    [HOOK_D3D9_IRP_OP_DEV_RESET] =
-        hook_d3d9_irp_handler_real_dev_reset,
+    [HOOK_D3D9_IRP_OP_DEV_RESET] = hook_d3d9_irp_handler_real_dev_reset,
     [HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT] =
         hook_d3d9_irp_handler_real_dev_set_viewport,
     [HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER] =
@@ -523,8 +519,8 @@ static HRESULT STDCALL my_DrawPrimitiveUP(
     return hr;
 }
 
-static HRESULT STDCALL my_SetViewport(
-    IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport)
+static HRESULT STDCALL
+my_SetViewport(IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport)
 {
     struct hook_d3d9_irp irp;
     HRESULT hr;
@@ -540,8 +536,8 @@ static HRESULT STDCALL my_SetViewport(
     return hr;
 }
 
-static HRESULT STDCALL my_SetVertexShader(
-    IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader)
+static HRESULT STDCALL
+my_SetVertexShader(IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader)
 {
     struct hook_d3d9_irp irp;
     HRESULT hr;
@@ -557,9 +553,8 @@ static HRESULT STDCALL my_SetVertexShader(
     return hr;
 }
 
-static HRESULT STDCALL my_Reset(
-    IDirect3DDevice9 *self,
-    D3DPRESENT_PARAMETERS *pp)
+static HRESULT STDCALL
+my_Reset(IDirect3DDevice9 *self, D3DPRESENT_PARAMETERS *pp)
 {
     struct hook_d3d9_irp irp;
     HRESULT hr;
@@ -827,14 +822,11 @@ hook_d3d9_irp_handler_real_dev_draw_primitive_up(struct hook_d3d9_irp *irp)
         irp->args.dev_draw_primitive_up.stride);
 }
 
-static HRESULT
-hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp)
+static HRESULT hook_d3d9_irp_handler_real_dev_reset(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
 
-    return real_Reset(
-        irp->args.dev_reset.self,
-        irp->args.dev_reset.pp);
+    return real_Reset(irp->args.dev_reset.self, irp->args.dev_reset.pp);
 }
 
 static HRESULT
@@ -843,8 +835,7 @@ hook_d3d9_irp_handler_real_dev_set_viewport(struct hook_d3d9_irp *irp)
     log_assert(irp);
 
     return real_SetViewport(
-        irp->args.dev_set_viewport.self,
-        irp->args.dev_set_viewport.pViewport);
+        irp->args.dev_set_viewport.self, irp->args.dev_set_viewport.pViewport);
 }
 
 static HRESULT
