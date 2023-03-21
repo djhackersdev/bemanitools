@@ -1,7 +1,10 @@
 #define LOG_MODULE "jbhook-mixer"
 
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
 #include <mmsystem.h>
+// clang-format on
 
 #include "hook/table.h"
 
