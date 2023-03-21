@@ -63,5 +63,4 @@ struct p4io_resp_device_info {
     char build_time[16];
 };
 
-
 #endif

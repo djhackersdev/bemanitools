@@ -69,7 +69,7 @@ bool my_IsPlayerForbidState(int pnum)
     return false;
 }
 
-void unis_version_hook_init(const char* unis_path)
+void unis_version_hook_init(const char *unis_path)
 {
     hook_table_apply(
         NULL, "Shell32.dll", unis_shell32_syms, lengthof(unis_shell32_syms));

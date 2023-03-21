@@ -115,7 +115,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         iidx_io_set_loggers(
             log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!iidx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!iidx_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     } else {
@@ -128,7 +129,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         eam_io_set_loggers(
             log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
 
-        if (!eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+        if (!eam_io_init(
+                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing card reader backend failed");
         }
     } else {

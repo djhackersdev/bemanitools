@@ -95,7 +95,7 @@ HRESULT iobuf_read_be16(struct const_iobuf *src, uint16_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = src->bytes[src->pos++] << 8;
+    value = src->bytes[src->pos++] << 8;
     value |= src->bytes[src->pos++];
 
     *out = value;
@@ -114,7 +114,7 @@ HRESULT iobuf_read_be32(struct const_iobuf *src, uint32_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = src->bytes[src->pos++] << 24;
+    value = src->bytes[src->pos++] << 24;
     value |= src->bytes[src->pos++] << 16;
     value |= src->bytes[src->pos++] << 8;
     value |= src->bytes[src->pos++];
@@ -135,7 +135,7 @@ HRESULT iobuf_read_be64(struct const_iobuf *src, uint64_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = ((uint64_t) src->bytes[src->pos++]) << 56;
+    value = ((uint64_t) src->bytes[src->pos++]) << 56;
     value |= ((uint64_t) src->bytes[src->pos++]) << 48;
     value |= ((uint64_t) src->bytes[src->pos++]) << 40;
     value |= ((uint64_t) src->bytes[src->pos++]) << 32;
@@ -160,7 +160,7 @@ HRESULT iobuf_read_le16(struct const_iobuf *src, uint16_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = src->bytes[src->pos++];
+    value = src->bytes[src->pos++];
     value |= src->bytes[src->pos++] << 8;
 
     *out = value;
@@ -179,7 +179,7 @@ HRESULT iobuf_read_le32(struct const_iobuf *src, uint32_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = src->bytes[src->pos++];
+    value = src->bytes[src->pos++];
     value |= src->bytes[src->pos++] << 8;
     value |= src->bytes[src->pos++] << 16;
     value |= src->bytes[src->pos++] << 24;
@@ -200,7 +200,7 @@ HRESULT iobuf_read_le64(struct const_iobuf *src, uint64_t *out)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    value  = ((uint64_t) src->bytes[src->pos++]);
+    value = ((uint64_t) src->bytes[src->pos++]);
     value |= ((uint64_t) src->bytes[src->pos++]) << 8;
     value |= ((uint64_t) src->bytes[src->pos++]) << 16;
     value |= ((uint64_t) src->bytes[src->pos++]) << 24;

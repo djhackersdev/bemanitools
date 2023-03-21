@@ -41,28 +41,28 @@ security_id_checksum_calc(uint8_t initseed, const uint8_t *inbuf, size_t length)
             v7 = 0;
 
             do {
-                v8 = (result ^ (uint8_t)(v6 >> v7)) & 1;
+                v8 = (result ^ (uint8_t) (v6 >> v7)) & 1;
                 v9 = result >> 1;
 
                 if (v8) {
                     v9 ^= 0x8Cu;
                 }
 
-                v10 = (v9 ^ (uint8_t)(v6 >> (v7 + 1))) & 1;
+                v10 = (v9 ^ (uint8_t) (v6 >> (v7 + 1))) & 1;
                 v11 = v9 >> 1;
 
                 if (v10) {
                     v11 ^= 0x8Cu;
                 }
 
-                v12 = (v11 ^ (uint8_t)(v6 >> (v7 + 2))) & 1;
+                v12 = (v11 ^ (uint8_t) (v6 >> (v7 + 2))) & 1;
                 v13 = v11 >> 1;
 
                 if (v12) {
                     v13 ^= 0x8Cu;
                 }
 
-                v14 = (v13 ^ (uint8_t)(v6 >> (v7 + 3))) & 1;
+                v14 = (v13 ^ (uint8_t) (v6 >> (v7 + 3))) & 1;
                 result = v13 >> 1;
 
                 if (v14) {
@@ -137,16 +137,18 @@ bool security_id_verify(const struct security_id *id)
 {
     log_assert(id);
 
-    if(id->header != SECURITY_ID_HEADER) {
-        log_warning("PCBID header needs to be %02X but was %02X",
-            SECURITY_ID_HEADER, id->header);
+    if (id->header != SECURITY_ID_HEADER) {
+        log_warning(
+            "PCBID header needs to be %02X but was %02X",
+            SECURITY_ID_HEADER,
+            id->header);
         return false;
     }
 
     uint8_t check = id->checksum;
     uint8_t need = security_id_checksum_buffer(id->id);
 
-    if(check != need) {
+    if (check != need) {
         log_warning("PCBID checksum should be %02X got %02X", need, check);
         return false;
     }

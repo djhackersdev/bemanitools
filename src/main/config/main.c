@@ -117,14 +117,14 @@ int main(int argc, char **argv)
     if (!mapper_config_load(schema->name)) {
         log_info("Initializing empty config for %s", schema->name);
 
-        mapper_set_nlights((uint8_t)(max_light + 1));
+        mapper_set_nlights((uint8_t) (max_light + 1));
         mapper_set_nanalogs((uint8_t) schema->nanalogs);
     } else {
         // make sure that these are right
 
         if (mapper_get_nlights() != (max_light + 1)) {
             log_info("Updating nlights for %s", schema->name);
-            mapper_set_nlights((uint8_t)(max_light + 1));
+            mapper_set_nlights((uint8_t) (max_light + 1));
         }
 
         if (mapper_get_nanalogs() != schema->nanalogs) {

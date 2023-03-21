@@ -65,8 +65,8 @@ bool hid_report_out_set_bit(
     uint16_t usage_hi;
     uint16_t usage_lo;
 
-    usage_hi = (uint16_t)(usage >> 16);
-    usage_lo = (uint16_t)(usage >> 0);
+    usage_hi = (uint16_t) (usage >> 16);
+    usage_lo = (uint16_t) (usage >> 0);
     count = 1;
 
     if (value) {
@@ -118,8 +118,8 @@ bool hid_report_out_set_value(
     uint16_t usage_hi;
     uint16_t usage_lo;
 
-    usage_hi = (uint16_t)(usage >> 16);
-    usage_lo = (uint16_t)(usage >> 0);
+    usage_hi = (uint16_t) (usage >> 16);
+    usage_lo = (uint16_t) (usage >> 0);
 
     status = HidP_SetUsageValue(
         HidP_Output,

@@ -52,10 +52,8 @@ static HRESULT STDCALL my_EnumAdapterModes(
     UINT Mode,
     D3DDISPLAYMODE *pMode);
 
-static UINT STDCALL my_GetAdapterModeCount(
-    IDirect3D9Ex *self,
-    UINT Adapter,
-    D3DFORMAT Format);
+static UINT STDCALL
+my_GetAdapterModeCount(IDirect3D9Ex *self, UINT Adapter, D3DFORMAT Format);
 
 static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api);
 
@@ -305,7 +303,8 @@ static HRESULT STDCALL my_CreateDeviceEx(
 
     if (fdm) {
         log_misc(
-            "CreateDeviceEx display mode: size %d, width %d, height %d, refresh rate %d, format %d, "
+            "CreateDeviceEx display mode: size %d, width %d, height %d, "
+            "refresh rate %d, format %d, "
             "scan line ordering %d",
             fdm->Size,
             fdm->Width,
@@ -318,7 +317,8 @@ static HRESULT STDCALL my_CreateDeviceEx(
     log_misc(
         "D3D9EX presenter parameters: BackBufferWidth %d, BackBufferHeight "
         "%d, BackBufferFormat %d, "
-        "BackBufferCount %d, MultiSampleType %d, MultiSampleQuality %ld, SwapEffect %d, "
+        "BackBufferCount %d, MultiSampleType %d, MultiSampleQuality %ld, "
+        "SwapEffect %d, "
         "hDeviceWindow %p, Windowed %d, "
         "EnableAutoDepthStencil "
         "%d, AutoDepthStencilFormat %d, Flags %lX, "
@@ -343,8 +343,10 @@ static HRESULT STDCALL my_CreateDeviceEx(
         adapter = d3d9ex_device_adapter;
     }
 
-    if (d3d9ex_force_screen_res_width > 0 && d3d9ex_force_screen_res_height > 0) {
-        log_info("Overriding screen resolution/back buffer of %dx%d -> %dx%d",
+    if (d3d9ex_force_screen_res_width > 0 &&
+        d3d9ex_force_screen_res_height > 0) {
+        log_info(
+            "Overriding screen resolution/back buffer of %dx%d -> %dx%d",
             pp->BackBufferWidth,
             pp->BackBufferHeight,
             d3d9ex_force_screen_res_width,
@@ -445,7 +447,7 @@ static HRESULT STDCALL my_EnumAdapterModes(
     IDirect3D9Ex *real = com_proxy_downcast(self)->real;
     HRESULT hr;
 
-    if (d3d9ex_device_adapter>= 0) {
+    if (d3d9ex_device_adapter >= 0) {
         Adapter = d3d9ex_device_adapter;
     }
 
@@ -461,15 +463,13 @@ static HRESULT STDCALL my_EnumAdapterModes(
     return hr;
 }
 
-static UINT STDCALL my_GetAdapterModeCount(
-    IDirect3D9Ex *self,
-    UINT Adapter,
-    D3DFORMAT Format)
+static UINT STDCALL
+my_GetAdapterModeCount(IDirect3D9Ex *self, UINT Adapter, D3DFORMAT Format)
 {
     IDirect3D9Ex *real = com_proxy_downcast(self)->real;
     UINT res;
 
-    if (d3d9ex_device_adapter>= 0) {
+    if (d3d9ex_device_adapter >= 0) {
         Adapter = d3d9ex_device_adapter;
     }
 
@@ -494,14 +494,14 @@ static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api)
 
     hr = real_Direct3DCreate9Ex(sdk_ver, api);
     api_ = *api;
-    
+
     hr = com_proxy_wrap(&api_proxy, api_, sizeof(*api_->lpVtbl));
-    
+
     if (hr != S_OK) {
         log_warning("Wrapping com proxy failed: %08lx", hr);
         return hr;
     }
-    
+
     api_vtbl = api_proxy->vptr;
 
     api_vtbl->CreateDeviceEx = my_CreateDeviceEx;
@@ -555,7 +555,8 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
     d3d9ex_force_screen_res_height = gfx_config->force_screen_res.height;
 
     if (d3d9ex_force_screen_res_width * d3d9ex_force_screen_res_height > 0) {
-        log_warning("Force screen res: Only one, either width or height, is > 0."
+        log_warning(
+            "Force screen res: Only one, either width or height, is > 0."
             " Force screen res not activate");
     }
 }

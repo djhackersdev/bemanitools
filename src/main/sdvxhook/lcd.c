@@ -32,7 +32,7 @@ void lcd_init(void)
     log_assert(lcd_fd == NULL);
 
     HRESULT hr;
-    
+
     hr = iohook_open_nul_fd(&lcd_fd);
 
     if (hr != S_OK) {

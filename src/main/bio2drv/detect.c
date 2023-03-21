@@ -50,10 +50,10 @@ static bool check_property(
     return false;
 }
 
-static bool check_id(
-    HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA PDeviceInfoData)
+static bool check_id(HDEVINFO DeviceInfoSet, PSP_DEVINFO_DATA PDeviceInfoData)
 {
-    if (CM_Get_Device_IDA(PDeviceInfoData->DevInst, work_buffer, sizeof(work_buffer), 0)) {
+    if (CM_Get_Device_IDA(
+            PDeviceInfoData->DevInst, work_buffer, sizeof(work_buffer), 0)) {
         return false;
     }
 

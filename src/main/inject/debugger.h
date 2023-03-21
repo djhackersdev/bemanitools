@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 
-
 /**
  * Initialize inject's logger backend.
  *
@@ -13,7 +12,6 @@
  * @param log_file_path Path to the file to log to or NULL to
  *                      disable.
  */
-
 
 /**
  * Initialize the debugger.
@@ -58,7 +56,8 @@ bool debugger_inject_dll(const char *path_dll);
  * @param replacement_path_dll Name of dll to inject.
  * @return true if sucessful, false on error.
  */
-bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_path_dll);
+bool debugger_replace_dll_iat(
+    const char *expected_dll, const char *replacement_path_dll);
 
 /**
  * Wait/block for a remote debugger to attach to the remote process.

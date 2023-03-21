@@ -65,7 +65,7 @@ static struct {
     D3DTEXTUREFILTERTYPE filter;
 } iidxhook_util_d3d9_back_buffer_scaling;
 
-static IDirect3DVertexShader9* vertex_shader;
+static IDirect3DVertexShader9 *vertex_shader;
 
 /* ------------------------------------------------------------------------------------------------------------------
  */
@@ -678,19 +678,19 @@ iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
                   vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
                  (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
                   vertices[3].y >= 404.0f && vertices[3].y <= 408.0f))) {
-            /* fix UVs
-               1.0f / 512 fixes the diagonal seam connecting the two triangles
-               which is visible on some GPUs (why? idk)
-            */
-            vertices[0].tu = 0.0f + 1.0f / 512;
-            vertices[0].tv = 1.0f;
-            vertices[1].tu = 1.0f;
-            vertices[1].tv = 1.0f;
-            vertices[2].tu = 1.0f;
-            vertices[2].tv = 0.0f + 1.0f / 512;
-            vertices[3].tu = 0.0f + 1.0f / 512;
-            vertices[3].tv = 0.0f + 1.0f / 512;
-        }
+                /* fix UVs
+                   1.0f / 512 fixes the diagonal seam connecting the two
+                   triangles which is visible on some GPUs (why? idk)
+                */
+                vertices[0].tu = 0.0f + 1.0f / 512;
+                vertices[0].tv = 1.0f;
+                vertices[1].tu = 1.0f;
+                vertices[1].tv = 1.0f;
+                vertices[2].tu = 1.0f;
+                vertices[2].tv = 0.0f + 1.0f / 512;
+                vertices[3].tu = 0.0f + 1.0f / 512;
+                vertices[3].tv = 0.0f + 1.0f / 512;
+            }
     }
 }
 
@@ -910,28 +910,36 @@ iidxhook_util_d3d9_iidx18_and_19_fix_diagonal_tearing(struct hook_d3d9_irp *irp)
     HRESULT hr;
 
     log_assert(irp);
-    log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT || irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER);
+    log_assert(
+        irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT ||
+        irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER);
 
-    if (!iidxhook_util_d3d9_config.iidx18_and_19_diagonal_tearing_fix)
-    {
+    if (!iidxhook_util_d3d9_config.iidx18_and_19_diagonal_tearing_fix) {
         return;
     }
 
-    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT)
-    {
+    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT) {
         const D3DVIEWPORT9 *pViewport = irp->args.dev_set_viewport.pViewport;
-        const float fix_offset[2] = {-1.0F / (float)pViewport->Width, -1.0F / (float)pViewport->Height};
+        const float fix_offset[2] = {
+            -1.0F / (float) pViewport->Width,
+            -1.0F / (float) pViewport->Height};
 
-        hr = IDirect3DDevice9_SetVertexShaderConstantF(irp->args.dev_set_viewport.self, 63, fix_offset, lengthof(fix_offset));
+        hr = IDirect3DDevice9_SetVertexShaderConstantF(
+            irp->args.dev_set_viewport.self,
+            63,
+            fix_offset,
+            lengthof(fix_offset));
         if (hr != S_OK) {
             log_warning("SetVertexShaderConstantF failed: %lX", hr);
         }
     }
 
-    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER)
-    {
+    if (irp->op == HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER) {
         if (!vertex_shader) {
-            hr = IDirect3DDevice9_CreateVertexShader(irp->args.dev_set_vertex_shader.self, (const DWORD*) g_vs11_vs_main, &vertex_shader);
+            hr = IDirect3DDevice9_CreateVertexShader(
+                irp->args.dev_set_vertex_shader.self,
+                (const DWORD *) g_vs11_vs_main,
+                &vertex_shader);
             if (hr != S_OK) {
                 log_fatal("CreateVertexShader failed: %lX", hr);
             }

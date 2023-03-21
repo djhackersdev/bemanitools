@@ -28,8 +28,8 @@
 #include "iidxhook-util/config-eamuse.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
-#include "iidxhook-util/config-sec.h"
 #include "iidxhook-util/config-misc.h"
+#include "iidxhook-util/config-sec.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/settings.h"
 
@@ -40,7 +40,7 @@
 #include "util/log.h"
 
 #define IIDXHOOK5_CN_INFO_HEADER \
-    "iidxhook for tricoro CN"   \
+    "iidxhook for tricoro CN"    \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
 #define IIDXHOOK5_CN_CMD_USAGE \
     "Usage: inject.exe iidxhook5-cn.dll <bm2dx.exe> [options...]"
@@ -81,7 +81,8 @@ iidxhook5_cn_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.forced_refresh_rate = config_gfx->forced_refresh_rate;
     d3d9_config.device_adapter = config_gfx->device_adapter;
     d3d9_config.iidx14_to_19_nvidia_fix = true;
-    d3d9_config.iidx18_and_19_diagonal_tearing_fix = config_gfx->diagonal_tearing_fix;
+    d3d9_config.iidx18_and_19_diagonal_tearing_fix =
+        config_gfx->diagonal_tearing_fix;
 
     iidxhook_util_d3d9_configure(&d3d9_config);
 
@@ -139,9 +140,10 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     log_info("Initializing iidxhook...");
 
     /**
-     * This game is using a black round plug for game license management instead of a black usb dongle.
-     * No white dongle hooks applies since the game does not have network functionality.
-     * Also, card readers are not used/checked; no card reader hooks required.
+     * This game is using a black round plug for game license management instead
+     * of a black usb dongle. No white dongle hooks applies since the game does
+     * not have network functionality. Also, card readers are not used/checked;
+     * no card reader hooks required.
      */
     ezusb_iidx_emu_node_security_plug_set_boot_version(
         &config_sec.boot_version);

@@ -130,7 +130,7 @@ static uint32_t jbhook_command_handle(
             // on is 0x00, off is either 0x10 or 0x20 depending on whether it's
             // during gameplay (0x10) or test menu (0x20). Both seem to have the
             // same effect
-            jb_io_set_coin_blocker(*(uint8_t*)payload == 0x00);
+            jb_io_set_coin_blocker(*(uint8_t *) payload == 0x00);
 
             // this actually returns the coinstock, don't care for it
             memset(resp, 0, 4);
@@ -145,8 +145,8 @@ static uint32_t jbhook_command_handle(
             // always fallback to ALL if input is unknown
             enum jb_io_panel_mode mode = JB_IO_PANEL_MODE_ALL;
 
-            if(req->is_single) {
-                switch(req->mode) {
+            if (req->is_single) {
+                switch (req->mode) {
                     case 0x0001:
                         mode = JB_IO_PANEL_MODE_TOP_LEFT;
                         break;

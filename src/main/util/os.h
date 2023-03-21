@@ -13,11 +13,11 @@ struct os_version {
 
 /**
  * Get the (real) version information of the Windows OS.
- * 
+ *
  * @param verison Pointer to version structure. This will be filled in.
  * @return true on success, false on failure.
  */
-bool os_version_get(struct os_version* version);
+bool os_version_get(struct os_version *version);
 
 /**
  * Log the version information of the current Windows OS.

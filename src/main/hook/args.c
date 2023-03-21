@@ -10,11 +10,8 @@
 
 /* This does not handle escaped double quotes inside args correctly yet */
 
-static HRESULT args_push(
-        int *argc,
-        char ***argv,
-        const char *begin,
-        const char *end)
+static HRESULT
+args_push(int *argc, char ***argv, const char *begin, const char *end)
 {
     int tmp_argc;
     char **tmp_argv;
@@ -70,7 +67,7 @@ HRESULT args_recover(int *argc_out, char ***argv_out)
     argv = NULL;
     quote = false;
 
-    for (begin = pos = GetCommandLine() ; *pos ; pos++) {
+    for (begin = pos = GetCommandLine(); *pos; pos++) {
         switch (*pos) {
             case '"':
                 if (!quote) {
@@ -129,7 +126,7 @@ void args_free(int argc, char **argv)
 {
     int i;
 
-    for (i = 0 ; i < argc ; i++) {
+    for (i = 0; i < argc; i++) {
         free(argv[i]);
     }
 

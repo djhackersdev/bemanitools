@@ -15,11 +15,11 @@
 static FILE *log_file;
 static HANDLE log_mutex;
 
-static const char* logger_get_formatted_timestamp(void)
+static const char *logger_get_formatted_timestamp(void)
 {
     static char buffer[64];
     time_t cur = 0;
-    struct tm* tm = NULL;
+    struct tm *tm = NULL;
 
     cur = time(NULL);
     tm = localtime(&cur);
@@ -94,7 +94,8 @@ static size_t logger_msg_coloring_len(const char *str)
     return 0;
 }
 
-static void logger_console(void *ctx, const char *chars, size_t nchars, const char* timestamp_str)
+static void logger_console(
+    void *ctx, const char *chars, size_t nchars, const char *timestamp_str)
 {
     char color;
     size_t color_len;
@@ -128,10 +129,11 @@ static void logger_console(void *ctx, const char *chars, size_t nchars, const ch
     }
 }
 
-static void logger_file(void *ctx, const char *chars, size_t nchars, const char* timestamp_str)
+static void logger_file(
+    void *ctx, const char *chars, size_t nchars, const char *timestamp_str)
 {
     if (ctx) {
-        fwrite(timestamp_str, 1, strlen(timestamp_str), (FILE*) ctx);
+        fwrite(timestamp_str, 1, strlen(timestamp_str), (FILE *) ctx);
         fwrite(chars, 1, nchars, (FILE *) ctx);
         fflush((FILE *) ctx);
     }
@@ -139,7 +141,7 @@ static void logger_file(void *ctx, const char *chars, size_t nchars, const char*
 
 static void logger_writer(void *ctx, const char *chars, size_t nchars)
 {
-    const char* timestamp_str;
+    const char *timestamp_str;
 
     // Different threads logging the same destination, e.g. debugger thread,
     // main thread

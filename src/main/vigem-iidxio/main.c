@@ -33,7 +33,8 @@ static int16_t _convert_analog_to_s16(uint8_t val)
     return (int64_t) val * 256;
 }
 
-static int16_t _filter_floor(int32_t value, int16_t floor) {
+static int16_t _filter_floor(int32_t value, int16_t floor)
+{
     if (abs(value) < floor) {
         return 0;
     }
@@ -93,11 +94,11 @@ static uint16_t _check_assign_key(uint16_t input, size_t idx_in, size_t bit_out)
 }
 
 static int32_t _handle_turntable_analog(
-        const struct vigem_iidxio_config* config,
-        uint8_t tt_cur,
-        uint8_t tt_last,
-        int32_t tt_state,
-        XUSB_REPORT *pad_state)
+    const struct vigem_iidxio_config *config,
+    uint8_t tt_cur,
+    uint8_t tt_last,
+    int32_t tt_state,
+    XUSB_REPORT *pad_state)
 {
     int32_t state = tt_state;
 
@@ -105,7 +106,8 @@ static int32_t _handle_turntable_analog(
         state = _convert_relative_analog(
             tt_cur, tt_last, state, config->tt.analog.relative_sensitivity);
 
-        pad_state->sThumbLX = _filter_floor(state, config->tt.analog.relative_sensitivity / 2);
+        pad_state->sThumbLX =
+            _filter_floor(state, config->tt.analog.relative_sensitivity / 2);
     } else {
         pad_state->sThumbLX = _convert_analog_to_s16(tt_cur);
     }
@@ -114,11 +116,11 @@ static int32_t _handle_turntable_analog(
 }
 
 static int16_t _handle_turntable_as_button(
-        const struct vigem_iidxio_config* config, 
-        uint8_t tt_cur,
-        uint8_t tt_last,
-        int16_t tt_state,
-        XUSB_REPORT *pad_state)
+    const struct vigem_iidxio_config *config,
+    uint8_t tt_cur,
+    uint8_t tt_last,
+    int16_t tt_state,
+    XUSB_REPORT *pad_state)
 {
     const uint8_t btn_inc = config->tt.button.debounce;
     const uint16_t btn_threshhold = btn_inc * config->tt.button.threshold;
@@ -135,7 +137,8 @@ static int16_t _handle_turntable_as_button(
     // Reset state to avoid lag with state having to decrease from high values
     if (delta > 0 && delta >= config->tt.button.threshold && state < 0) {
         state = 0;
-    } else if (delta < 0 && abs(delta) >= config->tt.button.threshold && state > 0) {
+    } else if (
+        delta < 0 && abs(delta) >= config->tt.button.threshold && state > 0) {
         state = 0;
     }
 
@@ -146,9 +149,9 @@ static int16_t _handle_turntable_as_button(
         state -= btn_inc;
     }
 
-    // With each update, automatically counter the player's TT movement to turn the state
-    // back to 0, e.g. player moves TT -> state += 20. with no additional movement, neutral state
-    // (0) is back in 20 ticks
+    // With each update, automatically counter the player's TT movement to turn
+    // the state back to 0, e.g. player moves TT -> state += 20. with no
+    // additional movement, neutral state (0) is back in 20 ticks
     if (state > 0) {
         state--;
     } else if (state < 0) {
@@ -165,9 +168,7 @@ static int16_t _handle_turntable_as_button(
 }
 
 static void _handle_turntable(
-        const struct vigem_iidxio_config* config,
-        uint8_t* tt,
-        XUSB_REPORT *state)
+    const struct vigem_iidxio_config *config, uint8_t *tt, XUSB_REPORT *state)
 {
     for (uint8_t i = 0; i < TURNTABLE_NUM; i++) {
         if (config->tt.debug_output) {
@@ -183,66 +184,68 @@ static void _handle_turntable(
         _tt_last_raw[i] = tt[i];
 
         if (config->tt.debug_output) {
-            printf("state_btn %d, state_rel_analog %d\n", 
-                _tt_state_for_btn[i],  _tt_state_for_analog[i]);
+            printf(
+                "state_btn %d, state_rel_analog %d\n",
+                _tt_state_for_btn[i],
+                _tt_state_for_analog[i]);
         }
     }
 }
 
 static void _handle_buttons_14keys(uint16_t keys, XUSB_REPORT *state)
 {
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_1, XUSB_GAMEPAD_A);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_2, XUSB_GAMEPAD_B);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_3, XUSB_GAMEPAD_X);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_4, XUSB_GAMEPAD_Y);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_5, XUSB_GAMEPAD_LEFT_SHOULDER);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
-    state[0].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P1_7, XUSB_GAMEPAD_BACK);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_1, XUSB_GAMEPAD_A);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_2, XUSB_GAMEPAD_B);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_3, XUSB_GAMEPAD_X);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_4, XUSB_GAMEPAD_Y);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_5, XUSB_GAMEPAD_LEFT_SHOULDER);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
+    state[0].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P1_7, XUSB_GAMEPAD_BACK);
 
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_1, XUSB_GAMEPAD_A);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_2, XUSB_GAMEPAD_B);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_3, XUSB_GAMEPAD_X);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_4, XUSB_GAMEPAD_Y);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_5, XUSB_GAMEPAD_LEFT_SHOULDER);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
-    state[1].wButtons |= _check_assign_key(
-            keys, IIDX_IO_KEY_P2_7, XUSB_GAMEPAD_BACK);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_1, XUSB_GAMEPAD_A);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_2, XUSB_GAMEPAD_B);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_3, XUSB_GAMEPAD_X);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_4, XUSB_GAMEPAD_Y);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_5, XUSB_GAMEPAD_LEFT_SHOULDER);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
+    state[1].wButtons |=
+        _check_assign_key(keys, IIDX_IO_KEY_P2_7, XUSB_GAMEPAD_BACK);
 }
 
 static void _handle_buttons_panel(uint8_t panel, XUSB_REPORT *state)
 {
     state[0].wButtons |= _check_assign_key(
-            panel, IIDX_IO_PANEL_LIGHT_P1_START, XUSB_GAMEPAD_START);
+        panel, IIDX_IO_PANEL_LIGHT_P1_START, XUSB_GAMEPAD_START);
     state[1].wButtons |= _check_assign_key(
-            panel, IIDX_IO_PANEL_LIGHT_P2_START, XUSB_GAMEPAD_START);
+        panel, IIDX_IO_PANEL_LIGHT_P2_START, XUSB_GAMEPAD_START);
 
-    state[2].wButtons |= _check_assign_key(
-            panel, IIDX_IO_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_B);
-    state[2].wButtons |= _check_assign_key(
-            panel, IIDX_IO_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_A);
+    state[2].wButtons |=
+        _check_assign_key(panel, IIDX_IO_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_B);
+    state[2].wButtons |=
+        _check_assign_key(panel, IIDX_IO_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_A);
 }
 
 static void _handle_buttons_system(uint8_t system, XUSB_REPORT *state)
 {
-    state[2].wButtons |= _check_assign_key(
-            system, IIDX_IO_SYS_TEST, XUSB_GAMEPAD_X);
-    state[2].wButtons |= _check_assign_key(
-            system, IIDX_IO_SYS_SERVICE, XUSB_GAMEPAD_Y);
-    state[2].wButtons |= _check_assign_key(
-            system, IIDX_IO_SYS_COIN, XUSB_GAMEPAD_START);
+    state[2].wButtons |=
+        _check_assign_key(system, IIDX_IO_SYS_TEST, XUSB_GAMEPAD_X);
+    state[2].wButtons |=
+        _check_assign_key(system, IIDX_IO_SYS_SERVICE, XUSB_GAMEPAD_Y);
+    state[2].wButtons |=
+        _check_assign_key(system, IIDX_IO_SYS_COIN, XUSB_GAMEPAD_START);
 }
 
 static void _all_lights_off()
@@ -286,7 +289,7 @@ int main(int argc, char **argv)
     bool failed;
 
     failed = false;
-    
+
     for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
         pad[i] = vigem_helper_add_pad(client);
 
@@ -314,14 +317,15 @@ int main(int argc, char **argv)
 
     if (config.cab_light.text_16seg[0] != '\0') {
         vigem_iidxio_cab_16seg_sequencer_init(
-            config.cab_light.text_16seg, config.cab_light.text_scroll_cycle_time_ms);
+            config.cab_light.text_16seg,
+            config.cab_light.text_scroll_cycle_time_ms);
     }
 
     while (loop) {
         for (uint8_t i = 0; i < JOYSTICKS_NUM; i++) {
             memset(&state[i], 0, sizeof(state[i]));
         }
-        
+
         if (!iidx_io_ep2_recv()) {
             log_warning("iidxio receiving failed");
             break;
@@ -344,7 +348,7 @@ int main(int argc, char **argv)
         for (uint8_t i = 0; i < TURNTABLE_NUM; i++) {
             turntable[i] = iidx_io_ep2_get_turntable(i);
         }
-        
+
         _handle_turntable(&config, turntable, state);
 
         // Pad update
@@ -354,7 +358,7 @@ int main(int argc, char **argv)
         }
 
         // -----------------------------------------------------------------------------
-        
+
         // Light related outputs
 
         if (config.cab_light.enable_keylight) {
@@ -370,11 +374,7 @@ int main(int argc, char **argv)
             spots = 0;
 
             vigem_iidxio_cab_light_sequencer_update(
-                keys,
-                turntable[0],
-                turntable[1],
-                &neon,
-                &spots);
+                keys, turntable[0], turntable[1], &neon, &spots);
 
             iidx_io_ep1_set_top_neons(neon);
             iidx_io_ep1_set_top_lamps(spots);
@@ -391,9 +391,9 @@ int main(int argc, char **argv)
             log_warning("iidxio sending failed");
             break;
         }
-        
+
         if (_check_key(system, IIDX_IO_SYS_TEST) &&
-                _check_key(system, IIDX_IO_SYS_SERVICE)) {
+            _check_key(system, IIDX_IO_SYS_SERVICE)) {
             log_info("Test + service pressed, exiting...");
             loop = false;
         }

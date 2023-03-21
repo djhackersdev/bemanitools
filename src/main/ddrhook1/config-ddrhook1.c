@@ -26,7 +26,8 @@ void ddrhook1_config_ddrhook1_init(struct cconfig *config)
         config,
         DDRHOOK1_CONFIG_DDRHOOK1_USE_COM4_EMU_KEY,
         DDRHOOK1_CONFIG_DDRHOOK1_DEFAULT_USE_COM4_EMU_VALUE,
-        "Don't emulate P3IO COM4 and its downstream devices, use the Windows COM4 port instead");
+        "Don't emulate P3IO COM4 and its downstream devices, use the Windows "
+        "COM4 port instead");
     cconfig_util_set_bool(
         config,
         DDRHOOK1_CONFIG_DDRHOOK1_STANDARD_DEF_KEY,

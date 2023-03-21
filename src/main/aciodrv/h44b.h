@@ -1,8 +1,8 @@
 #ifndef ACIODRV_H44B_H
 #define ACIODRV_H44B_H
 
-#include "aciodrv/device.h"
 #include "acio/h44b.h"
+#include "aciodrv/device.h"
 
 /**
  * Initialize an H44B node.

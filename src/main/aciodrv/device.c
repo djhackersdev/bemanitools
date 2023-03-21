@@ -12,7 +12,7 @@
 #include "util/mem.h"
 
 /* Enable to dump all data to the logger */
-//#define AC_IO_MSG_LOG
+// #define AC_IO_MSG_LOG
 
 #define ACIO_MAX_NODES_PER_PORT 16
 
@@ -87,8 +87,11 @@ static bool aciodrv_device_init(struct aciodrv_device_ctx *device)
 }
 
 #ifdef AC_IO_MSG_LOG
-static void
-aciodrv_device_log_buffer(struct aciodrv_device_ctx *device, const char *msg, const uint8_t *buffer, int length)
+static void aciodrv_device_log_buffer(
+    struct aciodrv_device_ctx *device,
+    const char *msg,
+    const uint8_t *buffer,
+    int length)
 {
     char str[4096];
 
@@ -97,7 +100,8 @@ aciodrv_device_log_buffer(struct aciodrv_device_ctx *device, const char *msg, co
 }
 #endif
 
-static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t *buffer, int length)
+static bool aciodrv_device_send(
+    struct aciodrv_device_ctx *device, const uint8_t *buffer, int length)
 {
     uint8_t send_buf[512];
     int send_buf_pos = 0;
@@ -138,15 +142,20 @@ static bool aciodrv_device_send(struct aciodrv_device_ctx *device, const uint8_t
     aciodrv_device_log_buffer(device, "Send (2)", send_buf, send_buf_pos);
 #endif
 
-    if (aciodrv_port_write(device->fd, send_buf, send_buf_pos) != send_buf_pos) {
-        log_warning("[%p] Sending data with length %d failed", device->fd, send_buf_pos);
+    if (aciodrv_port_write(device->fd, send_buf, send_buf_pos) !=
+        send_buf_pos) {
+        log_warning(
+            "[%p] Sending data with length %d failed",
+            device->fd,
+            send_buf_pos);
         return false;
     }
 
     return true;
 }
 
-static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *buffer, int max_resp_size)
+static int aciodrv_device_receive(
+    struct aciodrv_device_ctx *device, uint8_t *buffer, int max_resp_size)
 {
     uint8_t recv_buf[512];
     int recv_size = 0;
@@ -160,7 +169,6 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
     do {
         read = aciodrv_port_read(device->fd, recv_buf, 1);
     } while (recv_buf[0] == AC_IO_SOF);
-
 
     if (read > 0) {
         /* recv_buf[0] is already the first byte of the message.
@@ -189,8 +197,8 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
                 /* next byte is our real data
                    overwrite escape byte */
                 do {
-                    read = aciodrv_port_read(
-                        device->fd, recv_buf + recv_size, 1);
+                    read =
+                        aciodrv_port_read(device->fd, recv_buf + recv_size, 1);
                 } while (read == 0);
 
                 if (read < 0) {
@@ -204,7 +212,8 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
 
             if (recv_size > offsetof(struct ac_io_message, cmd.nbytes)) {
                 // header + data + checksum
-                expected_size = offsetof(struct ac_io_message, cmd.raw) + ((struct ac_io_message*)recv_buf)->cmd.nbytes + 1;
+                expected_size = offsetof(struct ac_io_message, cmd.raw) +
+                    ((struct ac_io_message *) recv_buf)->cmd.nbytes + 1;
             }
         }
 
@@ -215,7 +224,11 @@ static int aciodrv_device_receive(struct aciodrv_device_ctx *device, uint8_t *bu
 
         /* recv_size - 1: omit checksum for checksum calc */
         if ((recv_size - 1) > max_resp_size) {
-            log_warning("[%p] Expected %d got %d", device->fd, max_resp_size - 6, recv_buf[4]);
+            log_warning(
+                "[%p] Expected %d got %d",
+                device->fd,
+                max_resp_size - 6,
+                recv_buf[4]);
             return -1;
         }
         for (int i = 0; i < recv_size - 1; i++) {
@@ -254,9 +267,7 @@ static uint8_t aciodrv_device_enum_nodes(struct aciodrv_device_ctx *device)
     msg.cmd.count = 0;
 
     if (!aciodrv_send_and_recv(
-            device,
-            &msg,
-            offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Enumerating nodes failed");
         return 0;
     }
@@ -266,7 +277,10 @@ static uint8_t aciodrv_device_enum_nodes(struct aciodrv_device_ctx *device)
     return msg.cmd.count;
 }
 
-static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_t node_id, struct aciodrv_device_node_version *version)
+static bool aciodrv_device_get_version(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id,
+    struct aciodrv_device_node_version *version)
 {
     struct ac_io_message msg;
 
@@ -299,7 +313,10 @@ static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_
         msg.cmd.version.date,
         msg.cmd.version.time);
 
-    memcpy(version->product, msg.cmd.version.product_code, ACIO_NODE_PRODUCT_CODE_LEN);
+    memcpy(
+        version->product,
+        msg.cmd.version.product_code,
+        ACIO_NODE_PRODUCT_CODE_LEN);
     version->type = ac_io_u32(msg.cmd.version.type);
     version->major = msg.cmd.version.major;
     version->minor = msg.cmd.version.minor;
@@ -308,7 +325,8 @@ static bool aciodrv_device_get_version(struct aciodrv_device_ctx *device, uint8_
     return true;
 }
 
-static bool aciodrv_device_start_node(struct aciodrv_device_ctx *device, uint8_t node_id)
+static bool
+aciodrv_device_start_node(struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     struct ac_io_message msg;
 
@@ -317,9 +335,7 @@ static bool aciodrv_device_start_node(struct aciodrv_device_ctx *device, uint8_t
     msg.cmd.nbytes = 0;
 
     if (!aciodrv_send_and_recv(
-            device,
-            &msg,
-            offsetof(struct ac_io_message, cmd.raw) + 1)) {
+            device, &msg, offsetof(struct ac_io_message, cmd.raw) + 1)) {
         log_warning("Starting node %d failed", node_id);
         return false;
     }
@@ -334,7 +350,8 @@ struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
     return aciodrv_device_open_path(port_path, baud);
 }
 
-struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int baud)
+struct aciodrv_device_ctx *
+aciodrv_device_open_path(const char *port_path, int baud)
 {
     HANDLE port = aciodrv_port_open(port_path, baud);
 
@@ -342,7 +359,8 @@ struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int b
         return NULL;
     }
 
-    struct aciodrv_device_ctx *device = xmalloc(sizeof(struct aciodrv_device_ctx));
+    struct aciodrv_device_ctx *device =
+        xmalloc(sizeof(struct aciodrv_device_ctx));
 
     memset(device, 0, sizeof(struct aciodrv_device_ctx));
     device->fd = port;
@@ -384,16 +402,23 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device)
     return device->node_count;
 }
 
-bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN])
+bool aciodrv_device_get_node_product_ident(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id,
+    char product[ACIO_NODE_PRODUCT_CODE_LEN])
 {
     if (device->node_count == 0 || node_id > device->node_count) {
         return false;
     }
 
-    memcpy(product, device->node_versions[node_id].product, ACIO_NODE_PRODUCT_CODE_LEN);
+    memcpy(
+        product,
+        device->node_versions[node_id].product,
+        ACIO_NODE_PRODUCT_CODE_LEN);
     return true;
 }
-uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device, uint8_t node_id)
+uint32_t aciodrv_device_get_node_product_type(
+    struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     if (device->node_count == 0 || node_id > device->node_count) {
         return 0;
@@ -402,7 +427,9 @@ uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device,
     return device->node_versions[node_id].type;
 }
 
-const struct aciodrv_device_node_version *aciodrv_device_get_node_product_version(struct aciodrv_device_ctx *device, uint8_t node_id)
+const struct aciodrv_device_node_version *
+aciodrv_device_get_node_product_version(
+    struct aciodrv_device_ctx *device, uint8_t node_id)
 {
     if (device->node_count == 0 || node_id > device->node_count) {
         return NULL;
@@ -430,7 +457,10 @@ bool aciodrv_send(struct aciodrv_device_ctx *device, struct ac_io_message *msg)
     return true;
 }
 
-bool aciodrv_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)
+bool aciodrv_recv(
+    struct aciodrv_device_ctx *device,
+    struct ac_io_message *msg,
+    int max_resp_size)
 {
 #ifdef AC_IO_MSG_LOG
     log_info("[%p] Beginning recv: (%d b)", device->fd, max_resp_size);
@@ -441,7 +471,10 @@ bool aciodrv_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, 
     return true;
 }
 
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size)
+bool aciodrv_send_and_recv(
+    struct aciodrv_device_ctx *device,
+    struct ac_io_message *msg,
+    int max_resp_size)
 {
     if (!aciodrv_send(device, msg)) {
         return false;

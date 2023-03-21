@@ -173,13 +173,14 @@ static HRESULT jbhook_p3io_get_roundplug(
     return S_OK;
 }
 
-static HRESULT jbhook_p3io_set_outputs(void *ctx, uint32_t state) {
-    uint8_t p3io_panel =       (state & 0x00FF00) >> 8;
+static HRESULT jbhook_p3io_set_outputs(void *ctx, uint32_t state)
+{
+    uint8_t p3io_panel = (state & 0x00FF00) >> 8;
     uint8_t p3io_coinblocker = (state & 0xFF0000) >> 16;
 
     enum jb_io_panel_mode panel_mode;
 
-    switch(p3io_panel) {
+    switch (p3io_panel) {
         case 5:
             panel_mode = JB_IO_PANEL_MODE_TOP_LEFT;
             break;

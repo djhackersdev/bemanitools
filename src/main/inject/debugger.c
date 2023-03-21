@@ -30,13 +30,11 @@ static HANDLE debugger_ready_event;
 
 static PROCESS_INFORMATION pi;
 
-static PVOID load_nt_header_from_process(HANDLE hProcess,
-                                         HMODULE hModule,
-                                         PIMAGE_NT_HEADERS32 pNtHeader);
+static PVOID load_nt_header_from_process(
+    HANDLE hProcess, HMODULE hModule, PIMAGE_NT_HEADERS32 pNtHeader);
 
-static HMODULE enumerate_modules_in_process(HANDLE hProcess,
-                                            HMODULE hModuleLast,
-                                            PIMAGE_NT_HEADERS32 pNtHeader);
+static HMODULE enumerate_modules_in_process(
+    HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader);
 
 // Source:
 // https://docs.microsoft.com/en-us/windows/win32/memory/obtaining-a-file-name-from-a-file-handle
@@ -233,7 +231,8 @@ static bool debugger_create_process(
 
     if (!ok) {
         log_warning(
-            "ERROR: Failed to launch hooked EXE: %08x", (unsigned int) GetLastError());
+            "ERROR: Failed to launch hooked EXE: %08x",
+            (unsigned int) GetLastError());
 
         free(cmd_line);
 
@@ -272,7 +271,8 @@ static uint32_t debugger_loop()
                     "EXCEPTION_DEBUG_EVENT(pid %ld, tid %ld): x%s 0x%p",
                     de.dwProcessId,
                     de.dwThreadId,
-                    signal_exception_code_to_str(de.u.Exception.ExceptionRecord.ExceptionCode),
+                    signal_exception_code_to_str(
+                        de.u.Exception.ExceptionRecord.ExceptionCode),
                     de.u.Exception.ExceptionRecord.ExceptionAddress);
 
                 if (de.u.Exception.ExceptionRecord.ExceptionCode ==
@@ -518,7 +518,9 @@ bool debugger_inject_dll(const char *path_dll)
         PAGE_READWRITE);
 
     if (!remote_addr) {
-        log_warning("ERROR: VirtualAllocEx failed: %08x", (unsigned int) GetLastError());
+        log_warning(
+            "ERROR: VirtualAllocEx failed: %08x",
+            (unsigned int) GetLastError());
 
         goto alloc_fail;
     }
@@ -528,7 +530,8 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (!ok) {
         log_warning(
-            "ERROR: WriteProcessMemory failed: %08x", (unsigned int) GetLastError());
+            "ERROR: WriteProcessMemory failed: %08x",
+            (unsigned int) GetLastError());
 
         goto write_fail;
     }
@@ -544,7 +547,8 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (remote_thread == NULL) {
         log_warning(
-            "ERROR: CreateRemoteThread failed: %08x", (unsigned int) GetLastError());
+            "ERROR: CreateRemoteThread failed: %08x",
+            (unsigned int) GetLastError());
 
         goto inject_fail;
     }
@@ -556,7 +560,8 @@ bool debugger_inject_dll(const char *path_dll)
     remote_addr = NULL;
 
     if (!ok) {
-        log_warning("ERROR: VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
+        log_warning(
+            "ERROR: VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
     }
 
     return true;
@@ -571,7 +576,8 @@ alloc_fail:
     return false;
 }
 
-HRESULT debugger_pe_patch_remote(HANDLE hProcess, void *dest, const void *src, size_t nbytes)
+HRESULT debugger_pe_patch_remote(
+    HANDLE hProcess, void *dest, const void *src, size_t nbytes)
 {
     DWORD old_protect;
     BOOL ok;
@@ -580,29 +586,19 @@ HRESULT debugger_pe_patch_remote(HANDLE hProcess, void *dest, const void *src, s
     log_assert(src != NULL);
 
     ok = VirtualProtectEx(
-            hProcess,
-            dest,
-            nbytes,
-            PAGE_EXECUTE_READWRITE,
-            &old_protect);
+        hProcess, dest, nbytes, PAGE_EXECUTE_READWRITE, &old_protect);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    ok = WriteProcessMemory(
-        hProcess, dest, src, nbytes, NULL);
+    ok = WriteProcessMemory(hProcess, dest, src, nbytes, NULL);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    ok = VirtualProtectEx(
-            hProcess,
-            dest,
-            nbytes,
-            old_protect,
-            &old_protect);
+    ok = VirtualProtectEx(hProcess, dest, nbytes, old_protect, &old_protect);
 
     if (!ok) {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -611,7 +607,8 @@ HRESULT debugger_pe_patch_remote(HANDLE hProcess, void *dest, const void *src, s
     return S_OK;
 }
 
-bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_path_dll)
+bool debugger_replace_dll_iat(
+    const char *expected_dll, const char *replacement_path_dll)
 {
     log_assert(expected_dll);
     log_assert(replacement_path_dll);
@@ -625,7 +622,8 @@ bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_
     for (;;) {
         memset(&inh, 0, sizeof(IMAGE_NT_HEADERS));
 
-        if ((hLast = enumerate_modules_in_process(pi.hProcess, hLast, &inh)) == NULL) {
+        if ((hLast = enumerate_modules_in_process(pi.hProcess, hLast, &inh)) ==
+            NULL) {
             break;
         }
 
@@ -640,18 +638,23 @@ bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_
         goto inject_fail;
     }
 
-    // Search through import table if it exists and replace the target DLL with our DLL filename
-    PBYTE pbModule = (PBYTE)hModule;
-    PIMAGE_SECTION_HEADER pRemoteSectionHeaders
-    = (PIMAGE_SECTION_HEADER)((PBYTE)pbModule
-                                + sizeof(inh.Signature)
-                                + sizeof(inh.FileHeader)
-                                + inh.FileHeader.SizeOfOptionalHeader);
+    // Search through import table if it exists and replace the target DLL with
+    // our DLL filename
+    PBYTE pbModule = (PBYTE) hModule;
+    PIMAGE_SECTION_HEADER pRemoteSectionHeaders =
+        (PIMAGE_SECTION_HEADER) ((PBYTE) pbModule + sizeof(inh.Signature) +
+                                 sizeof(inh.FileHeader) +
+                                 inh.FileHeader.SizeOfOptionalHeader);
     size_t total_size = inh.OptionalHeader.SizeOfHeaders;
 
     IMAGE_SECTION_HEADER header;
     for (DWORD n = 0; n < inh.FileHeader.NumberOfSections; ++n) {
-        if (!ReadProcessMemory(pi.hProcess, pRemoteSectionHeaders + n, &header, sizeof(header), NULL)) {
+        if (!ReadProcessMemory(
+                pi.hProcess,
+                pRemoteSectionHeaders + n,
+                &header,
+                sizeof(header),
+                NULL)) {
             log_warning("Couldn't read section header: %lu", GetLastError());
             goto inject_fail;
         }
@@ -671,17 +674,33 @@ bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_
     log_assert(remote_addr != NULL);
 
     debugger_pe_patch_remote(
-        pi.hProcess, remote_addr, replacement_path_dll, strlen(replacement_path_dll));
+        pi.hProcess,
+        remote_addr,
+        replacement_path_dll,
+        strlen(replacement_path_dll));
 
-    if (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0) {
-        PIMAGE_IMPORT_DESCRIPTOR pImageImport = (PIMAGE_IMPORT_DESCRIPTOR)(pbModule
-        + inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    if (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+            .VirtualAddress != 0) {
+        PIMAGE_IMPORT_DESCRIPTOR pImageImport =
+            (PIMAGE_IMPORT_DESCRIPTOR) (pbModule +
+                                        inh.OptionalHeader
+                                            .DataDirectory
+                                                [IMAGE_DIRECTORY_ENTRY_IMPORT]
+                                            .VirtualAddress);
 
         DWORD size = 0;
-        while (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size == 0
-        || size < inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size) {
+        while (inh.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+                       .Size == 0 ||
+               size < inh.OptionalHeader
+                          .DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+                          .Size) {
             IMAGE_IMPORT_DESCRIPTOR ImageImport;
-            if (!ReadProcessMemory(pi.hProcess, pImageImport, &ImageImport, sizeof(ImageImport), NULL)) {
+            if (!ReadProcessMemory(
+                    pi.hProcess,
+                    pImageImport,
+                    &ImageImport,
+                    sizeof(ImageImport),
+                    NULL)) {
                 log_warning("Couldn't read import: %lu", GetLastError());
                 goto inject_fail;
             }
@@ -691,13 +710,19 @@ bool debugger_replace_dll_iat(const char *expected_dll, const char *replacement_
             }
 
             char name[MAX_PATH] = {0};
-            if (ReadProcessMemory(pi.hProcess, pbModule + ImageImport.Name, name, sizeof(name), NULL)) {
+            if (ReadProcessMemory(
+                    pi.hProcess,
+                    pbModule + ImageImport.Name,
+                    name,
+                    sizeof(name),
+                    NULL)) {
                 // log_misc("\tImport DLL: %ld %s", ImageImport.Name, name);
 
                 if (strcmp(name, expected_dll) == 0) {
-                    //log_misc("Replacing %s with %s", name, replacement_path_dll, (void*)pImageImport);
+                    // log_misc("Replacing %s with %s", name,
+                    // replacement_path_dll, (void*)pImageImport);
 
-                    ImageImport.Name = (DWORD)((PBYTE)remote_addr - pbModule);
+                    ImageImport.Name = (DWORD) ((PBYTE) remote_addr - pbModule);
 
                     debugger_pe_patch_remote(
                         pi.hProcess,
@@ -768,11 +793,10 @@ void debugger_finit(bool failure)
 }
 
 // Helper functions based on Microsoft Detours
-static PVOID load_nt_header_from_process(HANDLE hProcess,
-                                         HMODULE hModule,
-                                         PIMAGE_NT_HEADERS32 pNtHeader)
+static PVOID load_nt_header_from_process(
+    HANDLE hProcess, HMODULE hModule, PIMAGE_NT_HEADERS32 pNtHeader)
 {
-    PBYTE pbModule = (PBYTE)hModule;
+    PBYTE pbModule = (PBYTE) hModule;
 
     memset(pNtHeader, 0, sizeof(*pNtHeader));
 
@@ -795,13 +819,17 @@ static PVOID load_nt_header_from_process(HANDLE hProcess,
     }
 
     if (idh.e_magic != IMAGE_DOS_SIGNATURE ||
-        (DWORD)idh.e_lfanew > mbi.RegionSize ||
-        (DWORD)idh.e_lfanew < sizeof(idh)) {
+        (DWORD) idh.e_lfanew > mbi.RegionSize ||
+        (DWORD) idh.e_lfanew < sizeof(idh)) {
         return NULL;
     }
 
-    if (!ReadProcessMemory(hProcess, pbModule + idh.e_lfanew,
-                           pNtHeader, sizeof(*pNtHeader), NULL)) {
+    if (!ReadProcessMemory(
+            hProcess,
+            pbModule + idh.e_lfanew,
+            pNtHeader,
+            sizeof(*pNtHeader),
+            NULL)) {
         log_warning("Could not read NT header: %lu", GetLastError());
         return NULL;
     }
@@ -813,11 +841,10 @@ static PVOID load_nt_header_from_process(HANDLE hProcess,
     return pbModule + idh.e_lfanew;
 }
 
-static HMODULE enumerate_modules_in_process(HANDLE hProcess,
-                                            HMODULE hModuleLast,
-                                            PIMAGE_NT_HEADERS32 pNtHeader)
+static HMODULE enumerate_modules_in_process(
+    HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader)
 {
-    PBYTE pbLast = (PBYTE)hModuleLast + MM_ALLOCATION_GRANULARITY;
+    PBYTE pbLast = (PBYTE) hModuleLast + MM_ALLOCATION_GRANULARITY;
 
     memset(pNtHeader, 0, sizeof(*pNtHeader));
 
@@ -825,17 +852,17 @@ static HMODULE enumerate_modules_in_process(HANDLE hProcess,
     memset(&mbi, 0, sizeof(mbi));
 
     // Find the next memory region that contains a mapped PE image.
-    for (;; pbLast = (PBYTE)mbi.BaseAddress + mbi.RegionSize) {
-        if (VirtualQueryEx(hProcess, (PVOID)pbLast, &mbi, sizeof(mbi)) == 0) {
+    for (;; pbLast = (PBYTE) mbi.BaseAddress + mbi.RegionSize) {
+        if (VirtualQueryEx(hProcess, (PVOID) pbLast, &mbi, sizeof(mbi)) == 0) {
             break;
         }
 
-        // Usermode address space has such an unaligned region size always at the
-        // end and only at the end.
+        // Usermode address space has such an unaligned region size always at
+        // the end and only at the end.
         if ((mbi.RegionSize & 0xfff) == 0xfff) {
             break;
         }
-        if (((PBYTE)mbi.BaseAddress + mbi.RegionSize) < pbLast) {
+        if (((PBYTE) mbi.BaseAddress + mbi.RegionSize) < pbLast) {
             break;
         }
 
@@ -846,8 +873,9 @@ static HMODULE enumerate_modules_in_process(HANDLE hProcess,
             continue;
         }
 
-        if (load_nt_header_from_process(hProcess, (HMODULE)pbLast, pNtHeader)) {
-            return (HMODULE)pbLast;
+        if (load_nt_header_from_process(
+                hProcess, (HMODULE) pbLast, pNtHeader)) {
+            return (HMODULE) pbLast;
         }
     }
 

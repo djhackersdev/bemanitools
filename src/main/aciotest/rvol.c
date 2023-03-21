@@ -54,8 +54,7 @@ bool aciotest_rvol_handler_update(
         selected_light,
         pin.spinners[2] / 2,
         pin.spinners[3] / 2,
-        pin.spinners[4] / 2
-    );
+        pin.spinners[4] / 2);
 
     memset(&pout, 0, sizeof(pout));
 

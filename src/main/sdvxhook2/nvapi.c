@@ -49,10 +49,12 @@ static void *my_GetProcAddress(HMODULE dll, const char *name)
 
 #define OFFSET_NvAPI_DISP_SetDisplayConfig 0x5D8CF8DE
 
-static void *my_nvapi_QueryInterface(uint32_t FunctionOffset) {
+static void *my_nvapi_QueryInterface(uint32_t FunctionOffset)
+{
     if (FunctionOffset == OFFSET_NvAPI_DISP_SetDisplayConfig) {
         log_info("Request for interface %x intercepted", FunctionOffset);
-        // no point stubbing this, the error checking for now doesn't check the response anyways
+        // no point stubbing this, the error checking for now doesn't check the
+        // response anyways
         return NULL;
     }
 

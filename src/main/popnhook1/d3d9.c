@@ -24,8 +24,8 @@ static const hook_d3d9_irp_handler_t popnhook1_d3d9_handlers[] = {
     popnhook1_d3d9_irp_handler,
 };
 
-static void popnhook1_d3d9_validate_config(
-    const struct popnhook1_d3d9_config *config)
+static void
+popnhook1_d3d9_validate_config(const struct popnhook1_d3d9_config *config)
 {
     if (!config->windowed && config->framed) {
         log_warning("Option framed does not have an effect without windowed");
@@ -58,8 +58,7 @@ void popnhook1_d3d9_init_config(struct popnhook1_d3d9_config *config)
     config->texture_usage_fix = false;
 }
 
-void popnhook1_d3d9_configure(
-    const struct popnhook1_d3d9_config *config)
+void popnhook1_d3d9_configure(const struct popnhook1_d3d9_config *config)
 {
     log_assert(config);
 
@@ -67,13 +66,10 @@ void popnhook1_d3d9_configure(
     popnhook1_d3d9_validate_config(config);
 
     memcpy(
-        &popnhook1_d3d9_config,
-        config,
-        sizeof(struct popnhook1_d3d9_config));
+        &popnhook1_d3d9_config, config, sizeof(struct popnhook1_d3d9_config));
 }
 
-static void
-popnhook1_d3d9_fix_texture_usage(struct hook_d3d9_irp *irp)
+static void popnhook1_d3d9_fix_texture_usage(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_CREATE_TEXTURE);
@@ -82,14 +78,12 @@ popnhook1_d3d9_fix_texture_usage(struct hook_d3d9_irp *irp)
     irp->args.dev_create_texture.usage = 0;
 }
 
-static void
-popnhook1_d3d9_patch_window(struct hook_d3d9_irp *irp)
+static void popnhook1_d3d9_patch_window(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (popnhook1_d3d9_config.windowed &&
-        popnhook1_d3d9_config.framed) {
+    if (popnhook1_d3d9_config.windowed && popnhook1_d3d9_config.framed) {
         /* use a different style */
         irp->args.create_window_ex.style |= WS_OVERLAPPEDWINDOW;
 
@@ -153,14 +147,12 @@ static void popnhook1_d3d9_calc_win_size_with_framed(
     wp->cy = rect.bottom - rect.top;
 }
 
-static void
-popnhook1_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
+static void popnhook1_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CREATE_WINDOW_EX);
 
-    if (popnhook1_d3d9_config.windowed &&
-        popnhook1_d3d9_config.framed) {
+    if (popnhook1_d3d9_config.windowed && popnhook1_d3d9_config.framed) {
         /* we have to adjust the window size, because the window needs to be a
            slightly bigger than the rendering resolution (window caption and
            stuff is included in the window size) */
@@ -168,8 +160,12 @@ popnhook1_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
 
         popnhook1_d3d9_calc_win_size_with_framed(
             irp->args.create_window_ex.result,
-            irp->args.create_window_ex.x == CW_USEDEFAULT ? 0 : irp->args.create_window_ex.x,
-            irp->args.create_window_ex.y == CW_USEDEFAULT ? 0 : irp->args.create_window_ex.y,
+            irp->args.create_window_ex.x == CW_USEDEFAULT ?
+                0 :
+                irp->args.create_window_ex.x,
+            irp->args.create_window_ex.y == CW_USEDEFAULT ?
+                0 :
+                irp->args.create_window_ex.y,
             irp->args.create_window_ex.width,
             irp->args.create_window_ex.height,
             &wp);
@@ -186,8 +182,8 @@ popnhook1_d3d9_fix_window_size_and_pos(struct hook_d3d9_irp *irp)
     }
 }
 
-static void popnhook1_d3d9_fix_create_device_apply_window_mode(
-    struct hook_d3d9_irp *irp)
+static void
+popnhook1_d3d9_fix_create_device_apply_window_mode(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);

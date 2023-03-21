@@ -13,7 +13,7 @@
 #include "util/log.h"
 #include "util/str.h"
 
-//#define P4IOEMU_DEBUG_DUMP
+// #define P4IOEMU_DEBUG_DUMP
 
 static const struct p4ioemu_device_msg_hook *p4ioemu_device_msg_hook;
 

@@ -28,11 +28,13 @@ struct aciodrv_device_node_version {
  */
 struct aciodrv_device_ctx *aciodrv_device_open(const char *port_path, int baud)
 #ifdef __GNUC__
-__attribute__((deprecated("Use aciomgr instead if device is shareable, else aciodrv_device_open_path")))
+    __attribute__((deprecated("Use aciomgr instead if device is shareable, "
+                              "else aciodrv_device_open_path")))
 #endif
-;
+    ;
 
-struct aciodrv_device_ctx *aciodrv_device_open_path(const char *port_path, int baud);
+struct aciodrv_device_ctx *
+aciodrv_device_open_path(const char *port_path, int baud);
 
 /**
  * Get the node count on the opened device.
@@ -51,7 +53,10 @@ uint8_t aciodrv_device_get_node_count(struct aciodrv_device_ctx *device);
  * @return True on success, false on error. If True the variable product
  * contains the identifier of the queried node.
  */
-bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, uint8_t node_id, char product[ACIO_NODE_PRODUCT_CODE_LEN]);
+bool aciodrv_device_get_node_product_ident(
+    struct aciodrv_device_ctx *device,
+    uint8_t node_id,
+    char product[ACIO_NODE_PRODUCT_CODE_LEN]);
 
 /**
  * Get the product identifier of an enumerated node.
@@ -60,7 +65,8 @@ bool aciodrv_device_get_node_product_ident(struct aciodrv_device_ctx *device, ui
  * @param node_id Id of the node. Needs to be in range of the total node count.
  * @return product type ID on success, or 0 on failure
  */
-uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device, uint8_t node_id);
+uint32_t aciodrv_device_get_node_product_type(
+    struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Get the product version of an enumerated node.
@@ -69,7 +75,9 @@ uint32_t aciodrv_device_get_node_product_type(struct aciodrv_device_ctx *device,
  * @param node_id Id of the node. Needs to be in range of the total node count.
  * @return Pointer to the version struct
  */
-const struct aciodrv_device_node_version *aciodrv_device_get_node_product_version(struct aciodrv_device_ctx *device, uint8_t node_id);
+const struct aciodrv_device_node_version *
+aciodrv_device_get_node_product_version(
+    struct aciodrv_device_ctx *device, uint8_t node_id);
 
 /**
  * Send a message to the ACIO bus and receive an answer.
@@ -82,7 +90,10 @@ const struct aciodrv_device_node_version *aciodrv_device_get_node_product_versio
  * @param resp_size Size of the expecting response.
  * @return True on success, false on error.
  */
-bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size);
+bool aciodrv_send_and_recv(
+    struct aciodrv_device_ctx *device,
+    struct ac_io_message *msg,
+    int max_resp_size);
 
 /**
  * Send a message to the ACIO bus.
@@ -90,7 +101,8 @@ bool aciodrv_send_and_recv(struct aciodrv_device_ctx *device, struct ac_io_messa
  * @param device Context of opened device
  * @param msg Msg to send to the bus.
  * @return True on success, false on error.
- * @note Prefer the use of aciodrv_send_and_recv when possible. This is for commands which don't trigger a reply.
+ * @note Prefer the use of aciodrv_send_and_recv when possible. This is for
+ * commands which don't trigger a reply.
  */
 bool aciodrv_send(struct aciodrv_device_ctx *device, struct ac_io_message *msg);
 
@@ -101,9 +113,13 @@ bool aciodrv_send(struct aciodrv_device_ctx *device, struct ac_io_message *msg);
  * @param msg Msg to send to the bus. Make sure that the buffer
  *        is big enough to receive the response.
  * @return True on success, false on error.
- * @note Prefer the use of aciodrv_send_and_recv when possible. This is for unsollicited incoming messages.
+ * @note Prefer the use of aciodrv_send_and_recv when possible. This is for
+ * unsollicited incoming messages.
  */
-bool aciodrv_recv(struct aciodrv_device_ctx *device, struct ac_io_message *msg, int max_resp_size);
+bool aciodrv_recv(
+    struct aciodrv_device_ctx *device,
+    struct ac_io_message *msg,
+    int max_resp_size);
 
 /**
  * Reset an opened device.
@@ -115,7 +131,7 @@ bool aciodrv_device_reset(struct aciodrv_device_ctx *device);
 
 /**
  * Close the previously opened ACIO device.
- * 
+ *
  * @param device Context of opened device
  */
 void aciodrv_device_close(struct aciodrv_device_ctx *device);

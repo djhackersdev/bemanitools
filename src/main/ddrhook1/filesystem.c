@@ -1,8 +1,8 @@
 #include <windows.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,9 +14,8 @@
 #include "util/str.h"
 
 static BOOL STDCALL my_SetCurrentDirectoryA(LPCSTR lpPathName);
-static HANDLE STDCALL my_FindFirstFileW(
-    LPCWSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+static HANDLE STDCALL
+my_FindFirstFileW(LPCWSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 static HANDLE STDCALL my_CreateFileW(
     LPCWSTR lpFileName,
     DWORD dwDesiredAccess,
@@ -30,8 +29,7 @@ static BOOL WINAPI my_CreateDirectoryW(
 
 static BOOL(STDCALL *real_SetCurrentDirectoryA)(LPCSTR lpPathName);
 static HANDLE(STDCALL *real_FindFirstFileW)(
-    LPCWSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData);
+    LPCWSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
 static HANDLE(STDCALL *real_CreateFileW)(
     LPCWSTR lpFileName,
     DWORD dwDesiredAccess,
@@ -44,29 +42,25 @@ static BOOL(WINAPI *real_CreateDirectoryW)(
     LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 static const struct hook_symbol filesystem_hook_syms[] = {
-    {
-        .name = "CreateFileW",
-        .patch = my_CreateFileW,
-        .link = (void **) &real_CreateFileW
-    },
+    {.name = "CreateFileW",
+     .patch = my_CreateFileW,
+     .link = (void **) &real_CreateFileW},
     {
         .name = "SetCurrentDirectoryA",
         .patch = my_SetCurrentDirectoryA,
         .link = (void **) &real_SetCurrentDirectoryA,
     },
-    {
-        .name = "FindFirstFileW",
-        .patch = my_FindFirstFileW,
-        .link = (void **) &real_FindFirstFileW
-    },
-    {
-        .name = "CreateDirectoryW",
-        .patch = my_CreateDirectoryW,
-        .link = (void **) &real_CreateDirectoryW
-    },
+    {.name = "FindFirstFileW",
+     .patch = my_FindFirstFileW,
+     .link = (void **) &real_FindFirstFileW},
+    {.name = "CreateDirectoryW",
+     .patch = my_CreateDirectoryW,
+     .link = (void **) &real_CreateDirectoryW},
 };
 
-void ddrhook1_get_launcher_path_parts(char **output_path, char **output_foldername) {
+void ddrhook1_get_launcher_path_parts(
+    char **output_path, char **output_foldername)
+{
     char module_path[MAX_PATH];
     char launcher_path[MAX_PATH];
 
@@ -82,7 +76,9 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
         return;
 
     char *filename_ptr = NULL;
-    if (GetFullPathNameA(module_path, sizeof(launcher_path), launcher_path, &filename_ptr) == 0)
+    if (GetFullPathNameA(
+            module_path, sizeof(launcher_path), launcher_path, &filename_ptr) ==
+        0)
         return;
 
     if (filename_ptr != NULL)
@@ -98,7 +94,8 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
 
     int idx_folder = 0;
     for (idx_folder = strlen(launcher_path); idx_folder - 1 > 0; idx_folder--) {
-        if (launcher_path[idx_folder - 1] == '\\' || launcher_path[idx_folder - 1] == '/') {
+        if (launcher_path[idx_folder - 1] == '\\' ||
+            launcher_path[idx_folder - 1] == '/') {
             break;
         }
     }
@@ -109,7 +106,7 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
         if (len < 0)
             len = 0;
 
-        *output_foldername = (char*)xmalloc(len + 2);
+        *output_foldername = (char *) xmalloc(len + 2);
         memset(*output_foldername, 0, len + 1);
         strncpy(*output_foldername, launcher_path + idx_folder, len);
     }
@@ -120,7 +117,7 @@ void ddrhook1_get_launcher_path_parts(char **output_path, char **output_folderna
         if (len > strlen(launcher_path))
             len = strlen(launcher_path);
 
-        *output_path = (char*)xmalloc(len + 1);
+        *output_path = (char *) xmalloc(len + 1);
         memset(*output_path, 0, len + 1);
         strncpy(*output_path, launcher_path, len);
     }
@@ -135,9 +132,12 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
     // log_misc("path: %s", tmp);
     // free(tmp);
 
-    // Deal with hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw, F:/update, ...
-    if (wstr_insensitive_eq(path, L"D:/HDX") || wstr_insensitive_eq(path, L"D:\\HDX")
-    || wstr_insensitive_eq(path, L"D:/JDX") || wstr_insensitive_eq(path, L"D:\\JDX")) {
+    // Deal with hardcoded paths: D:/HDX, E:/conf, E:/conf/nvram, E:/conf/raw,
+    // F:/update, ...
+    if (wstr_insensitive_eq(path, L"D:/HDX") ||
+        wstr_insensitive_eq(path, L"D:\\HDX") ||
+        wstr_insensitive_eq(path, L"D:/JDX") ||
+        wstr_insensitive_eq(path, L"D:\\JDX")) {
         char *_new_path;
         ddrhook1_get_launcher_path_parts(&_new_path, NULL);
 
@@ -145,8 +145,10 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
             new_path = str_widen(_new_path);
             return new_path;
         }
-    } else if (wcslen(path) >= 7 && (wcsnicmp(path, L"E:/conf", 7) == 0
-    || wcsnicmp(path, L"E:\\conf", 7) == 0)) {
+    } else if (
+        wcslen(path) >= 7 &&
+        (wcsnicmp(path, L"E:/conf", 7) == 0 ||
+         wcsnicmp(path, L"E:\\conf", 7) == 0)) {
         char *launcher_folder;
         wchar_t *sub_path;
 
@@ -155,15 +157,17 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
 
         if (sub_path && launcher_folder) {
             wchar_t *launcher_folder_w = str_widen(launcher_folder);
-            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
-            swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            new_path = (wchar_t *) xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(
+                new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
             free(launcher_folder_w);
             return new_path;
         }
-    } else if (wstr_insensitive_eq(path, L"F:/update")
-    || wstr_insensitive_eq(path, L"F:\\update")
-    || wstr_insensitive_eq(path, L".\\F:/update")
-    || wstr_insensitive_eq(path, L".\\F:\\update")) {
+    } else if (
+        wstr_insensitive_eq(path, L"F:/update") ||
+        wstr_insensitive_eq(path, L"F:\\update") ||
+        wstr_insensitive_eq(path, L".\\F:/update") ||
+        wstr_insensitive_eq(path, L".\\F:\\update")) {
         char *launcher_folder;
         wchar_t *sub_path;
 
@@ -172,33 +176,40 @@ static wchar_t *ddrhook1_filesystem_get_path(LPCWSTR path)
 
         if (sub_path && launcher_folder) {
             wchar_t *launcher_folder_w = str_widen(launcher_folder);
-            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
-            swprintf(new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
+            new_path = (wchar_t *) xmalloc(MAX_PATH * sizeof(wchar_t));
+            swprintf(
+                new_path, MAX_PATH, L"%s\\%s", launcher_folder_w, sub_path);
             free(launcher_folder_w);
             return new_path;
         }
-    } else if (wcslen(path) >= 24 && (wcsnicmp(path, L"D:/JDX/JDX-001/contents/", 24) == 0
-    || wcsnicmp(path, L"D:\\JDX\\JDX-001\\contents\\", 24) == 0)) {
+    } else if (
+        wcslen(path) >= 24 &&
+        (wcsnicmp(path, L"D:/JDX/JDX-001/contents/", 24) == 0 ||
+         wcsnicmp(path, L"D:\\JDX\\JDX-001\\contents\\", 24) == 0)) {
         char *content_path;
 
         ddrhook1_get_launcher_path_parts(&content_path, NULL);
 
         if (content_path) {
             wchar_t *content_path_w = str_widen(content_path);
-            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            new_path = (wchar_t *) xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 24);
             free(content_path_w);
             return new_path;
         }
-    } else if (wcslen(path) >= 7 && (wcsnicmp(path, L"D:/HDX/", 7) == 0 || wcsnicmp(path, L"D:\\HDX\\", 7) == 0
-    || wcsnicmp(path, L"D:/JDX/", 7) == 0 || wcsnicmp(path, L"D:\\JDX\\", 7) == 0)) {
+    } else if (
+        wcslen(path) >= 7 &&
+        (wcsnicmp(path, L"D:/HDX/", 7) == 0 ||
+         wcsnicmp(path, L"D:\\HDX\\", 7) == 0 ||
+         wcsnicmp(path, L"D:/JDX/", 7) == 0 ||
+         wcsnicmp(path, L"D:\\JDX\\", 7) == 0)) {
         char *content_path;
 
         ddrhook1_get_launcher_path_parts(&content_path, NULL);
 
         if (content_path) {
             wchar_t *content_path_w = str_widen(content_path);
-            new_path = (wchar_t*)xmalloc(MAX_PATH * sizeof(wchar_t));
+            new_path = (wchar_t *) xmalloc(MAX_PATH * sizeof(wchar_t));
             swprintf(new_path, MAX_PATH, L"%s\\%s", content_path_w, path + 7);
             free(content_path_w);
             return new_path;
@@ -225,7 +236,10 @@ static BOOL STDCALL my_SetCurrentDirectoryA(LPCSTR lpPathName)
 
     if (new_path != NULL) {
         bool r = real_SetCurrentDirectoryA(new_path);
-        log_misc("SetCurrentDirectoryA remapped path %s -> %s", lpPathName, new_path);
+        log_misc(
+            "SetCurrentDirectoryA remapped path %s -> %s",
+            lpPathName,
+            new_path);
         free(new_path);
         return r;
     }
@@ -233,16 +247,13 @@ static BOOL STDCALL my_SetCurrentDirectoryA(LPCSTR lpPathName)
     return real_SetCurrentDirectoryA(lpPathName);
 }
 
-static HANDLE STDCALL my_FindFirstFileW(
-    LPCWSTR lpFileName,
-    LPWIN32_FIND_DATAA lpFindFileData)
+static HANDLE STDCALL
+my_FindFirstFileW(LPCWSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData)
 {
     wchar_t *new_path = ddrhook1_filesystem_get_path(lpFileName);
 
     if (new_path) {
-        HANDLE r = real_FindFirstFileW(
-            new_path,
-            lpFindFileData);
+        HANDLE r = real_FindFirstFileW(new_path, lpFindFileData);
 
         char *tmp;
         wstr_narrow(new_path, &tmp);
@@ -253,9 +264,7 @@ static HANDLE STDCALL my_FindFirstFileW(
         return r;
     }
 
-    return real_FindFirstFileW(
-        lpFileName,
-        lpFindFileData);
+    return real_FindFirstFileW(lpFileName, lpFindFileData);
 }
 
 static HANDLE STDCALL my_CreateFileW(
@@ -321,7 +330,10 @@ BOOL WINAPI my_CreateDirectoryW(
 void ddrhook1_filesystem_hook_init()
 {
     hook_table_apply(
-        NULL, "kernel32.dll", filesystem_hook_syms, lengthof(filesystem_hook_syms));
+        NULL,
+        "kernel32.dll",
+        filesystem_hook_syms,
+        lengthof(filesystem_hook_syms));
 
     log_info("Inserted filesystem hooks");
 }

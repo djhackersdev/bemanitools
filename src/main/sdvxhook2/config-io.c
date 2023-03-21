@@ -55,19 +55,22 @@ void sdvxhook2_config_io_init(struct cconfig *config)
         config,
         SDVXHOOK2_CONFIG_IO_DISABLE_FILE_HOOKS_KEY,
         SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE,
-        "Disables the built in file hooks, requiring manual file creation (/dev/raw/j.dest)");
+        "Disables the built in file hooks, requiring manual file creation "
+        "(/dev/raw/j.dest)");
 
     cconfig_util_set_bool(
         config,
         SDVXHOOK2_CONFIG_IO_DISABLE_POWER_HOOKS_KEY,
         SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_POWER_HOOKS_VALUE,
-        "Disables the built in power control hooks, allowing game to modify system power settings");
+        "Disables the built in power control hooks, allowing game to modify "
+        "system power settings");
 
     cconfig_util_set_bool(
         config,
         SDVXHOOK2_CONFIG_IO_DISABLE_NVAPI_HOOKS_KEY,
         SDVXHOOK2_CONFIG_IO_DEFAULT_DISABLE_NVAPI_HOOKS_VALUE,
-        "Disables the built in NVAPI control hooks, allowing game to modify system monitor settings");
+        "Disables the built in NVAPI control hooks, allowing game to modify "
+        "system monitor settings");
 
     cconfig_util_set_bool(
         config,

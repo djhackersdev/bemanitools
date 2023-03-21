@@ -2,12 +2,12 @@
 
 #include <windows.h>
 
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
 
 #include "hook/com-proxy.h"
 #include "hook/table.h"
@@ -22,17 +22,15 @@
 #include "util/time.h"
 
 static void __stdcall hook_glFlush(void);
-static void (__stdcall *real_glFlush)(void);
+static void(__stdcall *real_glFlush)(void);
 
 static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer);
 static void (*real_glBindFramebufferEXT)(GLenum target, GLuint framebuffer);
 
-static void hook_infodispcore_set_angle(void* this, int angle);
+static void hook_infodispcore_set_angle(void *this, int angle);
 
 static const struct hook_symbol jbhook1_opengl_hook_syms[] = {
-    {.name = "glFlush",
-     .patch = hook_glFlush,
-     .link = (void **) &real_glFlush},
+    {.name = "glFlush", .patch = hook_glFlush, .link = (void **) &real_glFlush},
 };
 
 static const struct hook_symbol jbhook1_glhelper_hook_syms[] = {
@@ -47,7 +45,8 @@ static const struct hook_symbol jbhook_infodisp_hook_syms[] = {
      .patch = hook_infodispcore_set_angle},
 };
 
-void jbhook_util_gfx_install_vertical_hooks(void) {
+void jbhook_util_gfx_install_vertical_hooks(void)
+{
     hook_table_apply(
         NULL,
         "opengl32.dll",
@@ -69,7 +68,8 @@ void jbhook_util_gfx_install_vertical_hooks(void) {
     log_info("Inserted vertical display hooks");
 }
 
-static void hook_infodispcore_set_angle(void* this, int angle) {
+static void hook_infodispcore_set_angle(void *this, int angle)
+{
     // ignore
 }
 
@@ -84,10 +84,11 @@ static void hook_infodispcore_set_angle(void* this, int angle) {
 static GLuint fb;
 static GLuint color;
 
-static void fb_init(void) {
+static void fb_init(void)
+{
     static bool init_done = false;
 
-    if(init_done) {
+    if (init_done) {
         return;
     }
 
@@ -97,20 +98,24 @@ static void fb_init(void) {
     glGenTextures(1, &color);
 }
 
-static void __stdcall hook_glFlush(void) {
+static void __stdcall hook_glFlush(void)
+{
     // 3 bytes per RGB pixel
     // these could really be stack variables but they are too big for gcc's
     // default stack size, and it's no problem for 6MiB of data to hang around
-    static uint8_t pixels_raw[W*H*3];
-    static uint8_t pixels_rot[W*H*3];
+    static uint8_t pixels_raw[W * H * 3];
+    static uint8_t pixels_rot[W * H * 3];
 
     glReadPixels(0, 0, H, W, GL_RGB, GL_UNSIGNED_BYTE, pixels_raw);
 
     // CPU copies may seem slow here, but this runs fine on my jubeat cab, so
     // speed is not a huge concern.
-    for(size_t x = 0; x < W; x++) {
-        for(size_t y = 0; y < H; y++) {
-            memcpy(&pixels_rot[3*(y*W + x)], &pixels_raw[3*((W-x)*H + y)], 3);
+    for (size_t x = 0; x < W; x++) {
+        for (size_t y = 0; y < H; y++) {
+            memcpy(
+                &pixels_rot[3 * (y * W + x)],
+                &pixels_raw[3 * ((W - x) * H + y)],
+                3);
         }
     }
 
@@ -129,11 +134,13 @@ static void __stdcall hook_glFlush(void) {
     fb_init();
     real_glBindFramebufferEXT(GL_FRAMEBUFFER, fb);
     glBindTexture(GL_TEXTURE_2D, color);
-    glTexImage2D(GL_TEXTURE_2D,	0, GL_RGBA, H, W, 0, GL_RGBA,GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGBA, H, W, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+    glFramebufferTexture2DEXT(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
 }
 
 // hooking something in glhelper.dll (a jubeat supplied DLL) might seem
@@ -141,12 +148,13 @@ static void __stdcall hook_glFlush(void) {
 // loop of the game makes it very difficult to "catch" the rendering at the
 // right place otherwise. This works with all horizontal jubeats, and they
 // stopped needing rotation fixes starting with saucer.
-static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer) {
+static void hook_glBindFramebufferEXT(GLenum target, GLuint framebuffer)
+{
     fb_init();
 
     // check this is actually the screen - the game also uses internal
     // framebuffers for some parts of the display
-    if(target == GL_FRAMEBUFFER && framebuffer == 0) {
+    if (target == GL_FRAMEBUFFER && framebuffer == 0) {
         framebuffer = fb;
     }
 

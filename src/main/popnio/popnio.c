@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "bemanitools/popnio.h"
 #include "bemanitools/input.h"
+#include "bemanitools/popnio.h"
 
 void popn_io_set_loggers(
     log_formatter_t misc,
@@ -67,10 +67,10 @@ void popn_io_set_button_lights(uint32_t lights)
 
 void popn_io_set_coin_blocker_light(bool enabled)
 {
-    //mapper_write_light(x, enabled ? 255 : 0);
+    // mapper_write_light(x, enabled ? 255 : 0);
 }
 
 void popn_io_set_coin_counter_light(bool enabled)
 {
-    //mapper_write_light(x, enabled ? 255 : 0);
+    // mapper_write_light(x, enabled ? 255 : 0);
 }

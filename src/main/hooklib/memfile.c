@@ -28,7 +28,7 @@ static CRITICAL_SECTION hooked_files_cs;
 BOOL my_GetFileInformationByHandle(
     HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
 
-BOOL (*real_GetFileInformationByHandle)
+BOOL(*real_GetFileInformationByHandle)
 (HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
 
 static const struct hook_symbol memfile_hook_kernel32_syms[] = {

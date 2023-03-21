@@ -5,15 +5,23 @@
 
 #include "util/log.h"
 
-#define VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_KEY "vigem.iidxio.tt.anlog.relative"
-#define VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_SENSITIVITY_KEY "vigem.iidxio.tt.anlog.relative_sensitivity" 
-#define VIGEM_IIDXIO_CONFIG_TT_BUTTON_DEBOUNCE_KEY "vigem.iidxio.tt.button.debounce"
-#define VIGEM_IIDXIO_CONFIG_TT_BUTTON_THRESHOLD_KEY "vigem.iidxio.tt.button.threshold"
+#define VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_KEY \
+    "vigem.iidxio.tt.anlog.relative"
+#define VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_SENSITIVITY_KEY \
+    "vigem.iidxio.tt.anlog.relative_sensitivity"
+#define VIGEM_IIDXIO_CONFIG_TT_BUTTON_DEBOUNCE_KEY \
+    "vigem.iidxio.tt.button.debounce"
+#define VIGEM_IIDXIO_CONFIG_TT_BUTTON_THRESHOLD_KEY \
+    "vigem.iidxio.tt.button.threshold"
 #define VIGEM_IIDXIO_CONFIG_TT_DEBUG_OUTPUT_KEY "vigem.iidxio.tt.debug_output"
-#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_ENABLE_KEYLIGHT_KEY "vigem.iidxio.cab_light.enable_keylight"
-#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_LIGHT_MODE_KEY "vigem.iidxio.cab_light.light_mode"
-#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_16SEG_KEY "vigem.iidxio.cab_light.text_16seg"
-#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_KEY "vigem.iidxio.cab_light.text_scroll_cycle_time_ms"
+#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_ENABLE_KEYLIGHT_KEY \
+    "vigem.iidxio.cab_light.enable_keylight"
+#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_LIGHT_MODE_KEY \
+    "vigem.iidxio.cab_light.light_mode"
+#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_16SEG_KEY \
+    "vigem.iidxio.cab_light.text_16seg"
+#define VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_KEY \
+    "vigem.iidxio.cab_light.text_scroll_cycle_time_ms"
 
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_TT_ANALOG_RELATIVE_VALUE false
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_TT_ANALOG_RELATIVE_SENSITIVITY_VALUE 1024
@@ -23,7 +31,8 @@
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_ENABLE_KEYLIGHT_VALUE true
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_LIGHT_MODE_VALUE 0
 #define VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_TEXT_16SEG_VALUE ""
-#define VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_VALUE 500
+#define VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_VALUE \
+    500
 
 static void _vigem_iidxio_config_init(struct cconfig *config)
 {
@@ -37,28 +46,33 @@ static void _vigem_iidxio_config_init(struct cconfig *config)
         config,
         VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_SENSITIVITY_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_TT_ANALOG_RELATIVE_SENSITIVITY_VALUE,
-        "Sensitivity value for relative mode (1 to 32767). Tweak if you are having issues with "
+        "Sensitivity value for relative mode (1 to 32767). Tweak if you are "
+        "having issues with "
         "jittering/misfiring/unresponsiveness");
 
     cconfig_util_set_int(
         config,
         VIGEM_IIDXIO_CONFIG_TT_BUTTON_DEBOUNCE_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_TT_BUTTON_DEBOUNCE_VALUE,
-        "Button turntable: \"debounce\" value (1 to 50, recommend 20). Tweak if you are having "\
+        "Button turntable: \"debounce\" value (1 to 50, recommend 20). Tweak "
+        "if you are having "
         "issues with TT button misfiring/unresponsiveness");
 
     cconfig_util_set_int(
         config,
         VIGEM_IIDXIO_CONFIG_TT_BUTTON_THRESHOLD_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_TT_BUTTON_THRESHOLD_VALUE,
-        "Button turntable: minimum ticks required within (debounce * 2) ms to register movement "
-        "(1 to 4, recommend 2). Tweak if you button input is too (un-) responsive");
+        "Button turntable: minimum ticks required within (debounce * 2) ms to "
+        "register movement "
+        "(1 to 4, recommend 2). Tweak if you button input is too (un-) "
+        "responsive");
 
     cconfig_util_set_bool(
         config,
         VIGEM_IIDXIO_CONFIG_TT_DEBUG_OUTPUT_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_TT_DEBUG_OUTPUT_VALUE,
-        "Print verbose debug output to the console for debugging turntable sensitivity issues");
+        "Print verbose debug output to the console for debugging turntable "
+        "sensitivity issues");
 
     cconfig_util_set_bool(
         config,
@@ -70,19 +84,22 @@ static void _vigem_iidxio_config_init(struct cconfig *config)
         config,
         VIGEM_IIDXIO_CONFIG_CAB_LIGHT_LIGHT_MODE_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_LIGHT_MODE_VALUE,
-        "Different cabinet light modes: 0 = off, 1 = neons sequence, 2 = neons flash on TT spin");
+        "Different cabinet light modes: 0 = off, 1 = neons sequence, 2 = neons "
+        "flash on TT spin");
 
     cconfig_util_set_str(
         config,
         VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_16SEG_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_TEXT_16SEG_VALUE,
-        "Display text on 16seg. If text exceeds 9 char display limit, it will scroll + cycle");
+        "Display text on 16seg. If text exceeds 9 char display limit, it will "
+        "scroll + cycle");
 
     cconfig_util_set_int(
         config,
         VIGEM_IIDXIO_CONFIG_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_KEY,
         VIGEM_IIDXIO_CONFIG_DEFAULT_CAB_LIGHT_TEXT_SCROLL_CYCLE_TIME_MS_VALUE,
-        "Cycle time/scroll speed for text exceeding 16seg display length (9) to scroll from right");
+        "Cycle time/scroll speed for text exceeding 16seg display length (9) "
+        "to scroll from right");
 }
 
 static void _vigem_iidxio_config_get(
@@ -147,7 +164,6 @@ static void _vigem_iidxio_config_get(
             VIGEM_IIDXIO_CONFIG_TT_DEBUG_OUTPUT_KEY,
             VIGEM_IIDXIO_CONFIG_DEFAULT_TT_DEBUG_OUTPUT_VALUE);
     }
-
 
     if (!cconfig_util_get_bool(
             config,

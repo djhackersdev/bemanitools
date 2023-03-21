@@ -333,7 +333,7 @@ bool eam_impl_get_sensor_state(struct eam *eam, uint8_t unit_no)
     }
 
     if (unit->sensor_hot) {
-        if ((int32_t)(unit->sensor_time - now) > 0) {
+        if ((int32_t) (unit->sensor_time - now) > 0) {
             result = true;
         } else {
             unit->sensor_time = 0;

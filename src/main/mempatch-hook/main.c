@@ -10,9 +10,12 @@
 #include "util/log.h"
 
 static bool patch_memory_check_data(
-    uintptr_t base_address, uintptr_t address, uint8_t *data_expected, size_t len)
+    uintptr_t base_address,
+    uintptr_t address,
+    uint8_t *data_expected,
+    size_t len)
 {
-    uint8_t *dest = (uint8_t *)(base_address + address);
+    uint8_t *dest = (uint8_t *) (base_address + address);
     bool success = true;
 
     for (size_t i = 0; i < len; i++) {
@@ -23,7 +26,7 @@ static bool patch_memory_check_data(
                 (uint64_t) address,
                 // this cast is technically wrong
                 // but no one should be patching 32K worth of bytes at once
-                (int)i,
+                (int) i,
                 data_expected[i],
                 dest[i]);
             success = false;
@@ -38,7 +41,7 @@ static bool patch_memory_data(
 {
     DWORD old_protect;
 
-    uint8_t *dest = (uint8_t *)(base_address + address);
+    uint8_t *dest = (uint8_t *) (base_address + address);
 
     if (!VirtualProtect(
             (void *) dest,

@@ -53,7 +53,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_assert(sidcode != NULL);
 
-    if(options.vertical) {
+    if (options.vertical) {
         jbhook_util_gfx_install_vertical_hooks();
     }
 
@@ -76,8 +76,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         };
 
         jbhook_util_p3io_init(
-            &security_mcode_j44,
-            &security_id_default, &security_id_default);
+            &security_mcode_j44, &security_id_default, &security_id_default);
 
         log_info("Starting up jubeat IO backend");
 
@@ -119,9 +118,14 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     // If the game is append, the mcode `cabinet` is forced to C. This is bad if
     // p3io was configured to respond as A! Help the user help themsevles...
-    if(strcmp(sidcode_in_ea3_config, sidcode) != 0) {
-        log_warning("sidcode changed after running game DLL init (%s -> %s)", sidcode_in_ea3_config, sidcode);
-        log_warning("This will trigger a security error. Modify ea3-config.xml <soft> section to match the second value!");
+    if (strcmp(sidcode_in_ea3_config, sidcode) != 0) {
+        log_warning(
+            "sidcode changed after running game DLL init (%s -> %s)",
+            sidcode_in_ea3_config,
+            sidcode);
+        log_warning(
+            "This will trigger a security error. Modify ea3-config.xml <soft> "
+            "section to match the second value!");
 
         // abort the boot
         return false;
@@ -193,16 +197,16 @@ static HWND CDECL my_mwindow_create(
     log_info("---------------- Begin jbhook mwindow_create ----------------");
     log_info("-------------------------------------------------------------");
 
-    if(options.vertical) {
+    if (options.vertical) {
         DWORD tmp = window_width;
         window_width = window_height;
         window_height = tmp;
     }
 
-    if(options.show_cursor) {
+    if (options.show_cursor) {
         ShowCursor(TRUE);
     }
-	
+
     fullscreen = !options.windowed;
 
     return real_mwindow_create(

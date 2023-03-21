@@ -40,7 +40,7 @@ int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes);
 
 /**
  * Close the previously opened com port.
- * 
+ *
  * @param port_fd HANDLE of opened serial port
  */
 void aciodrv_port_close(HANDLE port_fd);

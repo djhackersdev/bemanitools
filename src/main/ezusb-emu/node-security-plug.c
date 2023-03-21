@@ -16,8 +16,10 @@
 static struct security_mcode ezusb_iidx_emu_node_security_plug_boot_version;
 static uint32_t ezusb_iidx_emu_node_security_plug_boot_seeds[3];
 
-static struct security_rp_sign_key ezusb_iidx_emu_node_security_plug_black_sign_key;
-static struct security_rp_sign_key ezusb_iidx_emu_node_security_plug_white_sign_key;
+static struct security_rp_sign_key
+    ezusb_iidx_emu_node_security_plug_black_sign_key;
+static struct security_rp_sign_key
+    ezusb_iidx_emu_node_security_plug_white_sign_key;
 
 static struct security_mcode ezusb_iidx_emu_node_security_plug_black_mcode;
 static struct security_mcode ezusb_iidx_emu_node_security_plug_white_mcode;
@@ -223,8 +225,9 @@ uint8_t ezusb_iidx_emu_node_security_plug_process_cmd_v2(
 
         // pop'n music only ever uses slot 2 (white) and slot 4 (black).
         // If the configuration does not match then it will error out.
-        // IIDX uses slots 2 and 3 and detects what is plugged into each slot so ordering isn't important.
-        // IIDX also reads slot 1's data section but doesn't care what dongle it is?
+        // IIDX uses slots 2 and 3 and detects what is plugged into each slot so
+        // ordering isn't important. IIDX also reads slot 1's data section but
+        // doesn't care what dongle it is?
         case EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_1:
             log_misc("EZUSB_IIDX_SECPLUG_CMD_V2_SELECT_DONGLE_1");
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =

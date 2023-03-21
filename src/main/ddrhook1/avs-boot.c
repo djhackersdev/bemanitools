@@ -84,8 +84,9 @@ static void my_avs_boot(
     char nvram_path[MAX_PATH] = {0};
     char raw_path[MAX_PATH] = {0};
 
-    // Using the full path as part of the AVS paths seems to break on long paths.
-    // So instead, just take the launcher folder relative to the main game directory.
+    // Using the full path as part of the AVS paths seems to break on long
+    // paths. So instead, just take the launcher folder relative to the main
+    // game directory.
     char *launcher_folder;
     ddrhook1_get_launcher_path_parts(NULL, &launcher_folder);
 
@@ -104,10 +105,8 @@ static void my_avs_boot(
 
     log_misc("avs paths: %s %s\n", nvram_path, raw_path);
 
-    avs_boot_replace_property_str(
-        config, "/fs/nvram/device", nvram_path);
-    avs_boot_replace_property_str(
-        config, "/fs/raw/device", raw_path);
+    avs_boot_replace_property_str(config, "/fs/nvram/device", nvram_path);
+    avs_boot_replace_property_str(config, "/fs/raw/device", raw_path);
 #endif
 
     real_avs_boot(

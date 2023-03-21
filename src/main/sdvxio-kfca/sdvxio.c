@@ -11,8 +11,8 @@
 
 #include "acio/acio.h"
 
-#include "aciomgr/manager.h"
 #include "aciodrv/kfca.h"
+#include "aciomgr/manager.h"
 
 #include "sdvxio-kfca/config-kfca.h"
 
@@ -137,7 +137,10 @@ bool sdvx_io_init(
         bool init_result = aciodrv_kfca_amp(
             aciomgr_port_checkout(acio_manager_ctx),
             kfca_node_id,
-            primary, headphone, 0, subwoofer);
+            primary,
+            headphone,
+            0,
+            subwoofer);
         aciomgr_port_checkin(acio_manager_ctx);
 
         if (!init_result) {
@@ -244,9 +247,7 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
 }
 
 bool sdvx_io_set_amp_volume(
-    uint8_t primary,
-    uint8_t headphone,
-    uint8_t subwoofer)
+    uint8_t primary, uint8_t headphone, uint8_t subwoofer)
 {
     if (!running) {
         return false;
@@ -255,7 +256,10 @@ bool sdvx_io_set_amp_volume(
     bool amp_result = aciodrv_kfca_amp(
         aciomgr_port_checkout(acio_manager_ctx),
         kfca_node_id,
-        primary, headphone, 96, subwoofer);
+        primary,
+        headphone,
+        96,
+        subwoofer);
     aciomgr_port_checkin(acio_manager_ctx);
 
     if (!amp_result) {

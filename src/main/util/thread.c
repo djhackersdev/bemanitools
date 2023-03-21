@@ -51,15 +51,15 @@ int crt_thread_create(
 
 void crt_thread_destroy(int thread_id)
 {
-    CloseHandle((HANDLE)(uintptr_t) thread_id);
+    CloseHandle((HANDLE) (uintptr_t) thread_id);
 }
 
 void crt_thread_join(int thread_id, int *result)
 {
-    WaitForSingleObject((HANDLE)(uintptr_t) thread_id, INFINITE);
+    WaitForSingleObject((HANDLE) (uintptr_t) thread_id, INFINITE);
 
     if (result) {
-        GetExitCodeThread((HANDLE)(uintptr_t) thread_id, (DWORD *) result);
+        GetExitCodeThread((HANDLE) (uintptr_t) thread_id, (DWORD *) result);
     }
 }
 

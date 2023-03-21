@@ -175,7 +175,8 @@ static void bio2_emu_bi2a_send_status(
     ac_io_emu_response_push(emu, &resp, 0);
 }
 
-static int16_t tt_mult_delta(size_t tt_no) {
+static int16_t tt_mult_delta(size_t tt_no)
+{
     int16_t current_tt = iidx_io_ep2_get_turntable(tt_no);
     int16_t delta = get_wrapped_delta_s16(current_tt, tt_last[tt_no], 256);
 

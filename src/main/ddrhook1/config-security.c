@@ -41,8 +41,7 @@ void ddrhook1_config_security_get(
     char *tmp_default;
     char mcode[9];
 
-    tmp_default =
-        security_mcode_to_str(&security_mcode_ddr_x);
+    tmp_default = security_mcode_to_str(&security_mcode_ddr_x);
 
     if (!cconfig_util_get_str(
             config,

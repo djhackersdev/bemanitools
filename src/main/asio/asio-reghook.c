@@ -51,17 +51,17 @@ LSTATUS my_RegCloseKey(HKEY hKey);
 
 LSTATUS (*real_RegOpenKeyA)(HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult);
 
-LSTATUS (*real_RegEnumKeyA)
+LSTATUS(*real_RegEnumKeyA)
 (HKEY hKey, DWORD dwIndex, LPSTR lpName, DWORD cchName);
 
-LSTATUS (*real_RegOpenKeyExA)
+LSTATUS(*real_RegOpenKeyExA)
 (HKEY hKey,
  LPCSTR lpSubKey,
  DWORD ulOptions,
  REGSAM samDesired,
  PHKEY phkResult);
 
-LSTATUS (*real_RegQueryValueExA)
+LSTATUS(*real_RegQueryValueExA)
 (HKEY hKey,
  LPCSTR lpValueName,
  LPDWORD lpReserved,

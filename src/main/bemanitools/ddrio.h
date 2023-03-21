@@ -105,7 +105,6 @@ bool ddr_io_init(
     thread_join_t thread_join,
     thread_destroy_t thread_destroy);
 
-
 /* used to poll the IO for input, note that this is also where lights are
    flushed to the device for geninput */
 uint32_t ddr_io_read_pad(void);

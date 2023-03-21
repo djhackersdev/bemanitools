@@ -20,10 +20,11 @@
 int16_t convert_analog_to_s16(uint16_t val)
 {
     // val is 10 bit
-    return (int64_t)(val * 64);
+    return (int64_t) (val * 64);
 }
 
-int16_t filter_floor(int32_t value, int16_t floor) {
+int16_t filter_floor(int32_t value, int16_t floor)
+{
     if (abs(value) < floor) {
         return 0;
     }
@@ -54,11 +55,11 @@ int32_t convert_relative_analog(
         // so that we can overshoot an i16 by up to 1.5x
         // this allows users to stay at the min/max stick positions
         // without perfect knob turning
-        if (result > INT16_MAX*1.5) {
-            result = INT16_MAX*1.5;
+        if (result > INT16_MAX * 1.5) {
+            result = INT16_MAX * 1.5;
         }
-        if (result < INT16_MIN*1.5) {
-            result = INT16_MIN*1.5;
+        if (result < INT16_MIN * 1.5) {
+            result = INT16_MIN * 1.5;
         }
 
         return result;
@@ -143,7 +144,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sdvx_io_set_amp_volume(config.amp_volume, config.amp_volume, config.amp_volume);
+    sdvx_io_set_amp_volume(
+        config.amp_volume, config.amp_volume, config.amp_volume);
 
     PVIGEM_CLIENT client = vigem_helper_setup();
 
@@ -186,11 +188,15 @@ int main(int argc, char **argv)
         memset(&state, 0, sizeof(state));
 
         if (config.relative_analog) {
-            buffered_vol[0] = convert_relative_analog(vol[0], last_vol[0], buffered_vol[0], ANALOG_FIXED_SENSITIVITY);
-            buffered_vol[1] = convert_relative_analog(vol[1], last_vol[1], buffered_vol[1], ANALOG_FIXED_SENSITIVITY);
+            buffered_vol[0] = convert_relative_analog(
+                vol[0], last_vol[0], buffered_vol[0], ANALOG_FIXED_SENSITIVITY);
+            buffered_vol[1] = convert_relative_analog(
+                vol[1], last_vol[1], buffered_vol[1], ANALOG_FIXED_SENSITIVITY);
 
-            state.sThumbLX = filter_floor(buffered_vol[0], ANALOG_FIXED_SENSITIVITY/2);
-            state.sThumbLY = filter_floor(buffered_vol[1], ANALOG_FIXED_SENSITIVITY/2);
+            state.sThumbLX =
+                filter_floor(buffered_vol[0], ANALOG_FIXED_SENSITIVITY / 2);
+            state.sThumbLY =
+                filter_floor(buffered_vol[1], ANALOG_FIXED_SENSITIVITY / 2);
 
             last_vol[0] = vol[0];
             last_vol[1] = vol[1];

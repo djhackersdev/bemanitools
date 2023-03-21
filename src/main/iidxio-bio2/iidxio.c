@@ -135,7 +135,7 @@ bool iidx_io_init(
         char product[4];
 
         aciodrv_device_get_node_product_ident(bio2_device_ctx, i, product);
-        
+
         log_info(
             "> %d: %c%c%c%c\n",
             i,
@@ -171,8 +171,9 @@ bool iidx_io_init(
 
 void iidx_io_fini(void)
 {
-    // Pushing some final state before closing the IO to the actual outputs, e.g. lights on/off
-    // can be a bit finicky. Do a few polls to "enforce"/flush this final state 
+    // Pushing some final state before closing the IO to the actual outputs,
+    // e.g. lights on/off can be a bit finicky. Do a few polls to
+    // "enforce"/flush this final state
     for (uint8_t i = 0; i < 3; i++) {
         iidx_io_ep1_send();
         iidx_io_ep2_recv();
@@ -194,39 +195,39 @@ void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
 {
     for (uint8_t i = 0; i < sizeof(pout_staging.DECKSW); i++) {
         pout_staging.DECKSW[i].l_state = (deck_lights & (1 << i)) > 0;
-    }    
+    }
 }
 
 void iidx_io_ep1_set_panel_lights(uint8_t panel_lights)
 {
-    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P1].l_state = 
+    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P1].l_state =
         (panel_lights & (1 << IIDX_IO_PANEL_P1_START)) > 0;
-    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P2].l_state = 
+    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P2].l_state =
         (panel_lights & (1 << IIDX_IO_PANEL_P2_START)) > 0;
-    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_VEFX].l_state = 
+    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_VEFX].l_state =
         (panel_lights & (1 << IIDX_IO_PANEL_VEFX)) > 0;
-    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_EFFECT].l_state = 
+    pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_EFFECT].l_state =
         (panel_lights & (1 << IIDX_IO_PANEL_EFFECT)) > 0;
 }
 
 void iidx_io_ep1_set_top_lamps(uint8_t top_lamps)
 {
-    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_RED].l_state = 
+    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_RED].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_RED)) > 0;
-    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_YELLOW].l_state = 
+    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_YELLOW].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW)) > 0;
-    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_GREEN].l_state = 
+    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_GREEN].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_GREEN)) > 0;
-    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_BLUE].l_state = 
+    pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_BLUE].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_BLUE)) > 0;
 
-    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_RED].l_state = 
+    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_RED].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_RED)) > 0;
-    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_YELLOW].l_state = 
+    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_YELLOW].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_YELLOW)) > 0;
-    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_GREEN].l_state = 
+    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_GREEN].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_GREEN)) > 0;
-    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_BLUE].l_state = 
+    pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_BLUE].l_state =
         (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_BLUE)) > 0;
 }
 

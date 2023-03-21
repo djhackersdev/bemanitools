@@ -184,7 +184,8 @@ void sdvx_io_set_gpio_lights(uint32_t gpio_lights)
     pout_staging.gpio[4] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_D);
     pout_staging.gpio[5] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_L);
     pout_staging.gpio[6] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_R);
-    pout_staging.generator[2] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_GENERATOR_B);
+    pout_staging.generator[2] =
+        assign_light(gpio_lights, SDVX_IO_OUT_GPIO_GENERATOR_B);
 }
 
 void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
@@ -338,7 +339,8 @@ bool sdvx_io_set_amp_volume(
 
     // yes, the BIO2 doesn't allow control of the amps individually
     // so let's just set it so that people's ear's don't blow out
-    if (!bio2drv_bi2a_sdvx_amp(bio2_device_ctx, bio2_node_id, 0, 0, primary, primary)) {
+    if (!bio2drv_bi2a_sdvx_amp(
+            bio2_device_ctx, bio2_node_id, 0, 0, primary, primary)) {
         return false;
     }
 

@@ -68,14 +68,14 @@ bool jb_io_init(
     cconfig_finit(config);
 
     p4io_ctx = p4iodrv_open();
-    if(!p4io_ctx) {
+    if (!p4io_ctx) {
         return false;
     }
 
     // some people use p4io just for inputs and have no lights. Soft fail when
     // h44b is not able to be connected instead of returning false
     lights_present = jb_io_h44b_init(config_h44b.port, config_h44b.baud);
-    if(!lights_present) {
+    if (!lights_present) {
         log_warning("Could not connect to H44B, lights disabled");
     }
 
@@ -114,7 +114,7 @@ static const uint32_t jb_io_sys_button_mappings[] = {
 bool jb_io_read_inputs(void)
 {
     uint32_t jamma[4];
-    if(!p4iodrv_read_jamma(p4io_ctx, jamma)) {
+    if (!p4iodrv_read_jamma(p4io_ctx, jamma)) {
         return false;
     }
 
@@ -142,7 +142,8 @@ bool jb_io_read_inputs(void)
 
 bool jb_io_write_lights(void)
 {
-    if(lights_present && memcmp(&jb_io_lights, &jb_io_new_lights, sizeof(jb_io_lights))) {
+    if (lights_present &&
+        memcmp(&jb_io_lights, &jb_io_new_lights, sizeof(jb_io_lights))) {
         memcpy(&jb_io_lights, &jb_io_new_lights, sizeof(jb_io_lights));
         return jb_io_h44b_write_lights(&jb_io_lights);
     }
@@ -166,7 +167,7 @@ bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
 
     panel_mode.is_single = 1;
 
-    switch(mode) {
+    switch (mode) {
         case JB_IO_PANEL_MODE_ALL:
             panel_mode.is_single = 0;
             panel_mode.mode = 0;
@@ -185,14 +186,14 @@ bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
             break;
     }
 
-    return p4iodrv_cmd_portout(p4io_ctx, (uint8_t*)&panel_mode);
+    return p4iodrv_cmd_portout(p4io_ctx, (uint8_t *) &panel_mode);
 }
 
 void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)
 {
     uint8_t *light;
 
-    switch(unit) {
+    switch (unit) {
         case JB_IO_RGB_LED_FRONT:
             light = jb_io_new_lights.front_rgb;
             break;
@@ -220,7 +221,8 @@ void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)
     light[2] = b;
 }
 
-bool jb_io_set_coin_blocker(bool blocked) {
+bool jb_io_set_coin_blocker(bool blocked)
+{
     coin_blocked = blocked;
 
     uint8_t coin[4] = {0};

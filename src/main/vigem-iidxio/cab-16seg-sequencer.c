@@ -19,7 +19,7 @@ static size_t _text_len;
 
 static uint32_t _scroll_cycle_time_ms;
 
-static void _create_display_string_with_wrap_around(char* out_16seg)
+static void _create_display_string_with_wrap_around(char *out_16seg)
 {
     size_t cur_text_pos = _text_pos;
 
@@ -27,13 +27,14 @@ static void _create_display_string_with_wrap_around(char* out_16seg)
         if (cur_text_pos >= _text_len) {
             cur_text_pos = 0;
         }
-        
+
         out_16seg[i] = _text[cur_text_pos];
         cur_text_pos++;
     }
 }
 
-void vigem_iidxio_cab_16seg_sequencer_init(const char* text, uint32_t scroll_cycle_time_ms)
+void vigem_iidxio_cab_16seg_sequencer_init(
+    const char *text, uint32_t scroll_cycle_time_ms)
 {
     log_assert(text);
 
@@ -52,11 +53,14 @@ void vigem_iidxio_cab_16seg_sequencer_init(const char* text, uint32_t scroll_cyc
     _enabled = true;
 
     if (_enabled) {
-        log_info("Initialized, cycle time %d ms, text \"%s\"", _scroll_cycle_time_ms, _text);
+        log_info(
+            "Initialized, cycle time %d ms, text \"%s\"",
+            _scroll_cycle_time_ms,
+            _text);
     }
 }
 
-void vigem_iidxio_cab_16seg_sequencer_update(char* out_16seg)
+void vigem_iidxio_cab_16seg_sequencer_update(char *out_16seg)
 {
     log_assert(out_16seg);
 
@@ -67,12 +71,13 @@ void vigem_iidxio_cab_16seg_sequencer_update(char* out_16seg)
     }
 
     uint64_t counter_now = time_get_counter();
-    uint32_t cycle_time_elapsed_ms = time_get_elapsed_ms(counter_now - _time_counter);
+    uint32_t cycle_time_elapsed_ms =
+        time_get_elapsed_ms(counter_now - _time_counter);
 
     if (cycle_time_elapsed_ms >= _scroll_cycle_time_ms) {
         _time_counter = counter_now;
         _text_pos++;
-    
+
         if (_text_pos >= _text_len) {
             _text_pos = 0;
         }

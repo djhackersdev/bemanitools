@@ -34,19 +34,22 @@ void sdvxio_kfca_config_kfca_init(struct cconfig *config)
         config,
         SDVXIO_KFCA_CONFIG_MAIN_AMP_VOLUME_KEY,
         SDVXIO_KFCA_CONFIG_DEFAULT_MAIN_AMP_VOLUME_VALUE,
-        "SDVXIO digital amp main volume (0-96) 0 is high, 96 is low. -1 is no override.");
+        "SDVXIO digital amp main volume (0-96) 0 is high, 96 is low. -1 is no "
+        "override.");
 
     cconfig_util_set_int(
         config,
         SDVXIO_KFCA_CONFIG_HEADPHONE_AMP_VOLUME_KEY,
         SDVXIO_KFCA_CONFIG_DEFAULT_HEADPHONE_AMP_VOLUME_VALUE,
-        "SDVXIO digital amp headphone volume (0-96) 0 is high, 96 is low. -1 is no override.");
+        "SDVXIO digital amp headphone volume (0-96) 0 is high, 96 is low. -1 "
+        "is no override.");
 
     cconfig_util_set_int(
         config,
         SDVXIO_KFCA_CONFIG_SUBWOOFER_AMP_VOLUME_KEY,
         SDVXIO_KFCA_CONFIG_DEFAULT_SUBWOOFER_AMP_VOLUME_VALUE,
-        "SDVXIO digital amp subwoofer volume (0-96) 0 is high, 96 is low. -1 is no override.");
+        "SDVXIO digital amp subwoofer volume (0-96) 0 is high, 96 is low. -1 "
+        "is no override.");
 }
 
 void sdvxio_kfca_config_kfca_get(

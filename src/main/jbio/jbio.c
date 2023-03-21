@@ -14,8 +14,8 @@
 #include <mmsystem.h>
 // clang-format on
 
-#include "bemanitools/input.h"
 #include "bemanitools/jbio.h"
+#include "bemanitools/input.h"
 
 static uint16_t jb_io_panels;
 static uint8_t jb_io_sys_buttons;

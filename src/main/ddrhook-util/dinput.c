@@ -72,11 +72,11 @@ static HRESULT STDCALL my_DirectInput8Create(
 
     res = real_DirectInput8Create(
         hinst, dwVersion, riidltf, (LPVOID *) &api, punkOuter);
-    
+
     if (res != DI_OK) {
         return res;
     }
-    
+
     res = com_proxy_wrap(&api_proxy, api, sizeof(*api->lpVtbl));
 
     if (res != S_OK) {

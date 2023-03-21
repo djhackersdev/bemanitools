@@ -43,20 +43,49 @@ static const struct ddr_io_smx_pad_map ddr_io_smx_pad_map[] = {
 
 #define DDR_IO_SMX_LIGHT_VALUES_PER_PANEL 75
 #define DDR_IO_SMX_NUMBER_OF_PANELS 18
-#define DDR_IO_SMX_TOTAL_LIGHT_VALUES DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * DDR_IO_SMX_NUMBER_OF_PANELS
+#define DDR_IO_SMX_TOTAL_LIGHT_VALUES \
+    DDR_IO_SMX_LIGHT_VALUES_PER_PANEL *DDR_IO_SMX_NUMBER_OF_PANELS
 
 static const struct ddr_io_smx_light_map ddr_io_smx_light_map[] = {
     /* Light L/R blue and U/D red to match DDR pad color scheme */
 
     {1 << LIGHT_P1_UP, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 1, 0xFF, 0x00, 0x00},
-    {1 << LIGHT_P1_LEFT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 3, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P1_RIGHT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 5, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P1_DOWN, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 7, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P1_LEFT,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 3,
+     0x00,
+     0x00,
+     0xFF},
+    {1 << LIGHT_P1_RIGHT,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 5,
+     0x00,
+     0x00,
+     0xFF},
+    {1 << LIGHT_P1_DOWN,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 7,
+     0xFF,
+     0x00,
+     0x00},
 
-    {1 << LIGHT_P2_UP, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 10, 0xFF, 0x00, 0x00},
-    {1 << LIGHT_P2_LEFT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 12, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P2_RIGHT, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 14, 0x00, 0x00, 0xFF},
-    {1 << LIGHT_P2_DOWN, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 16, 0xFF, 0x00, 0x00},
+    {1 << LIGHT_P2_UP,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 10,
+     0xFF,
+     0x00,
+     0x00},
+    {1 << LIGHT_P2_LEFT,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 12,
+     0x00,
+     0x00,
+     0xFF},
+    {1 << LIGHT_P2_RIGHT,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 14,
+     0x00,
+     0x00,
+     0xFF},
+    {1 << LIGHT_P2_DOWN,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 16,
+     0xFF,
+     0x00,
+     0x00},
 };
 
 static _Atomic uint32_t ddr_io_smx_pad_state[2];

@@ -1,9 +1,9 @@
 #define LOG_MODULE "jbio-h44b"
 
 #include <stdatomic.h>
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "aciodrv/h44b.h"
@@ -18,7 +18,8 @@ static atomic_bool running;
 
 static struct aciomgr_port_dispatcher *acio_manager_ctx;
 
-bool jb_io_h44b_init(const char *port, int32_t baud) {
+bool jb_io_h44b_init(const char *port, int32_t baud)
+{
     acio_manager_ctx = aciomgr_port_init(port, baud);
 
     if (acio_manager_ctx == NULL) {
@@ -56,8 +57,7 @@ bool jb_io_h44b_init(const char *port, int32_t baud) {
         log_warning("Using H44B on node: %d", h44b_node_id);
 
         bool init_result = aciodrv_h44b_init(
-            aciomgr_port_checkout(acio_manager_ctx),
-            h44b_node_id);
+            aciomgr_port_checkout(acio_manager_ctx), h44b_node_id);
         aciomgr_port_checkin(acio_manager_ctx);
 
         if (!init_result) {
@@ -72,24 +72,23 @@ bool jb_io_h44b_init(const char *port, int32_t baud) {
     }
 
     return running;
-
 }
 
-bool jb_io_h44b_fini(void) {
+bool jb_io_h44b_fini(void)
+{
     aciomgr_port_fini(acio_manager_ctx);
 
     return true;
 }
 
-bool jb_io_h44b_write_lights(struct ac_io_h44b_output *lights) {
+bool jb_io_h44b_write_lights(struct ac_io_h44b_output *lights)
+{
     if (!running) {
         return false;
     }
 
     bool amp_result = aciodrv_h44b_lights(
-        aciomgr_port_checkout(acio_manager_ctx),
-        h44b_node_id,
-        lights);
+        aciomgr_port_checkout(acio_manager_ctx), h44b_node_id, lights);
     aciomgr_port_checkin(acio_manager_ctx);
 
     if (!amp_result) {
@@ -98,4 +97,3 @@ bool jb_io_h44b_write_lights(struct ac_io_h44b_output *lights) {
 
     return true;
 }
-

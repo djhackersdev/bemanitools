@@ -11,13 +11,13 @@ enum vigem_iidxio_cab_light_sequencer_mode {
 };
 
 void vigem_iidxio_cab_light_sequencer_init(
-        enum vigem_iidxio_cab_light_sequencer_mode light_seq_mode);
+    enum vigem_iidxio_cab_light_sequencer_mode light_seq_mode);
 
 void vigem_iidxio_cab_light_sequencer_update(
-        uint16_t keys,
-        uint8_t tt_p1,
-        uint8_t tt_p2,
-        bool* out_neon,
-        uint8_t* out_spots);
+    uint16_t keys,
+    uint8_t tt_p1,
+    uint8_t tt_p2,
+    bool *out_neon,
+    uint8_t *out_spots);
 
 #endif

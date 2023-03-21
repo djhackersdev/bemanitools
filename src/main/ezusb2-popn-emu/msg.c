@@ -10,11 +10,11 @@
 
 #include "ezusb-emu/msg.h"
 
-#include "ezusb-emu/nodes.h"
-#include "ezusb-emu/node-none.h"
 #include "ezusb-emu/node-coin.h"
+#include "ezusb-emu/node-none.h"
 #include "ezusb-emu/node-security-mem.h"
 #include "ezusb-emu/node-security-plug.h"
+#include "ezusb-emu/nodes.h"
 
 #include "ezusb2-popn/msg.h"
 
@@ -66,7 +66,10 @@ struct ezusb_emu_msg_hook *ezusb2_popn_emu_msg_init(void)
         }
     }
 
-    memset(&ezusb2_popn_emu_msg_history[0], 0xff, sizeof(ezusb2_popn_emu_msg_history));
+    memset(
+        &ezusb2_popn_emu_msg_history[0],
+        0xff,
+        sizeof(ezusb2_popn_emu_msg_history));
 
     return &ezusb2_popn_emu_msg_hook;
 }
@@ -94,11 +97,17 @@ static HRESULT ezusb2_popn_emu_msg_interrupt_read(struct iobuf *read)
     msg_resp->unk7 = 0xdf;
     msg_resp->unk8 = ezusb2_popn_emu_msg_seq_no;
 
-    memcpy(&msg_resp->button_history[0], &ezusb2_popn_emu_msg_history[0], sizeof(uint16_t) * 10);
+    memcpy(
+        &msg_resp->button_history[0],
+        &ezusb2_popn_emu_msg_history[0],
+        sizeof(uint16_t) * 10);
 
     read->pos = sizeof(*msg_resp);
 
-    memmove(&ezusb2_popn_emu_msg_history[1], &ezusb2_popn_emu_msg_history[0], sizeof(uint16_t) * 9);
+    memmove(
+        &ezusb2_popn_emu_msg_history[1],
+        &ezusb2_popn_emu_msg_history[0],
+        sizeof(uint16_t) * 9);
     ezusb2_popn_emu_msg_history[0] = msg_resp->io.button;
 
     return S_OK;
@@ -126,7 +135,8 @@ static HRESULT ezusb2_popn_emu_msg_interrupt_write(struct const_iobuf *write)
     popn_io_set_top_lights(msg_req->lamp & 0x1f);
     popn_io_set_side_lights((msg_req->lamp >> 8) & 0xf);
     popn_io_set_button_lights((msg_req->lamp >> 20) & 0xfff);
-    popn_io_set_coin_counter_light(((msg_req->lamp >> 12) & 0xf) == 0);  // Active low
+    popn_io_set_coin_counter_light(
+        ((msg_req->lamp >> 12) & 0xf) == 0); // Active low
     popn_io_set_coin_blocker_light(((msg_req->lamp >> 16) & 0xf) == 0xf);
 
     /* Remember node for next bulk read */

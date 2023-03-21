@@ -148,7 +148,8 @@ int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes)
     }
 
     if (!WriteFile(port_fd, bytes, nbytes, &nwrit, NULL)) {
-        log_warning("[%p] WriteFile failed: err = %lu", port_fd, GetLastError());
+        log_warning(
+            "[%p] WriteFile failed: err = %lu", port_fd, GetLastError());
 
         return -1;
     }

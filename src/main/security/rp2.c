@@ -1,28 +1,29 @@
 #include <string.h>
 
-#include "security/rp2.h"
 #include "security/rp-util.h"
+#include "security/rp2.h"
 #include "security/util.h"
 
 #include "util/crypto.h"
 #include "util/log.h"
 
-static uint8_t security_rp2_signature_scramble_table[16] = {0x0C,
-                                                            0x02,
-                                                            0x0F,
-                                                            0x01,
-                                                            0x07,
-                                                            0x09,
-                                                            0x04,
-                                                            0x0A,
-                                                            0x00,
-                                                            0x0E,
-                                                            0x03,
-                                                            0x0D,
-                                                            0x0B,
-                                                            0x05,
-                                                            0x08,
-                                                            0x06};
+static uint8_t security_rp2_signature_scramble_table[16] = {
+    0x0C,
+    0x02,
+    0x0F,
+    0x01,
+    0x07,
+    0x09,
+    0x04,
+    0x0A,
+    0x00,
+    0x0E,
+    0x03,
+    0x0D,
+    0x0B,
+    0x05,
+    0x08,
+    0x06};
 
 void security_rp2_create_signature(
     const uint8_t *plug_id_enc, const uint8_t *sign_key_packed, uint8_t *out)

@@ -70,7 +70,8 @@ enum iidx_io_panel_light {
     IIDX_IO_PANEL_LIGHT_EFFECT = 3,
 };
 
-/* Bit mapping for the top lamps from left to right when facing cabinet screen */
+/* Bit mapping for the top lamps from left to right when facing cabinet screen
+ */
 
 enum iidx_io_top_lamp {
     IIDX_IO_TOP_LAMP_LEFT_BLUE = 0,

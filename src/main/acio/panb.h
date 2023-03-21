@@ -8,8 +8,8 @@
 #define AC_IO_CMD_PANB_START_AUTO_INPUT 0x0115
 
 #define AC_IO_PANB_NUM_NODES 4
-#define AC_IO_PANB_MAX_KEYS (7*AC_IO_PANB_NUM_NODES)
-#define AC_IO_PANB_MAX_KEYPAIRS (AC_IO_PANB_MAX_KEYS/2)
+#define AC_IO_PANB_MAX_KEYS (7 * AC_IO_PANB_NUM_NODES)
+#define AC_IO_PANB_MAX_KEYPAIRS (AC_IO_PANB_MAX_KEYS / 2)
 
 struct ac_io_panb_keypair {
     uint8_t key2 : 4;
@@ -37,6 +37,5 @@ struct ac_io_panb_poll_out {
     struct ac_io_panb_color key[AC_IO_PANB_MAX_KEYS];
 };
 #pragma pack(pop)
-
 
 #endif

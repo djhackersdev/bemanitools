@@ -13,9 +13,9 @@
 #define STATUS_SUCCESS (0x00000000)
 
 typedef LONG NTSTATUS, *PNTSTATUS;
-typedef NTSTATUS (WINAPI* RtlGetVersion_t)(PRTL_OSVERSIONINFOW);
+typedef NTSTATUS(WINAPI *RtlGetVersion_t)(PRTL_OSVERSIONINFOW);
 
-static const char* human_readable_version(DWORD major, DWORD minor)
+static const char *human_readable_version(DWORD major, DWORD minor)
 {
     if (IsWindowsServer()) {
         if (major == 5 && minor == 2) {
@@ -38,7 +38,7 @@ static const char* human_readable_version(DWORD major, DWORD minor)
             return "Windows 2000";
         } else if (major == 5 && minor == 1) {
             return "Windows XP";
-        } else if (major == 5 && minor == 2 ) {
+        } else if (major == 5 && minor == 2) {
             return "Windows XP 64-bit";
         } else if (major == 6 && minor == 0) {
             return "Windows Vista";
@@ -76,13 +76,13 @@ static bool os_get_real_win_version(PRTL_OSVERSIONINFOW version)
     return rtl_get_version(version) == STATUS_SUCCESS;
 }
 
-bool os_version_get(struct os_version* version)
+bool os_version_get(struct os_version *version)
 {
     log_assert(version);
 
     RTL_OSVERSIONINFOW rovi;
-    char* version_str;
-    const char* readable_version;
+    char *version_str;
+    const char *readable_version;
 
     memset(&rovi, 0, sizeof(RTL_OSVERSIONINFOW));
     rovi.dwOSVersionInfoSize = sizeof(rovi);
@@ -96,7 +96,8 @@ bool os_version_get(struct os_version* version)
     // Contains additional version info, e.g. "Service Pack 3" for XP
     wstr_narrow(rovi.szCSDVersion, &version_str);
 
-    readable_version = human_readable_version(rovi.dwMajorVersion, rovi.dwMinorVersion);
+    readable_version =
+        human_readable_version(rovi.dwMajorVersion, rovi.dwMinorVersion);
 
     strcpy(version->name, readable_version);
     version->major = rovi.dwMajorVersion;
@@ -119,7 +120,8 @@ void os_version_log()
     if (!os_version_get(&version)) {
         log_warning("Could not detect OS version");
     } else {
-        log_info("OS version: %s - %d.%d.%d.%d - %s",
+        log_info(
+            "OS version: %s - %d.%d.%d.%d - %s",
             version.name,
             version.major,
             version.minor,
