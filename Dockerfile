@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM --platform=amd64 fedora:31@sha256:cbe53d28f54c0f0b1d79a1817089235680b104c23619772473f449f20edd37dd
 
 LABEL description="Build environment for bemanitools"
 
@@ -8,25 +8,13 @@ RUN yum -y install \
     zip \
     clang \
     mingw64-gcc.x86_64 \
-    mingw32-gcc.x86_64 \
-    wine.x86_64
+    mingw32-gcc.x86_64
 
 RUN mkdir /bemanitools
 WORKDIR /bemanitools
 
-# Order optimized for docker layer caching
-COPY run-tests-wine.sh run-tests-wine.sh
-COPY CHANGELOG.md CHANGELOG.md
-COPY CONTRIBUTING.md CONTRIBUTING.md
-COPY LICENSE LICENSE
-COPY GNUmakefile GNUmakefile
-COPY Module.mk Module.mk
-COPY README.md README.md
-COPY doc doc
-COPY dist dist
-COPY src src
-# .git folder required or building fails when version is generated
-COPY .git .git
-
-# Building
-RUN make
+ENTRYPOINT [ \
+    "/bin/bash", \
+    "-c" , \
+    "cd /bemanitools && \
+    make" ]
