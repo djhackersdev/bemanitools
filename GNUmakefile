@@ -69,7 +69,7 @@ clean:
 
 code-format:
 	$(V)echo "Applying clang-format..."
-	$(V)find src/ -name '*.c' -o -name '*.h' | xargs clang-format -i -style=file
+	$(V)find src/main src/test -name '*.c' -o -name '*.h' | xargs clang-format -i -style=file
 
 run-tests:
 	$(V)echo "Running tests..."
