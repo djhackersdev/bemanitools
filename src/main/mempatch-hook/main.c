@@ -18,10 +18,9 @@ static bool patch_memory_check_data(
     for (size_t i = 0; i < len; i++) {
         if (dest[i] != data_expected[i]) {
             log_warning(
-                "Memcheck error: base %" PRIXPTR " + address %" PRIXPTR " + offset %d: "
-                "expected %X, found %X",
-                base_address,
-                address,
+                "Memcheck error: base %lluX + address %lluX + offset %d: expected %X, found %X",
+                (uint64_t) base_address,
+                (uint64_t) address,
                 // this cast is technically wrong
                 // but no one should be patching 32K worth of bytes at once
                 (int)i,
