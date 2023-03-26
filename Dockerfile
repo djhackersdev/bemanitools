@@ -1,20 +1,21 @@
-FROM --platform=amd64 fedora:31@sha256:cbe53d28f54c0f0b1d79a1817089235680b104c23619772473f449f20edd37dd
+FROM --platform=amd64 debian:11.6-slim@sha256:f7d141c1ec6af549958a7a2543365a7829c2cdc4476308ec2e182f8a7c59b519
 
 LABEL description="Build environment for bemanitools"
 
-RUN yum -y install \
-    git \
+# mingw-w64-gcc has 32-bit and 64-bit toolchains
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mingw-w64 \
+    mingw-w64-common \
     make \
     zip \
-    clang \
-    mingw64-gcc.x86_64 \
-    mingw32-gcc.x86_64
+    git \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /bemanitools
 WORKDIR /bemanitools
 
 ENTRYPOINT [ \
-    "/bin/bash", \
+    "/bin/sh", \
     "-c" , \
     "cd /bemanitools && \
     make" ]
