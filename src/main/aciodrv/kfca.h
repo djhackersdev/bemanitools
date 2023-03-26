@@ -2,6 +2,7 @@
 #define ACIODRV_KFCA_H
 
 #include "acio/kfca.h"
+#include "aciodrv/device.h"
 
 /**
  * Initialize an KFCA node.
