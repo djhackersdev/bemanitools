@@ -51,6 +51,10 @@ make
 
 All output is located in the *build* folder including the final *bemanitools.zip* package.
 
+Note about using `-j n` option on make: This is currently considered broken/unreliable. Expect to
+run into odd issues like randomly changing unresolved dependency errors. If you attempted this,
+run a `make clean` before running `make` again.
+
 ### Release building
 A release build is a clean build including code formatting and testing. This can be executed by running the following
 command:
