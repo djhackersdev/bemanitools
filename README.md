@@ -5,7 +5,7 @@ Version: 5.43
 
 [Release history](CHANGELOG.md)
 
-A collection of tools to run [various Bemani arcade games](#list-of-supported-games).
+A collection of tools to run [various Bemani arcade games](#supported-games).
 
 Bemanitools 5 (BT5) is the successor to Bemanitools 4 which introduces a big code cleanup and support for newer games.
 BT5 uses a cleaner approach than BT4 did; specifically, all input and lighting is handled by emulating the protocols
@@ -85,19 +85,42 @@ The following games are supported with their corresponding hook-libraries.
     * SOUND VOLTEX Vivid Wave (`sdvx-05-to-06`): sdvxhook2
     * SOUND VOLTEX EXCEED GEAR (`sdvx-05-to-06`): sdvxhook2
 
-## ViGEm clients: Expose BT5 APIs as XBOX game controllers
-Play your favorite non-bemani arcade games with any hardware, e.g. real cabinet hardware, that
-implements BT5 APIs.
+## Auxiliary tooling
+* Bootstrapping
+  * [inject](doc/inject.md): Inject arbitrary hooking libraries into a target application process.
+  * [launcher](doc/launcher.md): Bootstrap Konami's AVS environment and launch a target application with arbitrary
+    injected hooking libraries. 
+* Beatmnia IIDX Ezusb IO board
+  * [ezusb-iidx-fpga-flash](doc/tools/ezusb-iidx-fpga-flash.md): Flash a binary blob with FPGA firmware to a target
+    ezusb FX IO board
+  * [ezusb-iidx-sram-flash](doc/tools/ezusb-iidx-sram-flash.md): Flash a binary blob with SRAM contents to a target
+    ezusb FX2 IO board
+* Exit hooks: Exit the game with a button combination using native cabinet inputs
+  * [iidx-ezusb-exit-hook](doc/tools/iidx-ezusb-exit-hook.md): For IIDX with ezusb IO
+  * [iidx-bio2-exit-hook](doc/tools/iidx-bio2-exit-hook.md): For IIDX with BIO2 IO
+  * [iidx-ezusb2-exit-hook](doc/tools/iidx-ezusb-exit-hook.md): For IIDX with ezusb FX2 IO
+* Bemanitools API testing: Tools for testing bemanitools API implementations
+  * [eamiotest](doc/tools/eamiotest.md): For [eamio API](doc/api.md#eamuse-readers)
+  * [iidxiotest](doc/tools/iidxiotest.md): For [iidxio API](doc/api.md#io-boards)
+  * [jbiotest](doc/tools/jbiotest.md): For [jbio API](doc/api.md#io-boards)
+* [aciotest](doc/tools/aciotest.md): Command line tool to quickly test ACIO devices
+* config: UI input/output configuration tool when using the default bemanitools API (geninput)
+* ir-beat-patch-9/10: Patch the IR beat phase on IIDX 9 and 10
+* [mempatch-hook](doc/tools/mempatch-hook.md): Patch raw memory locations in the target process based on the provided
+  configuration
+* [pcbidgen](doc/tools/pcbidgen.md): Konami PCBID generator tool
+* [ViGEm clients](doc/vigem/README.md): Expose BT5 APIs as XBOX game controllers to play any games with real cabinet
+  hardware.
 
-See the dedicated [readme](doc/vigem/README.md) for details.
+## Pre-requisites
 
-## Supported platforms
+### Supported platforms
 Our main platforms are currently Windows XP and Windows 7 which are also the target platforms on the original hardware
 of those games. However, as it gets more difficult to get and maintain hardware comptible with Windows XP, this might
 change in the future. Many games also run on very recent Windows 10 builds but bear with us that it's hard to keep up
 with Windows updates breaking legacy software.
 
-## Distribution contents
+### Distribution contents
 Check the [list of supported games](#supported-games) to grab the right files for your game. BT5 also includes
 a *tools* subpackage (tools.zip) as well as the full source code (src.zip).
 
@@ -105,7 +128,7 @@ You will find *.md files in various sub-packages that give you further instructi
 or FAQ. We advice you to read them as your questions and concerns might already be answered by them. If not, let us
 know if there is any information that you consider helpful or important to know and should be added.
 
-## Setup and dependencies
+### Setup and dependencies
 Most (older generation) games were developed for Windows XP Embedded but should run fine on any
 consumer version of Windows XP. Newer versions of Windows, e.g. Windows 7, 8 and 10, should be fine
 as well. Some hooks also include fixes required to run the games on a more recent version.
@@ -134,32 +157,7 @@ important aspects you should know before you get started with development.
 Please refer to the [API documentation](doc/api.md).
 
 ## Release process
-Steps for the release process:
-1. Update the corresponding section in the [changelog](CHANGELOG.md) with bullet points reflecting
-major features merged into master since the previous release
-1. Make sure you have the latest `master` state pulled to your local copy
-1. Tag the release with the next release number which also be found at the
-[top of the readme](#bemanitools-5) as it always reflects the current version beinged worked on
-on the `master` branch , e.g. 5.35: `git tag 5.35`
-1. Push the tag to upstream: `git push origin 5.35`
-1. The [build pipeline](https://dev.s-ul.net/djhackers/bemanitools/-/pipelines) should start
-automatically once the tag is pushed including the steps `build` and `upload-release`
-1. Once completed successfully, the release is uploaded
-1. Take the changelog of the published version and notify the pigs in the stall about it:
-    1. New post in thread
-        ```
-        <insert version here> released: <direct link to published version>
-
-        Changelog:
-        <paste changelog here>
-        ```
-    1. Update the OP title by bumping the version number in it
-    1. Update the OP post by extending it accordingly (see previous entries)
-
-1. Bump the version number at the [top of this readme](#bemanitools-5) and add a new empty section
-in the [changelog](CHANGELOG.md) with the new version number as title. Commit changes and push to
-`master` branch
-1. Continue developing and merging MRs until you decide its time for another release
+Please refer to the [dedicated documentation](doc/release-process.md).
 
 ## License
 Source code license is the Unlicense; you are permitted to do with this as thou wilt. For details, please refer to the
