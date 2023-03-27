@@ -274,6 +274,9 @@ static bool chart_patch_file_trap(struct irp *irp)
             &chart_id[2],
             &chart_id[3]) == 4 &&
         chart_patch_is_chart_id(chart_id)) {
+
+        EnterCriticalSection(&chart_patch_lock);
+
         chart_id[4] = '\0';
 
         wstr_narrow(irp->open_filename, &tmp);
@@ -298,11 +301,14 @@ static bool chart_patch_file_trap(struct irp *irp)
                 irp->fd = chart_patch_file_checksum.fd;
                 chart_patch_file_checksum.active = true;
             } else {
+                LeaveCriticalSection(&chart_patch_lock);
                 /* other file, like *.2dx */
                 return false;
             }
 
             log_misc("Data already prepared");
+
+            LeaveCriticalSection(&chart_patch_lock);
 
             return true;
         }
@@ -359,8 +365,12 @@ static bool chart_patch_file_trap(struct irp *irp)
 
             chart_patch_file_detour = true;
 
+            LeaveCriticalSection(&chart_patch_lock);
+
             return true;
         }
+
+        LeaveCriticalSection(&chart_patch_lock);
     }
 
     return false;
@@ -465,20 +475,31 @@ chart_patch_file_seek(struct chart_patch_file *file, struct irp *irp)
 static HRESULT
 chart_patch_file_dispatch_irp(struct chart_patch_file *file, struct irp *irp)
 {
-    // log_misc("chart_patch_file_dispatch_irp %p", file->fd);
+    HRESULT hr;
+
+    EnterCriticalSection(&chart_patch_lock);
 
     switch (irp->op) {
         case IRP_OP_CLOSE:
-            return chart_patch_file_close_irp(file, irp);
+            hr = chart_patch_file_close_irp(file, irp);
+            break;
         case IRP_OP_READ:
-            return chart_patch_file_read(file, irp);
+            hr = chart_patch_file_read(file, irp);
+            break;
         case IRP_OP_WRITE:
-            return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+            hr = HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+            break;
         case IRP_OP_SEEK:
-            return chart_patch_file_seek(file, irp);
+            hr = chart_patch_file_seek(file, irp);
+            break;
         default:
-            return E_NOTIMPL;
+            hr = E_NOTIMPL;
+            break;
     }
+
+    LeaveCriticalSection(&chart_patch_lock);
+
+    return hr;
 }
 
 void iidxhook_util_chart_patch_init(double orig_timebase)
@@ -522,8 +543,6 @@ iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
     HRESULT hr;
 
     if (chart_patch_initted) {
-        EnterCriticalSection(&chart_patch_lock);
-
         hr = S_FALSE;
 
         if (irp->op == IRP_OP_OPEN) {
@@ -545,8 +564,6 @@ iidxhook_util_chart_patch_dispatch_irp(struct irp *irp)
                 }
             }
         }
-
-        LeaveCriticalSection(&chart_patch_lock);
 
         return hr;
     } else {
