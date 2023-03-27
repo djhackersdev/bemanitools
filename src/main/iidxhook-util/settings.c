@@ -37,9 +37,11 @@ static char settings_path[MAX_PATH] = ".\\";
 
 /* ------------------------------------------------------------------------- */
 
-static void settings_build_new_path(const char* orig_path, char* new_path, size_t new_path_len)
+static void settings_build_new_path(
+    const char *orig_path, char *new_path, size_t new_path_len)
 {
     size_t settings_path_len;
+    char* orig_appended_path;
 
     settings_path_len = strlen(settings_path);
 
@@ -48,8 +50,18 @@ static void settings_build_new_path(const char* orig_path, char* new_path, size_
     strcpy(new_path, settings_path);
     strcat(new_path, orig_path);
 
-    /* Remove : of drive letter. Multiple \ are fine and handled by windows */
-    new_path[settings_path_len + 1] = '\\';
+    /* Fix only the part of the original path which comes after the leading settings path */
+    orig_appended_path = new_path + settings_path_len;
+
+    /* Duplicate \ in paths is fine because the win32 file API applies path
+       normalization */
+
+    /* Fixes some paths resulting in a mix of / and \ leading to crashes 
+       on iidx 18 and 19, e.g. settings.bin saving in operator menu */
+    str_replace(orig_appended_path, '/', '\\');
+
+    /* Remove : of drive letter */
+    str_replace(orig_appended_path, ':', '\\');
 }
 
 /* ------------------------------------------------------------------------- */
@@ -65,7 +77,7 @@ BOOL WINAPI my_CreateDirectoryA(
 
         settings_build_new_path(lpPathName, new_path, sizeof(new_path));
 
-        log_misc("(CreateDir) Remapped settings path %s", new_path);
+        log_misc("(CreateDir) Remapped settings path %s -> %s", lpPathName, new_path);
 
         return real_CreateDirectoryA(new_path, lpSecurityAttributes);
     }
@@ -122,9 +134,9 @@ settings_hook_dispatch_irp(struct irp *irp)
 
         settings_build_new_path(filename_cstr, new_path, sizeof(new_path));
 
-        free(filename_cstr);
+        log_misc("Remapped settings path %s -> %s", filename_cstr, new_path);
 
-        log_misc("Remapped settings path to %s", new_path);
+        free(filename_cstr);
 
         filename_wstr = str_widen(new_path);
 
