@@ -194,6 +194,17 @@ wchar_t *str_widen(const char *src)
     return result;
 }
 
+void str_replace(char *str, char cur, char new)
+{
+    while (*str != '\0') {
+        if (*str == cur) {
+            *str = new;
+        }
+
+        str++;
+    }
+}
+
 wchar_t *wstr_dup(const wchar_t *wstr)
 {
     wchar_t *dest;

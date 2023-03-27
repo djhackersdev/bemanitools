@@ -15,6 +15,7 @@ size_t str_format(char *buf, size_t nchars, const char *fmt, ...);
 void str_trim(char *str);
 size_t str_vformat(char *buf, size_t nchars, const char *fmt, va_list ap);
 wchar_t *str_widen(const char *src);
+void str_replace(char *str, char cur, char new);
 
 void wstr_cat(wchar_t *dest, size_t dnchars, const wchar_t *src);
 void wstr_cpy(wchar_t *dest, size_t dnchars, const wchar_t *src);
