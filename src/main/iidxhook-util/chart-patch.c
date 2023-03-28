@@ -50,6 +50,19 @@ struct ospreybin {
     uint32_t checksum_type;
 };
 
+enum song_data_path_format {
+    SONG_DATA_PATH_INVALID = 0,
+    SONG_DATA_PATH_09_TO_17 = 1,
+    SONG_DATA_PATH_18 = 2,
+    SONG_DATA_PATH_19 = 3,
+};
+
+enum song_data_file_type {
+    SONG_DATA_FILE_TYPE_UNKNKOWN = 0,
+    SONG_DATA_FILE_TYPE_DOT_1 = 1,
+    SONG_DATA_FILE_TYPE_CHECKSUM = 2,
+};
+
 static bool chart_patch_initted;
 
 static double chart_patch_hz;
@@ -163,7 +176,7 @@ static bool chart_patch_file_load(
     return true;
 }
 
-static bool chart_patch_is_chart_id(const wchar_t *str)
+static bool chart_patch_is_valid_song_id(const wchar_t *str)
 {
     for (int i = 0; i < 4; i++) {
         if (!(str[i] >= L'0' && str[i] <= L'9')) {
@@ -249,14 +262,185 @@ static void chart_patch_execute_patch_checksum()
     log_warning("Could not find checksum row for %s", chart_patch_file_1_name);
 }
 
+static enum song_data_path_format chart_patch_is_song_data_path(const wchar_t *path, wchar_t *song_id)
+{
+    log_assert(path);
+    log_assert(song_id);
+
+    // Song data path for 09 to 17
+    // data folder next to revision folder and working dir set to revision folder
+    if (swscanf(
+            path,
+            // Ensure to match %lc and not %c to extract wide string chars
+            L"..\\data\\sd_data%*[\\/]%lc%lc%lc%lc%*[\\/]",
+            &song_id[0],
+            &song_id[1],
+            &song_id[2],
+            &song_id[3]) == 4) {
+        song_id[4] = '\0';
+
+        if (!chart_patch_is_valid_song_id(song_id)) {
+            return SONG_DATA_PATH_INVALID;
+        }
+
+        return SONG_DATA_PATH_09_TO_17;
+    }
+
+    // Song data path for 18
+    // data dir next to modules folder but working dir set to root folder
+    if (swscanf(
+            path,
+            // Ensure to match %lc and not %c to extract wide string chars
+            L".\\data\\sd_data%*[\\/]%lc%lc%lc%lc%*[\\/]",
+            &song_id[0],
+            &song_id[1],
+            &song_id[2],
+            &song_id[3]) == 4) {
+        song_id[4] = '\0';
+
+        if (!chart_patch_is_valid_song_id(song_id)) {
+            return SONG_DATA_PATH_INVALID;
+        }
+
+        return SONG_DATA_PATH_18;
+    }
+
+    // Song data path for 19
+    // data dir next to modules folder but working dir set to root folder
+    // ...and they had to rename sd_data to sound *tableflip*
+    if (swscanf(
+            path,
+            // Ensure to match %lc and not %c to extract wide string chars
+            L".\\data\\sound%*[\\/]%lc%lc%lc%lc%*[\\/]",
+            &song_id[0],
+            &song_id[1],
+            &song_id[2],
+            &song_id[3]) == 4) {
+        song_id[4] = '\0';
+
+        if (!chart_patch_is_valid_song_id(song_id)) {
+            return SONG_DATA_PATH_INVALID;
+        }
+
+        return SONG_DATA_PATH_19;
+    }
+
+    return SONG_DATA_PATH_INVALID;
+}
+
+static void chart_patch_get_song_chart_file_name(const wchar_t *song_id, wchar_t *chart_file_name)
+{
+    log_assert(song_id);
+    log_assert(chart_file_name);
+    log_assert(wcslen(song_id) == 4);
+    
+    memcpy(chart_file_name, song_id, sizeof(wchar_t) * 4);
+    chart_file_name[4] = L'.';
+    chart_file_name[5] = L'1';
+    chart_file_name[6] = L'\0';
+}
+
+static enum song_data_file_type chart_patch_get_song_data_file_type(const wchar_t *path, const wchar_t *song_id)
+{
+    wchar_t chart_file[7];
+
+    log_assert(path);
+    log_assert(song_id);
+
+    chart_patch_get_song_chart_file_name(song_id, chart_file);
+
+    if (wstr_ends_with(path, chart_file)) {
+        return SONG_DATA_FILE_TYPE_DOT_1;
+    }
+
+    if (wstr_ends_with(path, L"osprey.bin")) {
+        return SONG_DATA_FILE_TYPE_CHECKSUM;
+    }
+
+    return SONG_DATA_FILE_TYPE_UNKNKOWN;
+}
+
+static void chart_patch_get_path_dot_1_file(const wchar_t *song_id, enum song_data_path_format path_format, wchar_t *path)
+{
+    switch (path_format) {
+        case SONG_DATA_PATH_09_TO_17:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L"..\\data\\sd_data\\%s\\%s.1",
+                song_id,
+                song_id);
+            break;
+
+        case SONG_DATA_PATH_18:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L".\\data\\sd_data\\%s\\%s.1",
+                song_id,
+                song_id);
+            break;
+
+        case SONG_DATA_PATH_19:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L".\\data\\sound\\%s\\%s.1",
+                song_id,
+                song_id);
+            break;
+
+        case SONG_DATA_FILE_TYPE_UNKNKOWN:
+        default:
+            log_fatal("Illegal state");
+            break;
+    }       
+}
+
+static void chart_patch_get_path_checksum_file(const wchar_t *song_id, enum song_data_path_format path_format, wchar_t *path)
+{
+    switch (path_format) {
+        case SONG_DATA_PATH_09_TO_17:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L"..\\data\\sd_data\\%s\\osprey.bin",
+                song_id);
+            break;
+
+        case SONG_DATA_PATH_18:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L".\\data\\sd_data\\%s\\osprey.bin",
+                song_id);
+            break;
+
+        case SONG_DATA_PATH_19:
+            // Note: These use %s also for wide strings!
+            wsprintfW(
+                path,
+                L".\\data\\sound\\%s\\osprey.bin",
+                song_id);
+            break;
+
+        case SONG_DATA_FILE_TYPE_UNKNKOWN:
+        default:
+            log_fatal("Illegal state");
+            break;
+    }       
+}
+
 static bool chart_patch_file_trap(struct irp *irp)
 {
-    wchar_t buffer_1_path[1024];
-    wchar_t buffer_checksum_path[1024];
-    wchar_t chart_id[5];
-    wchar_t chart_file[7];
-    bool is_1_file;
-    bool is_checksum_file;
+    enum song_data_path_format path_format;
+    enum song_data_file_type file_type;
+
+    wchar_t buffer_1_path[MAX_PATH];
+    wchar_t buffer_checksum_path[MAX_PATH];
+    wchar_t song_id[5];
+    wchar_t chart_file_name[7];
+
     char *tmp;
 
     /* This has to trap three different scenarios:
@@ -266,44 +450,36 @@ static bool chart_patch_file_trap(struct irp *irp)
        In the end, we have to serve either just the .1 file or both the .1
        and checksum file from memory until the application closes one or both
        files */
-    if (swscanf(
-            irp->open_filename,
-            L"..\\data\\sd_data%*[\\/]%c%c%c%c%*[\\/]",
-            &chart_id[0],
-            &chart_id[1],
-            &chart_id[2],
-            &chart_id[3]) == 4 &&
-        chart_patch_is_chart_id(chart_id)) {
 
+    path_format = chart_patch_is_song_data_path(irp->open_filename, song_id);
+       
+    if (path_format != SONG_DATA_PATH_INVALID) {
         EnterCriticalSection(&chart_patch_lock);
 
-        chart_id[4] = '\0';
+        file_type = chart_patch_get_song_data_file_type(irp->open_filename, song_id);
 
-        wstr_narrow(irp->open_filename, &tmp);
-        log_misc("Trapping %s...", tmp);
-        free(tmp);
-
-        memcpy(chart_file, chart_id, sizeof(chart_id));
-        chart_file[4] = L'.';
-        chart_file[5] = L'1';
-        chart_file[6] = L'\0';
-
-        is_1_file = wstr_ends_with(irp->open_filename, chart_file);
-        is_checksum_file = wstr_ends_with(irp->open_filename, L"osprey.bin");
+        // %S for printing wide strings
+        log_misc("Trapping song ID %S, path format %d, file type %d, path %S", song_id, path_format, file_type, irp->open_filename);
 
         /* Block a second open call to either .1 or checksum file if detouring
            is already active */
         if (chart_patch_file_detour) {
-            if (is_1_file) {
-                irp->fd = chart_patch_file_1.fd;
-                chart_patch_file_1.active = true;
-            } else if (is_checksum_file) {
-                irp->fd = chart_patch_file_checksum.fd;
-                chart_patch_file_checksum.active = true;
-            } else {
-                LeaveCriticalSection(&chart_patch_lock);
-                /* other file, like *.2dx */
-                return false;
+            switch (file_type) {
+                case SONG_DATA_FILE_TYPE_DOT_1:
+                    irp->fd = chart_patch_file_1.fd;
+                    chart_patch_file_1.active = true;
+                    break;
+
+                case SONG_DATA_FILE_TYPE_CHECKSUM:
+                    irp->fd = chart_patch_file_checksum.fd;
+                    chart_patch_file_checksum.active = true;
+                    break;
+
+                case SONG_DATA_FILE_TYPE_UNKNKOWN:
+                default:
+                    LeaveCriticalSection(&chart_patch_lock);
+                    /* other file, like *.2dx */
+                    return false;
             }
 
             log_misc("Data already prepared");
@@ -313,31 +489,21 @@ static bool chart_patch_file_trap(struct irp *irp)
             return true;
         }
 
-        if (is_1_file || is_checksum_file) {
-            wstr_narrow(chart_id, &tmp);
-            log_misc("Preparing in-memory chart %s...", tmp);
-            free(tmp);
+        if (file_type == SONG_DATA_FILE_TYPE_DOT_1 || file_type == SONG_DATA_FILE_TYPE_CHECKSUM) {
+            log_misc("Preparing in-memory chart data for song ID %S...", song_id);
 
-            wsprintfW(
-                buffer_1_path,
-                L"..\\data\\sd_data\\\\%s\\%s.1",
-                chart_id,
-                chart_id);
-            wsprintfW(
-                buffer_checksum_path,
-                L"..\\data\\sd_data\\%s\\osprey.bin",
-                chart_id);
+            chart_patch_get_song_chart_file_name(song_id, chart_file_name);
+            chart_patch_get_path_dot_1_file(song_id, path_format, buffer_1_path);
+            chart_patch_get_path_checksum_file(song_id, path_format, buffer_checksum_path);
 
             if (!chart_patch_file_load(
                     irp, &chart_patch_file_1, buffer_1_path)) {
-                wstr_narrow(buffer_1_path, &tmp);
-                log_fatal("Cannot load .1 file %s", tmp);
-                free(tmp);
+                log_fatal("Cannot load .1 file %S", buffer_1_path);
             }
 
             chart_patch_execute_patch_1();
 
-            wstr_narrow(chart_file, &tmp);
+            wstr_narrow(chart_file_name, &tmp);
             memcpy(
                 chart_patch_file_1_name, tmp, sizeof(chart_patch_file_1_name));
             free(tmp);
@@ -349,19 +515,24 @@ static bool chart_patch_file_trap(struct irp *irp)
             }
 
             /* Return dummy handle */
-            if (is_1_file) {
-                irp->fd = chart_patch_file_1.fd;
-                chart_patch_file_1.active = true;
-            } else if (is_checksum_file) {
-                irp->fd = chart_patch_file_checksum.fd;
-                chart_patch_file_checksum.active = true;
-            } else {
-                log_fatal("Illegal state 2");
+            switch (file_type) {
+                case SONG_DATA_FILE_TYPE_DOT_1:
+                    irp->fd = chart_patch_file_1.fd;
+                    chart_patch_file_1.active = true;
+                    break;
+
+                case SONG_DATA_FILE_TYPE_CHECKSUM:
+                   irp->fd = chart_patch_file_checksum.fd;
+                    chart_patch_file_checksum.active = true;
+                    break;
+
+                case SONG_DATA_FILE_TYPE_UNKNKOWN:
+                default:
+                    log_fatal("Illegal state 2");
+                    break;
             }
 
-            wstr_narrow(chart_id, &tmp);
-            log_misc("Patch for %s prepared in memory", tmp);
-            free(tmp);
+            log_misc("Chart patch for song ID %S prepared in memory", song_id);
 
             chart_patch_file_detour = true;
 
