@@ -90,12 +90,12 @@ static const uint32_t jbhook_io_sys_button_mappings[] = {
 
 static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
 {
-    uint32_t *inputs = (uint32_t *) resp;
+    uint32_t inputs_out;
     uint16_t panels;
     uint8_t buttons;
 
     /* lower three bytes low active, highest byte high active */
-    *inputs = 0x00FFFFFF;
+    inputs_out = 0x00FFFFFF;
 
     if (!jb_io_read_inputs()) {
         log_warning("Reading inputs from jbio failed");
@@ -107,15 +107,19 @@ static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
 
     for (uint8_t i = 0; i < 16; i++) {
         if (panels & (1 << i)) {
-            *inputs &= ~jbhook_io_panel_mappings[i];
+            inputs_out &= ~jbhook_io_panel_mappings[i];
         }
     }
 
     for (uint8_t i = 0; i < 3; i++) {
         if (buttons & (1 << i)) {
-            *inputs |= jbhook_io_sys_button_mappings[i];
+            inputs_out |= jbhook_io_sys_button_mappings[i];
         }
     }
+
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state/random input misfiring
+    *((uint32_t *) resp) = inputs_out;
 }
 
 static uint32_t jbhook_command_handle(
