@@ -76,89 +76,95 @@ struct ezusb_emu_msg_hook *ezusb2_popn_emu_msg_init(void)
 
 static HRESULT ezusb2_popn_emu_msg_interrupt_read(struct iobuf *read)
 {
-    struct ezusb2_popn_msg_interrupt_read_packet *msg_resp =
-        (struct ezusb2_popn_msg_interrupt_read_packet *) read->bytes;
+    struct ezusb2_popn_msg_interrupt_read_packet msg_resp;
 
-    memset(msg_resp, 0, sizeof(*msg_resp));
+    memset(&msg_resp, 0, sizeof(msg_resp));
 
-    msg_resp->unk0 = 0x03;
-    msg_resp->unk1 = 0x1d;
-    msg_resp->unk2 = 0x85;
-    msg_resp->seq_no = ezusb2_popn_emu_msg_seq_no++;
-    msg_resp->status = ezusb2_popn_emu_msg_status;
-    msg_resp->unk3 = 0x00;
-    msg_resp->coin_count = 0;
-    msg_resp->unk4 = 0xfd;
+    msg_resp.unk0 = 0x03;
+    msg_resp.unk1 = 0x1d;
+    msg_resp.unk2 = 0x85;
+    msg_resp.seq_no = ezusb2_popn_emu_msg_seq_no++;
+    msg_resp.status = ezusb2_popn_emu_msg_status;
+    msg_resp.unk3 = 0x00;
+    msg_resp.coin_count = 0;
+    msg_resp.unk4 = 0xfd;
 
-    msg_resp->io.inverted_pad = ~popn_io_get_buttons();
+    msg_resp.io.inverted_pad = ~popn_io_get_buttons();
 
-    msg_resp->unk5 = 0x00;
-    msg_resp->unk6 = 0x7d;
-    msg_resp->unk7 = 0xdf;
-    msg_resp->unk8 = ezusb2_popn_emu_msg_seq_no;
+    msg_resp.unk5 = 0x00;
+    msg_resp.unk6 = 0x7d;
+    msg_resp.unk7 = 0xdf;
+    msg_resp.unk8 = ezusb2_popn_emu_msg_seq_no;
 
     memcpy(
-        &msg_resp->button_history[0],
+        &msg_resp.button_history[0],
         &ezusb2_popn_emu_msg_history[0],
         sizeof(uint16_t) * 10);
-
-    read->pos = sizeof(*msg_resp);
 
     memmove(
         &ezusb2_popn_emu_msg_history[1],
         &ezusb2_popn_emu_msg_history[0],
         sizeof(uint16_t) * 9);
-    ezusb2_popn_emu_msg_history[0] = msg_resp->io.button;
+    ezusb2_popn_emu_msg_history[0] = msg_resp.io.button;
+
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state/random input misfiring
+    memcpy(read->bytes, &msg_resp, sizeof(msg_resp));
+    read->pos = sizeof(msg_resp);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_popn_emu_msg_interrupt_write(struct const_iobuf *write)
 {
-    const struct ezusb2_popn_msg_interrupt_write_packet *msg_req =
-        (const struct ezusb2_popn_msg_interrupt_write_packet *) write->bytes;
+    struct ezusb2_popn_msg_interrupt_write_packet msg_req;
 
-    if (write->nbytes < sizeof(*msg_req)) {
+    if (write->nbytes < sizeof(msg_req)) {
         log_warning("Interrupt write message too small");
 
         return E_INVALIDARG;
     }
 
-    if (!ezusb2_popn_emu_msg_nodes[msg_req->node]) {
+    // Single read from external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(&msg_req, write->bytes, sizeof(msg_req));
+
+    if (!ezusb2_popn_emu_msg_nodes[msg_req.node]) {
         ezusb2_popn_emu_msg_read_cur_node = 0;
         log_warning(
-            "Unrecognised node in interrupt message: %02x", msg_req->node);
+            "Unrecognised node in interrupt message: %02x", msg_req.node);
 
         return E_INVALIDARG;
     }
 
-    popn_io_set_top_lights(msg_req->lamp & 0x1f);
-    popn_io_set_side_lights((msg_req->lamp >> 8) & 0xf);
-    popn_io_set_button_lights((msg_req->lamp >> 20) & 0xfff);
+    popn_io_set_top_lights(msg_req.lamp & 0x1f);
+    popn_io_set_side_lights((msg_req.lamp >> 8) & 0xf);
+    popn_io_set_button_lights((msg_req.lamp >> 20) & 0xfff);
     popn_io_set_coin_counter_light(
-        ((msg_req->lamp >> 12) & 0xf) == 0); // Active low
-    popn_io_set_coin_blocker_light(((msg_req->lamp >> 16) & 0xf) == 0xf);
+        ((msg_req.lamp >> 12) & 0xf) == 0); // Active low
+    popn_io_set_coin_blocker_light(((msg_req.lamp >> 16) & 0xf) == 0xf);
 
     /* Remember node for next bulk read */
 
-    ezusb2_popn_emu_msg_read_cur_node = msg_req->node;
+    ezusb2_popn_emu_msg_read_cur_node = msg_req.node;
     ezusb2_popn_emu_msg_status =
-        ezusb2_popn_emu_msg_nodes[msg_req->node]->process_cmd(
-            msg_req->cmd, msg_req->cmd_detail[0], msg_req->cmd_detail[1]);
+        ezusb2_popn_emu_msg_nodes[msg_req.node]->process_cmd(
+            msg_req.cmd, msg_req.cmd_detail[0], msg_req.cmd_detail[1]);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_popn_emu_msg_bulk_read(struct iobuf *read)
 {
-    struct ezusb_iidx_msg_bulk_packet *pkt =
-        (struct ezusb_iidx_msg_bulk_packet *) read->bytes;
+    struct ezusb_iidx_msg_bulk_packet pkt;
 
-    if (read->nbytes < sizeof(*pkt)) {
+    if (read->nbytes < sizeof(pkt)) {
         log_warning("Bulk read buffer too small");
 
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
+
+    
 
     if (!ezusb2_popn_emu_msg_nodes[ezusb2_popn_emu_msg_read_cur_node]) {
         log_warning(
@@ -169,33 +175,39 @@ static HRESULT ezusb2_popn_emu_msg_bulk_read(struct iobuf *read)
     }
 
     if (!ezusb2_popn_emu_msg_nodes[ezusb2_popn_emu_msg_read_cur_node]
-             ->read_packet(pkt)) {
+             ->read_packet(&pkt)) {
         return E_FAIL;
     }
 
-    read->pos = sizeof(*pkt);
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(&pkt, read->bytes, sizeof(pkt));
+    read->pos = sizeof(pkt);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_popn_emu_msg_bulk_write(struct const_iobuf *write)
 {
-    const struct ezusb_iidx_msg_bulk_packet *pkt =
-        (const struct ezusb_iidx_msg_bulk_packet *) write->bytes;
+    struct ezusb_iidx_msg_bulk_packet pkt;
 
-    if (write->nbytes < sizeof(*pkt)) {
+    if (write->nbytes < sizeof(pkt)) {
         log_warning("Bulk write packet too small");
 
         return E_INVALIDARG;
     }
 
-    if (!ezusb2_popn_emu_msg_nodes[pkt->node]) {
-        log_warning("Bulk write not supported on pkt->node = %02x", pkt->node);
+    // Single read from external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(&pkt, write->bytes, sizeof(pkt));
+
+    if (!ezusb2_popn_emu_msg_nodes[pkt.node]) {
+        log_warning("Bulk write not supported on pkt.node = %02x", pkt.node);
 
         return E_NOTIMPL;
     }
 
-    if (!ezusb2_popn_emu_msg_nodes[pkt->node]->write_packet(pkt)) {
+    if (!ezusb2_popn_emu_msg_nodes[pkt.node]->write_packet(&pkt)) {
         return E_FAIL;
     }
 
