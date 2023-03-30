@@ -111,12 +111,13 @@ void jbhook_util_p3io_fini(void)
 
 static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state)
 {
+    uint32_t state_tmp;
     uint16_t panels;
     uint8_t buttons;
 
     log_assert(state != NULL);
 
-    *state = 0;
+    state_tmp = 0;
 
     if (!jb_io_read_inputs()) {
         log_warning("Reading inputs from jbio failed");
@@ -129,16 +130,20 @@ static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state)
     for (uint8_t i = 0; i < 16; i++) {
         // panels are active-low
         if ((panels & (1 << i)) == 0) {
-            *state |= jbhook_p3io_panel_mappings[i];
+            state_tmp |= jbhook_p3io_panel_mappings[i];
         }
     }
 
     for (uint8_t i = 0; i < 2; i++) {
         // sys buttons are active-high
         if (buttons & (1 << i)) {
-            *state |= jbhook_p3io_sys_button_mappings[i];
+            state_tmp |= jbhook_p3io_sys_button_mappings[i];
         }
     }
+
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state/random input misfiring
+    *state = state_tmp;
 
     return S_OK;
 }
@@ -146,11 +151,14 @@ static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state)
 static HRESULT jbhook_p3io_get_roundplug(
     void *ctx, uint8_t plug_id, uint8_t *rom, uint8_t *eeprom)
 {
+    uint8_t rom_out[sizeof(jbhook_p3io_pcbid.id)];
     struct security_rp3_eeprom eeprom_out;
+
+    log_assert(sizeof(jbhook_p3io_pcbid.id) == sizeof(jbhook_p3io_eamid.id));
 
     if (plug_id == 0) {
         /* black */
-        memcpy(rom, jbhook_p3io_pcbid.id, sizeof(jbhook_p3io_pcbid.id));
+        memcpy(rom_out, jbhook_p3io_pcbid.id, sizeof(jbhook_p3io_pcbid.id));
         security_rp3_generate_signed_eeprom_data(
             SECURITY_RP_UTIL_RP_TYPE_BLACK,
             &security_rp_sign_key_black_gfdmv4,
@@ -159,7 +167,7 @@ static HRESULT jbhook_p3io_get_roundplug(
             &eeprom_out);
     } else {
         /* white */
-        memcpy(rom, jbhook_p3io_eamid.id, sizeof(jbhook_p3io_eamid.id));
+        memcpy(rom_out, jbhook_p3io_eamid.id, sizeof(jbhook_p3io_eamid.id));
         security_rp3_generate_signed_eeprom_data(
             SECURITY_RP_UTIL_RP_TYPE_WHITE,
             &security_rp_sign_key_white_eamuse,
@@ -168,6 +176,9 @@ static HRESULT jbhook_p3io_get_roundplug(
             &eeprom_out);
     }
 
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(rom, &rom_out, sizeof(rom_out));
     memcpy(eeprom, &eeprom_out, sizeof(struct security_rp3_eeprom));
 
     return S_OK;
