@@ -64,65 +64,72 @@ struct ezusb_emu_msg_hook *ezusb2_iidx_emu_msg_init(void)
 
 static HRESULT ezusb2_iidx_emu_msg_interrupt_read(struct iobuf *read)
 {
-    struct ezusb2_iidx_msg_interrupt_read_packet *msg_resp =
-        (struct ezusb2_iidx_msg_interrupt_read_packet *) read->bytes;
+    struct ezusb2_iidx_msg_interrupt_read_packet msg_resp;
 
     if (!iidx_io_ep2_recv()) {
         return E_FAIL;
     }
 
-    msg_resp->p1_turntable = iidx_io_ep2_get_turntable(0);
-    msg_resp->p2_turntable = iidx_io_ep2_get_turntable(1);
+    memset(&msg_resp, 0, sizeof(msg_resp));
 
-    msg_resp->sliders[0] =
+    msg_resp.p1_turntable = iidx_io_ep2_get_turntable(0);
+    msg_resp.p2_turntable = iidx_io_ep2_get_turntable(1);
+
+    msg_resp.sliders[0] =
         iidx_io_ep2_get_slider(0) | (iidx_io_ep2_get_slider(1) << 4);
 
-    msg_resp->sliders[1] =
+    msg_resp.sliders[1] =
         iidx_io_ep2_get_slider(2) | (iidx_io_ep2_get_slider(3) << 4);
 
-    msg_resp->sliders[2] = iidx_io_ep2_get_slider(4);
+    msg_resp.sliders[2] = iidx_io_ep2_get_slider(4);
 
-    msg_resp->inverted_pad = ((iidx_io_ep2_get_keys() & 0x3FFF) << 16) |
+    msg_resp.inverted_pad = ((iidx_io_ep2_get_keys() & 0x3FFF) << 16) |
         (iidx_io_ep2_get_panel() & 0x0F) |
         ((iidx_io_ep2_get_sys() & 0x03) << 4) |
         (((iidx_io_ep2_get_sys() >> 2) & 0x01) << 30);
 
-    msg_resp->inverted_pad = ~msg_resp->inverted_pad;
+    msg_resp.inverted_pad = ~msg_resp.inverted_pad;
 
-    msg_resp->status = ezusb2_iidx_emu_msg_status;
+    msg_resp.status = ezusb2_iidx_emu_msg_status;
     /* Reset status after delivered (important for eeprom reading) */
     ezusb2_iidx_emu_msg_status = 0;
 
-    msg_resp->seq_no = ezusb2_iidx_emu_msg_seq_no++;
+    msg_resp.seq_no = ezusb2_iidx_emu_msg_seq_no++;
 
-    read->pos = sizeof(*msg_resp);
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(read->bytes, &msg_resp, sizeof(msg_resp));
+    read->pos = sizeof(msg_resp);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_iidx_emu_msg_interrupt_write(struct const_iobuf *write)
 {
-    const struct ezusb2_iidx_msg_interrupt_write_packet *msg_req =
-        (const struct ezusb2_iidx_msg_interrupt_write_packet *) write->bytes;
+    struct ezusb2_iidx_msg_interrupt_write_packet msg_req;
 
-    if (write->nbytes < sizeof(*msg_req)) {
+    if (write->nbytes < sizeof(msg_req)) {
         log_warning("Interrupt write message too small");
 
         return E_INVALIDARG;
     }
 
-    if (!ezusb2_iidx_emu_msg_nodes[msg_req->node]) {
+    // Single read from external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(&msg_req, write->bytes, sizeof(msg_req));
+
+    if (!ezusb2_iidx_emu_msg_nodes[msg_req.node]) {
         ezusb2_iidx_emu_msg_read_cur_node = 0;
         log_warning(
-            "Unrecognised node in interrupt message: %02x", msg_req->node);
+            "Unrecognised node in interrupt message: %02x", msg_req.node);
 
         return E_INVALIDARG;
     }
 
-    iidx_io_ep1_set_deck_lights(msg_req->deck_lights);
-    iidx_io_ep1_set_panel_lights(msg_req->panel_lights);
-    iidx_io_ep1_set_top_lamps(msg_req->top_lamps);
-    iidx_io_ep1_set_top_neons(msg_req->top_neons);
+    iidx_io_ep1_set_deck_lights(msg_req.deck_lights);
+    iidx_io_ep1_set_panel_lights(msg_req.panel_lights);
+    iidx_io_ep1_set_top_lamps(msg_req.top_lamps);
+    iidx_io_ep1_set_top_neons(msg_req.top_neons);
 
     if (!iidx_io_ep1_send()) {
         return E_FAIL;
@@ -131,30 +138,31 @@ static HRESULT ezusb2_iidx_emu_msg_interrupt_write(struct const_iobuf *write)
     /* 16seg data is provided with the request and not handled using a
        separate bulk endpoint like on the C02 IO board */
 
-    if (!iidx_io_ep3_write_16seg((const char *) msg_req->seg16)) {
+    if (!iidx_io_ep3_write_16seg((const char *) msg_req.seg16)) {
         return E_FAIL;
     }
 
     /* Remember node for next bulk read */
 
-    ezusb2_iidx_emu_msg_read_cur_node = msg_req->node;
+    ezusb2_iidx_emu_msg_read_cur_node = msg_req.node;
     ezusb2_iidx_emu_msg_status =
-        ezusb2_iidx_emu_msg_nodes[msg_req->node]->process_cmd(
-            msg_req->cmd, msg_req->cmd_detail[0], msg_req->cmd_detail[1]);
+        ezusb2_iidx_emu_msg_nodes[msg_req.node]->process_cmd(
+            msg_req.cmd, msg_req.cmd_detail[0], msg_req.cmd_detail[1]);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_iidx_emu_msg_bulk_read(struct iobuf *read)
 {
-    struct ezusb_iidx_msg_bulk_packet *pkt =
-        (struct ezusb_iidx_msg_bulk_packet *) read->bytes;
+    struct ezusb_iidx_msg_bulk_packet pkt;
 
-    if (read->nbytes < sizeof(*pkt)) {
+    if (read->nbytes < sizeof(pkt)) {
         log_warning("Bulk read buffer too small");
 
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
+
+    memset(&pkt, 0, sizeof(pkt));
 
     if (!ezusb2_iidx_emu_msg_nodes[ezusb2_iidx_emu_msg_read_cur_node]) {
         log_warning(
@@ -165,33 +173,39 @@ static HRESULT ezusb2_iidx_emu_msg_bulk_read(struct iobuf *read)
     }
 
     if (!ezusb2_iidx_emu_msg_nodes[ezusb2_iidx_emu_msg_read_cur_node]
-             ->read_packet(pkt)) {
+             ->read_packet(&pkt)) {
         return E_FAIL;
     }
 
-    read->pos = sizeof(*pkt);
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(read->bytes, &pkt, sizeof(pkt));
+    read->pos = sizeof(pkt);
 
     return S_OK;
 }
 
 static HRESULT ezusb2_iidx_emu_msg_bulk_write(struct const_iobuf *write)
 {
-    const struct ezusb_iidx_msg_bulk_packet *pkt =
-        (const struct ezusb_iidx_msg_bulk_packet *) write->bytes;
+    struct ezusb_iidx_msg_bulk_packet pkt;
 
-    if (write->nbytes < sizeof(*pkt)) {
+    if (write->nbytes < sizeof(pkt)) {
         log_warning("Bulk write packet too small");
 
         return E_INVALIDARG;
     }
 
-    if (!ezusb2_iidx_emu_msg_nodes[pkt->node]) {
-        log_warning("Bulk write not supported on pkt->node = %02x", pkt->node);
+    // Single read from external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(&pkt, write->bytes, sizeof(pkt));
+
+    if (!ezusb2_iidx_emu_msg_nodes[pkt.node]) {
+        log_warning("Bulk write not supported on pkt->node = %02x", pkt.node);
 
         return E_NOTIMPL;
     }
 
-    if (!ezusb2_iidx_emu_msg_nodes[pkt->node]->write_packet(pkt)) {
+    if (!ezusb2_iidx_emu_msg_nodes[pkt.node]->write_packet(&pkt)) {
         return E_FAIL;
     }
 
