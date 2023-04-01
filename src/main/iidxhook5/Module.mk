@@ -25,3 +25,4 @@ libs_iidxhook5      := \
 
 src_iidxhook5       := \
     dllmain.c \
+    ifs-snd-redir.c \

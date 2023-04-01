@@ -40,6 +40,8 @@
 #include "util/str.h"
 #include "util/thread.h"
 
+#include "ifs-snd-redir.h"
+
 #define IIDXHOOK5_INFO_HEADER \
     "iidxhook for Lincle"     \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
@@ -178,6 +180,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         hook_setupapi_init(&ezusb2_emu_desc_device.setupapi);
         ezusb2_emu_device_hook_init(ezusb2_iidx_emu_msg_init());
     }
+
+    iidxhook5_ifs_snd_redir_init();
 
     /* Card reader emulation, same issue with hooking as IO emulation */
     rs232_hook_init();
