@@ -85,7 +85,7 @@ static HRESULT ezusb2_iidx_emu_msg_interrupt_read(struct iobuf *read)
 
     msg_resp.inverted_pad = ((iidx_io_ep2_get_keys() & 0x3FFF) << 16) |
         (iidx_io_ep2_get_panel() & 0x0F) |
-        ((iidx_io_ep2_get_sys() & 0x03) << 4) |
+        ((iidx_io_ep2_get_sys() & 0x07) << 4) |
         (((iidx_io_ep2_get_sys() >> 2) & 0x01) << 30);
 
     msg_resp.inverted_pad = ~msg_resp.inverted_pad;
