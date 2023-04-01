@@ -126,7 +126,7 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read)
 
     msg_resp->inverted_pad = ((iidx_io_ep2_get_keys() & 0x3FFF) << 8) |
         ((iidx_io_ep2_get_panel() & 0x0F) << 24) |
-        ((iidx_io_ep2_get_sys() & 0x03) << 28) |
+        ((iidx_io_ep2_get_sys() & 0x07) << 28) |
         (((iidx_io_ep2_get_sys() >> 2) & 0x01) << 22);
 
     /* make sure to update the current coin mode state, otherwise
