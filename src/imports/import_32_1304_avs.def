@@ -2,6 +2,7 @@ LIBRARY libavs-win32
 
 EXPORTS
     avs_boot @237 NONAME
+    avs_fs_open @178 NONAME
     avs_net_ctrl @15 NONAME
     avs_shutdown @333 NONAME
     avs_thread_create @183 NONAME
@@ -25,4 +26,4 @@ EXPORTS
     property_read_query_memsize @100 NONAME
     property_search @244 NONAME
     std_getenv @226 NONAME
-    std_setenv  @114 NONAME
+    std_setenv @114 NONAME
