@@ -181,16 +181,21 @@ uint8_t ezusb_iidx_emu_node_security_plug_process_cmd_v1(
             /* TODO ? */
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V1_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_BLACK_DONGLE:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_BLACK_DONGLE");
+        // Black dongle
+        case EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_1:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_1");
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =
                 EZUSB_IIDX_SECPLUG_DONGLE_SLOT_BLACK;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V1_OK;
 
-        case EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_WHITE_DONGLE:
-            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_WHITE_DONGLE");
+        // Used by D01 to also address black dongle?
+        // Note that iidx 9 to 13 never had a white dongle
+        // The white dongle/separate eamuse license key was introduced
+        // with iidx 14
+        case EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_2:
+            log_misc("EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_2");
             ezusb_iidx_emu_node_security_plug_active_dongle_slot =
-                EZUSB_IIDX_SECPLUG_DONGLE_SLOT_WHITE;
+                EZUSB_IIDX_SECPLUG_DONGLE_SLOT_BLACK;
             return EZUSB_IIDX_SECPLUG_CMD_STATUS_V1_OK;
 
         default:

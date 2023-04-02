@@ -15,8 +15,10 @@ enum ezusb_iidx_secplug_command_v1 {
     EZUSB_IIDX_SECPLUG_CMD_V1_READ_ROM = 0x01,
     EZUSB_IIDX_SECPLUG_CMD_V1_READ_DATA = 0x02,
     EZUSB_IIDX_SECPLUG_CMD_V1_WRITE_DATA = 0x03,
-    EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_BLACK_DONGLE = 0x04,
-    EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_WHITE_DONGLE = 0x05
+    // Black dongle
+    EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_1 = 0x04,
+    // Used by D01 to also address black dongle?
+    EZUSB_IIDX_SECPLUG_CMD_V1_SELECT_DONGLE_2 = 0x05,
 };
 
 enum ezusb_iidx_secplug_command_status_v1 {
