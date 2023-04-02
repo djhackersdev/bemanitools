@@ -22,4 +22,5 @@ libs_iidxhook1      := \
 src_iidxhook1       := \
     config-iidxhook1.c \
     dllmain.c \
+    ezusb-mon.c \
     log-ezusb.c \
