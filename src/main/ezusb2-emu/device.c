@@ -281,51 +281,57 @@ static HRESULT ezusb_ioctl_epX(
 
 static HRESULT ezusb_get_device_descriptor(struct iobuf *read)
 {
-    USB_DEVICE_DESCRIPTOR *desc;
+    USB_DEVICE_DESCRIPTOR desc;
 
     log_assert(read != NULL);
 
-    if (read->nbytes < sizeof(*desc)) {
+    if (read->nbytes < sizeof(desc)) {
         log_warning("USB_DEVICE_DESCRIPTOR buffer too small: %d", read->nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
     }
 
-    desc = (USB_DEVICE_DESCRIPTOR *) read->bytes;
+    memset(&desc, 0, sizeof(desc));
 
     /* vid and pid checked, only */
-    desc->idVendor = ezusb2_emu_desc_device.vid;
-    desc->idProduct = ezusb2_emu_desc_device.pid;
+    desc.idVendor = ezusb2_emu_desc_device.vid;
+    desc.idProduct = ezusb2_emu_desc_device.pid;
 
     log_misc(
         "get_device_descriptor: vid %02x, pid %02x",
-        desc->idVendor,
-        desc->idProduct);
+        desc.idVendor,
+        desc.idProduct);
 
-    read->pos = sizeof(*desc);
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(read->bytes, &desc, sizeof(desc));
+    read->pos = sizeof(desc);
 
     return S_OK;
 }
 
 static HRESULT ezusb_get_string_descriptor(struct iobuf *read)
 {
-    struct ezusb_usb_string_desc *desc;
+    struct ezusb_usb_string_desc desc;
 
     log_assert(read != NULL);
 
-    if (read->nbytes < sizeof(*desc)) {
+    if (read->nbytes < sizeof(desc)) {
         log_warning("ezusb_usb_string_desc buffer too small: %d", read->nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
     }
 
-    desc = (struct ezusb_usb_string_desc *) read->bytes;
+    memset(&desc, 0, sizeof(desc));
 
-    desc->length = sizeof(*desc);
-    desc->desc_type = 0x03; /* Usb spec says so */
-    memcpy(desc->unicode_str, L"KONAMI", 12); /* Unicode encoding */
+    desc.length = sizeof(desc);
+    desc.desc_type = 0x03; /* Usb spec says so */
+    memcpy(desc.unicode_str, L"KONAMI", 12); /* Unicode encoding */
 
-    read->pos = sizeof(*desc);
+    // Single write to external/game managed buffer to reduce risk for
+    // inconsistent state
+    memcpy(read->bytes, &desc, sizeof(desc));
+    read->pos = sizeof(desc);
 
     log_misc("get_string_descriptor: KONAMI");
 
