@@ -65,6 +65,7 @@ static const struct ezusb_iidx_emu_node *ezusb_iidx_emu_msg_v2_nodes[256] = {
     [EZUSB_IIDX_MSG_NODE_WDT] = &ezusb_iidx_emu_node_wdt,
 };
 
+static enum ezusb_iidx_emu_msg_io_board_type ezusb_iidx_emu_msg_io_board_type;
 static const struct ezusb_iidx_emu_node **ezusb_iidx_emu_node_handler;
 static uint8_t ezusb_iidx_emu_msg_status = 0;
 static uint8_t ezusb_iidx_emu_msg_seq_no = 0;
@@ -72,8 +73,16 @@ static uint8_t ezusb_iidx_emu_msg_read_cur_node = 0;
 
 /* ------------------------------------------------------------------------ */
 
-struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(void)
+struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(
+    enum ezusb_iidx_emu_msg_io_board_type io_board_type)
 {
+    if (io_board_type < 0 ||
+            io_board_type >= EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_COUNT) {
+        log_fatal("Invalid io board type %d specified", io_board_type);
+    }
+
+    ezusb_iidx_emu_msg_io_board_type = io_board_type;
+
     /* Init all nodes */
     for (uint32_t i = 0; i < 256; i++) {
         /* "Constructor" optional */
@@ -84,6 +93,9 @@ struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(void)
     }
 
     ezusb_iidx_emu_node_handler = ezusb_iidx_emu_msg_nodes;
+
+    log_info("Initialized, io board type: %d",
+        ezusb_iidx_emu_msg_io_board_type);
 
     return &ezusb_iidx_emu_msg_hook;
 }
@@ -163,9 +175,21 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read)
     otherwise the game's fpga check will fail */
     msg_resp->fpga2_check_flag_unkn = 2;
 
-#ifdef EZUSB_IIDX_EMU_D01_BOARD
-    msg_resp->inverted_pad &= ~(1 << 4);
-#endif
+    switch (ezusb_iidx_emu_msg_io_board_type) {
+        case EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_C02:
+            // noop
+            break;
+
+        case EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_D01:
+            msg_resp->inverted_pad &= ~(1 << 4);
+            break;
+
+        case EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_COUNT:
+        default:
+            log_fatal("Illegal state, unhandled board type: %d",
+                ezusb_iidx_emu_msg_io_board_type);
+            break;
+    }
 
     read->pos = sizeof(*msg_resp);
 
