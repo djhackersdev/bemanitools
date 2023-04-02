@@ -8,6 +8,7 @@ src_iidxhook-util     := \
     chart-patch.c \
     clock.c \
     config-eamuse.c \
+    config-ezusb.c \
     config-gfx.c \
     config-io.c \
     config-misc.c \
