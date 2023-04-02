@@ -1,4 +1,4 @@
-#define LOG_MODULE "logger-hook"
+#define LOG_MODULE "log-ezusb"
 
 #include <windows.h>
 
