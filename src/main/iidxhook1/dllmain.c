@@ -27,6 +27,7 @@
 
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/clock.h"
+#include "iidxhook-util/config-ezusb.h"
 #include "iidxhook-util/config-eamuse.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-misc.h"
@@ -37,6 +38,7 @@
 #include "iidxhook-util/settings.h"
 
 #include "iidxhook1/config-iidxhook1.h"
+#include "iidxhook1/ezusb-mon.h"
 #include "iidxhook1/log-ezusb.h"
 
 #include "util/defs.h"
@@ -123,6 +125,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 {
     struct cconfig *config;
 
+    struct iidxhook_util_config_ezusb config_ezusb;
     struct iidxhook_util_config_eamuse config_eamuse;
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook_config_iidxhook1 config_iidxhook1;
@@ -141,6 +144,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 
     config = cconfig_init();
 
+    iidxhook_util_config_ezusb_init(config);
     iidxhook_util_config_eamuse_init(config);
     iidxhook_config_gfx_init(config);
     iidxhook_config_iidxhook1_init(config);
@@ -155,6 +159,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
         exit(EXIT_FAILURE);
     }
 
+    iidxhook_util_config_ezusb_get(&config_ezusb, config);
     iidxhook_util_config_eamuse_get(&config_eamuse, config);
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook_config_iidxhook1_get(&config_iidxhook1, config);
@@ -234,7 +239,13 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     iohook_push_handler(settings_hook_dispatch_irp);
 
     hook_setupapi_init(&ezusb_emu_desc_device.setupapi);
-    ezusb_emu_device_hook_init(ezusb_iidx_emu_msg_init());
+    ezusb_emu_device_hook_init(
+        ezusb_iidx_emu_msg_init(config_ezusb.io_board_type));
+
+    if (config_ezusb.api_call_monitoring) {
+        ezusb_log_hook_init();
+        ezusb_mon_hook_init();
+    }
 
     log_info("-------------------------------------------------------------");
     log_info("---------------- End iidxhook my_OpenProcess ----------------");
