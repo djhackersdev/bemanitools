@@ -30,6 +30,10 @@
 #include "util/log.h"
 #include "util/str.h"
 
+// The max buffer size in iidx's ezusb client library is 4096 for the initial
+// firmware download.
+#define MAX_IOCTL_BUFFER_SIZE 4096
+
 enum pipe {
     PIPE_INT_OUT = 0x01,
     PIPE_BULK_OUT = 0x02,
@@ -134,7 +138,71 @@ static HRESULT ezusb_ioctl(struct irp *irp)
     struct iobuf read;
     HRESULT hr;
 
+    // Stack alloc'd and fixed sized buffers to avoid processing costs with
+    // allocations. Ensure buffers are large enough for any operation
+    uint8_t write_buffer_local[MAX_IOCTL_BUFFER_SIZE];
+    uint8_t read_buffer_local[MAX_IOCTL_BUFFER_SIZE];
+
+    uint8_t *write_buffer_orig;
+    uint8_t *read_buffer_orig;
+
     log_assert(irp != NULL);
+
+    // Save original buffer that is owned and managed by the caller/the game
+    // Do NOT read/write these buffers directly because the game's ezusb
+    // interface library does not access to them entirely thread safe.
+    // This causes verious odd bugs due to data read/write inconsistencies
+    // between data access and modification by at least two different threads.
+    //
+    // The game's ezusb (client) library was created on a platform with no
+    // true multi-core processing (Pentium 4 era of hardware). However, the
+    // developers utilized threading primitives of the Win32 API to ensure
+    // a high rate of data updates to reduce input latency. This was architected
+    // using a dedicated polling thread in the ezusb client library that drives
+    // the IO polling on a high update rate. The captured data was stored in
+    // a shared buffer that is also accessible by other threads from the main
+    // game binary. However, the data access to the same shared buffer with the
+    // polling backend is not synchronized
+    //
+    // Thus, the various odd and flaky ezusb communication bugs we see on
+    // modern, and true multi-core hardware, are the concurrency management
+    // mistakes that are now creeping up. The developers back then had no
+    // proper means to test these due to the lack of hardware capabilities.
+
+    // Save the IO buffer that is used by the ezusb client backend and shared
+    // with the game's main thread
+    write_buffer_orig = (uint8_t*) irp->write.bytes;
+    read_buffer_orig = irp->read.bytes;
+
+    // Prepare our own thread locally managed and non shared buffers for any
+    // further data operations that are part of the ezusb emulation stack
+    memset(write_buffer_local, 0, sizeof(write_buffer_local));
+    memset(read_buffer_local, 0, sizeof(read_buffer_local));
+
+    // Sanity check and visibility, in case this ever overflows
+    if (irp->write.nbytes > sizeof(write_buffer_local)) {
+        log_fatal("Insufficient local write buffer available for ioctl, local "
+            "size %d, ioctl buffer size %d",
+            sizeof(write_buffer_local),
+            irp->write.nbytes);
+    }
+
+    if (irp->read.nbytes > sizeof(read_buffer_local)) {
+        log_fatal("Insufficient local read buffer available for ioctl, local "
+            "size %d, ioctl buffer size %d",
+            sizeof(read_buffer_local),
+            irp->read.nbytes);
+    }
+
+    // Temporarily hook our local buffers to the irp 
+    irp->write.bytes = write_buffer_local;
+    irp->read.bytes = read_buffer_local;
+
+    // Move data from the shared buffers to the local one
+    // Probably the "most atomic way possible" to have the least amount of
+    // overlap with the game's shared buffer
+    memcpy(write_buffer_local, write_buffer_orig, irp->write.nbytes);
+    memcpy(read_buffer_local, read_buffer_orig, irp->read.nbytes);
 
 #ifdef EZUSB_EMU_DEBUG_DUMP
     /* For debugging */
@@ -192,6 +260,15 @@ static HRESULT ezusb_ioctl(struct irp *irp)
     /* For debugging */
     ezusb2_emu_util_log_usb_msg("AFTER", irp);
 #endif
+
+    // Move data back to shared IO buffer. Again, keep this keeps the access
+    // overlap as minimal as possible
+    memcpy(write_buffer_orig, write_buffer_local, irp->write.nbytes);
+    memcpy(read_buffer_orig, read_buffer_local, irp->read.nbytes);
+
+    // Re-store the original irp buffer state
+    irp->write.bytes = (const uint8_t*) write_buffer_orig;
+    irp->read.bytes = read_buffer_orig;
 
     return hr;
 }
