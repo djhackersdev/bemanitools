@@ -214,3 +214,12 @@ If one or multiple of these issues apply, use the built in scaling options by se
 to scale to. Usually, you want to set this to the monitor's native resolution, e.g.
 1920x1080 for full HD. You can play around with a few different filters using
 *gfx.scale_back_buffer_filter* which impacts image quality/blurriness on upscaling.
+
+## DJTroopers crashes on boot
+The stock game is buggy and cannot create default backup data correctly. This
+can be fixed by using existing backup data from a stock drive or by using
+the pre-generated backup data for the `e:\` and `f:\` drives provided by
+[bemanitools-supplement](https://github.com/djhackersdev/bemanitools-supplement/tree/master/iidx/15#default-backup-data).
+
+Copy those files to your target location that you have configured to store this
+data, e.g. local `e\` and `f\` folders or the target `e:\` and `f:\` volumes.
