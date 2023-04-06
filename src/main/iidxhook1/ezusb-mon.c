@@ -19,11 +19,11 @@
 static int my_usbStart(int val);
 static int my_usbSecurityInit();
 static int my_usbSecuritySelectDone();
-static int my_usbGetPCBID(char* buffer);
-static int my_usbGetSecurity(char* buffer);
-static int my_usbGetSecurityKey(char* buffer);
-static int my_usbBootSecurity(
-    const char* boot_code, int seed_1, int seed_2, int seed_3);
+static int my_usbGetPCBID(char *buffer);
+static int my_usbGetSecurity(char *buffer);
+static int my_usbGetSecurityKey(char *buffer);
+static int
+my_usbBootSecurity(const char *boot_code, int seed_1, int seed_2, int seed_3);
 static int my_usbSetupSecurityComplete(int val1, int val2, int val3, int val4);
 static int my_usbMute(int val);
 static int my_usbFirmResult();
@@ -31,12 +31,13 @@ static int my_usbFirmResult();
 static int (*real_usbStart)(int val);
 static int (*real_usbSecurityInit)();
 static int (*real_usbSecuritySelectDone)();
-static int (*real_usbGetPCBID)(char* buffer);
-static int (*real_usbGetSecurity)(char* buffer);
-static int (*real_usbGetSecurityKey)(char* buffer);
+static int (*real_usbGetPCBID)(char *buffer);
+static int (*real_usbGetSecurity)(char *buffer);
+static int (*real_usbGetSecurityKey)(char *buffer);
 static int (*real_usbBootSecurity)(
-    const char* boot_code, int seed_1, int seed_2, int seed_3);
-static int (*real_usbSetupSecurityComplete)(int val1, int val2, int val3, int val4);
+    const char *boot_code, int seed_1, int seed_2, int seed_3);
+static int (*real_usbSetupSecurityComplete)(
+    int val1, int val2, int val3, int val4);
 static int (*real_usbMute)(int val);
 static int (*real_usbFirmResult)();
 
@@ -55,25 +56,23 @@ static const struct hook_symbol ezusb_mon_hook_syms[] = {
     {.name = "usbGetPCBID",
      .patch = my_usbGetPCBID,
      .link = (void **) &real_usbGetPCBID},
-     {.name = "usbGetSecurity",
+    {.name = "usbGetSecurity",
      .patch = my_usbGetSecurity,
      .link = (void **) &real_usbGetSecurity},
-     {.name = "usbGetSecurity",
+    {.name = "usbGetSecurity",
      .patch = my_usbGetSecurity,
      .link = (void **) &real_usbGetSecurity},
-     {.name = "usbGetSecurityKey",
+    {.name = "usbGetSecurityKey",
      .patch = my_usbGetSecurityKey,
      .link = (void **) &real_usbGetSecurityKey},
-     {.name = "usbBootSecurity",
+    {.name = "usbBootSecurity",
      .patch = my_usbBootSecurity,
      .link = (void **) &real_usbBootSecurity},
-     {.name = "usbSetupSecurityComplete",
+    {.name = "usbSetupSecurityComplete",
      .patch = my_usbSetupSecurityComplete,
      .link = (void **) &real_usbSetupSecurityComplete},
-     {.name = "usbMute",
-     .patch = my_usbMute,
-     .link = (void **) &real_usbMute},
-     {.name = "usbFirmResult",
+    {.name = "usbMute", .patch = my_usbMute, .link = (void **) &real_usbMute},
+    {.name = "usbFirmResult",
      .patch = my_usbFirmResult,
      .link = (void **) &real_usbFirmResult},
 };
@@ -90,7 +89,7 @@ static int my_usbStart(int val)
 
     log_misc("AFTER usbStart, res: %d", res);
 
-    return res; 
+    return res;
 }
 
 static int my_usbSecurityInit()
@@ -119,7 +118,7 @@ static int my_usbSecuritySelectDone()
     return res;
 }
 
-static int my_usbGetPCBID(char* buffer)
+static int my_usbGetPCBID(char *buffer)
 {
     int res;
 
@@ -132,7 +131,7 @@ static int my_usbGetPCBID(char* buffer)
     return res;
 }
 
-static int my_usbGetSecurity(char* buffer)
+static int my_usbGetSecurity(char *buffer)
 {
     int res;
 
@@ -145,7 +144,7 @@ static int my_usbGetSecurity(char* buffer)
     return res;
 }
 
-static int my_usbGetSecurityKey(char* buffer)
+static int my_usbGetSecurityKey(char *buffer)
 {
     int res;
 
@@ -158,14 +157,17 @@ static int my_usbGetSecurityKey(char* buffer)
     return res;
 }
 
-static int my_usbBootSecurity(
-        const char* boot_code, int seed_1, int seed_2, int seed_3)
+static int
+my_usbBootSecurity(const char *boot_code, int seed_1, int seed_2, int seed_3)
 {
     int res;
 
     log_misc(
         "BEFORE usbBootSecurity, boot_code %s, seed_1 %d, seed_2 %d, seed_3 %d",
-        boot_code, seed_1, seed_2, seed_3);
+        boot_code,
+        seed_1,
+        seed_2,
+        seed_3);
 
     res = real_usbBootSecurity(boot_code, seed_1, seed_2, seed_3);
 
@@ -180,7 +182,10 @@ static int my_usbSetupSecurityComplete(int val1, int val2, int val3, int val4)
 
     log_misc(
         "BEFORE usbSetupSecurityComplete, val1 %d, val2 %d, val3 %d, val4 %d",
-        val1, val2, val3, val4);
+        val1,
+        val2,
+        val3,
+        val4);
 
     res = real_usbSetupSecurityComplete(val1, val2, val3, val4);
 

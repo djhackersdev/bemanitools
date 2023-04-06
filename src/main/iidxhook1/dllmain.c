@@ -27,8 +27,8 @@
 
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/clock.h"
-#include "iidxhook-util/config-ezusb.h"
 #include "iidxhook-util/config-eamuse.h"
+#include "iidxhook-util/config-ezusb.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/config-sec.h"

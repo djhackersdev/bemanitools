@@ -171,7 +171,7 @@ static HRESULT ezusb_ioctl(struct irp *irp)
 
     // Save the IO buffer that is used by the ezusb client backend and shared
     // with the game's main thread
-    write_buffer_orig = (uint8_t*) irp->write.bytes;
+    write_buffer_orig = (uint8_t *) irp->write.bytes;
     read_buffer_orig = irp->read.bytes;
 
     // Prepare our own thread locally managed and non shared buffers for any
@@ -181,20 +181,22 @@ static HRESULT ezusb_ioctl(struct irp *irp)
 
     // Sanity check and visibility, in case this ever overflows
     if (irp->write.nbytes > sizeof(write_buffer_local)) {
-        log_fatal("Insufficient local write buffer available for ioctl, local "
+        log_fatal(
+            "Insufficient local write buffer available for ioctl, local "
             "size %d, ioctl buffer size %d",
             sizeof(write_buffer_local),
             irp->write.nbytes);
     }
 
     if (irp->read.nbytes > sizeof(read_buffer_local)) {
-        log_fatal("Insufficient local read buffer available for ioctl, local "
+        log_fatal(
+            "Insufficient local read buffer available for ioctl, local "
             "size %d, ioctl buffer size %d",
             sizeof(read_buffer_local),
             irp->read.nbytes);
     }
 
-    // Temporarily hook our local buffers to the irp 
+    // Temporarily hook our local buffers to the irp
     irp->write.bytes = write_buffer_local;
     irp->read.bytes = read_buffer_local;
 
@@ -267,7 +269,7 @@ static HRESULT ezusb_ioctl(struct irp *irp)
     memcpy(read_buffer_orig, read_buffer_local, irp->read.nbytes);
 
     // Re-store the original irp buffer state
-    irp->write.bytes = (const uint8_t*) write_buffer_orig;
+    irp->write.bytes = (const uint8_t *) write_buffer_orig;
     irp->read.bytes = read_buffer_orig;
 
     return hr;

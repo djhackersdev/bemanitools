@@ -73,11 +73,11 @@ static uint8_t ezusb_iidx_emu_msg_read_cur_node = 0;
 
 /* ------------------------------------------------------------------------ */
 
-struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(
-    enum ezusb_iidx_emu_msg_io_board_type io_board_type)
+struct ezusb_emu_msg_hook *
+ezusb_iidx_emu_msg_init(enum ezusb_iidx_emu_msg_io_board_type io_board_type)
 {
     if (io_board_type < 0 ||
-            io_board_type >= EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_COUNT) {
+        io_board_type >= EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_COUNT) {
         log_fatal("Invalid io board type %d specified", io_board_type);
     }
 
@@ -94,8 +94,8 @@ struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(
 
     ezusb_iidx_emu_node_handler = ezusb_iidx_emu_msg_nodes;
 
-    log_info("Initialized, io board type: %d",
-        ezusb_iidx_emu_msg_io_board_type);
+    log_info(
+        "Initialized, io board type: %d", ezusb_iidx_emu_msg_io_board_type);
 
     return &ezusb_iidx_emu_msg_hook;
 }
@@ -186,7 +186,8 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read)
 
         case EZUSB_IIDX_EMU_MSG_IO_BOARD_TYPE_COUNT:
         default:
-            log_fatal("Illegal state, unhandled board type: %d",
+            log_fatal(
+                "Illegal state, unhandled board type: %d",
                 ezusb_iidx_emu_msg_io_board_type);
             break;
     }

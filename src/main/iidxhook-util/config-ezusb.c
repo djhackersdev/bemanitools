@@ -8,7 +8,8 @@
 #include "util/log.h"
 #include "util/mem.h"
 
-#define IIDXHOOK_UTIL_CONFIG_EZUSB_API_CALL_MONITORING_KEY "ezusb.api_call_monitoring"
+#define IIDXHOOK_UTIL_CONFIG_EZUSB_API_CALL_MONITORING_KEY \
+    "ezusb.api_call_monitoring"
 #define IIDXHOOK_UTIL_CONFIG_EZUSB_IO_BOARD_TYPE_KEY "ezusb.io_board_type"
 
 #define IIDXHOOK_UTIL_CONFIG_EZUSB_DEFAULT_API_CALL_MONITORING_VALUE false

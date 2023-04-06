@@ -164,8 +164,6 @@ static HRESULT ezusb2_popn_emu_msg_bulk_read(struct iobuf *read)
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    
-
     if (!ezusb2_popn_emu_msg_nodes[ezusb2_popn_emu_msg_read_cur_node]) {
         log_warning(
             "Bulk read unsupported on cur_node = %d",
