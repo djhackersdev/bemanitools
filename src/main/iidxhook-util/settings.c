@@ -41,7 +41,7 @@ static void settings_build_new_path(
     const char *orig_path, char *new_path, size_t new_path_len)
 {
     size_t settings_path_len;
-    char* orig_appended_path;
+    char *orig_appended_path;
 
     settings_path_len = strlen(settings_path);
 
@@ -50,13 +50,14 @@ static void settings_build_new_path(
     strcpy(new_path, settings_path);
     strcat(new_path, orig_path);
 
-    /* Fix only the part of the original path which comes after the leading settings path */
+    /* Fix only the part of the original path which comes after the leading
+     * settings path */
     orig_appended_path = new_path + settings_path_len;
 
     /* Duplicate \ in paths is fine because the win32 file API applies path
        normalization */
 
-    /* Fixes some paths resulting in a mix of / and \ leading to crashes 
+    /* Fixes some paths resulting in a mix of / and \ leading to crashes
        on iidx 18 and 19, e.g. settings.bin saving in operator menu */
     str_replace(orig_appended_path, '/', '\\');
 
@@ -77,7 +78,10 @@ BOOL WINAPI my_CreateDirectoryA(
 
         settings_build_new_path(lpPathName, new_path, sizeof(new_path));
 
-        log_misc("(CreateDir) Remapped settings path %s -> %s", lpPathName, new_path);
+        log_misc(
+            "(CreateDir) Remapped settings path %s -> %s",
+            lpPathName,
+            new_path);
 
         return real_CreateDirectoryA(new_path, lpSecurityAttributes);
     }

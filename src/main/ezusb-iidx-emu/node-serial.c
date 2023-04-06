@@ -161,8 +161,10 @@ _Static_assert(
     sizeof(struct ezusb_iidx_emu_node_serial_get_version_resp) == 13,
     "ezusb_iidx_emu_node_serial_get_version_resp is the wrong size");
 _Static_assert(
-    sizeof(struct ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp) == 2,
-    "ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp is the wrong size");
+    sizeof(struct ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp) ==
+        2,
+    "ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp is the wrong "
+    "size");
 _Static_assert(
     sizeof(struct ezusb_iidx_emu_node_serial_keyboard_read_data_req) == 1,
     "ezusb_iidx_emu_node_serial_keyboard_read_data_req is the wrong size");
@@ -173,10 +175,12 @@ _Static_assert(
     sizeof(struct ezusb_iidx_emu_node_serial_card_slot_state_req) == 1,
     "ezusb_iidx_emu_node_serial_card_slot_state_req is the wrong size");
 _Static_assert(
-    sizeof(struct ezusb_iidx_emu_node_serial_card_read_resp) == 1 + MAG_CARD_DATA_SIZE,
+    sizeof(struct ezusb_iidx_emu_node_serial_card_read_resp) ==
+        1 + MAG_CARD_DATA_SIZE,
     "ezusb_iidx_emu_node_serial_card_read_resp is the wrong size");
 _Static_assert(
-    sizeof(struct ezusb_iidx_emu_node_serial_card_write_req) == MAG_CARD_DATA_SIZE,
+    sizeof(struct ezusb_iidx_emu_node_serial_card_write_req) ==
+        MAG_CARD_DATA_SIZE,
     "ezusb_iidx_emu_node_serial_card_write_req is the wrong size");
 _Static_assert(
     sizeof(struct ezusb_iidx_emu_node_serial_common_req) == 0,
@@ -460,8 +464,10 @@ calc_serial_buffer_checksum(const uint8_t *buffer, uint16_t length)
 static struct ezusb_iidx_emu_node_serial_msg *create_generic_node_response_ok(
     const struct ezusb_iidx_emu_node_serial_msg *msg_in, uint16_t *msg_out_len)
 {
-    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_common_status_resp);
-    struct ezusb_iidx_emu_node_serial_msg *resp = xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
+    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE +
+        sizeof(struct ezusb_iidx_emu_node_serial_common_status_resp);
+    struct ezusb_iidx_emu_node_serial_msg *resp =
+        xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
     resp->msg_cmd = CMD_NODE_RESP;
     resp->node_id = msg_in->node_id;
     resp->node_cmd = msg_in->node_cmd;
@@ -484,7 +490,10 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
             switch (msg_in->node_cmd) {
                 case H8_CMD_NODE_ENUM: {
                     log_misc("H8_CMD_NODE_ENUM");
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_node_enum_resp);
+                    *msg_out_len =
+                        NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(
+                            struct ezusb_iidx_emu_node_serial_node_enum_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_H8_RESP;
@@ -499,7 +508,10 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
 
                 case H8_CMD_GET_VERSION: {
                     log_misc("H8_CMD_GET_VERSION: %d", msg_in->node_id);
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_get_version_resp);
+                    *msg_out_len =
+                        NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(
+                            struct ezusb_iidx_emu_node_serial_get_version_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_H8_RESP;
@@ -524,7 +536,9 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
                 case H8_CMD_PROG_EXEC: {
                     log_misc("H8_CMD_PROG_EXEC: %d", msg_in->node_id);
 
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_common_status_resp);
+                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(struct
+                               ezusb_iidx_emu_node_serial_common_status_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_H8_RESP;
@@ -600,7 +614,9 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
                 case NODE_CMD_CARD_RW_UNIT_GET_STATUS: {
                     /* report front and back sensor states */
 
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_common_status_resp);
+                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(struct
+                               ezusb_iidx_emu_node_serial_common_status_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_NODE_RESP;
@@ -719,7 +735,10 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
                 }
 
                 case NODE_CMD_CARD_READ: {
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_card_read_resp);
+                    *msg_out_len =
+                        NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(
+                            struct ezusb_iidx_emu_node_serial_card_read_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_NODE_RESP;
@@ -871,7 +890,11 @@ static struct ezusb_iidx_emu_node_serial_msg *process_serial_msg(
                 }
 
                 case NODE_CMD_KEYBOARD_GET_BUFFER_SIZE: {
-                    *msg_out_len = NODE_SERIAL_MSG_HEADER_SIZE + sizeof(struct ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp);
+                    *msg_out_len =
+                        NODE_SERIAL_MSG_HEADER_SIZE +
+                        sizeof(
+                            struct
+                            ezusb_iidx_emu_node_serial_keyboard_get_buffer_size_resp);
                     struct ezusb_iidx_emu_node_serial_msg *resp =
                         xmalloc(sizeof(struct ezusb_iidx_emu_node_serial_msg));
                     resp->msg_cmd = CMD_NODE_RESP;

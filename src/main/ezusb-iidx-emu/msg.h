@@ -26,8 +26,8 @@ enum ezusb_iidx_emu_msg_io_board_type {
  * @return ezusb_emu_msg_hook structure with hook calls for ezusb msg
  *         dispatching
  */
-struct ezusb_emu_msg_hook *ezusb_iidx_emu_msg_init(
-    enum ezusb_iidx_emu_msg_io_board_type io_board_type);
+struct ezusb_emu_msg_hook *
+ezusb_iidx_emu_msg_init(enum ezusb_iidx_emu_msg_io_board_type io_board_type);
 
 /**
  * Init the fully emulated IIDX msg backend for a EZUSB (C02) board. This

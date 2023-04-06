@@ -12,8 +12,8 @@
 #include "util/log.h"
 #include "util/str.h"
 
-static void* (*real_avs_fs_open)(const char* path, int mode, int flags);
-static void* my_avs_fs_open(const char* path, int mode, int flags);
+static void *(*real_avs_fs_open)(const char *path, int mode, int flags);
+static void *my_avs_fs_open(const char *path, int mode, int flags);
 
 static const struct hook_symbol iidxhook5_ifs_snd_redir_hook_syms[] = {
     {.name = "XC058ba50000b6", // avs_fs_open
@@ -21,9 +21,9 @@ static const struct hook_symbol iidxhook5_ifs_snd_redir_hook_syms[] = {
      .link = (void **) &real_avs_fs_open},
 };
 
-static void* my_avs_fs_open(const char* path, int mode, int flags)
+static void *my_avs_fs_open(const char *path, int mode, int flags)
 {
-    void* handle;
+    void *handle;
     char redir_path[MAX_PATH];
 
     // Trap virtual path /sd00/*, /sd01/*, /sd02/*, /sd03/* that contain
