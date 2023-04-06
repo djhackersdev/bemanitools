@@ -2,6 +2,11 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.45
+### Features
+
+### Fixes
+
 ## 5.44
 ### Features
 * feat(doc): ezusb dev journal entry, 10th style ezusb boot up and security setup
