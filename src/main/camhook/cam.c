@@ -550,8 +550,8 @@ char *grab_next_camera_id(char *buffer, size_t bsz)
         goto done;
     }
 
-    log_info("Detected webcam: %s\n", buffer);
     wcstombs(buffer, wSymLink, bsz);
+    log_info("Detected webcam: %s\n", buffer);
     ++gotten;
 
 done:
@@ -659,15 +659,18 @@ bool convert_path_to_fakesym(const char *path, wchar_t *sym, char *extra_o)
     strtolower(mistr);
     strtolower(extra);
 
-    swprintf(
-        sym,
+    char buffer[CAMERA_DATA_STRING_SIZE];
+    snprintf(
+        buffer,
         CAMERA_DATA_STRING_SIZE,
-        L"\\\\?\\%S#%S&%S&%S#%S",
+        "\\\\?\\%s#%s&%s&%s#%s",
         root,
         vidstr,
         pidstr,
         mistr,
         extra);
+    
+    mbstowcs(sym, buffer, CAMERA_DATA_STRING_SIZE);
 
     return true;
 }
