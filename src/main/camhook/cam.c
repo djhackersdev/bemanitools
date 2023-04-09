@@ -706,6 +706,11 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
         // Device instance path
         strcpy(data->deviceInstancePath, devid);
         // continue
+    } else if (check_four(devid, "SKIP")) {
+        // User wants to leave this camera unassigned
+        num_addressed_cams++;
+        num_located_cams++;
+        return;
     } else {
         // UNKNOWN ENTRY
         log_info("UNK: %s", devid);
