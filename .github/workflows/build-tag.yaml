@@ -1,4 +1,4 @@
-name: "Build bemanitools"
+name: "Build bemanitools and publish release"
 
 on:
   push:
