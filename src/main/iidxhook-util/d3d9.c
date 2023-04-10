@@ -580,14 +580,14 @@ iidxhook_util_d3d9_iidx13_fix_song_select_bg(struct hook_d3d9_irp *irp)
 }
 
 static void
-iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
+iidxhook_util_d3d9_iidx09_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP);
 
     /* same code taken from the d3d8 module. but, this just fixes the quad
        seam issue as there are no reports of streched bg videos */
-    if (iidxhook_util_d3d9_config.iidx11_to_17_fix_uvs_bg_videos &&
+    if (iidxhook_util_d3d9_config.iidx09_to_17_fix_uvs_bg_videos &&
         irp->args.dev_draw_primitive_up.primitive_type == D3DPT_TRIANGLEFAN &&
         irp->args.dev_draw_primitive_up.primitive_count == 2 &&
         irp->args.dev_draw_primitive_up.stride == 28) {
@@ -695,7 +695,7 @@ iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
 }
 
 static void
-iidxhook_uti_d3d9_fix_iidx9_to_13_viewport_size(struct hook_d3d9_irp *irp)
+iidxhook_uti_d3d9_fix_iidx09_to_13_viewport_size(struct hook_d3d9_irp *irp)
 {
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_GET_CLIENT_RECT);
@@ -967,7 +967,7 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         "pci_vid: %X\n"
         "pci_pid: %X\n"
         "iidx09_to_19_monitor_check_cb: %p\n"
-        "iidx11_to_17_fix_uvs_bg_videos: %d\n"
+        "iidx09_to_17_fix_uvs_bg_videos: %d\n"
         "iidx12_fix_song_select_bg: %d\n"
         "iidx13_fix_song_select_bg: %d\n"
         "iidx14_to_19_nvidia_fix: %d\n"
@@ -985,7 +985,7 @@ iidxhook_util_d3d9_log_config(const struct iidxhook_util_d3d9_config *config)
         config->pci_vid,
         config->pci_pid,
         config->iidx09_to_19_monitor_check_cb,
-        config->iidx11_to_17_fix_uvs_bg_videos,
+        config->iidx09_to_17_fix_uvs_bg_videos,
         config->iidx12_fix_song_select_bg,
         config->iidx13_fix_song_select_bg,
         config->iidx14_to_19_nvidia_fix,
@@ -1050,7 +1050,7 @@ void iidxhook_util_d3d9_init_config(struct iidxhook_util_d3d9_config *config)
     config->pci_vid = 0;
     config->pci_pid = 0;
     config->iidx09_to_19_monitor_check_cb = NULL;
-    config->iidx11_to_17_fix_uvs_bg_videos = false;
+    config->iidx09_to_17_fix_uvs_bg_videos = false;
     config->iidx12_fix_song_select_bg = false;
     config->iidx13_fix_song_select_bg = false;
     config->iidx14_to_19_nvidia_fix = false;
@@ -1109,7 +1109,7 @@ iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
             hr = hook_d3d9_irp_invoke_next(irp);
 
             if (hr == S_OK) {
-                iidxhook_uti_d3d9_fix_iidx9_to_13_viewport_size(irp);
+                iidxhook_uti_d3d9_fix_iidx09_to_13_viewport_size(irp);
             }
 
             return hr;
@@ -1161,7 +1161,7 @@ iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
             return hook_d3d9_irp_invoke_next(irp);
 
         case HOOK_D3D9_IRP_OP_DEV_DRAW_PRIMITIVE_UP:
-            iidxhook_util_d3d9_iidx11_to_17_fix_uvs_bg_videos(irp);
+            iidxhook_util_d3d9_iidx09_to_17_fix_uvs_bg_videos(irp);
 
             return hook_d3d9_irp_invoke_next(irp);
 
