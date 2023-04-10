@@ -1,0 +1,38 @@
+name: "Build bemanitools"
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@v2"
+
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y runc containerd docker.io
+
+      - name: "Build"
+        run: |
+          make build-docker
+
+      # Do some unpacking of the dist zip. Artifact upload repackages stuff
+      - name: "Prepare artifact package"
+        run: |
+          mkdir artifact
+          cd artifact
+          unzip ../build/bemanitools.zip
+          cd ..
+
+      - name: "Upload artifact"
+        uses: "actions/upload-artifact@v2"
+        with:
+          name: bemanitools-${{ github.sha }}
+          retention-days: 30
+          if-no-files-found: "error"
+          path: |
+            artifact/**
