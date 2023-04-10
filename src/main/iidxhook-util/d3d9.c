@@ -637,47 +637,45 @@ iidxhook_util_d3d9_iidx09_to_17_fix_uvs_bg_videos(struct hook_d3d9_irp *irp)
                  (vertices[1].x >= 472.0f && vertices[1].x <= 476.0f &&
                   iidxhook_util_d3d9_float_equal(vertices[1].y, 0.0f, 0.1f)) &&
                  (vertices[2].x >= 472.0f && vertices[2].x <= 476.0f &&
-                  iidxhook_util_d3d9_float_equal(
-                      vertices[2].y, 416.0f, 0.1f)) &&
+                  vertices[2].y >= 415.0f && vertices[2].y <= 416.0f) &&
                  (vertices[3].x >= 164.0f && vertices[3].x <= 168.0f &&
-                  iidxhook_util_d3d9_float_equal(
-                      vertices[3].y, 416.0f, 0.1f))) ||
+                  vertices[3].y >= 415.0f && vertices[3].y <= 416.0f)) ||
                 /* double top left */
-                ((iidxhook_util_d3d9_float_equal(vertices[0].x, 6.0f, 0.1f) &&
+                ((vertices[0].x >= 6.0f && vertices[0].x <= 11.0f &&
                   vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
+                 (vertices[1].x >= 137.0f && vertices[1].x <= 147.0f &&
                   vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1f) &&
-                  vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
-                  vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
+                 (vertices[2].x >= 137.0f && vertices[2].x <= 147.0f &&
+                  vertices[2].y >= 192.0f && vertices[2].y <= 216.0f) &&
+                 (vertices[3].x >= 6.0f && vertices[3].x <= 11.0f &&
+                  vertices[3].y >= 192.0f && vertices[3].y <= 216.0f)) ||
                 /* double bottom left */
-                ((iidxhook_util_d3d9_float_equal(vertices[0].x, 6.0f, 0.1f) &&
-                  vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[1].x, 147.0f, 0.1f) &&
-                  vertices[1].y >= 216.0f && vertices[1].y <= 220.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[2].x, 147.0f, 0.1) &&
-                  vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
-                 (iidxhook_util_d3d9_float_equal(vertices[3].x, 6.0f, 0.1f) &&
-                  vertices[3].y >= 404.0f && vertices[3].y <= 408.0f)) ||
+                ((vertices[0].x >= 6.0f && vertices[0].x <= 11.0f &&
+                  vertices[0].y >= 200.0f && vertices[0].y <= 220.0f) &&
+                 (vertices[1].x >= 137.0f && vertices[1].x <= 147.0f &&
+                  vertices[1].y >= 200.0f && vertices[1].y <= 220.0f) &&
+                 (vertices[2].x >= 137.0f && vertices[2].x <= 147.0f &&
+                  vertices[2].y >= 368.0f && vertices[2].y <= 408.0f) &&
+                 (vertices[3].x >= 6.0f && vertices[3].x <= 11.0f &&
+                  vertices[3].y >= 368.0f && vertices[3].y <= 408.0f)) ||
                 /* double top right */
-                ((vertices[0].x >= 493.0f && vertices[0].x <= 494.0f &&
+                ((vertices[0].x >= 493.0f && vertices[0].x <= 500.0f &&
                   vertices[0].y >= 24.0f && vertices[0].y <= 28.0f) &&
-                 (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
+                 (vertices[1].x >= 626.0f && vertices[1].x <= 635.0f &&
                   vertices[1].y >= 24.0f && vertices[1].y <= 28.0f) &&
-                 (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
-                  vertices[2].y >= 212.0f && vertices[2].y <= 216.0f) &&
-                 (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
-                  vertices[3].y >= 212.0f && vertices[3].y <= 216.0f)) ||
+                 (vertices[2].x >= 626.0f && vertices[2].x <= 635.0f &&
+                  vertices[2].y >= 192.0f && vertices[2].y <= 216.0f) &&
+                 (vertices[3].x >= 493.0f && vertices[3].x <= 500.0f &&
+                  vertices[3].y >= 192.0f && vertices[3].y <= 216.0f)) ||
                 /* double bottom right */
-                ((vertices[0].x >= 493.0f && vertices[0].x <= 494.0f &&
-                  vertices[0].y >= 216.0f && vertices[0].y <= 220.0f) &&
-                 (vertices[1].x >= 634.0f && vertices[1].x <= 635.0f &&
-                  vertices[1].y >= 216.0f && vertices[1].y <= 220.0f) &&
-                 (vertices[2].x >= 634.0f && vertices[2].x <= 635.0f &&
-                  vertices[2].y >= 404.0f && vertices[2].y <= 408.0f) &&
-                 (vertices[3].x >= 493.0f && vertices[3].x <= 494.0f &&
-                  vertices[3].y >= 404.0f && vertices[3].y <= 408.0f))) {
+                ((vertices[0].x >= 493.0f && vertices[0].x <= 500.0f &&
+                  vertices[0].y >= 200.0f && vertices[0].y <= 220.0f) &&
+                 (vertices[1].x >= 626.0f && vertices[1].x <= 635.0f &&
+                  vertices[1].y >= 200.0f && vertices[1].y <= 220.0f) &&
+                 (vertices[2].x >= 626.0f && vertices[2].x <= 635.0f &&
+                  vertices[2].y >= 368.0f && vertices[2].y <= 408.0f) &&
+                 (vertices[3].x >= 493.0f && vertices[3].x <= 500.0f &&
+                  vertices[3].y >= 368.0f && vertices[3].y <= 408.0f))) {
                 /* fix UVs
                    1.0f / 512 fixes the diagonal seam connecting the two
                    triangles which is visible on some GPUs (why? idk)
