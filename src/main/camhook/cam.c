@@ -706,11 +706,6 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
         // Device instance path
         strcpy(data->deviceInstancePath, devid);
         // continue
-    } else if (check_four(devid, "SKIP")) {
-        // User wants to leave this camera unassigned
-        num_addressed_cams++;
-        num_located_cams++;
-        return;
     } else {
         // UNKNOWN ENTRY
         log_info("UNK: %s", devid);
@@ -813,6 +808,14 @@ void camhook_init(struct camhook_config_cam *config_cam)
 
     // fill before applying hooks
     for (size_t i = 0; i < config_cam->num_devices; ++i) {
+        // Check if this camera is disabled first
+        if (config_cam->disable_camera[i]) {
+            // If so, pretend this camera is already assigned and move on
+            num_addressed_cams++;
+            num_located_cams++;
+            continue;
+        }
+        // If not, try to hook the camera
         fill_cam_struct(&camData[i], config_cam->device_id[i]);
     }
 
@@ -834,7 +837,8 @@ void camhook_init(struct camhook_config_cam *config_cam)
             NULL, "Mf.dll", camhook_mf_syms, lengthof(camhook_mf_syms));
 
         log_info("Inserted cam hooks for %d cams", (int) num_setup);
-    } else {
+    // If the user has manually disabled all cams, don't print this in the log
+    } else if (num_addressed_cams != config_cam->num_devices) {
         log_info("No cams detected, not hooking");
     }
 }
