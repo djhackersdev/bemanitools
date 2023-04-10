@@ -87,7 +87,7 @@ static void iidxhook1_setup_d3d9_hooks(
     d3d9_config.framerate_limit = config_gfx->frame_rate_limit;
     d3d9_config.iidx12_fix_song_select_bg =
         config_iidxhook1->happy_sky_ms_bg_fix;
-    d3d9_config.iidx11_to_17_fix_uvs_bg_videos = config_gfx->bgvideo_uv_fix;
+    d3d9_config.iidx09_to_17_fix_uvs_bg_videos = config_gfx->bgvideo_uv_fix;
     d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
     d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
     d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
