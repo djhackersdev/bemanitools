@@ -17,16 +17,27 @@ A Chimera PCB however is different in many aspects to the Dragon PCB and require
 The Dragon's P3IO has two serial ports that the regular P3IOs do not, and one of these serial ports
 is used to communicate with the card readers. Note that these are actual serial ports driven
 directly by the P3IO microcontroller, these are NOT just passed through to the motherboard like the
-proprietary COM1 and COM2 connectors. Unicorn Tail intercepts serial port IO commands being sent to
-the P3IO and redirects them to COM2 instead, since COM2 is unused on SD cabinets (on HD cabinets it
-connects to a second ACIO bus which drives the extra lighting glitz like the light spikes and maybe
-the LED strip).
+proprietary COM1 and COM2 connectors. 
+
+Unicorn Tail intercepts serial port IO commands being sent to the P3IO and redirects them to a 
+COM4 in Windows instead, where two readers can be connected via the motherboard's RS232 port or 
+a usb RS232 adapter.
 
 ## Drivers
 
 You need the P3IO driver installed on your target system. These can be acquired from an actual stock
 HDD or grabbed from
 [bemanitools-supplements](https://dev.s-ul.net/djhackers/bemanitools-supplement/-/blob/master/gfdm/p3io/README.md).
+
+## COM Port Setup
+
+Using Device Manager in Windows, ensure the following COM ports are connected and setup.
+
+COM1: EXTIO
+COM4: Two readers
+
+Windows is often poor about saving the COM port number, so ewf commit (if applicable) and 
+reboot after saving this setting to ensure it sticks.
 
 ## Setup and run
 
