@@ -1,0 +1,75 @@
+name: "Build bemanitools and publish release"
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  push:
+    tags:
+      - "*.*"
+
+jobs:
+  build:
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@v2"
+
+      # Building bootstrapped using docker containers
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y runc containerd docker.io
+      
+      - name: "Build"
+        run: |
+          make build-docker
+
+      # Do some unpacking of the dist zip. Artifact upload repackages stuff
+      - name: "Prepare artifact package"
+        run: |
+          mkdir artifact
+          cd artifact
+          unzip ../build/bemanitools.zip
+          cd ..
+
+      - name: "Upload artifact"
+        uses: "actions/upload-artifact@v2"
+        with:
+          name: bemanitools-${{ github.sha }}
+          retention-days: 90
+          if-no-files-found: "error"
+          path: |
+            artifact/**
+
+  publish-release:
+    needs: "build"
+    runs-on: "ubuntu-22.04"
+    steps:
+      # This already extracts the contents of the artifact
+      - name: "Download artifact"
+        uses: "actions/download-artifact@v2"
+        with:
+          name: bemanitools-${{ github.sha }}
+
+      - name: "Get the version"
+        id: get_version
+        run: |
+          echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+
+      # The publish release action does not package the artifact *sigh*
+      - name: "Create release package"
+        run: |
+          zip bemanitools-${{ steps.get_version.outputs.VERSION }}.zip *
+
+      - name: "Publish release"
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          draft: false
+          prerelease: true
+          title: ${{ steps.get_version.outputs.VERSION }}
+          files: |
+            bemanitools-${{ steps.get_version.outputs.VERSION }}.zip
