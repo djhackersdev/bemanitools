@@ -59,7 +59,5 @@ bool get_vigem_ddrio_config(struct vigem_ddrio_config *config_out)
 
     cconfig_finit(config);
 
-    // TODO: check bounds of config inputs here.
-
     return true;
 }

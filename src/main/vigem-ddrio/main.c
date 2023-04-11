@@ -228,7 +228,7 @@ int main(int argc, char **argv)
             loop = false;
         }
 
-        // avoid banging
+        // avoid CPU banging
         Sleep(1);
     }
 
