@@ -183,6 +183,7 @@ include src/main/util/Module.mk
 include src/main/vefxio/Module.mk
 include src/main/vigem-iidxio/Module.mk
 include src/main/vigem-sdvxio/Module.mk
+include src/main/vigem-ddrio/Module.mk
 include src/main/vigemstub/Module.mk
 
 include src/test/cconfig/Module.mk
@@ -615,6 +616,18 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/ddr-hwio-x86.zip: \
+		build/bin/indep-32/vigem-ddrio.exe \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-hwio-x64.zip: \
+		build/bin/indep-64/vigem-ddrio.exe \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/ddr-11.zip: \
 		build/bin/indep-32/inject.exe \
 		build/bin/avs2_803-32/ddrhook1.dll \
@@ -794,6 +807,8 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/ddr-13.zip \
 		$(zipdir)/ddr-14-to-16.zip \
 		$(zipdir)/ddr-16-x64.zip \
+		$(zipdir)/ddr-hwio-x86.zip \
+		$(zipdir)/ddr-hwio-x64.zip \
 		$(zipdir)/doc.zip \
 		$(zipdir)/iidx-09-to-12.zip \
 		$(zipdir)/iidx-13.zip \
