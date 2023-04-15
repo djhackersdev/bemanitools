@@ -2,11 +2,13 @@ avsdlls         += iidxhook7
 
 ldflags_iidxhook7   := \
     -liphlpapi \
+    -ld3d9 \
 
 deplibs_iidxhook7   := \
     avs \
 
 libs_iidxhook7      := \
+    iidxhook-d3d9 \
     iidxhook-util \
     cconfig \
     ezusb-emu \

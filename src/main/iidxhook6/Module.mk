@@ -7,6 +7,7 @@ deplibs_iidxhook6   := \
     avs \
 
 libs_iidxhook6      := \
+    iidxhook-d3d9 \
     iidxhook-util \
     ezusb-emu \
     ezusb-iidx-16seg-emu \
