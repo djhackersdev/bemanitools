@@ -134,6 +134,7 @@ include src/main/iidx-bio2-exit-hook/Module.mk
 include src/main/iidx-ezusb-exit-hook/Module.mk
 include src/main/iidx-ezusb2-exit-hook/Module.mk
 include src/main/iidx-irbeat-patch/Module.mk
+include src/main/iidxhook-d3d9/Module.mk
 include src/main/iidxhook-util/Module.mk
 include src/main/iidxhook1/Module.mk
 include src/main/iidxhook2/Module.mk
