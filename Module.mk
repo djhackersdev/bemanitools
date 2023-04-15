@@ -99,6 +99,7 @@ include src/main/bstio/Module.mk
 include src/main/camhook/Module.mk
 include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
+include src/main/d3d9-util/Module.mk
 include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
 include src/main/ddrhook1/Module.mk
