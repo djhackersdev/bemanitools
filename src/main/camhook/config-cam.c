@@ -14,9 +14,10 @@ const char *camhook_config_disable_camera[CAMHOOK_CONFIG_CAM_MAX] = {
     "cam.disable_camera2",
 };
 
-const int camhook_config_disable_camera_default_values[CAMHOOK_CONFIG_CAM_MAX] = {
-    false,
-    false,
+const int camhook_config_disable_camera_default_values[CAMHOOK_CONFIG_CAM_MAX] =
+    {
+        false,
+        false,
 };
 
 const char *camhook_config_device_id_keys[CAMHOOK_CONFIG_CAM_MAX] = {
@@ -83,16 +84,16 @@ void camhook_config_cam_get(
                 camhook_config_disable_camera_default_values[i]);
         }
         if (!cconfig_util_get_str(
-            config,
-            camhook_config_device_id_keys[i],
-            config_cam->device_id[i],
-            sizeof(config_cam->device_id[i]) - 1,
-            camhook_config_device_default_values[i])) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%s'",
-            camhook_config_device_id_keys[i],
-            camhook_config_device_default_values[i]);
+                config,
+                camhook_config_device_id_keys[i],
+                config_cam->device_id[i],
+                sizeof(config_cam->device_id[i]) - 1,
+                camhook_config_device_default_values[i])) {
+            log_warning(
+                "Invalid value for key '%s' specified, fallback "
+                "to default '%s'",
+                camhook_config_device_id_keys[i],
+                camhook_config_device_default_values[i]);
         }
     }
 }
