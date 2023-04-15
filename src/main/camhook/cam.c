@@ -669,7 +669,7 @@ bool convert_path_to_fakesym(const char *path, wchar_t *sym, char *extra_o)
         pidstr,
         mistr,
         extra);
-    
+
     mbstowcs(sym, buffer, CAMERA_DATA_STRING_SIZE);
 
     return true;
@@ -837,7 +837,8 @@ void camhook_init(struct camhook_config_cam *config_cam)
             NULL, "Mf.dll", camhook_mf_syms, lengthof(camhook_mf_syms));
 
         log_info("Inserted cam hooks for %d cams", (int) num_setup);
-    // If the user has manually disabled all cams, don't print this in the log
+        // If the user has manually disabled all cams, don't print this in the
+        // log
     } else if (num_addressed_cams != config_cam->num_devices) {
         log_info("No cams detected, not hooking");
     }
