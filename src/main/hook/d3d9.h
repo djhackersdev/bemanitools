@@ -36,6 +36,7 @@ enum hook_d3d9_irp_op {
     HOOK_D3D9_IRP_OP_DEV_RESET = 12,
     HOOK_D3D9_IRP_OP_DEV_SET_VIEWPORT = 13,
     HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER = 14,
+    HOOK_D3D9_IRP_OP_DEV_SET_SCISSOR_RECT = 15,
 };
 
 /**
@@ -188,6 +189,14 @@ struct hook_d3d9_irp {
             IDirect3DDevice9 *self;
             IDirect3DVertexShader9 *pShader;
         } dev_set_vertex_shader;
+
+        /**
+         * Params of IDIrect3DDevice9_SetScissorRect
+         */
+        struct {
+            IDirect3DDevice9 *self;
+            const RECT *pRect;
+        } dev_set_scissor_rect;
     } args;
 
     size_t next_handler;

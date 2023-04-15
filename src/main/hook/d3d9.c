@@ -80,6 +80,9 @@ static HRESULT(STDCALL *real_SetViewport)(
 static HRESULT(STDCALL *real_SetVertexShader)(
     IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
 
+static HRESULT(STDCALL *real_SetScissorRect)(
+    IDirect3DDevice9 *self, const RECT *pRect);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -154,6 +157,9 @@ my_SetViewport(IDirect3DDevice9 *self, const D3DVIEWPORT9 *pViewport);
 static HRESULT STDCALL
 my_SetVertexShader(IDirect3DDevice9 *self, IDirect3DVertexShader9 *pShader);
 
+static HRESULT STDCALL
+my_SetScissorRect(IDirect3DDevice9 *self, const RECT *pRect);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -220,6 +226,9 @@ hook_d3d9_irp_handler_real_dev_set_viewport(struct hook_d3d9_irp *irp);
 static HRESULT
 hook_d3d9_irp_handler_real_dev_set_vertex_shader(struct hook_d3d9_irp *irp);
 
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_scissor_rect(struct hook_d3d9_irp *irp);
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -249,6 +258,8 @@ static const hook_d3d9_irp_handler_t hook_d3d9_irp_real_handlers[] = {
         hook_d3d9_irp_handler_real_dev_set_viewport,
     [HOOK_D3D9_IRP_OP_DEV_SET_VERTEX_SHADER] =
         hook_d3d9_irp_handler_real_dev_set_vertex_shader,
+    [HOOK_D3D9_IRP_OP_DEV_SET_SCISSOR_RECT] =
+        hook_d3d9_irp_handler_real_dev_set_scissor_rect,
 };
 
 static const hook_d3d9_irp_handler_t *hook_d3d9_handlers;
@@ -570,6 +581,23 @@ my_Reset(IDirect3DDevice9 *self, D3DPRESENT_PARAMETERS *pp)
     return hr;
 }
 
+static HRESULT STDCALL
+my_SetScissorRect(IDirect3DDevice9 *self, const RECT *pRect)
+{
+    struct hook_d3d9_irp irp;
+    HRESULT hr;
+
+    memset(&irp, 0, sizeof(irp));
+
+    irp.op = HOOK_D3D9_IRP_OP_DEV_SET_SCISSOR_RECT;
+    irp.args.dev_set_scissor_rect.self = self;
+    irp.args.dev_set_scissor_rect.pRect = pRect;
+
+    hr = hook_d3d9_irp_invoke_next(&irp);
+
+    return hr;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------
  */
 
@@ -748,6 +776,9 @@ hook_d3d9_irp_handler_real_dev_create_device(struct hook_d3d9_irp *irp)
     real_SetVertexShader = api_vtbl->SetVertexShader;
     api_vtbl->SetVertexShader = my_SetVertexShader;
 
+    real_SetScissorRect = api_vtbl->SetScissorRect;
+    api_vtbl->SetScissorRect = my_SetScissorRect;
+
     *irp->args.ctx_create_device.pdev = (IDirect3DDevice9 *) api_proxy;
 
     return hr;
@@ -846,6 +877,16 @@ hook_d3d9_irp_handler_real_dev_set_vertex_shader(struct hook_d3d9_irp *irp)
     return real_SetVertexShader(
         irp->args.dev_set_vertex_shader.self,
         irp->args.dev_set_vertex_shader.pShader);
+}
+
+static HRESULT
+hook_d3d9_irp_handler_real_dev_set_scissor_rect(struct hook_d3d9_irp *irp)
+{
+    log_assert(irp);
+
+    return real_SetScissorRect(
+        irp->args.dev_set_scissor_rect.self,
+        irp->args.dev_set_scissor_rect.pRect);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------
