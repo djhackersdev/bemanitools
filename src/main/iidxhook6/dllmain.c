@@ -25,6 +25,8 @@
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
+#include "iidxhook-d3d9/bb-scale-hd.h"
+
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
@@ -44,6 +46,7 @@
     "Usage: launcher.exe -K iidxhook6.dll <bm2dx.dll> [options...]"
 
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
+    iidxhook_d3d9_bb_scale_hd_d3d9_irp_handler,
     iidxhook_util_d3d9_irp_handler,
 };
 
@@ -63,13 +66,19 @@ iidxhook6_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.framerate_limit = config_gfx->frame_rate_limit;
     d3d9_config.pci_vid = config_gfx->pci_id_vid;
     d3d9_config.pci_pid = config_gfx->pci_id_pid;
-    d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
-    d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
-    d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
     d3d9_config.forced_refresh_rate = config_gfx->forced_refresh_rate;
     d3d9_config.device_adapter = config_gfx->device_adapter;
 
     iidxhook_util_d3d9_configure(&d3d9_config);
+
+    // The "old"/current scaling feature does not work with 20-26 because
+    // the render engine changed and provides its own built-in scaling feature
+    if (config_gfx->scale_back_buffer_width > 0 &&
+        config_gfx->scale_back_buffer_height > 0) {
+        iidxhook_d3d9_bb_scale_hd_init(
+            config_gfx->scale_back_buffer_width,
+            config_gfx->scale_back_buffer_height);
+    }
 
     hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
 }

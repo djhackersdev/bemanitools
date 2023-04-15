@@ -12,6 +12,7 @@ deplibs_iidxhook8   := \
     avs \
 
 libs_iidxhook8      := \
+    iidxhook-d3d9 \
     iidxhook-util \
     acioemu \
     bio2emu \
