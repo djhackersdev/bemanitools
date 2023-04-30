@@ -3,8 +3,10 @@ LIBRARY libavs-win64
 EXPORTS
     avs_boot @285 NONAME
     avs_fs_close @65 NONAME
+    avs_fs_copy @81 NONAME
     avs_fs_lseek @59 NONAME
     avs_fs_lseek64 @60 NONAME
+    avs_fs_lstat @78 NONAME
     avs_fs_open @58 NONAME
     avs_fs_read @61 NONAME
     avs_net_ctrl @98 NONAME

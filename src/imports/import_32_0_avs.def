@@ -2,6 +2,12 @@ LIBRARY libavs-win32
 
 EXPORTS
     avs_boot
+    avs_fs_close
+    avs_fs_copy
+    avs_fs_lseek
+    avs_fs_lstat
+    avs_fs_open
+    avs_fs_read
     avs_net_ctrl
     avs_shutdown
     avs_thread_create
