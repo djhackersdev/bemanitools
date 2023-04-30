@@ -14,6 +14,7 @@
 #include "launcher/options.h"
 #include "launcher/property.h"
 #include "launcher/stubs.h"
+#include "launcher/version.h"
 
 #include "util/codepage.h"
 #include "util/defs.h"
@@ -139,6 +140,10 @@ int main(int argc, const char **argv)
     struct property_node *ea3_config_root;
 
     log_to_writer(log_writer_file, stdout);
+    log_info(
+        "launcher build date %s, gitrev %s",
+        launcher_build_date,
+        launcher_gitrev);
 
     /* Read command line */
 

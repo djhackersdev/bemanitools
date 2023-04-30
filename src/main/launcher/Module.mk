@@ -20,4 +20,8 @@ src_launcher    := \
     options.c \
     property.c \
     stubs.c \
+    version.c \
+
+volatile_launcher := \
+    version.c \
 
