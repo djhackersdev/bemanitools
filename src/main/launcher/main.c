@@ -148,6 +148,7 @@ int main(int argc, const char **argv)
     /* Read command line */
 
     options_init(&options);
+    options_read_early_cmdline(&options, argc, argv);
 
     if (!options_read_cmdline(&options, argc, argv)) {
         options_print_usage();
