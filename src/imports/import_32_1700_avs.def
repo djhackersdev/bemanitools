@@ -6,7 +6,13 @@ EXPORTS
     avs_thread_exit @11 NONAME
     avs_thread_join @12 NONAME
     avs_fs_addfs @73 NONAME
+    avs_fs_close @573 NONAME
+    avs_fs_copy @573 NONAME
+    avs_fs_lseek @573 NONAME
+    avs_fs_lstat @573 NONAME
     avs_fs_mount @76 NONAME
+    avs_fs_open @573 NONAME
+    avs_fs_read @573 NONAME
     avs_net_ctrl @119 NONAME
     property_create @145 NONAME
     property_destroy @146 NONAME

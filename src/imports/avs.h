@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/stat.h>
 
 enum property_create_flag {
     PROPERTY_FLAG_READ = 0x1,
@@ -161,6 +162,8 @@ void avs_boot(
 
 void avs_shutdown(void);
 
+typedef uint32_t avs_desc;
+
 void log_body_fatal(const char *module, const char *fmt, ...);
 void log_body_info(const char *module, const char *fmt, ...);
 void log_body_misc(const char *module, const char *fmt, ...);
@@ -232,7 +235,40 @@ void property_node_datasize(struct property_node *node);
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
 
-void* avs_fs_open(const char* path, int mode, int flags);
+struct avs_stat {
+    uint64_t st_atime;
+    uint64_t st_mtime;
+    uint64_t st_ctime;
+    uint32_t unk1;
+    uint32_t filesize;
+    struct stat padding;
+};
+
+enum avs_file_mode {
+    AVS_FILE_READ = 1,
+    AVS_FILE_WRITE = 2,
+    AVS_FILE_CREATE = 0x10,
+    AVS_FILE_TRUNCATE = 0x20,
+    AVS_FILE_EXCLUSIVE = 0x80,
+};
+
+enum avs_file_flag {
+    AVS_FILE_FLAG_SHARE_READ = 0x124,
+    AVS_FILE_FLAG_SHARE_WRITE = 0x92,
+};
+
+enum avs_seek_origin {
+    AVS_SEEK_SET = 0,
+    AVS_SEEK_CUR = 1,
+    AVS_SEEK_END = 2,
+};
+
+avs_desc avs_fs_open(const char *path, uint16_t mode, int flags);
+int avs_fs_close(avs_desc desc);
+size_t avs_fs_read(avs_desc desc, char *buf, uint32_t sz);
+int avs_fs_lseek(avs_desc desc, long pos, int whence);
+int avs_fs_lstat(const char *path, struct avs_stat *st);
+int avs_fs_copy(const char *src, const char *dest);
 int avs_fs_addfs(void *filesys_struct);
 int avs_fs_mount(
     const char *mountpoint, const char *fsroot, const char *fstype, void *data);
