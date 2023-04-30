@@ -34,6 +34,19 @@ void options_init(struct options *options)
     options->override_urlslash_value = false;
 }
 
+void options_read_early_cmdline(
+    struct options *options, int argc, const char **argv)
+{
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            switch (argv[i][1]) {
+                default:
+                    break;
+            }
+        }
+    }
+}
+
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
     for (int i = 1; i < argc; i++) {

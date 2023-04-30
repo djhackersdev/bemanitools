@@ -27,6 +27,8 @@ struct options {
 };
 
 void options_init(struct options *options);
+void options_read_early_cmdline(
+    struct options *options, int argc, const char **argv);
 bool options_read_cmdline(struct options *options, int argc, const char **argv);
 void options_print_usage(void);
 void options_fini(struct options *options);
