@@ -16,6 +16,8 @@ EXPORTS
     property_destroy @130 NONAME
     property_insert_read @133 NONAME
     property_node_remove @148 NONAME
+    property_node_clone @149 NONAME
+    property_node_traversal @151 NONAME
     property_psmap_import @163 NONAME
     property_psmap_export @164 NONAME
     property_read_query_memsize @161 NONAME

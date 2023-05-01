@@ -13,6 +13,8 @@ EXPORTS
     property_search @141 NONAME
     property_node_create @142 NONAME
     property_node_remove @143 NONAME
+    property_node_clone @144 NONAME
+    property_node_traversal @146 NONAME
     property_node_refer @155 NONAME
     property_read_query_memsize @156 NONAME
     property_psmap_export @159 NONAME
