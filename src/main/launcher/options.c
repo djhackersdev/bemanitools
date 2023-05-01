@@ -19,6 +19,7 @@ void options_init(struct options *options)
     options->app_config_path = "prop/app-config.xml";
     options->avs_config_path = "prop/avs-config.xml";
     options->ea3_config_path = "prop/ea3-config.xml";
+    options->ea3_ident_path = "prop/ea3-ident.xml";
     options->softid = NULL;
     options->pcbid = NULL;
     options->module = NULL;
