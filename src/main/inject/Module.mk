@@ -13,3 +13,7 @@ src_inject      := \
     logger.c \
     options.c \
     version.c \
+
+volatile_inject := \
+    version.c \
+
