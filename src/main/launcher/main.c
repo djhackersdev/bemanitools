@@ -160,6 +160,7 @@ int main(int argc, const char **argv)
                 options.bootstrap_config_path,
                 options.bootstrap_selector);
         }
+        options_read_bootstrap(&options, &bs.startup);
     }
 
     if (!options_read_cmdline(&options, argc, argv)) {
@@ -249,7 +250,7 @@ int main(int argc, const char **argv)
 
     /* Prepare ea3 config */
 
-    ea3_config = boot_property_load(options.ea3_config_path);
+    ea3_config = boot_property_load_avs(options.ea3_config_path);
     ea3_config_root = property_search(ea3_config, 0, "/ea3");
 
     if (ea3_config_root == NULL) {
@@ -297,7 +298,7 @@ int main(int argc, const char **argv)
     if (bs.module_params) {
         app_config_root = bs.module_params;
     } else if (path_exists(options.app_config_path)) {
-        app_config = boot_property_load(options.app_config_path);
+        app_config = boot_property_load_avs(options.app_config_path);
         app_config_root = property_search(app_config, 0, "/param");
     } else {
         log_warning(

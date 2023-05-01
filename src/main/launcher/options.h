@@ -6,6 +6,8 @@
 
 #include "util/array.h"
 
+#include "launcher/bs-config.h"
+
 struct options {
     size_t std_heap_size;
     size_t avs_heap_size;
@@ -32,6 +34,8 @@ void options_init(struct options *options);
 void options_read_early_cmdline(
     struct options *options, int argc, const char **argv);
 bool options_read_cmdline(struct options *options, int argc, const char **argv);
+void options_read_bootstrap(
+    struct options *options, const struct bootstrap_startup_config *bs_config);
 void options_print_usage(void);
 void options_fini(struct options *options);
 
