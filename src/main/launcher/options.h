@@ -12,6 +12,7 @@ struct options {
     const char *app_config_path;
     const char *avs_config_path;
     const char *ea3_config_path;
+    const char *ea3_ident_path;
     const char *softid;
     const char *pcbid;
     const char *module;
