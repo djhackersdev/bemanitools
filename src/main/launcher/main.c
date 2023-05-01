@@ -9,6 +9,7 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-context.h"
+#include "launcher/bs-config.h"
 #include "launcher/ea3-config.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
@@ -130,7 +131,9 @@ int main(int argc, const char **argv)
     struct ea3_ident ea3;
     struct module_context module;
     struct options options;
+    struct bootstrap_config bs;
 
+    struct property *bootstrap_config = NULL;
     struct property *app_config;
     struct property *avs_config;
     struct property *ea3_config;
@@ -149,6 +152,20 @@ int main(int argc, const char **argv)
 
     options_init(&options);
     options_read_early_cmdline(&options, argc, argv);
+
+    bootstrap_config_init(&bs);
+    if (options.bootstrap_selector) {
+        bootstrap_config = boot_property_load(options.bootstrap_config_path);
+        log_info(
+            "Loading bootstrap selector '%s'...", options.bootstrap_selector);
+        if (!bootstrap_config_from_property(
+                &bs, bootstrap_config, options.bootstrap_selector)) {
+            log_fatal(
+                "%s: could not load configuration for '%s'",
+                options.bootstrap_config_path,
+                options.bootstrap_selector);
+        }
+    }
 
     if (!options_read_cmdline(&options, argc, argv)) {
         options_print_usage();
@@ -309,6 +326,9 @@ int main(int argc, const char **argv)
     }
 
     boot_property_free(app_config);
+    if (bootstrap_config) {
+        boot_property_free(bootstrap_config);
+    }
 
     ea3_ident_to_property(&ea3, ea3_config);
 

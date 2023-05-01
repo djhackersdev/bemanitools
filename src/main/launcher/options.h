@@ -9,6 +9,8 @@
 struct options {
     size_t std_heap_size;
     size_t avs_heap_size;
+    const char *bootstrap_config_path;
+    const char *bootstrap_selector;
     const char *app_config_path;
     const char *avs_config_path;
     const char *ea3_config_path;

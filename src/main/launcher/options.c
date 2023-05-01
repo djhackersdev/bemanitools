@@ -16,6 +16,8 @@ void options_init(struct options *options)
 {
     options->std_heap_size = DEFAULT_HEAP_SIZE;
     options->avs_heap_size = DEFAULT_HEAP_SIZE;
+    options->bootstrap_config_path = "prop/bootstrap.xml";
+    options->bootstrap_selector = NULL;
     options->app_config_path = "prop/app-config.xml";
     options->avs_config_path = "prop/avs-config.xml";
     options->ea3_config_path = "prop/ea3-config.xml";
@@ -40,6 +42,24 @@ void options_read_early_cmdline(
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
+                case 'C':
+                    if (i + 1 >= argc) {
+                        return;
+                    }
+
+                    options->bootstrap_config_path = argv[++i];
+
+                    break;
+
+                case 'Z':
+                    if (i + 1 >= argc) {
+                        return;
+                    }
+
+                    options->bootstrap_selector = argv[++i];
+
+                    break;
+
                 default:
                     break;
             }
@@ -52,6 +72,17 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
+                case 'C':
+                case 'Z':
+                    /* handled by options_read_early_cmdline() */
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    ++i;
+
+                    break;
+
                 case 'A':
                     if (i + 1 >= argc) {
                         return false;
@@ -229,6 +260,9 @@ void options_print_usage(void)
         "       The following options can be specified before the app DLL "
         "path:\n"
         "\n"
+        "       -C [filename]   Bootstrap configuration file (default: "
+        "prop/bootstrap.xml)\n"
+        "       -Z [selector]   Bootstrap selector used in configuration\n"
         "       -A [filename]   App configuration file (default: "
         "prop/app-config.xml)\n"
         "       -V [filename]   AVS configuration file (default: "
