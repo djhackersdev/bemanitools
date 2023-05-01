@@ -21,6 +21,8 @@ EXPORTS
     property_node_datasize @267 NONAME
     property_node_refer @278 NONAME
     property_node_remove @279 NONAME
+    property_node_clone @280 NONAME
+    property_node_traversal @282 NONAME
     property_psmap_import @288 NONAME
     property_psmap_export @287 NONAME
     property_read_query_memsize @291 NONAME
