@@ -236,6 +236,23 @@ int main(int argc, const char **argv)
 
     os_version_log();
 
+    /* Do late bootstrap initialisation */
+
+    struct bootstrap_default_file default_file;
+    while (bootstrap_config_iter_default_file(&bs, &default_file)) {
+        struct avs_stat st;
+        if (avs_fs_lstat(default_file.dest, &st)) {
+            continue;
+        }
+        log_misc("%s: copying from %s...", default_file.dest, default_file.src);
+        if (avs_fs_copy(default_file.src, default_file.dest) < 0) {
+            log_fatal(
+                "%s: could not copy from %s",
+                default_file.dest,
+                default_file.src);
+        }
+    }
+
     /* Load game DLL */
 
     if (options.iat_hook_dlls.nitems > 0) {

@@ -269,5 +269,45 @@ bool bootstrap_config_from_property(
 
     config->module_params =
         property_search(NULL, startup_config, "component/param");
+    config->default_node = property_search(NULL, startup_config, "default");
+    return true;
+}
+
+bool bootstrap_config_iter_default_file(
+    struct bootstrap_config *config,
+    struct bootstrap_default_file *default_file)
+{
+    if (!config->default_file) {
+        config->default_file =
+            property_search(NULL, config->default_node, "file");
+    } else {
+        config->default_file = property_node_traversal(
+            config->default_file, TRAVERSE_NEXT_SEARCH_RESULT);
+    }
+    if (!config->default_file) {
+        return false;
+    }
+
+    int r;
+    r = property_node_refer(
+        NULL,
+        config->default_file,
+        "src@",
+        PROPERTY_TYPE_ATTR,
+        &default_file->src,
+        sizeof(default_file->src));
+    if (r < 0) {
+        return false;
+    }
+    r = property_node_refer(
+        NULL,
+        config->default_file,
+        "dst@",
+        PROPERTY_TYPE_ATTR,
+        &default_file->dest,
+        sizeof(default_file->dest));
+    if (r < 0) {
+        return false;
+    }
     return true;
 }
