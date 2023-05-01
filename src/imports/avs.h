@@ -203,8 +203,8 @@ int property_psmap_export(
     const struct property_psmap *psmap);
 
 struct property_node *property_node_clone(
-    struct property *new_parent,
-    int unk0,
+    struct property *parent_prop,
+    struct property_node *parent_node,
     struct property_node *src,
     bool deep);
 struct property_node *property_node_create(
