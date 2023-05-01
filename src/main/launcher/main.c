@@ -219,6 +219,7 @@ int main(int argc, const char **argv)
     if (avs_config_root == NULL) {
         log_fatal("%s: /config missing", options.avs_config_path);
     }
+    bootstrap_config_update_avs(&bs, avs_config_root);
 
     load_hook_dlls(&options.before_hook_dlls);
 

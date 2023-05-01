@@ -96,6 +96,7 @@ struct bootstrap_config {
     char release_code[16];
     struct bootstrap_startup_config startup;
     struct property_node *module_params;
+    struct property_node *log_node;
     struct property_node *default_node;
     struct property_node *default_file;
 };
@@ -105,6 +106,8 @@ bool bootstrap_config_from_property(
     struct bootstrap_config *config,
     struct property *prop,
     const char *profile);
+void bootstrap_config_update_avs(
+    const struct bootstrap_config *config, struct property_node *avs_root);
 bool bootstrap_config_iter_default_file(
     struct bootstrap_config *config,
     struct bootstrap_default_file *default_file);
