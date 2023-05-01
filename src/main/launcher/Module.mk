@@ -14,6 +14,7 @@ libs_launcher   := \
 
 src_launcher    := \
     avs-context.c \
+    bs-config.c \
     ea3-config.c \
     main.c \
     module.c \
