@@ -269,8 +269,41 @@ bool bootstrap_config_from_property(
 
     config->module_params =
         property_search(NULL, startup_config, "component/param");
+    config->log_node = property_search(NULL, startup_config, "log");
     config->default_node = property_search(NULL, startup_config, "default");
     return true;
+}
+
+void bootstrap_config_update_avs(
+    const struct bootstrap_config *config, struct property_node *avs_root)
+{
+    if (config->module_params) {
+        property_remove(NULL, avs_root, "mode/product");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_BOOL, "mode/product", 1);
+        property_remove(NULL, avs_root, "net/enable_raw");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_BOOL, "net/enable_raw", 1);
+        property_remove(NULL, avs_root, "net/eaudp/enable");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_BOOL, "net/eaudp/enable", 1);
+        property_remove(NULL, avs_root, "sntp/ea_on");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_BOOL, "sntp/ea_on", 1);
+    }
+    if (config->startup.drm_device[0]) {
+        property_remove(NULL, avs_root, "fs/root/device");
+        property_node_create(
+            NULL,
+            avs_root,
+            PROPERTY_TYPE_STR,
+            "fs/root/device",
+            config->startup.drm_device);
+    }
+    if (config->log_node) {
+        property_remove(NULL, avs_root, "log");
+        property_node_clone(NULL, avs_root, config->log_node, TRUE);
+    }
 }
 
 bool bootstrap_config_iter_default_file(
