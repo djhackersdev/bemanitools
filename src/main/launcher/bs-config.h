@@ -6,6 +6,11 @@
 
 #include "imports/avs.h"
 
+struct bootstrap_default_file {
+    char src[64];
+    char dest[64];
+};
+
 struct bootstrap_startup_config {
     char avs_config_file[64];
     char launch_config_file[64];
@@ -91,6 +96,8 @@ struct bootstrap_config {
     char release_code[16];
     struct bootstrap_startup_config startup;
     struct property_node *module_params;
+    struct property_node *default_node;
+    struct property_node *default_file;
 };
 
 void bootstrap_config_init(struct bootstrap_config *config);
@@ -98,5 +105,8 @@ bool bootstrap_config_from_property(
     struct bootstrap_config *config,
     struct property *prop,
     const char *profile);
+bool bootstrap_config_iter_default_file(
+    struct bootstrap_config *config,
+    struct bootstrap_default_file *default_file);
 
 #endif /* LAUNCHER_BS_CONFIG_H */
