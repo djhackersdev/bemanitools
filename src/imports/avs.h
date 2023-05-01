@@ -37,6 +37,7 @@ enum property_type {
     PROPERTY_TYPE_U64 = 9,
     PROPERTY_TYPE_BIN = 10,
     PROPERTY_TYPE_STR = 11,
+    PROPERTY_TYPE_ATTR = 46,
     PROPERTY_TYPE_BOOL = 52
 };
 
