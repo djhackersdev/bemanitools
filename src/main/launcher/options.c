@@ -69,6 +69,7 @@ void options_read_early_cmdline(
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
+    bool got_module = false;
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
@@ -237,8 +238,10 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     break;
             }
         } else {
-            if (!options->module) {
+            /* override module from bootstrap config */
+            if (!got_module) {
                 options->module = argv[i];
+                got_module = true;
             }
         }
     }
@@ -248,6 +251,25 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
     } else {
         return false;
     }
+}
+
+void options_read_bootstrap(
+    struct options *options, const struct bootstrap_startup_config *bs_config)
+{
+    options->avs_config_path = bs_config->avs_config_file;
+    options->avs_heap_size = bs_config->avs_heap_size;
+    options->std_heap_size = bs_config->std_heap_size;
+    options->ea3_config_path = bs_config->eamuse_config_file;
+
+    if (bs_config->log_enable_file) {
+        if (bs_config->log_file[0]) {
+            options->logfile = bs_config->log_file;
+        } else if (bs_config->log_name[0]) {
+            options->logfile = bs_config->log_name;
+        }
+    }
+
+    options->module = bs_config->module_file;
 }
 
 void options_print_usage(void)
