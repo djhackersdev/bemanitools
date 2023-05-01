@@ -232,6 +232,16 @@ struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
 void property_node_datasize(struct property_node *node);
 
+static inline void property_remove(struct property *prop, struct property_node *node, const char *path)
+{
+    struct property_node *cur = property_search(prop, node, path);
+    while (cur) {
+        struct property_node *next = property_node_traversal(node, TRAVERSE_NEXT_SEARCH_RESULT);
+        property_node_remove(cur);
+        cur = next;
+    }
+}
+
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
 
