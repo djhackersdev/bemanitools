@@ -90,6 +90,7 @@ struct bootstrap_startup_config {
 struct bootstrap_config {
     char release_code[16];
     struct bootstrap_startup_config startup;
+    struct property_node *module_params;
 };
 
 void bootstrap_config_init(struct bootstrap_config *config);

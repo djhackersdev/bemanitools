@@ -134,7 +134,7 @@ int main(int argc, const char **argv)
     struct bootstrap_config bs;
 
     struct property *bootstrap_config = NULL;
-    struct property *app_config;
+    struct property *app_config = NULL;
     struct property *avs_config;
     struct property *ea3_config;
 
@@ -299,16 +299,18 @@ int main(int argc, const char **argv)
 
     /* Invoke dll_entry_init */
 
-    if (path_exists(options.app_config_path)) {
+    if (bs.module_params) {
+        app_config_root = bs.module_params;
+    } else if (path_exists(options.app_config_path)) {
         app_config = boot_property_load(options.app_config_path);
+        app_config_root = property_search(app_config, 0, "/param");
     } else {
         log_warning(
             "%s: app config file missing, using empty",
             options.app_config_path);
         app_config = boot_property_load_cstring("<param>dummy</param>");
+        app_config_root = property_search(app_config, 0, "/param");
     }
-
-    app_config_root = property_search(app_config, 0, "/param");
 
     if (app_config_root == NULL) {
         log_fatal("%s: /param missing", options.app_config_path);
@@ -325,7 +327,9 @@ int main(int argc, const char **argv)
         log_fatal("%s: dll_module_init() returned failure", options.module);
     }
 
-    boot_property_free(app_config);
+    if (app_config) {
+        boot_property_free(app_config);
+    }
     if (bootstrap_config) {
         boot_property_free(bootstrap_config);
     }

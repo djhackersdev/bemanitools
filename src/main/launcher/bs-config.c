@@ -267,5 +267,7 @@ bool bootstrap_config_from_property(
         return false;
     }
 
+    config->module_params =
+        property_search(NULL, startup_config, "component/param");
     return true;
 }
