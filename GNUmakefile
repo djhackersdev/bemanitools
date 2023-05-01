@@ -37,6 +37,8 @@ ldflags		          := -Wl,--gc-sections -static-libgcc
 
 all: build
 
+FORCE:
+
 .PHONY: \
 build-docker \
 clean \
@@ -44,7 +46,8 @@ code-format \
 print-building \
 print-release \
 run-tests \
-version
+version \
+FORCE
 
 release: \
 print-release \
@@ -192,6 +195,8 @@ $$(depdir_$1_$2_$3):
 
 $$(objdir_$1_$2_$3):
 	$(V)mkdir -p $$@
+
+$$(volatile_$3:%.c=$$(objdir_$1_$2_$3)/%.o): FORCE
 
 $$(objdir_$1_$2_$3)/%.o: $$(srcdir_$3)/%.c \
 		| $$(depdir_$1_$2_$3) $$(objdir_$1_$2_$3)
