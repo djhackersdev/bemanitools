@@ -6,6 +6,7 @@ BT5's supported games, but provides additional features for users and developers
 Various command line tools for quick and easy testing of BT5 API implementations witohut having
 to run any target games.
 
+* [ddriotest](ddriotest.md): `ddrio` API
 * [eamiotest](eamiotest.md): `eamio` API
 * [iidxiotest](iidxiotest.md): `iidxio` API
 * [jbiotest](jbiotest.md): `jbio` API
@@ -14,6 +15,10 @@ to run any target games.
 ### ACIO
 * [aciotest](aciotest.md): Command line tool for quick and easy testing of ACIO devices without
 having to run a game.
+
+### P3IO DDR testing tool
+* [p3io-ddr-tool](p3io-ddr-tool.md): Extensive command line tool to test and debug a real P3IO DDR
+  (Dragon PCB) IO board + EXTIO
 
 ### Ezusb
 * [ezusb-iidx-fpga-flash](ezusb-iidx-fpga-flash.md): Tool for flashing the FPGA on ezusb 1 boards.

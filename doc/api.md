@@ -22,8 +22,9 @@ The following implementations are already shipped with BT5.
     * bstio.dll (default): Keyboard, joystick and mouse input
 * Dance Dance Revolution
     * ddrio.dll (default): Keyboard, joystick and mouse input
+    * [ddrio-p3io.dll](ddrhook/ddrio-p3io.md): DDR P3IO (Dragon PCB) + EXTIO hardware
     * ddrio-mm.dll: Minimaid hardware
-    * ddrio-smx.dll: StepManiaX platforms
+    * [ddrio-smx.dll](ddrhook/ddrio-smx.md): StepManiaX platforms
 * Beatmania IIDX
     * iidxio.dll (default): Keyboard, joystick and mouse input
     * [iidxio-bio2.dll](iidxhook/iidxio-bio2.md): BIO2 driver
