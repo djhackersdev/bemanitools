@@ -59,6 +59,13 @@ extern log_formatter_t log_impl_info;
 extern log_formatter_t log_impl_warning;
 extern log_formatter_t log_impl_fatal;
 
+enum log_level {
+    LOG_LEVEL_FATAL = 0,
+    LOG_LEVEL_WARNING = 1,
+    LOG_LEVEL_INFO = 2,
+    LOG_LEVEL_MISC = 3,
+};
+
 void log_assert_body(const char *file, int line, const char *function);
 void log_to_external(
     log_formatter_t misc,
@@ -67,7 +74,7 @@ void log_to_external(
     log_formatter_t fatal);
 void log_to_writer(log_writer_t writer, void *ctx);
 
-void log_set_level(unsigned int new_level);
+void log_set_level(enum log_level new_level);
 
 /* I tried to make this API match the function signature of the AVS log writer
    callback, but then the signature changed and the explicit line breaks
