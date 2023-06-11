@@ -111,6 +111,9 @@ include src/main/dinput/Module.mk
 include src/main/eamio-icca/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamiotest/Module.mk
+include src/main/extio/Module.mk
+include src/main/extiodrv/Module.mk
+include src/main/extiotest/Module.mk
 include src/main/ezusb-emu/Module.mk
 include src/main/ezusb-iidx-16seg-emu/Module.mk
 include src/main/ezusb-iidx-emu/Module.mk
