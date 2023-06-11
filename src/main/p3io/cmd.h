@@ -293,9 +293,14 @@ union p3io_resp_any {
 
 #pragma pack(pop)
 
-uint8_t p3io_req_cmd(const union p3io_req_any *src);
+uint8_t p3io_get_full_req_size(const union p3io_req_any *req);
 
-void p3io_resp_init(
-    struct p3io_hdr *dest, size_t nbytes, const struct p3io_hdr *req);
+uint8_t p3io_get_full_resp_size(const union p3io_resp_any *resp);
+
+void p3io_req_hdr_init(
+    struct p3io_hdr *hdr, uint8_t seq_no, uint8_t cmd, size_t size);
+
+void p3io_resp_hdr_init(
+    struct p3io_hdr *resp_hdr, size_t nbytes, const struct p3io_hdr *req_hdr);
 
 #endif
