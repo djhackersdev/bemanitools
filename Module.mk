@@ -104,6 +104,7 @@ include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
 include src/main/ddrhook1/Module.mk
 include src/main/ddrhook2/Module.mk
+include src/main/ddrio-p3io/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddrio/Module.mk
