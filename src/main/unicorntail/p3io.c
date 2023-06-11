@@ -136,7 +136,7 @@ static HRESULT p3io_handle_write(struct irp *irp)
     struct iobuf desc;
     HRESULT hr;
 
-    desc.bytes = req.raw;
+    desc.bytes = req.raw.data;
     desc.nbytes = sizeof(req);
     desc.pos = 0;
 
@@ -146,10 +146,11 @@ static HRESULT p3io_handle_write(struct irp *irp)
         return hr;
     }
 
-    switch (p3io_req_cmd(&req)) {
+    switch (req.hdr.cmd) {
         case P3IO_CMD_RS232_OPEN_CLOSE:
             EnterCriticalSection(&p3io_cmd_lock);
-            p3io_uart_cmd_open_close(&req.rs232_open_close, &resp.u8);
+            p3io_uart_cmd_open_close(
+                &req.rs232_open_close, &resp.rs232_open_close);
 
             break;
 
