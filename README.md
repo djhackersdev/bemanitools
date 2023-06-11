@@ -100,9 +100,13 @@ The following games are supported with their corresponding hook-libraries.
   * [iidx-bio2-exit-hook](doc/tools/iidx-bio2-exit-hook.md): For IIDX with BIO2 IO
   * [iidx-ezusb2-exit-hook](doc/tools/iidx-ezusb-exit-hook.md): For IIDX with ezusb FX2 IO
 * Bemanitools API testing: Tools for testing bemanitools API implementations
+  * [ddriotest](doc/tools/ddriotest.md): For [ddrio API](doc/api.md#io-boards)
   * [eamiotest](doc/tools/eamiotest.md): For [eamio API](doc/api.md#eamuse-readers)
   * [iidxiotest](doc/tools/iidxiotest.md): For [iidxio API](doc/api.md#io-boards)
   * [jbiotest](doc/tools/jbiotest.md): For [jbio API](doc/api.md#io-boards)
+* DDR IO testing: Tools for testing hardware of a real DDR cabinet
+  * [p3io-ddr-tool](doc/tools/p3io-ddr-tool.md)
+  * [extiotest](doc/tools/extiotest.md)
 * [aciotest](doc/tools/aciotest.md): Command line tool to quickly test ACIO devices
 * config: UI input/output configuration tool when using the default bemanitools API (geninput)
 * ir-beat-patch-9/10: Patch the IR beat phase on IIDX 9 and 10
