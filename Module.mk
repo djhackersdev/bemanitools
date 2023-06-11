@@ -166,6 +166,7 @@ include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
 include src/main/p3io/Module.mk
+include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
 include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
