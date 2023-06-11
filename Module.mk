@@ -171,6 +171,7 @@ include src/main/mm/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
+include src/main/p3io-ddr-tool/Module.mk
 include src/main/p4iodrv/Module.mk
 include src/main/p4ioemu/Module.mk
 include src/main/popnhook-util/Module.mk
