@@ -8,6 +8,9 @@
 #include "util/iobuf.h"
 #include "util/log.h"
 
+#define P3IO_FRAME_SOF 0xAA
+#define P3IO_FRAME_ESCAPE 0xFF
+
 HRESULT
 p3io_frame_encode(struct iobuf *dest, const void *ptr, size_t nbytes)
 {
@@ -24,17 +27,17 @@ p3io_frame_encode(struct iobuf *dest, const void *ptr, size_t nbytes)
         goto trunc;
     }
 
-    dest->bytes[dest->pos++] = 0xAA;
+    dest->bytes[dest->pos++] = P3IO_FRAME_SOF;
 
     for (i = 0; i < nbytes; i++) {
         b = bytes[i];
 
-        if (b == 0xAA || b == 0xFF) {
+        if (b == P3IO_FRAME_SOF || b == P3IO_FRAME_ESCAPE) {
             if (dest->pos + 1 >= dest->nbytes) {
                 goto trunc;
             }
 
-            dest->bytes[dest->pos++] = 0xFF;
+            dest->bytes[dest->pos++] = P3IO_FRAME_ESCAPE;
             dest->bytes[dest->pos++] = ~b;
         } else {
             if (dest->pos >= dest->nbytes) {
@@ -64,7 +67,7 @@ p3io_frame_decode(struct iobuf *dest, struct const_iobuf *src)
     log_assert(dest != NULL);
     log_assert(src != NULL);
 
-    if (src->pos >= src->nbytes || src->bytes[src->pos] != 0xAA) {
+    if (src->pos >= src->nbytes || src->bytes[src->pos] != P3IO_FRAME_SOF) {
         return E_FAIL;
     }
 
@@ -78,9 +81,9 @@ p3io_frame_decode(struct iobuf *dest, struct const_iobuf *src)
 
         b = src->bytes[src->pos++];
 
-        if (b == 0xAA) {
+        if (b == P3IO_FRAME_SOF) {
             return E_FAIL;
-        } else if (b == 0xFF) {
+        } else if (b == P3IO_FRAME_ESCAPE) {
             if (escape) {
                 return E_FAIL;
             }
