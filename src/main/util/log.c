@@ -10,14 +10,14 @@
 
 static log_writer_t log_writer;
 static void *log_writer_ctx;
-static unsigned int log_level;
+static enum log_level log_level;
 
 static void log_builtin_fatal(const char *module, const char *fmt, ...);
 static void log_builtin_info(const char *module, const char *fmt, ...);
 static void log_builtin_misc(const char *module, const char *fmt, ...);
 static void log_builtin_warning(const char *module, const char *fmt, ...);
 static void log_builtin_format(
-    unsigned int msg_level, const char *module, const char *fmt, va_list ap);
+    enum log_level msg_level, const char *module, const char *fmt, va_list ap);
 
 #define IMPLEMENT_SINK(name, msg_level)                        \
     static void name(const char *module, const char *fmt, ...) \
@@ -29,16 +29,16 @@ static void log_builtin_format(
         va_end(ap);                                            \
     }
 
-IMPLEMENT_SINK(log_builtin_info, 2)
-IMPLEMENT_SINK(log_builtin_misc, 3)
-IMPLEMENT_SINK(log_builtin_warning, 1)
+IMPLEMENT_SINK(log_builtin_info, LOG_LEVEL_INFO)
+IMPLEMENT_SINK(log_builtin_misc, LOG_LEVEL_MISC)
+IMPLEMENT_SINK(log_builtin_warning, LOG_LEVEL_WARNING)
 
 static void log_builtin_fatal(const char *module, const char *fmt, ...)
 {
     va_list ap;
 
     va_start(ap, fmt);
-    log_builtin_format(0, module, fmt, ap);
+    log_builtin_format(LOG_LEVEL_FATAL, module, fmt, ap);
     va_end(ap);
 
     DebugBreak();
@@ -46,7 +46,7 @@ static void log_builtin_fatal(const char *module, const char *fmt, ...)
 }
 
 static void log_builtin_format(
-    unsigned int msg_level, const char *module, const char *fmt, va_list ap)
+    enum log_level msg_level, const char *module, const char *fmt, va_list ap)
 {
     static const char chars[] = "FWIM";
 
@@ -55,13 +55,11 @@ static void log_builtin_format(
     char msg[65536];
     int result;
 
-    str_vformat(msg, sizeof(msg), fmt, ap);
-    result = str_format(
-        line, sizeof(line), "%c:%s: %s\n", chars[msg_level], module, msg);
-
-    // TODO move this up because there is no reason to format and do all the
-    // above if disabled
     if (msg_level <= log_level) {
+        str_vformat(msg, sizeof(msg), fmt, ap);
+        result = str_format(
+            line, sizeof(line), "%c:%s: %s\n", chars[msg_level], module, msg);
+
         log_writer(log_writer_ctx, line, result);
     }
 }
@@ -98,7 +96,7 @@ void log_to_writer(log_writer_t writer, void *ctx)
     }
 }
 
-void log_set_level(unsigned int new_level)
+void log_set_level(enum log_level new_level)
 {
     log_level = new_level;
 }
@@ -133,4 +131,4 @@ log_formatter_t log_impl_info = log_builtin_info;
 log_formatter_t log_impl_warning = log_builtin_warning;
 log_formatter_t log_impl_fatal = log_builtin_fatal;
 static log_writer_t log_writer = log_writer_null;
-static unsigned int log_level = 4;
+static enum log_level log_level = LOG_LEVEL_MISC;
