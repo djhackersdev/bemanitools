@@ -627,18 +627,6 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/ddr-hwio-x86.zip: \
-		build/bin/indep-32/vigem-ddrio.exe \
-		| $(zipdir)/
-	$(V)echo ... $@
-	$(V)zip -j $@ $^
-
-$(zipdir)/ddr-hwio-x64.zip: \
-		build/bin/indep-64/vigem-ddrio.exe \
-		| $(zipdir)/
-	$(V)echo ... $@
-	$(V)zip -j $@ $^
-
 $(zipdir)/ddr-11.zip: \
 		build/bin/indep-32/inject.exe \
 		build/bin/avs2_803-32/ddrhook1.dll \
@@ -715,8 +703,6 @@ $(zipdir)/ddr-14-to-16.zip: \
 		build/bin/avs2_1508-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
-		build/bin/indep-32/ddrio-mm.dll \
-		build/bin/indep-32/ddrio-smx.dll \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
@@ -733,12 +719,32 @@ $(zipdir)/ddr-16-x64.zip: \
 		build/bin/avs2_1603-64/unicorntail.dll \
 		build/bin/indep-64/config.exe \
 		build/bin/indep-64/ddrio.dll \
-		build/bin/indep-64/ddrio-mm.dll \
-		build/bin/indep-64/ddrio-smx.dll \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-16.bat \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-hwio-x86.zip: \
+		build/bin/indep-32/ddrio-p3io.dll \
+		build/bin/indep-32/ddrio-mm.dll \
+		build/bin/indep-32/ddrio-smx.dll \
+		build/bin/indep-32/extiotest.exe \
+		build/bin/indep-32/p3io-ddr-tool.exe \
+		build/bin/indep-32/vigem-ddrio.exe \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/ddr-hwio-x64.zip: \
+		build/bin/indep-64/ddrio-p3io.dll \
+		build/bin/indep-64/ddrio-mm.dll \
+		build/bin/indep-64/ddrio-smx.dll \
+		build/bin/indep-64/extiotest.exe \
+		build/bin/indep-64/p3io-ddr-tool.exe \
+		build/bin/indep-64/vigem-ddrio.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
