@@ -8,23 +8,7 @@
 
 #include "hook/iohook.h"
 
-/**
- * Enum for available video frequencies to select from. Depending on the
- * game, this feature is used or unused.
- */
-enum p3io_video_freq {
-    P3IO_VIDEO_FREQ_15KHZ = 0,
-    P3IO_VIDEO_FREQ_31KHZ = 1,
-};
-
-/**
- * Enum for available cabinet/display types to select from. Depending on the
- * game, this feature is used or unused.
- */
-enum p3io_cab_type {
-    P3IO_CAB_TYPE_SD = 0,
-    P3IO_CAB_TYPE_HD = 1,
-};
+#include "p3io/cmd.h"
 
 /**
  * P3IO operation dispatching table. Many operations are optional and not used
