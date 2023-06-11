@@ -38,7 +38,8 @@ void p3io_uart_set_path(size_t uart_no, const wchar_t *path)
 }
 
 void p3io_uart_cmd_open_close(
-    const struct p3io_req_rs232_open_close *req, struct p3io_resp_u8 *resp)
+    const struct p3io_req_rs232_open_close *req,
+    struct p3io_resp_rs232_open_close *resp)
 {
     const wchar_t *path;
     uint32_t baud_rate;
@@ -104,9 +105,9 @@ void p3io_uart_cmd_open_close(
     }
 
 end:
-    p3io_resp_init(&resp->hdr, sizeof(*resp), &req->hdr);
-    resp->status = 0;
-    resp->u8 = FAILED(hr);
+    p3io_resp_hdr_init(&resp->hdr, sizeof(*resp), &req->hdr);
+
+    resp->status = FAILED(hr);
 }
 
 void p3io_uart_cmd_read(
@@ -140,10 +141,13 @@ void p3io_uart_cmd_read(
 
 end:
     /* Variable-length response, init the header manually */
+    if (FAILED(hr)) {
+        log_warning("Reading failed: %lX", hr);
+    }
 
     resp->hdr.nbytes = iobuf.pos + 3;
     resp->hdr.seq_no = req->hdr.seq_no;
-    resp->status = FAILED(hr);
+    resp->hdr.cmd = req->hdr.cmd;
     resp->nbytes = iobuf.pos;
 }
 
@@ -167,8 +171,12 @@ void p3io_uart_cmd_write(
     hr = p3io_uart_write(p3io_uart_fds[req->port_no], &iobuf);
 
 end:
-    p3io_resp_init(&resp->hdr, sizeof(*resp), &req->hdr);
-    resp->status = FAILED(hr);
+    if (FAILED(hr)) {
+        log_warning("Writing failed: %lX", hr);
+    }
+
+    p3io_resp_hdr_init(&resp->hdr, sizeof(*resp), &req->hdr);
+
     resp->nbytes = iobuf.pos;
 }
 
