@@ -52,18 +52,18 @@ static const struct hook_symbol jbhook1_log_gftools_hook_syms2[] = {
      .link = (void **) &real_ea3_boot},
 };
 
-static void avs_boot_replace_property_uint32(
-    struct property_node *node, const char *name, uint32_t val)
+static void avs_boot_create_property_str(
+    struct property *config, const char *name, const char *val)
 {
     struct property_node *tmp;
 
-    tmp = property_search(NULL, node, name);
+    tmp = property_node_create(config, NULL, PROPERTY_TYPE_STR, name, val);
 
     if (tmp) {
-        property_node_remove(tmp);
+        property_node_datasize(tmp);
+    } else {
+        log_fatal("Could not avs_boot_create_prop_str(%s, %s)", name, val);
     }
-
-    property_node_create(NULL, node, PSMAP_TYPE_U32, name, val);
 }
 
 static void avs_boot_replace_property_str(
@@ -81,11 +81,13 @@ static void avs_boot_replace_property_str(
 
     if (tmp) {
         property_node_datasize(tmp);
+    } else {
+        log_fatal("Could not avs_boot_replace_property_str(%s, %s)", name, val);
     }
 }
 
 static void my_avs_boot(
-    struct property_node *config,
+    struct property_node *_config,
     void *std_heap,
     size_t sz_std_heap,
     void *avs_heap,
@@ -95,14 +97,44 @@ static void my_avs_boot(
 {
     log_info("Called my_avs_boot");
 
-    avs_boot_replace_property_uint32(config, "log/level", 4);
-    avs_boot_replace_property_str(
+    // avshelper gates this behind a check that might not always be true
+    CreateDirectoryA("./CONF", 0);
+    CreateDirectoryA("./CONF/NVRAM", 0);
+    CreateDirectoryA("./CONF/RAW", 0);
+
+    // The default config isn't very exciting, and we need to replace the NVRAM
+    // settings with our own anyway. Trying to edit the config almost always
+    // fails because of some weird fragmentation issues causing node insert to
+    // fail, so just recreate the entire thing from scratch.
+    uint8_t cfg_buf[2048];
+    struct property *config = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE,
+        cfg_buf,
+        sizeof(cfg_buf));
+
+    log_assert(config);
+
+    property_node_create(
+        config, NULL, PROPERTY_TYPE_U32, "/config/log/level", 4);
+    avs_boot_create_property_str(config, "/config/fs/root/device", ".");
+    avs_boot_create_property_str(config, "/config/fs/raw/device", "./CONF/RAW");
+    avs_boot_create_property_str(
         config, "/config/fs/nvram/device", "./CONF/NVRAM");
-    avs_boot_replace_property_str(
-        config, "/config/fs/raw/device", "./CONF/RAW");
+    avs_boot_create_property_str(config, "/config/fs/nvram/fstype", "fs");
+    avs_boot_create_property_str(config, "/config/fs/nvram/option", "");
+    property_node_create(
+        config, NULL, PROPERTY_TYPE_U16, "/config/net/nr_protocol", 8);
+    property_node_create(
+        config, NULL, PROPERTY_TYPE_U16, "/config/net/nr_socket", 8);
+    property_node_create(
+        config, NULL, PROPERTY_TYPE_U8, "/config/net/enable_raw", 1);
+
+    struct property_node *config_node =
+        property_search(config, NULL, "/config");
+    log_assert(config_node);
 
     real_avs_boot(
-        config,
+        config_node,
         std_heap,
         sz_std_heap,
         avs_heap,
