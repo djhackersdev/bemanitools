@@ -47,6 +47,29 @@ my_mwindow_create(HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
 static HWND(CDECL *real_mwindow_create)(
     HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
 
+static BOOL STDCALL my_CreateProcessA(
+    LPCSTR lpApplicationName,
+    LPSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCSTR lpCurrentDirectory,
+    LPSTARTUPINFOA lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation);
+static BOOL(STDCALL *real_CreateProcessA)(
+    LPCSTR lpApplicationName,
+    LPSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCSTR lpCurrentDirectory,
+    LPSTARTUPINFOA lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation);
+
 static const struct hook_symbol init_hook_syms[] = {
     {
         .name = "mwindow_create",
@@ -54,6 +77,17 @@ static const struct hook_symbol init_hook_syms[] = {
         .link = (void **) &real_mwindow_create,
     },
 };
+
+static const struct hook_symbol kernel32_hook_syms[] = {
+    {
+        .name = "CreateProcessA",
+        .patch = my_CreateProcessA,
+        .link = (void **) &real_CreateProcessA,
+    },
+};
+
+// so our CreateProcessA hook can check
+static bool vertical;
 
 /**
  * This seems to be a good entry point to intercept before the game calls
@@ -107,6 +141,7 @@ static HWND CDECL my_mwindow_create(
     jbhook1_log_gftools_init();
 
     fullscreen = !config_gfx.windowed;
+    vertical = config_gfx.vertical;
 
     if (config_gfx.vertical) {
         DWORD tmp = window_width;
@@ -175,9 +210,53 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
         /* Actual hooks for game specific stuff */
 
+        hook_table_apply(
+            NULL,
+            "kernel32.dll",
+            kernel32_hook_syms,
+            lengthof(kernel32_hook_syms));
+
         acp_hook_init();
         adapter_hook_init();
     }
 
     return TRUE;
+}
+
+static BOOL STDCALL my_CreateProcessA(
+    LPCSTR lpApplicationName,
+    LPSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCSTR lpCurrentDirectory,
+    LPSTARTUPINFOA lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation)
+{
+    LPSTR rot_arg;
+
+    // de-rotate the error window if needed. In theory this should parse the
+    // commandline properly, in practice this works on all the .exe jubeats.
+    if (vertical && lpCommandLine) {
+        if ((rot_arg = strstr(lpCommandLine, " -R90 "))) { // jubeat 01
+            memcpy(rot_arg, " -R0  ", strlen(" -R0  "));
+        } else if ((rot_arg =
+                        strstr(lpCommandLine, " -rot:90 "))) { // jubeat 02
+            memcpy(rot_arg, " -rot:0  ", strlen(" -rot:0  "));
+        }
+    }
+
+    return real_CreateProcessA(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags,
+        lpEnvironment,
+        lpCurrentDirectory,
+        lpStartupInfo,
+        lpProcessInformation);
 }
