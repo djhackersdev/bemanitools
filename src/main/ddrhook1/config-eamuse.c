@@ -56,7 +56,6 @@ void ddrhook1_config_eamuse_get(
 {
     char server_url[1024];
     char *tmp;
-    char *tmp2;
 
     memset(config_eamuse, 0, sizeof(struct ddrhook1_config_eamuse));
 
@@ -102,16 +101,8 @@ void ddrhook1_config_eamuse_get(
     }
 
     if (!security_id_verify(&config_eamuse->pcbid)) {
-        tmp = security_id_to_str(
-            &DDRHOOK1_CONFIG_EAMUSE_DEFAULT_PCBID_VALUE, false);
-        tmp2 = security_id_to_str(&config_eamuse->pcbid, false);
-        log_warning(
-            "PCBID verification of '%s' failed, fallback to default "
-            "PCBID '%s'",
-            tmp2,
-            tmp);
-        free(tmp);
-        free(tmp2);
+        log_fatal("PCBID verification failed");
+        return;
     }
 
     if (!cconfig_util_get_data(
@@ -130,15 +121,7 @@ void ddrhook1_config_eamuse_get(
     }
 
     if (!security_id_verify(&config_eamuse->eamid)) {
-        tmp = security_id_to_str(
-            &DDRHOOK1_CONFIG_EAMUSE_DEFAULT_EAMID_VALUE, false);
-        tmp2 = security_id_to_str(&config_eamuse->eamid, false);
-        log_warning(
-            "EAMID verification of '%s' failed, fallback to default "
-            "EAMID '%s'",
-            tmp2,
-            tmp);
-        free(tmp);
-        free(tmp2);
+        log_fatal("EAMID verification failed");
+        return;
     }
 }
