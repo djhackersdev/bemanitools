@@ -45,8 +45,9 @@ void iidxhook_config_gfx_init(struct cconfig *config)
         config,
         IIDXHOOK_CONFIG_GFX_BGVIDEO_UV_FIX_KEY,
         IIDXHOOK_CONFIG_GFX_DEFAULT_BGVIDEO_UV_FIX_VALUE,
-        "Fix stretched BG videos on newer GPUs. Might appear on Red and "
-        "newer");
+        "Fix stretched BG videos on newer GPUs. Might appear on SIRIUS "
+        "and older.  On 9th and 10th style this issue may only affect "
+        "older BGAs (from 1st-3rd style)");
 
     cconfig_util_set_bool(
         config,

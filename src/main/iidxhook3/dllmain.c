@@ -80,7 +80,7 @@ iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     d3d9_config.pci_pid = config_gfx->pci_id_pid;
 
     /* Required for GOLD (and newer?) to not crash with NVIDIA cards */
-    d3d9_config.iidx11_to_17_fix_uvs_bg_videos = true;
+    d3d9_config.iidx09_to_17_fix_uvs_bg_videos = true;
     d3d9_config.iidx14_to_19_nvidia_fix = true;
 
     d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;

@@ -102,7 +102,7 @@ struct iidxhook_util_d3d9_config {
      * the background videos or seeing a quad seam (see implementation for
      * further details).
      */
-    bool iidx11_to_17_fix_uvs_bg_videos;
+    bool iidx09_to_17_fix_uvs_bg_videos;
 
     /**
      * Ported from d3d8 module to enable this when using d3d8to9.
