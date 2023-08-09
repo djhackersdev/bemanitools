@@ -2,12 +2,12 @@ LIBRARY libavs-win32
 
 EXPORTS
     avs_boot @22 NONAME
-    avs_fs_close @573 NONAME
-    avs_fs_copy @573 NONAME
-    avs_fs_lseek @573 NONAME
-    avs_fs_lstat @573 NONAME
-    avs_fs_open @573 NONAME
-    avs_fs_read @573 NONAME
+    avs_fs_close @60 NONAME
+    avs_fs_copy @63 NONAME
+    avs_fs_lseek @70 NONAME
+    avs_fs_lstat @71 NONAME
+    avs_fs_open @75 NONAME
+    avs_fs_read @77 NONAME
     avs_net_ctrl @107 NONAME
     avs_shutdown @140 NONAME
     avs_thread_create @156 NONAME
