@@ -25,6 +25,7 @@ EXPORTS
     property_insert_read @255 NONAME
     property_node_create @266 NONAME
     property_node_datasize @267 NONAME
+    property_node_name @573 NONAME
     property_node_refer @278 NONAME
     property_node_remove @279 NONAME
     property_node_clone @280 NONAME

@@ -18,6 +18,7 @@ EXPORTS
     property_insert_read @128 NONAME
     property_search @141 NONAME
     property_node_create @142 NONAME
+    property_node_name @573 NONAME
     property_node_remove @143 NONAME
     property_node_clone @144 NONAME
     property_node_traversal @146 NONAME
