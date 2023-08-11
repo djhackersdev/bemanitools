@@ -183,7 +183,10 @@ int main(int argc, const char **argv)
     struct property_node *avs_config_root;
     struct property_node *ea3_config_root;
 
+    // Static logging setup until we got AVS up and running
     log_to_writer(log_writer_file, stdout);
+    log_set_level(LOG_LEVEL_MISC);
+
     log_info(
         "launcher build date %s, gitrev %s",
         launcher_build_date,
