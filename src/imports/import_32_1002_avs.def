@@ -33,6 +33,7 @@ EXPORTS
     property_node_create
     property_node_datasize
     property_node_name
+    property_node_read
     property_node_refer
     property_node_remove
     property_node_type

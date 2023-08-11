@@ -231,6 +231,7 @@ enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
 void property_node_datasize(struct property_node *node);
+void property_node_read(struct property_node *node, enum property_type type, void* data, uint32_t data_size);
 
 static inline void property_remove(struct property *prop, struct property_node *node, const char *path)
 {
