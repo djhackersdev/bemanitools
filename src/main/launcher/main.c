@@ -191,6 +191,7 @@ int main(int argc, const char **argv)
         "launcher build date %s, gitrev %s",
         launcher_build_date,
         launcher_gitrev);
+    os_version_log();
 
     /* Read command line */
 
@@ -199,9 +200,13 @@ int main(int argc, const char **argv)
 
     bootstrap_config_init(&bs);
     if (options.bootstrap_selector) {
+        log_misc("Bootstrap selector specified: %s", options.bootstrap_selector);
+
         bootstrap_config = boot_property_load(options.bootstrap_config_path);
+
         log_info(
             "Loading bootstrap selector '%s'...", options.bootstrap_selector);
+        
         if (!bootstrap_config_from_property(
                 &bs, bootstrap_config, options.bootstrap_selector)) {
             log_fatal(
@@ -209,8 +214,13 @@ int main(int argc, const char **argv)
                 options.bootstrap_config_path,
                 options.bootstrap_selector);
         }
+
         options_read_bootstrap(&options, &bs.startup);
+
+        log_misc("Finished reading bootstrap");
     }
+
+    log_misc("Reading command line options...");
 
     if (!options_read_cmdline(&options, argc, argv)) {
         options_print_usage();
@@ -242,6 +252,8 @@ int main(int argc, const char **argv)
         }
     }
 
+    log_misc("Preparing AVS...");
+
     /* Start up AVS */
 
     if (options.logfile != NULL) {
@@ -260,12 +272,20 @@ int main(int argc, const char **argv)
     avs_config = boot_property_load(options.avs_config_path);
     avs_config_root = property_search(avs_config, 0, "/config");
 
+    log_property_tree(avs_config);
+
+    // Sleep(100000000);
+
     if (avs_config_root == NULL) {
         log_fatal("%s: /config missing", options.avs_config_path);
     }
+
     bootstrap_config_update_avs(&bs, avs_config_root);
 
+    log_misc("Loading before hook dlls...");
     load_hook_dlls(&options.before_hook_dlls);
+
+    log_misc("Initializing AVS...");
 
     avs_context_init(
         avs_config_root,
@@ -276,10 +296,10 @@ int main(int argc, const char **argv)
 
     boot_property_free(avs_config);
 
+    log_info("Bootstrap complete, switching loggers");
+
     log_to_external(
         log_body_misc, log_body_info, log_body_warning, log_body_fatal);
-
-    os_version_log();
 
     /* Do late bootstrap initialisation */
 
@@ -316,6 +336,8 @@ int main(int argc, const char **argv)
     stubs_init();
 
     /* Prepare ea3 config */
+
+    log_misc("Preparing ea3 configuration...");
 
     ea3_config = boot_property_load_avs(options.ea3_config_path);
     ea3_config_root = property_search(ea3_config, 0, "/ea3");
