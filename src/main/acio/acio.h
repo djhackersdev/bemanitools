@@ -44,6 +44,8 @@ enum ac_io_node_type {
     AC_IO_NODE_TYPE_PANB = 0x090E0000,
     AC_IO_NODE_TYPE_BMPU = 0x0B000000,
     AC_IO_NODE_TYPE_BI2A = 0x0D060000,
+    AC_IO_NODE_TYPE_BIOB = 0x0D050100,
+    AC_IO_NODE_TYPE_BI2B = 0x0D060100,
 };
 
 #pragma pack(push, 1)
