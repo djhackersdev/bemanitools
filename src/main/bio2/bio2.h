@@ -11,6 +11,7 @@ enum bio2_bi2a_cmd {
     BIO2_BI2A_CMD_INIT = 0x0100,
     BIO2_BI2A_CMD_WATCHDOG = 0x0120,
     BIO2_BI2A_CMD_POLL = 0x0152, // For IIDX
+    BIO2_BI2A_CMD_POLL_WD = 0x0153, // For IIDX
     // For games using libacio for BIO2 communication
     BIO2_BI2A_CMD_ACIO_POLL_NOWD = 0x0112,
     BIO2_BI2A_CMD_ACIO_POLL_WD = 0x0113,

@@ -91,11 +91,12 @@ void bio2_emu_bi2a_dispatch_request(
             break;
 
         case BIO2_BI2A_CMD_WATCHDOG:
-            log_misc("BIO2_BI2A_CMD_WATCHDOGX(%d)", req->addr);
+            log_misc("BIO2_BI2A_CMD_WATCHDOG(%d)", req->addr);
             bio2_emu_bi2a_send_status(&bio2port->acio, req, 0x00);
             break;
 
         case BIO2_BI2A_CMD_POLL:
+        case BIO2_BI2A_CMD_POLL_WD:
             // log_misc("BIO2_BI2A_CMD_POLL");
             bio2_emu_bi2a_send_state(&bio2port->acio, req);
             break;
