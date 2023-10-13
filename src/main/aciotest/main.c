@@ -18,11 +18,7 @@
 #include "util/log.h"
 
 static uint8_t aciotest_cnt = 0;
-<<<<<<< HEAD
 static uint8_t bi2a_mode = 255;
-=======
-static uint8_t bi2a_mode = -1;
->>>>>>> 3ef04ad6e6a3fd0bc7195c3fe2fa901137fd3105
 
 /**
  * Enumerate supported ACIO nodes based on their product id.
@@ -59,7 +55,6 @@ static bool aciotest_assign_handler(
     }
 
     if (product_type == AC_IO_NODE_TYPE_BI2A) {
-<<<<<<< HEAD
         if (bi2a_mode == 255) {
             printf(
                 "Unknown BI2A mode specified, please check your command.\n"
@@ -82,19 +77,6 @@ static bool aciotest_assign_handler(
 
         default:
             break;
-=======
-        printf("Please assign bi2a mode, 0 for SDVX and 1 for IIDX, then press ENTER:");
-        scanf("%hhd",&bi2a_mode);
-        if (bi2a_mode == 0) {
-            handler->init = aciotest_bi2a_sdvx_handler_init;
-            handler->update = aciotest_bi2a_sdvx_handler_update;
-            return true;
-        } else if (bi2a_mode == 1) {
-            handler->init = aciotest_bi2a_iidx_handler_init;
-            handler->update = aciotest_bi2a_iidx_handler_update;
-        } else {
-            printf("Unknown BI2A device specified");
->>>>>>> 3ef04ad6e6a3fd0bc7195c3fe2fa901137fd3105
         }
         return true;
     }
