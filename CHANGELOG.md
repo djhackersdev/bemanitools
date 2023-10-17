@@ -4,8 +4,18 @@ given in tags. The pipeline will pick this up and cuts out the relevant section 
 
 ## 5.45
 ### Features
+* feat(iidx 30): Added support
+* feat(ddr): Add ddrio implementation with P3IO driver backend
+* feat(ddr): Add p3io-ddr-tool for testing/debugging real P3IO devices with EXTIO
+* feat(ddr): Add testing tool for real EXTIO devices
+* feat(ddr): Add extio driver
+* feat(ddr): Add p3io driver
+* feat(iidx 20-26): New/fixed gfx up-/downscaling feature, old one was broken
+* feat(ddr): Vigem driver for ddrio
+* feat(iidx 25-30): The user can now set a custom camera device override of "SKIP" to leave that camera unassigned
 
 ### Fixes
+* fix(iidx 09/10): Fix stretched BGAs on 1st and 3rd style videos
 
 ## 5.44
 ### Features
