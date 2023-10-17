@@ -429,7 +429,7 @@ $(zipdir)/iidx-25-to-26.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/iidx-27-to-29.zip: \
+$(zipdir)/iidx-27-to-30.zip: \
 		build/bin/avs2_1700-64/iidxhook9.dll \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/indep-64/config.exe \
@@ -441,9 +441,11 @@ $(zipdir)/iidx-27-to-29.zip: \
 		dist/iidx/gamestart-27.bat \
 		dist/iidx/gamestart-28.bat \
 		dist/iidx/gamestart-29.bat \
+		dist/iidx/gamestart-30.bat \
 		dist/iidx/iidxhook-27.conf \
 		dist/iidx/iidxhook-28.conf \
 		dist/iidx/iidxhook-29.conf \
+		dist/iidx/iidxhook-30.conf \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -837,7 +839,7 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/iidx-20-cn.zip \
 		$(zipdir)/iidx-21-to-24.zip \
 		$(zipdir)/iidx-25-to-26.zip \
-		$(zipdir)/iidx-27-to-29.zip \
+		$(zipdir)/iidx-27-to-30.zip \
 		$(zipdir)/iidx-hwio-x86.zip \
 		$(zipdir)/iidx-hwio-x64.zip \
 		$(zipdir)/jb-01.zip \
