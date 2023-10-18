@@ -4,6 +4,7 @@ The following games are compatible with this version of iidxhook:
 * Heroic Verse
 * BISTROVER
 * CASTHOUR
+* RESIDENT
 
 The games must be bootstrapped using [launcher](../launcher.md).
 
@@ -22,17 +23,19 @@ Make sure to have the following dependencies installed:
 
 ## Data setup
 
-We assume that you are using a clean/vanilla data dump. Ensure your ("concents")
+We assume that you are using a clean/vanilla data dump. Ensure your ("contents")
 folder with your unpacked data looks like this:
 - data
 - modules
 - prop
 
-* Copy/Move all files from the *modules* directory to the root folder, so they
-are located next to the *data* and *prop* folders.
+* For versions 27-29, only
+  * Copy/Move all files from the *modules* directory to the root folder, so they
+    are located next to the *data* and *prop* folders.
 * Copy all files from *prop/defaults* to the *prop* folder.
 * Setup proper paths for *dev/nvram* and *dev/raw* in *prop/avs-config.xml* by
 replacing the *<fs>*-block in that file with the following block:
+
 ```
 <fs>
     <root>
@@ -46,9 +49,17 @@ replacing the *<fs>*-block in that file with the following block:
     <nr_filedesc __type="u16">256</nr_filedesc>
 </fs>
 ```
-* Unpack the package containing iidxhook9 into the root folder so iidxhook9.dll
-and all other files are located in the same folder as *data*, *prop*, 
-*bm2dx.dll*, etc.
+
+* For versions 27-29, only
+  * Unpack the package containing iidxhook9 into the root folder so iidxhook9.dll
+    and all other files are located in the same folder as *data*, *prop*, 
+    *bm2dx.dll*, etc.
+* For version 30
+  * Unpack the package containing iidxhook9 into the `modules` folder so iidxhook9.dll
+    and all other files are located in the same folder as the game's DLLs, e.g.
+    *bm2dx.dll*, etc.
+  * Move the `gamestart-30.bat` to the root folder so it is located next to the
+    `modules`, `data` and `prop` folders
 * Run the gamestart-XX.bat file as admin. Where XX matches the version you 
 want to run.
 

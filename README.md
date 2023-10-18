@@ -1,7 +1,7 @@
 # Bemanitools 5
 [![pipeline status](https://dev.s-ul.net/djhackers/bemanitools/badges/master/pipeline.svg)](https://dev.s-ul.net/djhackers/bemanitools/commits/master)
 
-Version: 5.45
+Version: 5.46
 
 [Release history](CHANGELOG.md)
 
@@ -59,9 +59,10 @@ The following games are supported with their corresponding hook-libraries.
     * Beatmania IIDX 24 SINOBUZ (`iidx-21-to-24.zip`): [iidxhook7](doc/iidxhook/iidxhook7.md)
     * Beatmania IIDX 25 CANNON BALLERS (`iidx-25-to-26.zip`): [iidxhook8](doc/iidxhook/iidxhook8.md)
     * Beatmania IIDX 26 Rootage (`iidx-25-to-26.zip`): [iidxhook8](doc/iidxhook/iidxhook8.md)
-    * Beatmania IIDX 27 Heroic Verse (`iidx-27-to-29.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
-    * Beatmania IIDX 28 BISTROVER (`iidx-27-to-29.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
-    * Beatmania IIDX 29 CASTHOUR (`iidx-27-to-29.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 27 Heroic Verse (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 28 BISTROVER (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 29 CASTHOUR (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+    * Beatmania IIDX 30 RESIDENT (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
 * [jubeat](doc/jbhook/README.md)
     * jubeat (`jb-01.zip`): [jbhook1](doc/jbhook/jbhook1.md)
     * jubeat ripples (`jb-02.zip`): [jbhook1](doc/jbhook/jbhook1.md)
