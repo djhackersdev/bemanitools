@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include <windows.h>
@@ -7,6 +8,7 @@
 #include "aciodrv/device.h"
 
 #include "aciotest/bi2a-sdvx.h"
+#include "aciotest/bi2a-iidx.h"
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
@@ -16,7 +18,7 @@
 #include "util/log.h"
 
 static uint8_t aciotest_cnt = 0;
-static uint8_t bi2a_mode = 0;
+static uint8_t bi2a_mode = 255;
 
 /**
  * Enumerate supported ACIO nodes based on their product id.
@@ -53,14 +55,30 @@ static bool aciotest_assign_handler(
     }
 
     if (product_type == AC_IO_NODE_TYPE_BI2A) {
-        if (bi2a_mode == 0) {
+        if (bi2a_mode == 255) {
+            printf(
+                "Unknown BI2A mode specified, please check your command.\n"
+                "Using bi2a-sdvx mode as default, press ENTER to continue\n"
+                );
+            bi2a_mode = 0;
+            getchar();
+        }
+
+        switch (bi2a_mode)
+        {
+        case 0:
             handler->init = aciotest_bi2a_sdvx_handler_init;
             handler->update = aciotest_bi2a_sdvx_handler_update;
+            break;
+        case 1:
+            handler->init = aciotest_bi2a_iidx_handler_init;
+            handler->update = aciotest_bi2a_iidx_handler_update;
+            break;
 
-            return true;
-        } else {
-            printf("Unknown BI2A device specified");
+        default:
+            break;
         }
+        return true;
     }
 
     return false;
@@ -76,11 +94,24 @@ int main(int argc, char **argv)
             "aciotest, build "__DATE__
             " " __TIME__
             "\n"
-            "Usage: %s <com port str> <baud rate>\n"
-            "Example for two slotted readers: %s COM1 57600\n",
+            "Usage: %s <com port str> <baud rate> <bi2a mode(optional)>\n"
+            "Example:\n"
+            "\"%s COM1 57600\" for generic acio device\n"
+            "\"%s COM1 57600 bi2a-iidx\" for the iidx BI2A mode\n"
+            "\"%s COM1 57600 bi2a-sdvx\" for the sdvx BI2A mode\n",
+            argv[0],
+            argv[0],
             argv[0],
             argv[0]);
         return -1;
+    }
+
+    if (argc == 4) {
+        if(!strcmp(argv[3],"bi2a-iidx")) {
+            bi2a_mode = 1;
+        } else if(!strcmp(argv[3],"bi2a-sdvx")) {
+            bi2a_mode = 0;
+        }
     }
 
     log_to_writer(log_writer_stdout, NULL);
@@ -93,7 +124,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    printf("Opening acio device successful\n");
+    printf("Opening acio device successful, press ENTER to continue\n");
+    getchar();
 
     uint8_t node_count = aciodrv_device_get_node_count(device);
     printf("Enumerated %d nodes\n", node_count);
