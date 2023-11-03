@@ -18,7 +18,8 @@ Table of contents:
   * [popnhook](popnhook/README.md): Documentation relevant to `popnhook` implementations
   * [sdvxhook](sdvxhook/README.md): Documentation relevant to `sdvxhook` implementations
 * Development
-  * [API](api.md): Available APIs for BT5 and instructions how to use them
+  * [API](api.md): Available APIs and IO (hardware) implementations for BT5 and instructions how
+    to use them
   * [Architecture](architecture.md): Outline of BT5's architecture, how things are designed and why
   * [Development](development.md): Development environment, building, releasing, etc.
   * [Developer documentation](dev/README.md): Various lose documentation/notes by developers
