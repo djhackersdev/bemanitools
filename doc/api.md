@@ -25,6 +25,8 @@ The following implementations are already shipped with BT5.
     * [ddrio-p3io.dll](ddrhook/ddrio-p3io.md): DDR P3IO (Dragon PCB) + EXTIO hardware
     * ddrio-mm.dll: Minimaid hardware
     * [ddrio-smx.dll](ddrhook/ddrio-smx.md): StepManiaX platforms
+    * [ddrio-async](ddrhook/ddrio-async.md): Wrapper/shim library to drive another ddrio in
+      a dedicated IO thread
 * Beatmania IIDX
     * iidxio.dll (default): Keyboard, joystick and mouse input
     * [iidxio-bio2.dll](iidxhook/iidxio-bio2.md): BIO2 driver
