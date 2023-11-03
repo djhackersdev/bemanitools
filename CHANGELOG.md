@@ -2,6 +2,11 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 5.47
+### Features
+
+### Fixes
+
 ## 5.46
 ### Features
 * feat(ddrio): Wrapper/shim library to drive another ddrio in a dedicated IO thread. Improves performance for highly IO
