@@ -4,8 +4,14 @@ given in tags. The pipeline will pick this up and cuts out the relevant section 
 
 ## 5.46
 ### Features
+* feat(ddrio): Wrapper/shim library to drive another ddrio in a dedicated IO thread. Improves performance for highly IO
+  bound ddrio implementations, e.g. ddrio-p3io
+* feat(iidxiotest): bi2a-iidx support
 
 ### Fixes
+* fix(jb03/04): Missing XML in gamestart script
+* fix(jbhook1): Rotate error message box when screen is rotated
+* fix(jbhook1): Improve/fix automatic config/nvram fs initialization
 
 ## 5.45
 ### Features
