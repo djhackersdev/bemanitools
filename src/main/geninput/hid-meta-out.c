@@ -48,7 +48,12 @@ arrays_fail:
     hid_meta_out_fini_caps(meta);
 
 caps_fail:
-    return false;
+    /**
+     * Still allow the device to be used as input.
+     * Useful for devices like the Sony DUALSHOCK 4, where it indicates it can receive outputs
+     * but it errors out when trying to initialize an output report.
+     */
+    return true;
 }
 
 static bool
@@ -99,9 +104,11 @@ hid_meta_out_init_caps(struct hid_meta_out *meta, PHIDP_PREPARSED_DATA ppd)
 
 caps_val_fail:
     free(meta->caps_val);
+    meta->caps_val = NULL;
 
 caps_btn_fail:
     free(meta->caps_btn);
+    meta->caps_btn = NULL;
 
 caps_tlc_fail:
     return false;
@@ -114,7 +121,6 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
     bool *report_presence;
     unsigned int nreports;
     unsigned int i;
-    uint8_t *bytes;
     size_t nbytes;
     size_t count;
 
@@ -174,7 +180,6 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
     for (i = 0; i < 0x100; i++) {
         if (report_presence[i]) {
             nbytes = meta->caps_tlc.OutputReportByteLength;
-            bytes = xmalloc(meta->caps_tlc.OutputReportByteLength);
 
             if (!hid_report_out_init(
                     &meta->reports[meta->nreports],
@@ -198,14 +203,22 @@ static bool hid_meta_out_init_arrays(struct hid_meta_out *meta)
     return true;
 
 r_init_fail:
-    free(bytes);
-
     for (i = meta->nreports; i > 0; i--) {
         hid_report_out_fini(&meta->reports[i - 1]);
     }
 
     free(report_presence);
+
+    // Clear out all output/light data
+    meta->nreports = 0;
     free(meta->reports);
+    meta->reports = NULL;
+    
+    meta->nlights = 0;
+    meta->nbuttons = 0;
+    // Failed out before allocating memory
+    meta->lights = NULL;
+    meta->priv_lights = NULL;
 
     return false;
 }
@@ -433,5 +446,8 @@ static void hid_meta_out_fini_arrays(struct hid_meta_out *meta)
 static void hid_meta_out_fini_caps(struct hid_meta_out *meta)
 {
     free(meta->caps_btn);
+    meta->caps_btn = NULL;
+
     free(meta->caps_val);
+    meta->caps_val = NULL;
 }
