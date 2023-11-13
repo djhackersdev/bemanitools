@@ -20,7 +20,7 @@ void dev_list_init(struct dev_list *devs, const GUID *class_guid)
     devs->infolist = SetupDiGetClassDevs(
         devs->class_guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    if (devs->infolist == NULL) {
+    if (devs->infolist == INVALID_HANDLE_VALUE) {
         log_fatal(
             "SetupDiGetClassDevs failed: %08x", (unsigned int) GetLastError());
     }
