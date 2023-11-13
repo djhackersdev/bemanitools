@@ -57,7 +57,7 @@ static HANDLE mm_open_device(void)
     dev_info = SetupDiGetClassDevsW(
         &hid_guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    if (dev_info == NULL) {
+    if (dev_info == INVALID_HANDLE_VALUE) {
         log_fatal("SetupDiGetClassDevs failed");
     }
 
