@@ -371,8 +371,6 @@ int main(int argc, const char **argv)
 
     log_property_tree(avs_config);
 
-    // Sleep(100000000);
-
     if (avs_config_root == NULL) {
         log_fatal("%s: /config missing", options.avs_config_path);
     }
