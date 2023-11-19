@@ -87,7 +87,7 @@ static void trap_remote_debugger()
     }
 }
 
-static void avs_initialize(
+static void avs_config_setup(
         struct bootstrap_config *bootstrap_config,
         struct property **avs_config_property)
 {
@@ -95,8 +95,6 @@ static void avs_initialize(
 
     log_assert(bootstrap_config);
     log_assert(avs_config_property);
-
-    log_misc("AVS initialize...");
 
     *avs_config_property = boot_property_load(bootstrap_config->startup.avs_config_file);
     avs_config_node = property_search(*avs_config_property, 0, "/config");
@@ -106,20 +104,6 @@ static void avs_initialize(
     }
 
     bootstrap_config_update_avs(bootstrap_config, avs_config_node);
-
-    boot_property_log(*avs_config_property);
-
-    avs_context_init(
-        *avs_config_property,
-        avs_config_node,
-        bootstrap_config->startup.avs_heap_size,
-        bootstrap_config->startup.std_heap_size,
-        bootstrap_config->startup.log_file);
-
-    log_misc("AVS logger available, switching to AVS loggers");
-
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 }
 
 static void load_hook_dlls(struct array *hook_dlls)
@@ -412,7 +396,21 @@ int main(int argc, const char **argv)
 
     /* AVS */
 
-    avs_initialize(&bootstrap_config, &avs_config_property);
+    avs_config_setup(&bootstrap_config, &avs_config_property);
+
+    boot_property_log(avs_config_property);
+
+    avs_context_init(
+        avs_config_property,
+        property_search(avs_config_property, 0, "/config"),
+        bootstrap_config.startup.avs_heap_size,
+        bootstrap_config.startup.std_heap_size,
+        bootstrap_config.startup.log_file);
+
+    log_misc("AVS logger available, switching to AVS loggers");
+
+    log_to_external(
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
     
     bootstrap_context_post_avs_setup(&bootstrap_config);
   

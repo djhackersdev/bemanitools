@@ -226,7 +226,7 @@ void avs_context_init(
     }
 #endif
 
-    log_misc("Calling avs_boot");
+    log_info("Calling avs_boot");
 
 #ifdef AVS_HAS_STD_HEAP
     avs_boot(
