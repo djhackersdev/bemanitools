@@ -22,6 +22,7 @@ void options_init(struct options *options)
     options->avs_config_path = "prop/avs-config.xml";
     options->ea3_config_path = "prop/ea3-config.xml";
     options->ea3_ident_path = "prop/ea3-ident.xml";
+    options->avs_fs_dev_nvram_raw_path = NULL;
     options->softid = NULL;
     options->pcbid = NULL;
     options->module = NULL;
@@ -86,6 +87,15 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     }
 
                     options->avs_config_path = argv[++i];
+
+                    break;
+
+                case 'F':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    options->avs_fs_dev_nvram_raw_path = argv[++i];
 
                     break;
 
@@ -255,6 +265,8 @@ void options_print_usage(void)
 #ifdef AVS_HAS_STD_HEAP
         "       -T [bytes]      'std' heap size (default 16777216)\n"
 #endif
+        "       -F [path]       Specify a local file system path to point "
+        "dev/nvram and dev/raw to (default: use avs config)\n"
         "       -P [pcbid]      Specify PCBID (default: use ea3 config)\n"
         "       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
         "       -S [url]        Specify service url (default: use ea3 config)\n"
@@ -264,17 +276,15 @@ void options_print_usage(void)
         "       -B [filename]   Load pre-hook DLL loaded before avs boot "
         "(can be specified multiple times)\n"
         "       -I [filename]   Load pre-hook DLL that overrides IAT reference "
-        "before execution"
-        "(can be specified multiple times)\n"
+        "before execution (can be specified multiple times)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
         "       -L              Log all loaded and final (property) "
         "configuration that launcher uses for bootstrapping. IMPORTANT: DO NOT "
         "ENABLE unless you know what you are doing. This prints sensitive data "
         "and credentials to the console and logfile. BE CAUTIOUS not to share "
-        "this information before redaction."
+        "this information before redaction.\n"
         "       -D              Halt the launcher before bootstrapping AVS "
-        "until a"
-        " remote debugger is attached\n");
+        "until a remote debugger is attached\n");
 }
 
 void options_fini(struct options *options)

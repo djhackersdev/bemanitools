@@ -9,6 +9,7 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-context.h"
+#include "launcher/property.h"
 
 #include "util/codepage.h"
 #include "util/fs.h"
@@ -186,6 +187,61 @@ static void _avs_context_create_config_fs_dir(
             log_fatal("Cannot create folders for unsupported file system type %s of path %s in avs config",
                 fs_type, fs_path);
         }
+    }
+}
+
+void avs_context_property_set_local_fs_nvram_raw(
+    struct property *config_prop,
+    const char* dev_nvram_raw_path)
+{
+    char path_dev_raw[MAX_PATH];
+    char path_dev_nvram[MAX_PATH];
+
+    struct property_node *fs_node;
+    struct property_node *mounttable_node;
+    struct property_node *vfs_node;
+
+    str_cpy(path_dev_raw, sizeof(path_dev_raw), dev_nvram_raw_path);
+    str_cat(path_dev_raw, sizeof(path_dev_raw), "/dev/raw");
+
+    str_cpy(path_dev_nvram, sizeof(path_dev_nvram), dev_nvram_raw_path);
+    str_cat(path_dev_nvram, sizeof(path_dev_nvram), "/dev/nvram");
+
+    fs_node = property_search(config_prop, NULL, "config/fs");
+
+    if (!fs_node) {
+        log_fatal("Cannot find config/fs in avs config");
+    }
+
+    // Check if "new" mounttable config is used for dev/nvram and dev/raw or legacy config
+    if (property_search(config_prop, fs_node, "mounttable")) {
+        property_remove(config_prop, fs_node, "mounttable");
+
+        mounttable_node = property_node_create(config_prop, fs_node, PROPERTY_TYPE_VOID, "mounttable");
+
+        vfs_node = property_node_create(config_prop, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
+
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_raw);
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/raw");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
+
+        vfs_node = property_node_create(config_prop, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
+
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_nvram);
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/nvram");
+        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
+    } else {
+        boot_property_node_replace_str(config_prop, fs_node, "nvram/device", path_dev_raw);
+        boot_property_node_replace_str(config_prop, fs_node, "nvram/fstype", "fs");
+        boot_property_node_replace_str(config_prop, fs_node, "nvram/option", "vf=1,posix=1");
+
+        boot_property_node_replace_str(config_prop, fs_node, "raw/device", path_dev_nvram);
+        boot_property_node_replace_str(config_prop, fs_node, "raw/fstype", "fs");
+        boot_property_node_replace_str(config_prop, fs_node, "raw/option", "vf=1,posix=1");
     }
 }
 

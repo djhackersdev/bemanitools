@@ -89,6 +89,7 @@ static void trap_remote_debugger()
 
 static void avs_config_setup(
         struct bootstrap_config *bootstrap_config,
+        const char* dev_nvram_raw_path,
         struct property **avs_config_property)
 {
     struct property_node *avs_config_node;
@@ -101,6 +102,21 @@ static void avs_config_setup(
 
     if (avs_config_node == NULL) {
         log_fatal("%s: /config missing", bootstrap_config->startup.avs_config_file);
+    }
+
+    if (dev_nvram_raw_path) {
+        if (!path_exists(dev_nvram_raw_path)) {
+            log_warning("Override local file system dev/nvram and dev/raw path %s does not exist, creating",
+                dev_nvram_raw_path);
+
+            if (!path_mkdir(dev_nvram_raw_path)) {
+                log_fatal("Creating directory %s failed", dev_nvram_raw_path);
+            }
+        }
+
+        avs_context_property_set_local_fs_nvram_raw(
+            *avs_config_property,
+            dev_nvram_raw_path);
     }
 
     bootstrap_config_update_avs(bootstrap_config, avs_config_node);
@@ -401,7 +417,10 @@ int main(int argc, const char **argv)
 
     /* AVS */
 
-    avs_config_setup(&bootstrap_config, &avs_config_property);
+    avs_config_setup(
+        &bootstrap_config,
+        options.avs_fs_dev_nvram_raw_path,
+        &avs_config_property);
 
     if (options.log_property_configs) {
         log_misc("Property avs-config");

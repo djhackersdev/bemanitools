@@ -17,6 +17,7 @@ struct options {
     const char *avs_config_path;
     const char *ea3_config_path;
     const char *ea3_ident_path;
+    const char *avs_fs_dev_nvram_raw_path;
     const char *softid;
     const char *pcbid;
     const char *module;
