@@ -13,6 +13,9 @@ EXPORTS
     avs_fs_mount @76 NONAME
     avs_fs_open @573 NONAME
     avs_fs_read @573 NONAME
+    avs_fs_opendir @573 NONAME
+    avs_fs_readdir @573 NONAME
+    avs_fs_closedir @573 NONAME
     avs_net_ctrl @119 NONAME
     property_create @145 NONAME
     property_destroy @146 NONAME

@@ -8,6 +8,9 @@ EXPORTS
     avs_fs_lstat @71 NONAME
     avs_fs_open @75 NONAME
     avs_fs_read @77 NONAME
+    avs_fs_opendir @573 NONAME
+    avs_fs_readdir @573 NONAME
+    avs_fs_closedir @573 NONAME
     avs_net_ctrl @107 NONAME
     avs_shutdown @140 NONAME
     avs_thread_create @156 NONAME

@@ -283,6 +283,9 @@ int avs_fs_copy(const char *src, const char *dest);
 int avs_fs_addfs(void *filesys_struct);
 int avs_fs_mount(
     const char *mountpoint, const char *fsroot, const char *fstype, void *data);
+avs_desc avs_fs_opendir(const char *path);
+const char* avs_fs_readdir(avs_desc dir);
+void avs_fs_closedir(avs_desc dir);
 
 bool avs_is_active();
 
