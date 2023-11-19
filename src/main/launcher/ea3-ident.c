@@ -12,14 +12,14 @@
 #include "util/str.h"
 
 PSMAP_BEGIN(ea3_ident_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, softid, "/ea3/id/softid", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, hardid, "/ea3/id/hardid", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, pcbid, "/ea3/id/pcbid", "")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, model, "/ea3/soft/model")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, dest, "/ea3/soft/dest")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, spec, "/ea3/soft/spec")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, rev, "/ea3/soft/rev")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, ext, "/ea3/soft/ext")
+PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, softid, "/id/softid", "")
+PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, hardid, "/id/hardid", "")
+PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, pcbid, "/id/pcbid", "")
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, model, "/soft/model")
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, dest, "/soft/dest")
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, spec, "/soft/spec")
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, rev, "/soft/rev")
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, ext, "/soft/ext")
 PSMAP_END
 
 void ea3_ident_init(struct ea3_ident *ident)
@@ -44,7 +44,7 @@ void ea3_ident_initialize_from_file(
         log_fatal("%s: /ea3_conf missing", path);
     }
 
-    if (!property_psmap_import(property, NULL, ea3_ident, ea3_ident_psmap)) {
+    if (!property_psmap_import(property, node, ea3_ident, ea3_ident_psmap)) {
         log_fatal(
             "%s: Error reading IDs from config file", path);
     }
@@ -79,16 +79,23 @@ void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)
 void ea3_ident_to_property(
     const struct ea3_ident *ident, struct property *ea3_config)
 {
+    struct property_node *ea3_node;
     struct property_node *node;
     int i;
 
+    ea3_node = property_search(ea3_config, NULL, "/ea3");
+
+    if (ea3_node == NULL) {
+        log_fatal("ea3 config is missing /ea3 node");
+    }
+
     for (i = 0; ea3_ident_psmap[i].type != 0xFF; i++) {
-        node = property_search(ea3_config, 0, ea3_ident_psmap[i].path);
+        node = property_search(ea3_config, ea3_node, ea3_ident_psmap[i].path);
 
         if (node != NULL) {
             property_node_remove(node);
         }
     }
 
-    property_psmap_export(ea3_config, NULL, ident, ea3_ident_psmap);
+    property_psmap_export(ea3_config, ea3_node, ident, ea3_ident_psmap);
 }

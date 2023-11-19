@@ -1,3 +1,5 @@
+#define LOG_MODULE "launcher-property"
+
 #include <windows.h>
 
 #include <stddef.h>
@@ -274,6 +276,8 @@ void boot_property_node_replace_bool(
 
     property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
 }
+
+
 
 void boot_property_node_replace_str(
         struct property *property,
