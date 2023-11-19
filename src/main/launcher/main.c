@@ -192,6 +192,9 @@ int main(int argc, const char **argv)
         launcher_build_date,
         launcher_gitrev);
     os_version_log();
+    char buffer_tmp[MAX_PATH];
+    getcwd(buffer_tmp, sizeof(buffer_tmp));
+    log_info("Current working directory: %s", buffer_tmp);
 
     /* Read command line */
 
