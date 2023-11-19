@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "util/array.h"
+#include "util/log.h"
 
 #include "launcher/bs-config.h"
 
@@ -21,6 +22,8 @@ struct options {
     const char *softid;
     const char *pcbid;
     const char *module;
+    bool override_loglevel_enabled;
+    enum log_level loglevel;
     const char *logfile;
     bool log_property_configs;
     struct array hook_dlls;

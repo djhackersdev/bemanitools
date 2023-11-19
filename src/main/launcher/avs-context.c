@@ -13,7 +13,6 @@
 
 #include "util/codepage.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 
@@ -242,6 +241,63 @@ void avs_context_property_set_local_fs_nvram_raw(
         boot_property_node_replace_str(config_prop, fs_node, "raw/device", path_dev_nvram);
         boot_property_node_replace_str(config_prop, fs_node, "raw/fstype", "fs");
         boot_property_node_replace_str(config_prop, fs_node, "raw/option", "vf=1,posix=1");
+    }
+}
+
+void avs_context_property_set_log_level(struct property *config_prop, enum log_level loglevel)
+{
+    struct property_node *log_level_node;
+    enum property_type type;
+
+    log_level_node = property_search(config_prop, NULL, "config/log/level");
+
+    if (!log_level_node) {
+        log_fatal("config/log/level missing in AVS configuration");
+    }
+
+    type = property_node_type(log_level_node);
+
+    // Different AVS config formats depending on AVS version, detect based on the existing values
+    switch (type) {
+        case PROPERTY_TYPE_STR:
+            const char *loglevel_str;
+
+            switch (loglevel) {
+                case LOG_LEVEL_FATAL:
+                    loglevel_str = "fatal";
+                    break;
+
+                case LOG_LEVEL_WARNING:
+                    loglevel_str = "warn";
+                    break;
+
+                case LOG_LEVEL_INFO:
+                    loglevel_str = "info";
+                    break;
+
+                case LOG_LEVEL_MISC:
+                    loglevel_str = "misc";
+                    break;
+
+                default:
+                    log_fatal("Unsupported log level: %d", loglevel);
+                    break;
+            }
+
+            property_node_remove(log_level_node);
+            property_node_create(config_prop, log_level_node, PROPERTY_TYPE_STR, NULL, loglevel_str);
+
+            break;
+
+        case PROPERTY_TYPE_U32:
+            property_node_remove(log_level_node);
+            property_node_create(config_prop, log_level_node, PROPERTY_TYPE_U32, NULL, loglevel);
+
+            break;
+
+        default:
+            log_fatal("Unsupported property type %d for config/log/level node in AVS config", type);
+            break;
     }
 }
 

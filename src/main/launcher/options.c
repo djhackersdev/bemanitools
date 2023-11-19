@@ -6,8 +6,6 @@
 
 #include "launcher/options.h"
 
-#include "util/array.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define DEFAULT_HEAP_SIZE 16777216
@@ -26,6 +24,8 @@ void options_init(struct options *options)
     options->softid = NULL;
     options->pcbid = NULL;
     options->module = NULL;
+    options->override_loglevel_enabled = false;
+    options->loglevel = LOG_LEVEL_INFO;
     options->logfile = NULL;
     options->log_property_configs = false;
     options->remote_debugger = false;
@@ -180,6 +180,22 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     break;
                 }
 
+                case 'N':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    long tmp = strtol(argv[++i], NULL, 0);
+
+                    if (tmp < LOG_LEVEL_FATAL || tmp > LOG_LEVEL_MISC) {
+                        return false;
+                    }
+
+                    options->loglevel = (enum log_level) tmp;
+                    options->override_loglevel_enabled = true;
+
+                    break;
+
                 case 'Y':
                     if (i + 1 >= argc) {
                         return false;
@@ -277,6 +293,8 @@ void options_print_usage(void)
         "(can be specified multiple times)\n"
         "       -I [filename]   Load pre-hook DLL that overrides IAT reference "
         "before execution (can be specified multiple times)\n"
+        "       -N [0/1/2/3]    Log level for both console and file with "
+        "increasing verbosity (0 = fatal, 1 = warn, 2 = info, 3 = misc)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
         "       -L              Log all loaded and final (property) "
         "configuration that launcher uses for bootstrapping. IMPORTANT: DO NOT "

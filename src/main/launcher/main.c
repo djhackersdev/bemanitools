@@ -90,6 +90,8 @@ static void trap_remote_debugger()
 static void avs_config_setup(
         struct bootstrap_config *bootstrap_config,
         const char* dev_nvram_raw_path,
+        bool override_loglevel_enabled,
+        enum log_level loglevel,
         struct property **avs_config_property)
 {
     struct property_node *avs_config_node;
@@ -117,6 +119,10 @@ static void avs_config_setup(
         avs_context_property_set_local_fs_nvram_raw(
             *avs_config_property,
             dev_nvram_raw_path);
+    }
+
+    if (override_loglevel_enabled) {
+        avs_context_property_set_log_level(*avs_config_property, loglevel);
     }
 
     bootstrap_config_update_avs(bootstrap_config, avs_config_node);
@@ -376,6 +382,11 @@ int main(int argc, const char **argv)
         return EXIT_FAILURE;
     }
 
+    // Enforce user configured log level
+    if (options.override_loglevel_enabled) {
+        log_set_level(options.loglevel);
+    }
+
     /* If enabled, wait for a remote debugger to attach. Spawning launcher
        with a debugger crashes it for some reason (e.g. on jubeat08). However,
        starting the launcher separately and attaching a remote debugger works */
@@ -420,6 +431,8 @@ int main(int argc, const char **argv)
     avs_config_setup(
         &bootstrap_config,
         options.avs_fs_dev_nvram_raw_path,
+        options.override_loglevel_enabled,
+        options.loglevel,
         &avs_config_property);
 
     if (options.log_property_configs) {
