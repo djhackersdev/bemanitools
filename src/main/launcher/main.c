@@ -17,84 +17,11 @@
 #include "launcher/stubs.h"
 #include "launcher/version.h"
 
-#include "util/codepage.h"
 #include "util/defs.h"
 #include "util/fs.h"
 #include "util/log.h"
-#include "util/mem.h"
 #include "util/os.h"
 #include "util/str.h"
-
-/* Gratuitous API changes orz */
-static AVS_LOG_WRITER(log_callback, chars, nchars, ctx)
-{
-    wchar_t *utf16;
-    char *utf8;
-    int utf16_len;
-    int utf8_len;
-    int result;
-    DWORD nwritten;
-    HANDLE console;
-    HANDLE file;
-
-    /* Ignore existing NUL terminator */
-
-    nchars--;
-
-    /* Transcode shit_jis to UTF-8 */
-
-    utf16_len = MultiByteToWideChar(CP_SHIFT_JIS, 0, chars, nchars, NULL, 0);
-
-    if (utf16_len == 0) {
-        abort();
-    }
-
-    utf16 = xmalloc(sizeof(*utf16) * utf16_len);
-    result =
-        MultiByteToWideChar(CP_SHIFT_JIS, 0, chars, nchars, utf16, utf16_len);
-
-    if (result == 0) {
-        abort();
-    }
-
-    utf8_len =
-        WideCharToMultiByte(CP_UTF8, 0, utf16, utf16_len, NULL, 0, NULL, NULL);
-
-    if (utf8_len == 0) {
-        abort();
-    }
-
-    utf8 = xmalloc(utf8_len + 2);
-    result = WideCharToMultiByte(
-        CP_UTF8, 0, utf16, utf16_len, utf8, utf8_len, NULL, NULL);
-
-    if (result == 0) {
-        abort();
-    }
-
-#if AVS_VERSION >= 1500
-    utf8[utf8_len + 0] = '\r';
-    utf8[utf8_len + 1] = '\n';
-
-    utf8_len += 2;
-#endif
-
-    /* Write to console and log file */
-
-    file = (HANDLE) ctx;
-    console = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    if (ctx != INVALID_HANDLE_VALUE) {
-        WriteFile(file, utf8, utf8_len, &nwritten, NULL);
-    }
-
-    WriteFile(console, utf8, utf8_len, &nwritten, NULL);
-
-    /* Clean up */
-
-    free(utf8);
-    free(utf16);
-}
 
 static void load_hook_dlls(struct array *hook_dlls)
 {
@@ -192,7 +119,6 @@ static void log_property_node_tree(struct property_node *parent_node)
 int main(int argc, const char **argv)
 {
     bool ok;
-    HANDLE logfile;
 
     struct ea3_ident ea3;
     struct module_context module;
@@ -284,19 +210,6 @@ int main(int argc, const char **argv)
 
     /* Start up AVS */
 
-    if (options.logfile != NULL) {
-        logfile = CreateFileA(
-            options.logfile,
-            GENERIC_WRITE,
-            FILE_SHARE_READ,
-            NULL,
-            CREATE_ALWAYS,
-            0,
-            NULL);
-    } else {
-        logfile = INVALID_HANDLE_VALUE;
-    }
-
     avs_config = boot_property_load(options.avs_config_path);
     avs_config_root = property_search(avs_config, 0, "/config");
 
@@ -318,8 +231,7 @@ int main(int argc, const char **argv)
         avs_config_root,
         options.avs_heap_size,
         options.std_heap_size,
-        log_callback,
-        logfile);
+        options.logfile);
 
     boot_property_free(avs_config);
 
@@ -484,10 +396,6 @@ int main(int argc, const char **argv)
 
     log_to_writer(log_writer_file, stdout);
     avs_context_fini();
-
-    if (logfile != INVALID_HANDLE_VALUE) {
-        CloseHandle(logfile);
-    }
 
     module_context_fini(&module);
     options_fini(&options);
