@@ -92,31 +92,3 @@ void ea3_ident_to_property(
 
     property_psmap_export(ea3_config, NULL, ident, ea3_ident_psmap);
 }
-
-void ea3_ident_replace_property_bool(
-    struct property_node *node, const char *name, uint8_t val)
-{
-    struct property_node *tmp;
-
-    tmp = property_search(NULL, node, name);
-
-    if (tmp) {
-        property_node_remove(tmp);
-    }
-
-    property_node_create(NULL, node, PROPERTY_TYPE_BOOL, name, val);
-}
-
-void ea3_ident_replace_property_str(
-    struct property_node *node, const char *name, const char *val)
-{
-    struct property_node *tmp;
-
-    tmp = property_search(NULL, node, name);
-
-    if (tmp) {
-        property_node_remove(tmp);
-    }
-
-    tmp = property_node_create(NULL, node, PROPERTY_TYPE_STR, name, val);
-}

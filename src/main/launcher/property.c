@@ -258,6 +258,40 @@ struct property *boot_property_load_avs(const char *filename)
     return prop;
 }
 
+void boot_property_node_replace_bool(
+        struct property *property,
+        struct property_node *node,
+        const char *name,
+        uint8_t val)
+{
+    struct property_node *tmp;
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
+}
+
+void boot_property_node_replace_str(
+        struct property *property,
+        struct property_node *node,
+        const char *name,
+        const char *val)
+{
+    struct property_node *tmp;
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
+}
+
 void boot_property_free(struct property *prop)
 {
     void *buffer;

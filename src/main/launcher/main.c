@@ -304,7 +304,8 @@ static void ea3_config_setup(
         log_misc(
             "Overriding url_slash to: %d", override_urlslash_value);
 
-        ea3_ident_replace_property_bool(
+        boot_property_node_replace_bool(
+            *ea3_config_property,
             ea3_config_node,
             "/network/url_slash",
             override_urlslash_value);
@@ -313,8 +314,11 @@ static void ea3_config_setup(
     if (service_url) {
         log_misc("Overriding service url to: %s", service_url);
 
-        ea3_ident_replace_property_str(
-            ea3_config_node, "/network/services", service_url);
+        boot_property_node_replace_str(
+            *ea3_config_property,
+            ea3_config_node,
+            "/network/services",
+            service_url);
     }
 }
 

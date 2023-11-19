@@ -35,9 +35,5 @@ bool ea3_ident_from_property(
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident);
 void ea3_ident_to_property(
     const struct ea3_ident *ident, struct property *ea3_config);
-void ea3_ident_replace_property_bool(
-    struct property_node *node, const char *name, uint8_t val);
-void ea3_ident_replace_property_str(
-    struct property_node *node, const char *name, const char *val);
-
+    
 #endif
