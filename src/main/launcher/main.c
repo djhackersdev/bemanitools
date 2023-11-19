@@ -9,6 +9,7 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-context.h"
+#include "launcher/bootstrap-context.h"
 #include "launcher/bs-config.h"
 #include "launcher/ea3-config.h"
 #include "launcher/module.h"
@@ -22,71 +23,6 @@
 #include "util/log.h"
 #include "util/os.h"
 #include "util/str.h"
-
-static void log_launcher_and_env_info()
-{
-    char buffer_tmp[MAX_PATH];
-
-    log_info(
-        "launcher build date %s, gitrev %s",
-        launcher_build_date,
-        launcher_gitrev);
-    os_version_log();
-    
-    getcwd(buffer_tmp, sizeof(buffer_tmp));
-    log_info("Current working directory: %s", buffer_tmp);
-}
-
-static void trap_remote_debugger()
-{
-    BOOL res;
-
-    log_info("Waiting until debugger attaches to remote process...");
-
-    while (true) {
-        res = FALSE;
-        
-        if (!CheckRemoteDebuggerPresent(GetCurrentProcess(), &res)) {
-            log_fatal(
-                "CheckRemoteDebuggerPresent failed: %08x",
-                (unsigned int) GetLastError());
-        }
-
-        if (res) {
-            log_info("Debugger attached, resuming");
-            break;
-        }
-
-        Sleep(1000);
-    }
-}
-
-static void load_hook_dlls(struct array *hook_dlls)
-{
-    const char *hook_dll;
-
-    for (size_t i = 0; i < hook_dlls->nitems; i++) {
-        hook_dll = *array_item(char *, hook_dlls, i);
-
-        if (LoadLibraryA(hook_dll) == NULL) {
-            LPSTR buffer;
-
-            FormatMessageA(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
-                GetLastError(),
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPSTR) &buffer,
-                0,
-                NULL);
-
-            log_fatal("%s: Failed to load hook DLL: %s", hook_dll, buffer);
-
-            LocalFree(buffer);
-        }
-    }
-}
 
 static void log_property_node_tree_rec(struct property_node *parent_node, const char* parent_path)
 {
@@ -154,6 +90,104 @@ static void log_property_node_tree(struct property_node *parent_node)
     log_property_node_tree_rec(parent_node, "");
 }
 
+static void log_launcher_and_env_info()
+{
+    char buffer_tmp[MAX_PATH];
+
+    log_info(
+        "launcher build date %s, gitrev %s",
+        launcher_build_date,
+        launcher_gitrev);
+    os_version_log();
+    
+    getcwd(buffer_tmp, sizeof(buffer_tmp));
+    log_info("Current working directory: %s", buffer_tmp);
+}
+
+static void trap_remote_debugger()
+{
+    BOOL res;
+
+    log_info("Waiting until debugger attaches to remote process...");
+
+    while (true) {
+        res = FALSE;
+        
+        if (!CheckRemoteDebuggerPresent(GetCurrentProcess(), &res)) {
+            log_fatal(
+                "CheckRemoteDebuggerPresent failed: %08x",
+                (unsigned int) GetLastError());
+        }
+
+        if (res) {
+            log_info("Debugger attached, resuming");
+            break;
+        }
+
+        Sleep(1000);
+    }
+}
+
+static void avs_initialize(struct bootstrap_config *bootstrap_config)
+{
+    struct property *avs_config;
+    struct property_node *avs_config_root;
+
+    log_misc("AVS initialize...");
+
+    avs_config = boot_property_load(bootstrap_config->startup.avs_config_file);
+    avs_config_root = property_search(avs_config, 0, "/config");
+
+    log_property_tree(avs_config);
+
+    if (avs_config_root == NULL) {
+        log_fatal("%s: /config missing", bootstrap_config->startup.avs_config_file);
+    }
+
+    bootstrap_config_update_avs(bootstrap_config, avs_config_root);
+
+    avs_context_init(
+        avs_config,
+        avs_config_root,
+        bootstrap_config->startup.avs_heap_size,
+        bootstrap_config->startup.std_heap_size,
+        bootstrap_config->startup.log_file);
+
+    boot_property_free(avs_config);
+
+    log_misc("AVS logger available, switching to AVS loggers");
+
+    log_to_external(
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+}
+
+static void load_hook_dlls(struct array *hook_dlls)
+{
+    const char *hook_dll;
+
+    for (size_t i = 0; i < hook_dlls->nitems; i++) {
+        hook_dll = *array_item(char *, hook_dlls, i);
+
+        if (LoadLibraryA(hook_dll) == NULL) {
+            LPSTR buffer;
+
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPSTR) &buffer,
+                0,
+                NULL);
+
+            log_fatal("%s: Failed to load hook DLL: %s", hook_dll, buffer);
+
+            LocalFree(buffer);
+        }
+    }
+}
+
 int main(int argc, const char **argv)
 {
     bool ok;
@@ -161,15 +195,12 @@ int main(int argc, const char **argv)
     struct ea3_ident ea3;
     struct module_context module;
     struct options options;
-    struct bootstrap_config bs;
+    struct bootstrap_config bootstrap_config;
 
-    struct property *bootstrap_config = NULL;
     struct property *app_config = NULL;
-    struct property *avs_config;
     struct property *ea3_config;
 
     struct property_node *app_config_root;
-    struct property_node *avs_config_root;
     struct property_node *ea3_config_root;
 
     // Static logging setup until we got AVS up and running
@@ -178,36 +209,12 @@ int main(int argc, const char **argv)
 
     log_launcher_and_env_info();
 
-    /* Read command line */
-
-    options_init(&options);
-    options_read_early_cmdline(&options, argc, argv);
-
-    bootstrap_config_init(&bs);
-    if (options.bootstrap_selector) {
-        log_misc("Bootstrap selector specified: %s", options.bootstrap_selector);
-
-        bootstrap_config = boot_property_load(options.bootstrap_config_path);
-
-        log_info(
-            "Loading bootstrap selector '%s'...", options.bootstrap_selector);
-        
-        if (!bootstrap_config_from_property(
-                &bs, bootstrap_config, options.bootstrap_selector)) {
-            log_fatal(
-                "%s: could not load configuration for '%s'",
-                options.bootstrap_config_path,
-                options.bootstrap_selector);
-        }
-
-        options_read_bootstrap(&options, &bs.startup);
-
-        log_misc("Finished reading bootstrap");
-    }
-
     log_misc("Reading command line options...");
 
-    if (!options_read_cmdline(&options, argc, argv)) {
+    options_init(&options);
+
+    if (!options_read_cmdline(&options, argc, argv) ||
+           (!options.bootstrap_selector && !options.module)) {
         options_print_usage();
 
         return EXIT_FAILURE;
@@ -221,61 +228,31 @@ int main(int argc, const char **argv)
         trap_remote_debugger();
     }
 
-    log_misc("Preparing AVS...");
-
-    /* Start up AVS */
-
-    avs_config = boot_property_load(options.avs_config_path);
-    avs_config_root = property_search(avs_config, 0, "/config");
-
-    log_property_tree(avs_config);
-
-    if (avs_config_root == NULL) {
-        log_fatal("%s: /config missing", options.avs_config_path);
-    }
-
-    bootstrap_config_update_avs(&bs, avs_config_root);
-
     log_misc("Loading before hook dlls...");
+
     load_hook_dlls(&options.before_hook_dlls);
 
-    log_misc("Initializing AVS...");
-
-    avs_context_init(
-        avs_config,
-        avs_config_root,
-        options.avs_heap_size,
-        options.std_heap_size,
-        options.logfile);
-
-    boot_property_free(avs_config);
-
-    log_info("Bootstrap complete, switching loggers");
-
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
-    
-    /* Do late bootstrap initialisation */
-
-    struct bootstrap_default_file default_file;
-
-    while (bootstrap_config_iter_default_file(&bs, &default_file)) {
-        struct avs_stat st;
-
-        log_misc("%s: copying from %s...", default_file.dest, default_file.src);
-
-        if (!avs_fs_lstat(default_file.src, &st)) {
-            log_fatal("Default file source %s does not exist or is not accessible", default_file.src);
-        }
-
-        if (avs_fs_copy(default_file.src, default_file.dest) < 0) {
-            log_fatal(
-                "%s: could not copy from %s",
-                default_file.dest,
-                default_file.src);
-        }
+    // Launcher supports two major boot modes: "manual" vs. bootstrap.xml
+    if (!options.bootstrap_selector) {
+        bootstrap_context_init(
+            options.avs_config_path,
+            options.ea3_config_path,
+            options.std_heap_size,
+            options.avs_heap_size,
+            options.logfile,
+            options.module,
+            &bootstrap_config);
+    } else {
+        bootstrap_context_init_from_file(
+            options.bootstrap_config_path,
+            options.bootstrap_selector,
+            &bootstrap_config);
     }
 
+    avs_initialize(&bootstrap_config);
+    
+    bootstrap_context_post_avs_setup(&bootstrap_config);
+  
     /* Load game DLL */
 
     if (options.iat_hook_dlls.nitems > 0) {
@@ -297,11 +274,11 @@ int main(int argc, const char **argv)
 
     log_misc("Preparing ea3 configuration...");
 
-    ea3_config = boot_property_load_avs(options.ea3_config_path);
+    ea3_config = boot_property_load_avs(bootstrap_config.startup.eamuse_config_file);
     ea3_config_root = property_search(ea3_config, 0, "/ea3");
 
     if (ea3_config_root == NULL) {
-        log_fatal("%s: /ea3 missing", options.ea3_config_path);
+        log_fatal("%s: /ea3 missing", bootstrap_config.startup.eamuse_config_file);
     }
 
     if (path_exists(options.ea3_ident_path)) {
@@ -342,8 +319,8 @@ int main(int argc, const char **argv)
 
     /* Invoke dll_entry_init */
 
-    if (bs.module_params) {
-        app_config_root = bs.module_params;
+    if (bootstrap_config.module_params) {
+        app_config_root = bootstrap_config.module_params;
     } else if (path_exists(options.app_config_path)) {
         app_config = boot_property_load_avs(options.app_config_path);
         app_config_root = property_search(app_config, 0, "/param");
@@ -372,9 +349,6 @@ int main(int argc, const char **argv)
 
     if (app_config) {
         boot_property_free(app_config);
-    }
-    if (bootstrap_config) {
-        boot_property_free(bootstrap_config);
     }
 
     ea3_ident_to_property(&ea3, ea3_config);

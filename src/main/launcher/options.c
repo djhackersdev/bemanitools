@@ -36,15 +36,16 @@ void options_init(struct options *options)
     options->override_urlslash_value = false;
 }
 
-void options_read_early_cmdline(
-    struct options *options, int argc, const char **argv)
+bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
+    bool got_module = false;
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
                 case 'C':
                     if (i + 1 >= argc) {
-                        return;
+                        return false;
                     }
 
                     options->bootstrap_config_path = argv[++i];
@@ -53,34 +54,10 @@ void options_read_early_cmdline(
 
                 case 'Z':
                     if (i + 1 >= argc) {
-                        return;
-                    }
-
-                    options->bootstrap_selector = argv[++i];
-
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
-}
-
-bool options_read_cmdline(struct options *options, int argc, const char **argv)
-{
-    bool got_module = false;
-    for (int i = 1; i < argc; i++) {
-        if (argv[i][0] == '-') {
-            switch (argv[i][1]) {
-                case 'C':
-                case 'Z':
-                    /* handled by options_read_early_cmdline() */
-                    if (i + 1 >= argc) {
                         return false;
                     }
 
-                    ++i;
+                    options->bootstrap_selector = argv[++i];
 
                     break;
 
@@ -246,30 +223,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
         }
     }
 
-    if (options->module) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void options_read_bootstrap(
-    struct options *options, const struct bootstrap_startup_config *bs_config)
-{
-    options->avs_config_path = bs_config->avs_config_file;
-    options->avs_heap_size = bs_config->avs_heap_size;
-    options->std_heap_size = bs_config->std_heap_size;
-    options->ea3_config_path = bs_config->eamuse_config_file;
-
-    if (bs_config->log_enable_file) {
-        if (bs_config->log_file[0]) {
-            options->logfile = bs_config->log_file;
-        } else if (bs_config->log_name[0]) {
-            options->logfile = bs_config->log_name;
-        }
-    }
-
-    options->module = bs_config->module_file;
+    return true;
 }
 
 void options_print_usage(void)
