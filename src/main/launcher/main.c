@@ -24,38 +24,6 @@
 #include "util/os.h"
 #include "util/str.h"
 
-static void log_property_node_tree_rec(struct property_node *parent_node, const char* parent_path)
-{
-    char cur_path[4096];
-    // 256 found in AVS code as size used on property_node_name
-    char cur_node_name[256];
-    char leaf_node_data[2048];
-    struct property_node* child_node;
-
-    // Carry on the full root path down the node tree
-    property_node_name(parent_node, cur_node_name, sizeof(cur_node_name));
-
-    str_cpy(cur_path, sizeof(cur_path), parent_path);
-    str_cat(cur_path, sizeof(cur_path), "/");
-    str_cat(cur_path, sizeof(cur_path), cur_node_name);
-
-    child_node = property_node_traversal(parent_node, TRAVERSE_FIRST_CHILD);
-
-    // parent node is a leaf node, print all data of it
-    if (child_node == NULL) {
-        // TODO reading ints as string seems to result in empty values when printing them?
-        property_node_read(parent_node, PROPERTY_TYPE_STR, leaf_node_data, sizeof(leaf_node_data));
-
-        log_misc("%s: %s", cur_path, leaf_node_data);
-    } else {
-        while (child_node) {
-            log_property_node_tree_rec(child_node, cur_path);
-
-            child_node = property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
-        }
-    }
-}
-
 static void log_avs_fs_dir(const char *path)
 {
     const char* name;
@@ -79,16 +47,6 @@ static void log_avs_fs_dir(const char *path)
     } while (name != NULL);
 
     avs_fs_closedir(dir);
-}
-
-static void log_property_tree(struct property *property)
-{
-    log_property_node_tree_rec(property_search(property, NULL, "/"), "");
-}
-
-static void log_property_node_tree(struct property_node *parent_node)
-{
-    log_property_node_tree_rec(parent_node, "");
 }
 
 static void log_launcher_and_env_info()
@@ -149,7 +107,7 @@ static void avs_initialize(
 
     bootstrap_config_update_avs(bootstrap_config, avs_config_node);
 
-    log_property_tree(*avs_config_property);
+    boot_property_log(*avs_config_property);
 
     avs_context_init(
         *avs_config_property,
@@ -304,7 +262,7 @@ void invoke_dll_module_init(
 
     std_setenv("/env/profile/soft_id_code", sidcode_long);
 
-    log_property_node_tree(app_config);
+    boot_property_node_log(app_config);
 
     ok = module_context_invoke_init(module, sidcode_short, app_config);
 
@@ -449,7 +407,7 @@ int main(int argc, const char **argv)
             &bootstrap_config_property,
             &bootstrap_config);
 
-        log_property_tree(bootstrap_config_property);
+        boot_property_log(bootstrap_config_property);
     }
 
     /* AVS */
@@ -509,7 +467,7 @@ int main(int argc, const char **argv)
         options.override_service,
         &ea3_config_property);
 
-    log_property_tree(ea3_config_property);
+    boot_property_log(ea3_config_property);
 
     ea3_boot(property_search(ea3_config_property, 0, "/ea3"));   
 

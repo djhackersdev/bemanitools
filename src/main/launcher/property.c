@@ -10,6 +10,7 @@
 
 #include "util/log.h"
 #include "util/mem.h"
+#include "util/str.h"
 
 typedef void (*rewinder)(uint32_t context);
 
@@ -54,6 +55,50 @@ static void boot_property_frewind(uint32_t context)
 {
     FILE *f = TlsGetValue(context);
     rewind(f);
+}
+
+static void boot_property_log_node_tree_rec(
+        struct property_node *parent_node,
+        const char* parent_path)
+{
+    char cur_path[4096];
+    // 256 found in AVS code as size used on property_node_name
+    char cur_node_name[256];
+    char leaf_node_data[2048];
+    struct property_node* child_node;
+
+    // Carry on the full root path down the node tree
+    property_node_name(parent_node, cur_node_name, sizeof(cur_node_name));
+
+    str_cpy(cur_path, sizeof(cur_path), parent_path);
+    str_cat(cur_path, sizeof(cur_path), "/");
+    str_cat(cur_path, sizeof(cur_path), cur_node_name);
+
+    child_node = property_node_traversal(parent_node, TRAVERSE_FIRST_CHILD);
+
+    // parent node is a leaf node, print all data of it
+    if (child_node == NULL) {
+        // TODO reading ints as string seems to result in empty values when printing them?
+        property_node_read(parent_node, PROPERTY_TYPE_STR, leaf_node_data, sizeof(leaf_node_data));
+
+        log_misc("%s: %s", cur_path, leaf_node_data);
+    } else {
+        while (child_node) {
+            boot_property_log_node_tree_rec(child_node, cur_path);
+
+            child_node = property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
+        }
+    }
+}
+
+void boot_property_log(struct property *property)
+{
+    boot_property_log_node_tree_rec(property_search(property, NULL, "/"), "");
+}
+
+void boot_property_node_log(struct property_node *node)
+{
+    boot_property_log_node_tree_rec(node, "");
 }
 
 struct property *boot_property_load(const char *filename)
