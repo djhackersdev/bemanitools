@@ -11,7 +11,7 @@
 #include "launcher/avs-context.h"
 #include "launcher/bootstrap-context.h"
 #include "launcher/bs-config.h"
-#include "launcher/ea3-config.h"
+#include "launcher/ea3-ident.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
 #include "launcher/property.h"
@@ -43,6 +43,7 @@ static void log_property_node_tree_rec(struct property_node *parent_node, const 
 
     // parent node is a leaf node, print all data of it
     if (child_node == NULL) {
+        // TODO reading ints as string seems to result in empty values when printing them?
         property_node_read(parent_node, PROPERTY_TYPE_STR, leaf_node_data, sizeof(leaf_node_data));
 
         log_misc("%s: %s", cur_path, leaf_node_data);
@@ -128,32 +129,34 @@ static void trap_remote_debugger()
     }
 }
 
-static void avs_initialize(struct bootstrap_config *bootstrap_config)
+static void avs_initialize(
+        struct bootstrap_config *bootstrap_config,
+        struct property **avs_config_property)
 {
-    struct property *avs_config;
-    struct property_node *avs_config_root;
+    struct property_node *avs_config_node;
+
+    log_assert(bootstrap_config);
+    log_assert(avs_config_property);
 
     log_misc("AVS initialize...");
 
-    avs_config = boot_property_load(bootstrap_config->startup.avs_config_file);
-    avs_config_root = property_search(avs_config, 0, "/config");
+    *avs_config_property = boot_property_load(bootstrap_config->startup.avs_config_file);
+    avs_config_node = property_search(*avs_config_property, 0, "/config");
 
-    log_property_tree(avs_config);
-
-    if (avs_config_root == NULL) {
+    if (avs_config_node == NULL) {
         log_fatal("%s: /config missing", bootstrap_config->startup.avs_config_file);
     }
 
-    bootstrap_config_update_avs(bootstrap_config, avs_config_root);
+    bootstrap_config_update_avs(bootstrap_config, avs_config_node);
+
+    log_property_tree(*avs_config_property);
 
     avs_context_init(
-        avs_config,
-        avs_config_root,
+        *avs_config_property,
+        avs_config_node,
         bootstrap_config->startup.avs_heap_size,
         bootstrap_config->startup.std_heap_size,
         bootstrap_config->startup.log_file);
-
-    boot_property_free(avs_config);
 
     log_misc("AVS logger available, switching to AVS loggers");
 
@@ -188,26 +191,219 @@ static void load_hook_dlls(struct array *hook_dlls)
     }
 }
 
-int main(int argc, const char **argv)
+static void ea3_ident_config_setup(
+    const char *ea3_ident_path,
+    const char *softid,
+    const char *pcbid,
+    struct ea3_ident *ea3_ident)
 {
+    log_assert(ea3_ident);
+
+    ea3_ident_init(ea3_ident);
+
+    if (ea3_ident_path) {
+        ea3_ident_initialize_from_file(ea3_ident_path, ea3_ident);
+    }
+
+    if (!softid) {
+        str_cpy(ea3_ident->softid, lengthof(ea3_ident->softid), softid);
+    }
+
+    if (!pcbid) {
+        str_cpy(ea3_ident->pcbid, lengthof(ea3_ident->pcbid), pcbid);
+    }
+
+    if (!ea3_ident->hardid[0]) {
+        ea3_ident_hardid_from_ethernet(ea3_ident);
+    }
+}
+
+static void app_config_setup(
+    const struct bootstrap_config *bootstrap_config,
+    const char *app_config_path,
+    struct property **app_config_property,
+    struct property_node **app_config_node)
+{
+    log_assert(bootstrap_config);
+    log_assert(app_config_property);
+    log_assert(app_config_node);
+
+    if (bootstrap_config->module_params) {
+        *app_config_property = NULL;
+        *app_config_node = bootstrap_config->module_params;
+    } else if (app_config_path && path_exists(app_config_path)) {
+        *app_config_property = boot_property_load_avs(app_config_path);
+
+        *app_config_node = property_search(*app_config_property, 0, "/param");
+
+        if (app_config_node == NULL) {
+            log_fatal("%s: /param missing", app_config_path);
+        }
+    } else {
+        log_warning("Explicit app config (file) missing, defaulting to empty");
+
+        *app_config_property = boot_property_load_cstring("<param>dummy</param>");
+        *app_config_node = property_search(*app_config_property, 0, "/param");
+    }
+}
+
+void invoke_dll_module_init(
+    struct ea3_ident *ident,
+    const struct module_context *module,
+    struct property_node *app_config)
+{
+    char sidcode_short[17];
+    char sidcode_long[21];
+    char security_code[9];
     bool ok;
 
-    struct ea3_ident ea3;
-    struct module_context module;
+    /* Set up security env vars */
+
+    str_format(
+        security_code,
+        lengthof(security_code),
+        "G*%s%s%s%s",
+        ident->model,
+        ident->dest,
+        ident->spec,
+        ident->rev);
+
+    std_setenv("/env/boot/version", "0.0.0");
+    std_setenv("/env/profile/security_code", security_code);
+    std_setenv("/env/profile/system_id", ident->pcbid);
+    std_setenv("/env/profile/account_id", ident->pcbid);
+    std_setenv("/env/profile/license_id", ident->softid);
+    std_setenv("/env/profile/software_id", ident->softid);
+    std_setenv("/env/profile/hardware_id", ident->hardid);
+
+    /* Set up the short sidcode string, let dll_entry_init mangle it */
+
+    str_format(
+        sidcode_short,
+        lengthof(sidcode_short),
+        "%s%s%s%s%s",
+        ident->model,
+        ident->dest,
+        ident->spec,
+        ident->rev,
+        ident->ext);
+
+    /* Set up long-form sidcode env var */
+
+    str_format(
+        sidcode_long,
+        lengthof(sidcode_long),
+        "%s:%s:%s:%s:%s",
+        ident->model,
+        ident->dest,
+        ident->spec,
+        ident->rev,
+        ident->ext);
+
+    /* Set this up beforehand, as certain games require it in dll_entry_init */
+
+    std_setenv("/env/profile/soft_id_code", sidcode_long);
+
+    log_property_node_tree(app_config);
+
+    ok = module_context_invoke_init(module, sidcode_short, app_config);
+
+    if (!ok) {
+        log_fatal("%s: dll_module_init() returned failure", module->path);
+    }
+
+    /* Back-propagate sidcode, as some games modify it during init */
+
+    memcpy(ident->model, sidcode_short + 0, sizeof(ident->model) - 1);
+    ident->dest[0] = sidcode_short[3];
+    ident->spec[0] = sidcode_short[4];
+    ident->rev[0] = sidcode_short[5];
+    memcpy(ident->ext, sidcode_short + 6, sizeof(ident->ext));
+
+    /* Set up long-form sidcode env var again */
+
+    str_format(
+        sidcode_long,
+        lengthof(sidcode_long),
+        "%s:%s:%s:%s:%s",
+        ident->model,
+        ident->dest,
+        ident->spec,
+        ident->rev,
+        ident->ext);
+
+    std_setenv("/env/profile/soft_id_code", sidcode_long);
+}
+
+static void ea3_config_setup(
+    const struct ea3_ident *ea3_ident,
+    const char *eamuse_config_file,
+    bool override_urlslash_enabled,
+    bool override_urlslash_value,
+    const char *service_url,
+    struct property **ea3_config_property)
+{
+    struct property_node *ea3_config_node;
+
+    log_assert(ea3_ident);
+    log_assert(eamuse_config_file);
+    log_assert(ea3_config_property);
+
+    log_misc("Preparing ea3 configuration...");
+
+    *ea3_config_property = boot_property_load_avs(eamuse_config_file);
+    ea3_config_node = property_search(*ea3_config_property, 0, "/ea3");
+
+    if (ea3_config_node == NULL) {
+        log_fatal("%s: /ea3 missing", eamuse_config_file);
+    }
+
+    ea3_ident_to_property(ea3_ident, *ea3_config_property);
+
+    if (override_urlslash_enabled) {
+        log_misc(
+            "Overriding url_slash to: %d", override_urlslash_value);
+
+        ea3_ident_replace_property_bool(
+            ea3_config_node,
+            "/network/url_slash",
+            override_urlslash_value);
+    }
+
+    if (service_url) {
+        log_misc("Overriding service url to: %s", service_url);
+
+        ea3_ident_replace_property_str(
+            ea3_config_node, "/network/services", service_url);
+    }
+}
+
+int main(int argc, const char **argv)
+{
     struct options options;
+
+    struct property *bootstrap_config_property;
     struct bootstrap_config bootstrap_config;
 
-    struct property *app_config = NULL;
-    struct property *ea3_config;
+    struct module_context module;
 
-    struct property_node *app_config_root;
-    struct property_node *ea3_config_root;
+    struct property *avs_config_property;
 
-    // Static logging setup until we got AVS up and running
+    struct ea3_ident ea3_ident;
+
+    struct property *app_config_property;
+    struct property_node *app_config_node;    
+
+    struct property *ea3_config_property;
+
+    /* Static logging setup prior AVS available */
+
     log_to_writer(log_writer_file, stdout);
     log_set_level(LOG_LEVEL_MISC);
 
     log_launcher_and_env_info();
+
+    /* Command line (override) options */
 
     log_misc("Reading command line options...");
 
@@ -228,11 +424,13 @@ int main(int argc, const char **argv)
         trap_remote_debugger();
     }
 
-    log_misc("Loading before hook dlls...");
+    /* Before hook dlls */
 
+    log_misc("Loading before hook dlls...");
     load_hook_dlls(&options.before_hook_dlls);
 
-    // Launcher supports two major boot modes: "manual" vs. bootstrap.xml
+    /* Bootstrap either via a bootstrap.xml file or command line arguments */
+
     if (!options.bootstrap_selector) {
         bootstrap_context_init(
             options.avs_config_path,
@@ -242,14 +440,21 @@ int main(int argc, const char **argv)
             options.logfile,
             options.module,
             &bootstrap_config);
+
+        bootstrap_config_property = NULL;
     } else {
         bootstrap_context_init_from_file(
             options.bootstrap_config_path,
             options.bootstrap_selector,
+            &bootstrap_config_property,
             &bootstrap_config);
+
+        log_property_tree(bootstrap_config_property);
     }
 
-    avs_initialize(&bootstrap_config);
+    /* AVS */
+
+    avs_initialize(&bootstrap_config, &avs_config_property);
     
     bootstrap_context_post_avs_setup(&bootstrap_config);
   
@@ -257,9 +462,9 @@ int main(int argc, const char **argv)
 
     if (options.iat_hook_dlls.nitems > 0) {
         module_context_init_with_iat_hooks(
-            &module, options.module, &options.iat_hook_dlls);
+            &module, bootstrap_config.startup.module_file, &options.iat_hook_dlls);
     } else {
-        module_context_init(&module, options.module);
+        module_context_init(&module, bootstrap_config.startup.module_file);
     }
 
     /* Load hook DLLs */
@@ -270,110 +475,43 @@ int main(int argc, const char **argv)
 
     stubs_init();
 
-    /* Prepare ea3 config */
+    /* More configuration setup */
 
-    log_misc("Preparing ea3 configuration...");
+    ea3_ident_config_setup(
+        options.ea3_ident_path,
+        options.softid,
+        options.pcbid,
+        &ea3_ident);
+    
+    app_config_setup(
+        &bootstrap_config,
+        options.app_config_path,
+        &app_config_property,
+        &app_config_node);
 
-    ea3_config = boot_property_load_avs(bootstrap_config.startup.eamuse_config_file);
-    ea3_config_root = property_search(ea3_config, 0, "/ea3");
-
-    if (ea3_config_root == NULL) {
-        log_fatal("%s: /ea3 missing", bootstrap_config.startup.eamuse_config_file);
-    }
-
-    if (path_exists(options.ea3_ident_path)) {
-        log_info("%s: loading override", options.ea3_ident_path);
-        struct property *ea3_ident = boot_property_load(options.ea3_ident_path);
-        struct property_node *node =
-            property_search(ea3_ident, NULL, "/ea3_conf");
-        if (node == NULL) {
-            log_fatal("%s: /ea3_conf missing", options.ea3_ident_path);
-        }
-
-        for (node = property_node_traversal(node, TRAVERSE_FIRST_CHILD); node;
-             node = property_node_traversal(node, TRAVERSE_NEXT_SIBLING)) {
-            property_node_clone(NULL, ea3_config_root, node, TRUE);
-        }
-
-        boot_property_free(ea3_ident);
-    }
-
-    ea3_ident_init(&ea3);
-
-    if (!ea3_ident_from_property(&ea3, ea3_config)) {
-        log_fatal(
-            "%s: Error reading IDs from config file", options.ea3_config_path);
-    }
-
-    if (options.softid != NULL) {
-        str_cpy(ea3.softid, lengthof(ea3.softid), options.softid);
-    }
-
-    if (options.pcbid != NULL) {
-        str_cpy(ea3.pcbid, lengthof(ea3.pcbid), options.pcbid);
-    }
-
-    if (!ea3.hardid[0]) {
-        ea3_ident_hardid_from_ethernet(&ea3);
-    }
-
-    /* Invoke dll_entry_init */
-
-    if (bootstrap_config.module_params) {
-        app_config_root = bootstrap_config.module_params;
-    } else if (path_exists(options.app_config_path)) {
-        app_config = boot_property_load_avs(options.app_config_path);
-        app_config_root = property_search(app_config, 0, "/param");
-    } else {
-        log_warning(
-            "%s: app config file missing, using empty",
-            options.app_config_path);
-        app_config = boot_property_load_cstring("<param>dummy</param>");
-        app_config_root = property_search(app_config, 0, "/param");
-    }
-
-    if (app_config_root == NULL) {
-        log_fatal("%s: /param missing", options.app_config_path);
-    }
+    /* Opportunity for breakpoint setup etc */
 
     if (IsDebuggerPresent()) {
-        /* Opportunity for breakpoint setup etc */
         DebugBreak();
     }
 
-    ok = ea3_ident_invoke_module_init(&ea3, &module, app_config_root);
+    /* Initialize of game module */
 
-    if (!ok) {
-        log_fatal("%s: dll_module_init() returned failure", options.module);
-    }
-
-    if (app_config) {
-        boot_property_free(app_config);
-    }
-
-    ea3_ident_to_property(&ea3, ea3_config);
-
-    if (options.override_urlslash_enabled) {
-        log_info(
-            "Overriding url_slash to: %d", options.override_urlslash_value);
-
-        ea3_ident_replace_property_bool(
-            ea3_config_root,
-            "/network/url_slash",
-            options.override_urlslash_value);
-    }
-
-    if (options.override_service != NULL) {
-        log_info("Overriding service url to: %s", options.override_service);
-
-        ea3_ident_replace_property_str(
-            ea3_config_root, "/network/services", options.override_service);
-    }
+    invoke_dll_module_init(&ea3_ident, &module, app_config_node);
 
     /* Start up e-Amusement client */
 
-    ea3_boot(ea3_config_root);
-    boot_property_free(ea3_config);
+    ea3_config_setup(
+        &ea3_ident,
+        bootstrap_config.startup.eamuse_config_file,
+        options.override_urlslash_enabled,
+        options.override_urlslash_value,
+        options.override_service,
+        &ea3_config_property);
+
+    log_property_tree(ea3_config_property);
+
+    ea3_boot(property_search(ea3_config_property, 0, "/ea3"));   
 
     /* Run application */
 
@@ -382,11 +520,23 @@ int main(int argc, const char **argv)
     /* Shut down */
 
     ea3_shutdown();
+    boot_property_free(ea3_config_property);
+
+    app_config_node = NULL;
+    if (app_config_property) {
+        boot_property_free(app_config_property);
+    }
 
     log_to_writer(log_writer_file, stdout);
     avs_context_fini();
+    boot_property_free(avs_config_property);
 
     module_context_fini(&module);
+
+    if (bootstrap_config_property) {
+        boot_property_free(bootstrap_config_property);
+    }
+
     options_fini(&options);
 
     return EXIT_SUCCESS;

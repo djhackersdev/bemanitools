@@ -16,7 +16,7 @@ src_launcher    := \
     avs-context.c \
     bootstrap-context.c \
     bs-config.c \
-    ea3-config.c \
+    ea3-ident.c \
     main.c \
     module.c \
     options.c \

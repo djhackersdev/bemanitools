@@ -42,30 +42,28 @@ void bootstrap_context_init(
 void bootstrap_context_init_from_file(
     const char *config_path,
     const char *selector,
+    struct property **bootstrap_config_property,
     struct bootstrap_config *config)
 {
-    struct property *property;
-
     log_assert(config_path);
     log_assert(selector);
+    log_assert(bootstrap_config_property);
     log_assert(config);
 
     log_info("Bootstrap from configuration %s with selector %s", config_path, selector);
 
     bootstrap_config_init(config);
-    property = boot_property_load(config_path);
+    *bootstrap_config_property = boot_property_load(config_path);
 
     log_info(
         "Loading bootstrap selector '%s'...", selector);
     
-    if (!bootstrap_config_from_property(config, property, selector)) {
+    if (!bootstrap_config_from_property(config, *bootstrap_config_property, selector)) {
         log_fatal(
             "%s: could not load configuration for '%s'",
             config_path,
             selector);
     }
-
-    boot_property_free(property);
 }
 
 void bootstrap_context_post_avs_setup(struct bootstrap_config *config)

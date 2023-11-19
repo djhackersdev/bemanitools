@@ -20,6 +20,7 @@ void bootstrap_context_init(
 void bootstrap_context_init_from_file(
     const char *config_path,
     const char *selector,
+    struct property **bootstrap_config_property,
     struct bootstrap_config *config);
 
 void bootstrap_context_post_avs_setup(const struct bootstrap_config *config);

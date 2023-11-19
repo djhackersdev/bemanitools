@@ -2,8 +2,9 @@
 
 #include "imports/avs.h"
 
-#include "launcher/ea3-config.h"
+#include "launcher/ea3-ident.h"
 #include "launcher/module.h"
+#include "launcher/property.h"
 
 #include "util/defs.h"
 #include "util/hex.h"
@@ -26,10 +27,29 @@ void ea3_ident_init(struct ea3_ident *ident)
     memset(ident, 0, sizeof(*ident));
 }
 
-bool ea3_ident_from_property(
-    struct ea3_ident *ident, struct property *ea3_config)
+void ea3_ident_initialize_from_file(
+        const char *path,
+        struct ea3_ident *ea3_ident)
 {
-    return property_psmap_import(ea3_config, NULL, ident, ea3_ident_psmap);
+    struct property *property;
+    struct property_node *node;
+
+    log_assert(path);
+    log_assert(ea3_ident);
+
+    property = boot_property_load(path);
+    node = property_search(property, NULL, "/ea3_conf");
+
+    if (node == NULL) {
+        log_fatal("%s: /ea3_conf missing", path);
+    }
+
+    if (!property_psmap_import(property, NULL, ea3_ident, ea3_ident_psmap)) {
+        log_fatal(
+            "%s: Error reading IDs from config file", path);
+    }
+
+    boot_property_free(property);
 }
 
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)
@@ -54,94 +74,6 @@ void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)
         sizeof(netif.mac_addr),
         ident->hardid + 4,
         sizeof(ident->hardid) - 4);
-}
-
-bool ea3_ident_invoke_module_init(
-    struct ea3_ident *ident,
-    const struct module_context *module,
-    struct property_node *app_config)
-{
-    char sidcode_short[17];
-    char sidcode_long[21];
-    char security_code[9];
-    bool ok;
-
-    /* Set up security env vars */
-
-    str_format(
-        security_code,
-        lengthof(security_code),
-        "G*%s%s%s%s",
-        ident->model,
-        ident->dest,
-        ident->spec,
-        ident->rev);
-
-    std_setenv("/env/boot/version", "0.0.0");
-    std_setenv("/env/profile/security_code", security_code);
-    std_setenv("/env/profile/system_id", ident->pcbid);
-    std_setenv("/env/profile/account_id", ident->pcbid);
-    std_setenv("/env/profile/license_id", ident->softid);
-    std_setenv("/env/profile/software_id", ident->softid);
-    std_setenv("/env/profile/hardware_id", ident->hardid);
-
-    /* Set up the short sidcode string, let dll_entry_init mangle it */
-
-    str_format(
-        sidcode_short,
-        lengthof(sidcode_short),
-        "%s%s%s%s%s",
-        ident->model,
-        ident->dest,
-        ident->spec,
-        ident->rev,
-        ident->ext);
-
-    /* Set up long-form sidcode env var */
-
-    str_format(
-        sidcode_long,
-        lengthof(sidcode_long),
-        "%s:%s:%s:%s:%s",
-        ident->model,
-        ident->dest,
-        ident->spec,
-        ident->rev,
-        ident->ext);
-
-    /* Set this up beforehand, as certain games require it in dll_entry_init */
-
-    std_setenv("/env/profile/soft_id_code", sidcode_long);
-
-    ok = module_context_invoke_init(module, sidcode_short, app_config);
-
-    if (!ok) {
-        return false;
-    }
-
-    /* Back-propagate sidcode, as some games modify it during init */
-
-    memcpy(ident->model, sidcode_short + 0, sizeof(ident->model) - 1);
-    ident->dest[0] = sidcode_short[3];
-    ident->spec[0] = sidcode_short[4];
-    ident->rev[0] = sidcode_short[5];
-    memcpy(ident->ext, sidcode_short + 6, sizeof(ident->ext));
-
-    /* Set up long-form sidcode env var again */
-
-    str_format(
-        sidcode_long,
-        lengthof(sidcode_long),
-        "%s:%s:%s:%s:%s",
-        ident->model,
-        ident->dest,
-        ident->spec,
-        ident->rev,
-        ident->ext);
-
-    std_setenv("/env/profile/soft_id_code", sidcode_long);
-
-    return true;
 }
 
 void ea3_ident_to_property(
