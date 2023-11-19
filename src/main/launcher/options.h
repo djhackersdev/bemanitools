@@ -21,6 +21,7 @@ struct options {
     const char *pcbid;
     const char *module;
     const char *logfile;
+    bool log_property_configs;
     struct array hook_dlls;
     struct array before_hook_dlls;
     struct array iat_hook_dlls;

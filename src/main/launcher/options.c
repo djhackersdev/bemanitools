@@ -26,6 +26,7 @@ void options_init(struct options *options)
     options->pcbid = NULL;
     options->module = NULL;
     options->logfile = NULL;
+    options->log_property_configs = false;
     options->remote_debugger = false;
     array_init(&options->hook_dlls);
     array_init(&options->before_hook_dlls);
@@ -178,6 +179,11 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     break;
 
+                case 'L':
+                    options->log_property_configs = true;
+
+                    break;
+
                 case 'S':
                     if (i + 1 >= argc) {
                         return false;
@@ -261,6 +267,11 @@ void options_print_usage(void)
         "before execution"
         "(can be specified multiple times)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
+        "       -L              Log all loaded and final (property) "
+        "configuration that launcher uses for bootstrapping. IMPORTANT: DO NOT "
+        "ENABLE unless you know what you are doing. This prints sensitive data "
+        "and credentials to the console and logfile. BE CAUTIOUS not to share "
+        "this information before redaction."
         "       -D              Halt the launcher before bootstrapping AVS "
         "until a"
         " remote debugger is attached\n");

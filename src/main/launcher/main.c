@@ -246,8 +246,6 @@ void invoke_dll_module_init(
 
     std_setenv("/env/profile/soft_id_code", sidcode_long);
 
-    boot_property_node_log(app_config);
-
     ok = module_context_invoke_init(module, sidcode_short, app_config);
 
     if (!ok) {
@@ -391,14 +389,20 @@ int main(int argc, const char **argv)
             &bootstrap_config_property,
             &bootstrap_config);
 
-        boot_property_log(bootstrap_config_property);
+        if (options.log_property_configs) {
+            log_misc("Property bootstrap-config");
+            boot_property_log(bootstrap_config_property);
+        }
     }
 
     /* AVS */
 
     avs_config_setup(&bootstrap_config, &avs_config_property);
 
-    boot_property_log(avs_config_property);
+    if (options.log_property_configs) {
+        log_misc("Property avs-config");
+        boot_property_log(avs_config_property);
+    }
 
     avs_context_init(
         avs_config_property,
@@ -453,6 +457,11 @@ int main(int argc, const char **argv)
 
     /* Initialize of game module */
 
+    if (options.log_property_configs) {
+        log_misc("Property app-config");
+        boot_property_node_log(app_config_node);
+    }
+
     invoke_dll_module_init(&ea3_ident, &module, app_config_node);
 
     /* Start up e-Amusement client */
@@ -465,7 +474,10 @@ int main(int argc, const char **argv)
         options.override_service,
         &ea3_config_property);
 
-    boot_property_log(ea3_config_property);
+    if (options.log_property_configs) {
+        log_misc("Property ea3-config");
+        boot_property_log(ea3_config_property);
+    }
 
     ea3_boot(property_search(ea3_config_property, 0, "/ea3"));   
 
