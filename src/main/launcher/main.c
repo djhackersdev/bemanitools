@@ -23,6 +23,20 @@
 #include "util/os.h"
 #include "util/str.h"
 
+static void log_launcher_and_env_info()
+{
+    char buffer_tmp[MAX_PATH];
+
+    log_info(
+        "launcher build date %s, gitrev %s",
+        launcher_build_date,
+        launcher_gitrev);
+    os_version_log();
+    
+    getcwd(buffer_tmp, sizeof(buffer_tmp));
+    log_info("Current working directory: %s", buffer_tmp);
+}
+
 static void load_hook_dlls(struct array *hook_dlls)
 {
     const char *hook_dll;
@@ -138,14 +152,7 @@ int main(int argc, const char **argv)
     log_to_writer(log_writer_file, stdout);
     log_set_level(LOG_LEVEL_MISC);
 
-    log_info(
-        "launcher build date %s, gitrev %s",
-        launcher_build_date,
-        launcher_gitrev);
-    os_version_log();
-    char buffer_tmp[MAX_PATH];
-    getcwd(buffer_tmp, sizeof(buffer_tmp));
-    log_info("Current working directory: %s", buffer_tmp);
+    log_launcher_and_env_info();
 
     /* Read command line */
 
