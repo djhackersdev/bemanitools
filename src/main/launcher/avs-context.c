@@ -9,6 +9,7 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-context.h"
+#include "launcher/logger.h"
 #include "launcher/property.h"
 
 #include "util/codepage.h"
@@ -22,8 +23,6 @@ static void *avs_heap;
 static void *std_heap;
 #endif
 
-static HANDLE _avs_context_logfile;
-
 /* Gratuitous API changes orz */
 static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
 {
@@ -32,9 +31,6 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
     int utf16_len;
     int utf8_len;
     int result;
-    DWORD nwritten;
-    HANDLE console;
-    HANDLE file;
 
     /* Ignore existing NUL terminator */
 
@@ -63,7 +59,7 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
         abort();
     }
 
-    utf8 = xmalloc(utf8_len + 2);
+    utf8 = xmalloc(utf8_len + 3);
     result = WideCharToMultiByte(
         CP_UTF8, 0, utf16, utf16_len, utf8, utf8_len, NULL, NULL);
 
@@ -78,46 +74,16 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
     utf8_len += 2;
 #endif
 
-    /* Write to console and log file */
+    // Clean string terminate
+    utf8[utf8_len] = '\0';
 
-    file = (HANDLE) ctx;
-    console = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    if (ctx != INVALID_HANDLE_VALUE) {
-        WriteFile(file, utf8, utf8_len, &nwritten, NULL);
-    }
-
-    WriteFile(console, utf8, utf8_len, &nwritten, NULL);
+     // Write to launcher's dedicated logging backend 
+    logger_log_avs_log_message(utf8, utf8_len);
 
     /* Clean up */
 
     free(utf8);
     free(utf16);
-}
-
-static HANDLE _avs_context_create_logfile(const char *path)
-{
-    HANDLE handle;
-
-    if (path == NULL) {
-        log_misc("No logfile path specified, logging to file disabled");
-        handle = INVALID_HANDLE_VALUE;
-    } else {
-        handle = CreateFileA(
-            path,
-            GENERIC_WRITE,
-            FILE_SHARE_READ,
-            NULL,
-            CREATE_ALWAYS,
-            0,
-            NULL);
-
-        if (handle == INVALID_HANDLE_VALUE) {
-            log_warning("Creating log file %s failed: %lX", path, GetLastError());
-        }
-    }
-
-    return handle;
 }
 
 static void _avs_context_create_config_fs_dir(
@@ -305,11 +271,8 @@ void avs_context_init(
     struct property *config_prop,
     struct property_node *config_node,
     uint32_t avs_heap_size,
-    uint32_t std_heap_size,
-    const char* path_logfile)
+    uint32_t std_heap_size)
 {
-    _avs_context_logfile = _avs_context_create_logfile(path_logfile);
-
     log_misc("Creating AVS file system directories for nvram and raw if not exist...");
 
     // create nvram and raw directories if possible for non-mounttable configurations
@@ -348,20 +311,16 @@ void avs_context_init(
         avs_heap,
         avs_heap_size,
         _avs_context_log_writer,
-        _avs_context_logfile);
+        NULL);
 #else
     /* AVS v2.16.xx and I suppose onward uses a unified heap */
-    avs_boot(config_node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, _avs_context_logfile);
+    avs_boot(config_node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
 #endif
 }
 
 void avs_context_fini(void)
 {
     avs_shutdown();
-
-    if (_avs_context_logfile != INVALID_HANDLE_VALUE) {
-        CloseHandle(_avs_context_logfile);
-    }
 
 #ifdef AVS_HAS_STD_HEAP
     VirtualFree(std_heap, 0, MEM_RELEASE);

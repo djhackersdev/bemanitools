@@ -15,8 +15,7 @@ void avs_context_init(
     struct property *config_prop,
     struct property_node *config_node,
     uint32_t avs_heap_size,
-    uint32_t std_heap_size,
-    const char* path_logfile);
+    uint32_t std_heap_size);
 void avs_context_property_set_local_fs_nvram_raw(
     struct property *config_prop,
     const char* dev_nvram_raw_path);

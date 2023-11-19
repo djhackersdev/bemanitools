@@ -12,11 +12,11 @@
 #include "launcher/bootstrap-context.h"
 #include "launcher/bs-config.h"
 #include "launcher/ea3-ident.h"
+#include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
 #include "launcher/property.h"
 #include "launcher/stubs.h"
-#include "launcher/version.h"
 
 #include "util/defs.h"
 #include "util/fs.h"
@@ -49,14 +49,10 @@ static void log_avs_fs_dir(const char *path)
     avs_fs_closedir(dir);
 }
 
-static void log_launcher_and_env_info()
+static void log_env_info()
 {
     char buffer_tmp[MAX_PATH];
 
-    log_info(
-        "launcher build date %s, gitrev %s",
-        launcher_build_date,
-        launcher_gitrev);
     os_version_log();
     
     getcwd(buffer_tmp, sizeof(buffer_tmp));
@@ -362,17 +358,6 @@ int main(int argc, const char **argv)
 
     struct property *ea3_config_property;
 
-    /* Static logging setup prior AVS available */
-
-    log_to_writer(log_writer_file, stdout);
-    log_set_level(LOG_LEVEL_MISC);
-
-    log_launcher_and_env_info();
-
-    /* Command line (override) options */
-
-    log_misc("Reading command line options...");
-
     options_init(&options);
 
     if (!options_read_cmdline(&options, argc, argv) ||
@@ -382,10 +367,16 @@ int main(int argc, const char **argv)
         return EXIT_FAILURE;
     }
 
+    /* Static logging setup prior AVS available */
+
+    logger_init(options.logfile);
+
     // Enforce user configured log level
     if (options.override_loglevel_enabled) {
         log_set_level(options.loglevel);
     }
+
+    log_env_info();
 
     /* If enabled, wait for a remote debugger to attach. Spawning launcher
        with a debugger crashes it for some reason (e.g. on jubeat08). However,
@@ -444,13 +435,7 @@ int main(int argc, const char **argv)
         avs_config_property,
         property_search(avs_config_property, 0, "/config"),
         bootstrap_config.startup.avs_heap_size,
-        bootstrap_config.startup.std_heap_size,
-        bootstrap_config.startup.log_file);
-
-    log_misc("AVS logger available, switching to AVS loggers");
-
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+        bootstrap_config.startup.std_heap_size);
     
     bootstrap_context_post_avs_setup(&bootstrap_config);
   
