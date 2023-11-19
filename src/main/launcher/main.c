@@ -311,7 +311,6 @@ int main(int argc, const char **argv)
 
         if (avs_fs_lstat(default_file.src, &st)) {
             log_fatal("Default file source %s does not exist or is not accessible", default_file.src);
-            continue;
         }
 
         if (avs_fs_lstat(default_file.dest, &st)) {
