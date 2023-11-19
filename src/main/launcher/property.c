@@ -64,8 +64,12 @@ static void boot_property_log_node_tree_rec(
     char cur_path[4096];
     // 256 found in AVS code as size used on property_node_name
     char cur_node_name[256];
-    char leaf_node_data[2048];
+    char leaf_node_data_str[2048];
+    int64_t leaf_node_data_dec_s;
+    uint64_t leaf_node_data_dec_u;
+
     struct property_node* child_node;
+    enum property_type property_type;
 
     // Carry on the full root path down the node tree
     property_node_name(parent_node, cur_node_name, sizeof(cur_node_name));
@@ -78,10 +82,53 @@ static void boot_property_log_node_tree_rec(
 
     // parent node is a leaf node, print all data of it
     if (child_node == NULL) {
-        // TODO reading ints as string seems to result in empty values when printing them?
-        property_node_read(parent_node, PROPERTY_TYPE_STR, leaf_node_data, sizeof(leaf_node_data));
+        property_type = property_node_type(parent_node);
 
-        log_misc("%s: %s", cur_path, leaf_node_data);
+        switch (property_type) {
+            case PROPERTY_TYPE_VOID:
+                log_misc("%s: <VOID>", cur_path);
+                break;
+
+            case PROPERTY_TYPE_S8: 
+            case PROPERTY_TYPE_S16: 
+            case PROPERTY_TYPE_S32:
+            case PROPERTY_TYPE_S64:
+                property_node_read(parent_node, property_type, &leaf_node_data_dec_s, sizeof(leaf_node_data_dec_s));
+                log_misc("%s: %lld", cur_path, leaf_node_data_dec_s);
+                break;
+            
+            case PROPERTY_TYPE_U8: 
+            case PROPERTY_TYPE_U16: 
+            case PROPERTY_TYPE_U32: 
+            case PROPERTY_TYPE_U64:
+                property_node_read(parent_node, property_type, &leaf_node_data_dec_u, sizeof(leaf_node_data_dec_u));
+                log_misc("%s: %llu", cur_path, leaf_node_data_dec_u);
+                break;
+
+            case PROPERTY_TYPE_STR:
+                property_node_read(parent_node, property_type, leaf_node_data_str, sizeof(leaf_node_data_str));
+                log_misc("%s: %s", cur_path, leaf_node_data_str);
+
+                break;
+
+            case PROPERTY_TYPE_BOOL:
+                property_node_read(parent_node, property_type, &leaf_node_data_dec_s, sizeof(leaf_node_data_dec_s));
+                log_misc("%s: %d", cur_path, leaf_node_data_dec_s != 0);
+
+                break;
+
+            case PROPERTY_TYPE_BIN:
+                log_misc("%s: <BINARY>", cur_path);
+                break;
+
+            case PROPERTY_TYPE_ATTR:
+                log_misc("%s: <ATTRIBUTE>", cur_path);
+                break;
+
+            default:
+                log_misc("%s: <UNKNOWN TYPE>", cur_path);
+                break;
+        }
     } else {
         while (child_node) {
             boot_property_log_node_tree_rec(child_node, cur_path);

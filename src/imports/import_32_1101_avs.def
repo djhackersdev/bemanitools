@@ -32,6 +32,7 @@ EXPORTS
     property_node_read @573 NONAME
     property_node_refer @278 NONAME
     property_node_remove @279 NONAME
+    property_node_type @573 NONAME
     property_node_clone @280 NONAME
     property_node_traversal @282 NONAME
     property_psmap_import @288 NONAME
