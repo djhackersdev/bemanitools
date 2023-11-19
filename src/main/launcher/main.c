@@ -37,6 +37,30 @@ static void log_launcher_and_env_info()
     log_info("Current working directory: %s", buffer_tmp);
 }
 
+static void trap_remote_debugger()
+{
+    BOOL res;
+
+    log_info("Waiting until debugger attaches to remote process...");
+
+    while (true) {
+        res = FALSE;
+        
+        if (!CheckRemoteDebuggerPresent(GetCurrentProcess(), &res)) {
+            log_fatal(
+                "CheckRemoteDebuggerPresent failed: %08x",
+                (unsigned int) GetLastError());
+        }
+
+        if (res) {
+            log_info("Debugger attached, resuming");
+            break;
+        }
+
+        Sleep(1000);
+    }
+}
+
 static void load_hook_dlls(struct array *hook_dlls)
 {
     const char *hook_dll;
@@ -194,23 +218,7 @@ int main(int argc, const char **argv)
        starting the launcher separately and attaching a remote debugger works */
 
     if (options.remote_debugger) {
-        log_info("Waiting until debugger attaches to remote process...");
-
-        while (true) {
-            BOOL res = FALSE;
-            if (!CheckRemoteDebuggerPresent(GetCurrentProcess(), &res)) {
-                log_fatal(
-                    "CheckRemoteDebuggerPresent failed: %08x",
-                    (unsigned int) GetLastError());
-            }
-
-            if (res) {
-                log_info("Debugger attached, resuming");
-                break;
-            }
-
-            Sleep(1000);
-        }
+        trap_remote_debugger();
     }
 
     log_misc("Preparing AVS...");
