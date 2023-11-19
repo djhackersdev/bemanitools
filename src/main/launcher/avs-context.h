@@ -10,7 +10,8 @@
 #endif
 
 void avs_context_init(
-    struct property_node *config,
+    struct property *config_prop,
+    struct property_node *config_node,
     uint32_t avs_heap_size,
     uint32_t std_heap_size,
     avs_log_writer_t log_writer,
