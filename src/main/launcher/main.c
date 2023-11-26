@@ -332,7 +332,7 @@ static void ea3_config_setup(
         boot_property_node_replace_bool(
             *ea3_config_property,
             ea3_config_node,
-            "/network/url_slash",
+            "network/url_slash",
             override_urlslash_value);
     }
 
@@ -342,7 +342,7 @@ static void ea3_config_setup(
         boot_property_node_replace_str(
             *ea3_config_property,
             ea3_config_node,
-            "/network/services",
+            "network/services",
             service_url);
     }
 }
@@ -364,6 +364,7 @@ int main(int argc, const char **argv)
     struct property_node *app_config_node;    
 
     struct property *ea3_config_property;
+    struct property_node *ea3_config_node;
 
     options_init(&options);
 
@@ -509,8 +510,14 @@ int main(int argc, const char **argv)
         boot_property_log(ea3_config_property);
     }
 
-    ea3_boot(property_search(ea3_config_property, 0, "/ea3"));   
+    log_info("Booting ea3...");
 
+    ea3_config_node = property_search(ea3_config_property, 0, "/ea3");
+
+    log_assert(ea3_config_node);
+
+    ea3_boot(ea3_config_node);
+    
     /* Run application */
 
     module_context_invoke_main(&module);
@@ -520,6 +527,7 @@ int main(int argc, const char **argv)
     log_info("Shutting down launcher...");
 
     ea3_shutdown();
+    ea3_config_node = NULL;
     boot_property_free(ea3_config_property);
 
     app_config_node = NULL;

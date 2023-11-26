@@ -273,6 +273,9 @@ void avs_context_init(
     uint32_t avs_heap_size,
     uint32_t std_heap_size)
 {
+    log_assert(config_prop);
+    log_assert(config_node);
+
     log_misc("Creating AVS file system directories for nvram and raw if not exist...");
 
     // create nvram and raw directories if possible for non-mounttable configurations
