@@ -165,11 +165,11 @@ static void ea3_ident_config_setup(
         ea3_ident_initialize_from_file(ea3_ident_path, ea3_ident);
     }
 
-    if (!softid) {
+    if (softid) {
         str_cpy(ea3_ident->softid, lengthof(ea3_ident->softid), softid);
     }
 
-    if (!pcbid) {
+    if (pcbid) {
         str_cpy(ea3_ident->pcbid, lengthof(ea3_ident->pcbid), pcbid);
     }
 
