@@ -168,6 +168,15 @@ static void boot_property_log_node_tree_rec(
                 log_misc("%s: <ATTRIBUTE>", cur_path);
                 break;
 
+            // Treat as string
+            case PROPERTY_TYPE_UNTYPED:
+                char value_untyped[4096];
+
+                property_node_read(parent_node, property_type, value_untyped, sizeof(value_untyped));
+                log_misc("%s: %s", cur_path, value_untyped);
+
+                break;
+
             default:
                 log_misc("%s: <UNKNOWN TYPE> (%d)", cur_path, property_type);
                 break;

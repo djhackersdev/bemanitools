@@ -39,7 +39,9 @@ enum property_type {
     PROPERTY_TYPE_BIN = 10,
     PROPERTY_TYPE_STR = 11,
     PROPERTY_TYPE_ATTR = 46,
-    PROPERTY_TYPE_BOOL = 52
+    PROPERTY_TYPE_BOOL = 52,
+    // Missing __type attribute
+    PROPERTY_TYPE_UNTYPED = 65,
 };
 
 struct property;
