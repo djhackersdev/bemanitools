@@ -89,7 +89,7 @@ void ea3_ident_to_property(
         log_fatal("ea3 config is missing /ea3 node");
     }
 
-    for (i = 0; ea3_ident_psmap[i].type != 0xFF; i++) {
+    for (i = 0; ea3_ident_psmap[i].type != PSMAP_TYPE_TERMINATOR; i++) {
         node = property_search(ea3_config, ea3_node, ea3_ident_psmap[i].path);
 
         if (node != NULL) {
