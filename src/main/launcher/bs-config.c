@@ -277,6 +277,43 @@ bool bootstrap_config_from_property(
 void bootstrap_config_update_avs(
     const struct bootstrap_config *config, struct property_node *avs_root)
 {
+// Different AVS version generations changed the property types in the avs-config.xml slightly
+// which needs to be considered to avoid property map reading/write to cause memory corruption
+// which naturally lead to hard to debug application failures
+// Furthermore, some attributes didn't exist on older versions
+
+// TODO fix AVS version here, must be 1306 for DDR X3 but is wrong everywhere right now >_<
+#if AVS_VERSION <= 1304
+    if (config->module_params) {
+        property_remove(NULL, avs_root, "mode/product");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_U8, "mode/product", 1);
+        property_remove(NULL, avs_root, "net/enable_raw");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_U8, "net/enable_raw", 1);
+        property_remove(NULL, avs_root, "net/eaudp/enable");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_U8, "net/eaudp/enable", 1);
+        property_remove(NULL, avs_root, "sntp/ea_on");
+        property_node_create(
+            NULL, avs_root, PROPERTY_TYPE_U8, "sntp/ea_on", 1);
+    }
+
+    if (config->startup.drm_device[0]) {
+        property_remove(NULL, avs_root, "fs/root/device");
+        property_node_create(
+            NULL,
+            avs_root,
+            PROPERTY_TYPE_STR,
+            "fs/root/device",
+            config->startup.drm_device);
+    }
+
+    if (config->log_node) {
+        property_remove(NULL, avs_root, "log");
+        property_node_clone(NULL, avs_root, config->log_node, TRUE);
+    }
+#else
     if (config->module_params) {
         property_remove(NULL, avs_root, "mode/product");
         property_node_create(
@@ -291,6 +328,7 @@ void bootstrap_config_update_avs(
         property_node_create(
             NULL, avs_root, PROPERTY_TYPE_BOOL, "sntp/ea_on", 1);
     }
+
     if (config->startup.drm_device[0]) {
         property_remove(NULL, avs_root, "fs/root/device");
         property_node_create(
@@ -300,10 +338,12 @@ void bootstrap_config_update_avs(
             "fs/root/device",
             config->startup.drm_device);
     }
+
     if (config->log_node) {
         property_remove(NULL, avs_root, "log");
         property_node_clone(NULL, avs_root, config->log_node, TRUE);
     }
+#endif
 }
 
 bool bootstrap_config_iter_default_file(
