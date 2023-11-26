@@ -281,9 +281,7 @@ void bootstrap_config_update_avs(
 // which needs to be considered to avoid property map reading/write to cause memory corruption
 // which naturally lead to hard to debug application failures
 // Furthermore, some attributes didn't exist on older versions
-
-// TODO fix AVS version here, must be 1306 for DDR X3 but is wrong everywhere right now >_<
-#if AVS_VERSION <= 1304
+#if AVS_VERSION <= 1306
     if (config->module_params) {
         property_remove(NULL, avs_root, "mode/product");
         property_node_create(
