@@ -131,6 +131,8 @@ static void load_hook_dlls(struct array *hook_dlls)
     for (size_t i = 0; i < hook_dlls->nitems; i++) {
         hook_dll = *array_item(char *, hook_dlls, i);
 
+        log_info("Load hook dll: %s", hook_dll);
+
         if (LoadLibraryA(hook_dll) == NULL) {
             LPSTR buffer;
 
@@ -162,6 +164,7 @@ static void ea3_ident_config_setup(
     ea3_ident_init(ea3_ident);
 
     if (ea3_ident_path) {
+        log_misc("Loading ea3-ident from file: %s", ea3_ident_path);
         ea3_ident_initialize_from_file(ea3_ident_path, ea3_ident);
     }
 
@@ -192,6 +195,8 @@ static void app_config_setup(
         *app_config_property = NULL;
         *app_config_node = bootstrap_config->module_params;
     } else if (app_config_path && path_exists(app_config_path)) {
+        log_misc("Loading avs-config from file: %s", app_config_path);
+
         *app_config_property = boot_property_load_avs(app_config_path);
 
         *app_config_node = property_search(*app_config_property, 0, "/param");
@@ -308,6 +313,8 @@ static void ea3_config_setup(
     log_assert(ea3_config_property);
 
     log_misc("Preparing ea3 configuration...");
+
+    log_misc("Loading ea3-config from file: %s", eamuse_config_file);
 
     *ea3_config_property = boot_property_load_avs(eamuse_config_file);
     ea3_config_node = property_search(*ea3_config_property, 0, "/ea3");
@@ -441,6 +448,8 @@ int main(int argc, const char **argv)
   
     /* Load game DLL */
 
+    log_info("Load game DLL: %s", bootstrap_config.startup.module_file);
+
     if (options.iat_hook_dlls.nitems > 0) {
         module_context_init_with_iat_hooks(
             &module, bootstrap_config.startup.module_file, &options.iat_hook_dlls);
@@ -508,6 +517,8 @@ int main(int argc, const char **argv)
 
     /* Shut down */
 
+    log_info("Shutting down launcher...");
+
     ea3_shutdown();
     boot_property_free(ea3_config_property);
 
@@ -527,6 +538,8 @@ int main(int argc, const char **argv)
     }
 
     options_fini(&options);
+
+    log_info("Shutdown complete");
 
     return EXIT_SUCCESS;
 }
