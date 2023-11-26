@@ -66,9 +66,6 @@ static void boot_property_log_node_tree_rec(
     char cur_path[4096];
     // 256 found in AVS code as size used on property_node_name
     char cur_node_name[256];
-    char leaf_node_data_str[2048];
-    int64_t leaf_node_data_dec_s;
-    uint64_t leaf_node_data_dec_u;
 
     struct property_node* child_node;
     enum property_type property_type;
@@ -91,31 +88,75 @@ static void boot_property_log_node_tree_rec(
                 log_misc("%s: <VOID>", cur_path);
                 break;
 
-            case PROPERTY_TYPE_S8: 
-            case PROPERTY_TYPE_S16: 
+            case PROPERTY_TYPE_S8:
+                int8_t value_s8;
+
+                property_node_read(parent_node, property_type, &value_s8, sizeof(value_s8));
+                log_misc("%s: %d", cur_path, value_s8);
+                break;
+
+            case PROPERTY_TYPE_S16:
+                int16_t value_s16;
+
+                property_node_read(parent_node, property_type, &value_s16, sizeof(value_s16));
+                log_misc("%s: %d", cur_path, value_s16);
+                break;
+
             case PROPERTY_TYPE_S32:
+                int32_t value_s32;
+
+                property_node_read(parent_node, property_type, &value_s32, sizeof(value_s32));
+                log_misc("%s: %d", cur_path, value_s32);
+                break;
+
             case PROPERTY_TYPE_S64:
-                property_node_read(parent_node, property_type, &leaf_node_data_dec_s, sizeof(leaf_node_data_dec_s));
-                log_misc("%s: %lld", cur_path, leaf_node_data_dec_s);
+                int64_t value_s64;
+
+                property_node_read(parent_node, property_type, &value_s64, sizeof(value_s64));
+                log_misc("%s: %lld", cur_path, value_s64);
                 break;
             
-            case PROPERTY_TYPE_U8: 
-            case PROPERTY_TYPE_U16: 
-            case PROPERTY_TYPE_U32: 
+            case PROPERTY_TYPE_U8:
+                uint8_t value_u8;
+
+                property_node_read(parent_node, property_type, &value_u8, sizeof(value_u8));
+                log_misc("%s: %u", cur_path, value_u8);
+                break;
+
+            case PROPERTY_TYPE_U16:
+                uint16_t value_u16;
+
+                property_node_read(parent_node, property_type, &value_u16, sizeof(value_u16));
+                log_misc("%s: %u", cur_path, value_u16);
+                break;
+
+            case PROPERTY_TYPE_U32:
+                uint32_t value_u32;
+
+                property_node_read(parent_node, property_type, &value_u32, sizeof(value_u32));
+                log_misc("%s: %u", cur_path, value_u32);
+                break;
+
             case PROPERTY_TYPE_U64:
-                property_node_read(parent_node, property_type, &leaf_node_data_dec_u, sizeof(leaf_node_data_dec_u));
-                log_misc("%s: %llu", cur_path, leaf_node_data_dec_u);
+                uint64_t value_u64;
+
+                property_node_read(parent_node, property_type, &value_u64, sizeof(value_u64));
+                log_misc("%s: %llu", cur_path, value_u64);
                 break;
 
             case PROPERTY_TYPE_STR:
-                property_node_read(parent_node, property_type, leaf_node_data_str, sizeof(leaf_node_data_str));
-                log_misc("%s: %s", cur_path, leaf_node_data_str);
+                char value_str[4096];
+
+                property_node_read(parent_node, property_type, value_str, sizeof(value_str));
+                log_misc("%s: %s", cur_path, value_str);
 
                 break;
 
             case PROPERTY_TYPE_BOOL:
-                property_node_read(parent_node, property_type, &leaf_node_data_dec_s, sizeof(leaf_node_data_dec_s));
-                log_misc("%s: %d", cur_path, leaf_node_data_dec_s != 0);
+                bool value_bool;
+
+                property_node_read(parent_node, property_type, &value_bool, sizeof(value_bool));
+                log_misc("%s: %d", cur_path, value_bool);
 
                 break;
 
@@ -128,7 +169,7 @@ static void boot_property_log_node_tree_rec(
                 break;
 
             default:
-                log_misc("%s: <UNKNOWN TYPE>", cur_path);
+                log_misc("%s: <UNKNOWN TYPE> (%d)", cur_path, property_type);
                 break;
         }
     } else {
@@ -247,7 +288,8 @@ struct property *boot_property_load_avs(const char *filename)
     avs_desc desc;
     struct property *prop;
 
-    desc = avs_fs_open(filename, AVS_FILE_READ, AVS_FILE_FLAG_SHARE_READ);
+    // TODO changing mode from read mode to 0 makes DDRX3 reading the ea3-config work, otherwise it fails querying it
+    desc = avs_fs_open(filename, 0, AVS_FILE_FLAG_SHARE_READ);
     if (!desc) {
         log_fatal("%s: Error opening configuration file", filename);
     }
