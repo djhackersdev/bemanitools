@@ -161,6 +161,11 @@ struct p3io_req_rs232_write {
     uint8_t bytes[128];
 };
 
+struct p3io_req_unknown_generic {
+    struct p3io_hdr hdr;
+    uint8_t unknown;
+};
+
 struct p3io_req_raw {
     uint8_t data[P3IO_MAX_MESSAGE_SIZE];
 };
@@ -182,6 +187,7 @@ union p3io_req_any {
     struct p3io_req_rs232_open_close rs232_open_close;
     struct p3io_req_rs232_read rs232_read;
     struct p3io_req_rs232_write rs232_write;
+    struct p3io_req_unknown_generic unknown_generic;
     struct p3io_req_raw raw;
 };
 
@@ -266,6 +272,11 @@ struct p3io_resp_rs232_write {
     uint8_t nbytes;
 };
 
+struct p3io_resp_unknown_generic {
+    struct p3io_hdr hdr;
+    uint8_t unknown;
+};
+
 struct p3io_resp_raw {
     uint8_t data[P3IO_MAX_MESSAGE_SIZE];
 };
@@ -286,6 +297,7 @@ union p3io_resp_any {
     struct p3io_resp_rs232_open_close rs232_open_close;
     struct p3io_resp_rs232_read rs232_read;
     struct p3io_resp_rs232_write rs232_write;
+    struct p3io_resp_unknown_generic unknown_generic;
     struct p3io_resp_raw raw;
 };
 
