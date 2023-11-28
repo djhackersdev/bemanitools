@@ -49,6 +49,8 @@ static void p3io_cmd_get_video_freq(
     const struct p3io_req_get_video_freq *req,
     struct p3io_resp_get_video_freq *resp);
 static void
+p3io_cmd_unknown_2b(const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp);
+static void
 p3io_cmd_init(const struct p3io_req_init *req, struct p3io_resp_init *resp);
 static void p3io_cmd_get_coinstock(
     const struct p3io_req_coin_stock *req, struct p3io_resp_coin_stock *resp);
@@ -56,7 +58,7 @@ static void p3io_cmd_set_coin_counter(
     const struct p3io_req_set_coin_counter *req,
     struct p3io_resp_set_coin_counter *resp);
 static void
-p3io_cmd_unknown(const union p3io_req_any *req, struct p3io_resp_raw *resp);
+p3io_cmd_unknown(const struct p3io_req_unknown_generic *req, struct p3io_resp_unknown_generic *resp);
 
 void p3io_emu_init(const struct p3io_ops *ops, void *ctx)
 {
@@ -268,6 +270,11 @@ static HRESULT p3io_cmd_dispatch(const union p3io_req_any *req)
 
             break;
 
+        case P3IO_CMD_UNKNOWN_2B:
+            p3io_cmd_unknown_2b(&req->unknown_2b, &resp.unknown_2b);
+
+            break;
+
         case P3IO_CMD_INIT:
             p3io_cmd_init(&req->init, &resp.init);
 
@@ -301,7 +308,7 @@ static HRESULT p3io_cmd_dispatch(const union p3io_req_any *req)
             break;
 
         default:
-            p3io_cmd_unknown(req, &resp.raw);
+            p3io_cmd_unknown(&req->unknown_generic, &resp.unknown_generic);
 
             break;
     }
@@ -512,6 +519,16 @@ static void p3io_cmd_get_video_freq(
 }
 
 static void
+p3io_cmd_unknown_2b(const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp)
+{
+    log_misc("Unknown 2b");
+
+    p3io_resp_hdr_init(&resp->hdr, sizeof(*resp), &req->hdr);
+
+    resp->unknown = 0;
+}
+
+static void
 p3io_cmd_init(const struct p3io_req_init *req, struct p3io_resp_init *resp)
 {
     log_misc("Init");
@@ -557,15 +574,16 @@ static void p3io_cmd_set_coin_counter(
 }
 
 static void
-p3io_cmd_unknown(const union p3io_req_any *req, struct p3io_resp_raw *resp)
+p3io_cmd_unknown(const struct p3io_req_unknown_generic *req, struct p3io_resp_unknown_generic *resp)
 {
-    log_warning("Unsupported P3IO command: %02x", req->hdr.cmd);
+    log_warning("Unsupported P3IO command, sending default response (might not work/crash though): %02x",
+        req->hdr.cmd);
 
-    p3io_resp_hdr_init(
-        (struct p3io_hdr *) &resp->data, sizeof(*resp), &req->hdr);
+    p3io_resp_hdr_init(&resp->hdr, sizeof(*resp), &req->hdr);
 
     // Not always applicable/correct as there are several commands not
     // responding with any data, but fine for the majority of (unsupported)
     // commands
-    resp->data[sizeof(struct p3io_hdr) + 0] = 0;
+    // Remark: This might also lead to unpredictable behaviour or crashes
+    resp->unknown = 0;
 }
