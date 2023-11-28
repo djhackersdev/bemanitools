@@ -41,7 +41,7 @@ void p3io_resp_hdr_init(
 {
     log_assert(resp_hdr != NULL);
     log_assert(req_hdr != NULL);
-    log_assert(nbytes < P3IO_MAX_MESSAGE_SIZE);
+    log_assert(nbytes <= P3IO_MAX_MESSAGE_SIZE);
 
     /* Length byte in this packet format counts everything from the length
        byte onwards. The length byte itself occurs at the start of the frame. */
