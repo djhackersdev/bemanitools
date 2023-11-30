@@ -497,27 +497,32 @@ int main(int argc, const char **argv)
 
     /* Start up e-Amusement client */
 
-    ea3_config_setup(
-        &ea3_ident,
-        bootstrap_config.startup.eamuse_config_file,
-        options.override_urlslash_enabled,
-        options.override_urlslash_value,
-        options.override_service,
-        &ea3_config_property);
+    if (bootstrap_config.startup.eamuse_enable) {
+        ea3_config_setup(
+            &ea3_ident,
+            bootstrap_config.startup.eamuse_config_file,
+            options.override_urlslash_enabled,
+            options.override_urlslash_value,
+            options.override_service,
+            &ea3_config_property);
 
-    if (options.log_property_configs) {
-        log_misc("Property ea3-config");
-        boot_property_log(ea3_config_property);
+        if (options.log_property_configs) {
+            log_misc("Property ea3-config");
+            boot_property_log(ea3_config_property);
+        }
+
+        log_info("Booting ea3...");
+
+        ea3_config_node = property_search(ea3_config_property, 0, "/ea3");
+
+        log_assert(ea3_config_node);
+
+        ea3_boot(ea3_config_node);
+    } else {
+        ea3_config_property = NULL;
+        ea3_config_node = NULL;
     }
 
-    log_info("Booting ea3...");
-
-    ea3_config_node = property_search(ea3_config_property, 0, "/ea3");
-
-    log_assert(ea3_config_node);
-
-    ea3_boot(ea3_config_node);
-    
     /* Run application */
 
     module_context_invoke_main(&module);
@@ -526,9 +531,11 @@ int main(int argc, const char **argv)
 
     log_info("Shutting down launcher...");
 
-    ea3_shutdown();
-    ea3_config_node = NULL;
-    boot_property_free(ea3_config_property);
+    if (bootstrap_config.startup.eamuse_enable) {
+        ea3_shutdown();
+        ea3_config_node = NULL;
+        boot_property_free(ea3_config_property);
+    }
 
     app_config_node = NULL;
     if (app_config_property) {
