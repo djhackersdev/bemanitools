@@ -294,11 +294,24 @@ static void boot_property_avs_rewind(uint32_t context)
 
 struct property *boot_property_load_avs(const char *filename)
 {
+    uint16_t mode;
     avs_desc desc;
     struct property *prop;
 
-    // TODO changing mode from read mode to 0 makes DDRX3 reading the ea3-config work, otherwise it fails querying it
-    desc = avs_fs_open(filename, 0, AVS_FILE_FLAG_SHARE_READ);
+    // Apparently, the mode enum flags have changed, but this is currently unverified to apply
+    // a generic solution to avs.h, so keep this contained for now as a "hack"
+    // Using the wrong flag here, querying the eamuse-config.xml file fails on DDR on
+    // older AVS versions
+#if AVS_VERSION <= 1306
+    // Currently only verified with 1306 and older on DDR
+    mode = 0;
+#else
+    // Currently only verified with 1508 on DDR
+    mode = AVS_FILE_READ;
+#endif
+
+    desc = avs_fs_open(filename, mode, AVS_FILE_FLAG_SHARE_READ);
+
     if (!desc) {
         log_fatal("%s: Error opening configuration file", filename);
     }
