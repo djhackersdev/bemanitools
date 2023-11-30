@@ -236,6 +236,7 @@ bool module_context_invoke_main(const struct module_context *module)
 {
     /* GCC warns if you call a variable "main" */
     dll_entry_main_t main_;
+    bool result;
 
     log_assert(module != NULL);
 
@@ -246,7 +247,13 @@ bool module_context_invoke_main(const struct module_context *module)
             "%s: dll_entry_main not found. Is this a game DLL?", module->path);
     }
 
-    return main_();
+    log_info("Invoking game's main function...");
+
+    result = main_();
+
+    log_info("Main terminated, result: %d", result);
+
+    return result;
 }
 
 void module_context_fini(struct module_context *module)
