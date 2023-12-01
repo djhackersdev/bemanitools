@@ -258,13 +258,24 @@ struct avs_stat {
     struct stat padding;
 };
 
+#if AVS_VERSION <= 1306
 enum avs_file_mode {
-    AVS_FILE_READ = 1,
-    AVS_FILE_WRITE = 2,
+    AVS_FILE_READ = 0x00,
+    AVS_FILE_WRITE = 0x01,
+    AVS_FILE_READ_WRITE = 0x02,
     AVS_FILE_CREATE = 0x10,
     AVS_FILE_TRUNCATE = 0x20,
     AVS_FILE_EXCLUSIVE = 0x80,
 };
+#else
+enum avs_file_mode {
+    AVS_FILE_READ = 0x01,
+    AVS_FILE_WRITE = 0x02,
+    AVS_FILE_CREATE = 0x10,
+    AVS_FILE_TRUNCATE = 0x20,
+    AVS_FILE_EXCLUSIVE = 0x80,
+};
+#endif
 
 enum avs_file_flag {
     AVS_FILE_FLAG_SHARE_READ = 0x124,

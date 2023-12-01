@@ -298,19 +298,7 @@ struct property *boot_property_load_avs(const char *filename)
     avs_desc desc;
     struct property *prop;
 
-    // Apparently, the mode enum flags have changed, but this is currently unverified to apply
-    // a generic solution to avs.h, so keep this contained for now as a "hack"
-    // Using the wrong flag here, querying the eamuse-config.xml file fails on DDR on
-    // older AVS versions
-#if AVS_VERSION <= 1306
-    // Currently only verified with 1306 and older on DDR
-    mode = 0;
-#else
-    // Currently only verified with 1508 on DDR
-    mode = AVS_FILE_READ;
-#endif
-
-    desc = avs_fs_open(filename, mode, AVS_FILE_FLAG_SHARE_READ);
+    desc = avs_fs_open(filename, AVS_FILE_READ, AVS_FILE_FLAG_SHARE_READ);
 
     if (!desc) {
         log_fatal("%s: Error opening configuration file", filename);
