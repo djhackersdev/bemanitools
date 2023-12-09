@@ -57,6 +57,7 @@ bool mapper_impl_get_analog_map(
 bool mapper_impl_get_action_map(
     struct mapper *m, uint8_t action, uint8_t page, struct mapped_action *ma);
 int32_t mapper_impl_get_analog_sensitivity(struct mapper *m, uint8_t analog);
+bool mapper_impl_get_analog_invert(struct mapper *m, uint8_t analog);
 uint8_t mapper_impl_get_nanalogs(struct mapper *m);
 uint8_t mapper_impl_get_nlights(struct mapper *m);
 uint8_t mapper_impl_get_npages(struct mapper *m);

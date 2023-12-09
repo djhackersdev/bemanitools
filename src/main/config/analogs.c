@@ -49,6 +49,7 @@ static INT_PTR analog_ui_handle_init(HWND hwnd, struct analog_def *def);
 static void analog_ui_handle_init_label(HWND hwnd);
 static void analog_ui_handle_init_dev(HWND hwnd);
 static void analog_ui_handle_init_sensitivity(HWND hwnd);
+static void analog_ui_handle_init_invert(HWND hwnd);
 static bool analog_ui_match_device(struct hid_stub *hid);
 static void analog_ui_populate_controls(HWND hwnd);
 static INT_PTR analog_ui_handle_device_change(HWND hwnd);
@@ -258,6 +259,7 @@ static INT_PTR analog_ui_handle_init(HWND hwnd, struct analog_def *def)
     analog_ui_handle_init_label(hwnd);
     analog_ui_handle_init_dev(hwnd);
     analog_ui_handle_init_sensitivity(hwnd);
+    analog_ui_handle_init_invert(hwnd);
 
     return TRUE;
 }
@@ -351,6 +353,17 @@ static void analog_ui_handle_init_sensitivity(HWND hwnd)
     SendMessage(slider, TBM_SETPOS, TRUE, (LPARAM) pos);
 
     EnableWindow(slider, !mapper_is_analog_absolute(ui->def->tag));
+}
+
+static void analog_ui_handle_init_invert(HWND hwnd)
+{
+    struct analog_ui *ui;
+
+    ui = (struct analog_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+    if (mapper_get_analog_invert(ui->def->tag)) {
+        SendMessage(GetDlgItem(hwnd, IDC_ANALOG_INVERT), BM_SETCHECK, BST_CHECKED, 0);
+    }
 }
 
 static bool analog_ui_match_device(struct hid_stub *hid)

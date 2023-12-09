@@ -175,7 +175,6 @@ static void analog_mapping_bind(struct analog_mapping *am)
     am->analog_max = ctl->value_max;
     am->inv_analog_range = 1.0 / ((int64_t)ctl->value_max - ctl->value_min);
     am->absolute = !(ctl->flags & HID_FLAG_RELATIVE);
-    am->invert = false;
     am->valid = true;
 
 read_fail:
@@ -423,6 +422,15 @@ int32_t mapper_impl_get_analog_sensitivity(struct mapper *m, uint8_t analog)
     }
 
     return m->analogs[analog].sensitivity;
+}
+
+bool mapper_impl_get_analog_invert(struct mapper* m, uint8_t analog)
+{
+    if (analog >= m->nanalogs) {
+        return 0;
+    }
+
+    return m->analogs[analog].invert;
 }
 
 uint8_t mapper_impl_get_nanalogs(struct mapper *m)

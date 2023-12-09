@@ -74,6 +74,7 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
     char *dev_node;
     struct mapped_analog ma;
     int32_t sensitivity;
+    bool invert;
     uint8_t nanalogs;
     uint8_t i;
 
@@ -101,8 +102,13 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
                 return false;
             }
 
+            if (!read_u8(f, &invert)) {
+                return false;
+            }
+
             mapper_impl_set_analog_map(m, i, &ma);
             mapper_impl_set_analog_sensitivity(m, i, sensitivity);
+            mapper_impl_set_analog_invert(m, i, invert);
         }
 
         free(dev_node);
@@ -211,6 +217,7 @@ static void mapper_impl_config_save_analogs(struct mapper *m, FILE *f)
 {
     struct mapped_analog ma;
     int32_t sensitivity;
+    bool invert;
     uint8_t nanalogs;
     uint8_t i;
 
@@ -224,10 +231,12 @@ static void mapper_impl_config_save_analogs(struct mapper *m, FILE *f)
             write_str(f, "");
         } else {
             sensitivity = mapper_impl_get_analog_sensitivity(m, i);
+            invert = mapper_impl_get_analog_invert(m, i);
 
             write_str(f, hid_stub_get_dev_node(ma.hid));
             write_u32(f, &ma.control_no);
             write_u32(f, &sensitivity);
+            write_u8(f, &invert);
         }
     }
 }
