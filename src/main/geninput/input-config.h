@@ -25,6 +25,7 @@ void mapper_set_action_map(
     uint8_t action, uint8_t page, uint8_t bit, const struct mapped_action *ma);
 bool mapper_set_analog_map(uint8_t analog, const struct mapped_analog *ma);
 bool mapper_set_analog_sensitivity(uint8_t analog, int32_t sensitivity);
+bool mapper_set_analog_invert(uint8_t analog, bool invert);
 void mapper_set_nanalogs(uint8_t nanalogs);
 void mapper_set_nlights(uint8_t nlights);
 void mapper_set_light_map(const struct mapped_light *ml, uint8_t game_light);

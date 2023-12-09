@@ -44,6 +44,7 @@ EXPORTS
     mapper_set_action_map
     mapper_set_analog_map
     mapper_set_analog_sensitivity
+    mapper_set_analog_invert
     mapper_set_light_map
     mapper_set_nanalogs
     mapper_set_nlights

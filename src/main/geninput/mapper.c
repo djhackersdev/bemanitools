@@ -26,8 +26,10 @@ struct analog_mapping {
     bool bound;
     bool valid;
     bool absolute;
-    double affine_scale;
-    double affine_bias;
+    bool invert;
+    double analog_min;
+    double analog_max;
+    double inv_analog_range;
     uint8_t pos;
 };
 
@@ -169,9 +171,11 @@ static void analog_mapping_bind(struct analog_mapping *am)
 
     ctl = &controls[am->src.control_no];
 
-    am->affine_bias = ctl->value_min;
-    am->affine_scale = ctl->value_max - ctl->value_min;
+    am->analog_min = ctl->value_min;
+    am->analog_max = ctl->value_max;
+    am->inv_analog_range = 1.0 / ((int64_t)ctl->value_max - ctl->value_min);
     am->absolute = !(ctl->flags & HID_FLAG_RELATIVE);
+    am->invert = false;
     am->valid = true;
 
 read_fail:
@@ -187,6 +191,7 @@ static void analog_mapping_update(struct analog_mapping *am)
 {
     double tmp;
     int32_t value;
+    int8_t delta;
 
     if (!am->bound) {
         analog_mapping_bind(am);
@@ -201,10 +206,24 @@ static void analog_mapping_update(struct analog_mapping *am)
     }
 
     if (am->absolute) {
-        tmp = (value - am->affine_bias) / am->affine_scale;
+
+        if (am->invert) {
+            tmp = am->analog_max - value;
+        } else {
+            tmp = value - am->analog_min;
+        }
+
+        // Scale the input value to [0,1] range
+        tmp *= am->inv_analog_range;
         am->pos = (uint8_t) ((tmp + 0.5) * 256.0);
     } else {
-        am->pos += (int8_t) (value * exp(am->sensitivity / 256.0));
+        delta = (int8_t) (value * exp(am->sensitivity / 256.0));
+
+        if (am->invert) {
+            delta *= -1;
+        }
+
+        am->pos += delta;
     }
 }
 
@@ -527,6 +546,18 @@ bool mapper_impl_set_analog_sensitivity(
     }
 
     m->analogs[analog].sensitivity = sensitivity;
+
+    return true;
+}
+
+bool mapper_impl_set_analog_invert(
+    struct mapper *m, uint8_t analog, bool invert)
+{
+    if (analog >= m->nanalogs) {
+        return false;
+    }
+
+    m->analogs[analog].invert = invert;
 
     return true;
 }

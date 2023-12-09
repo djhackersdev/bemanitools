@@ -54,6 +54,7 @@ static void analog_ui_populate_controls(HWND hwnd);
 static INT_PTR analog_ui_handle_device_change(HWND hwnd);
 static INT_PTR analog_ui_handle_control_change(HWND hwnd);
 static INT_PTR analog_ui_handle_sensitivity_change(HWND hwnd);
+static INT_PTR analog_ui_handle_invert_change(HWND hwnd);
 static INT_PTR analog_ui_handle_tick(HWND hwnd);
 static INT_PTR analog_ui_handle_fini(HWND hwnd);
 
@@ -208,6 +209,15 @@ analog_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
                         case IDC_CONTROL:
                             return analog_ui_handle_control_change(hwnd);
+
+                        default:
+                            return FALSE;
+                    }
+
+                case BN_CLICKED:
+                    switch (LOWORD(wparam)) {
+                        case IDC_ANALOG_INVERT:
+                            return analog_ui_handle_invert_change(hwnd);
 
                         default:
                             return FALSE;
@@ -515,6 +525,21 @@ static INT_PTR analog_ui_handle_sensitivity_change(HWND hwnd)
     pos = (int) SendMessage(slider, TBM_GETPOS, 0, 0);
 
     mapper_set_analog_sensitivity(ui->def->tag, pos - 256 * SENSITIVITY_SCALE);
+
+    return TRUE;
+}
+
+static INT_PTR analog_ui_handle_invert_change(HWND hwnd)
+{
+    struct analog_ui *ui;
+    HWND btn;
+    bool invert;
+
+    ui = (struct analog_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    btn = GetDlgItem(hwnd, IDC_ANALOG_INVERT);
+    invert = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
+
+    mapper_set_analog_invert(ui->def->tag, invert);
 
     return TRUE;
 }
