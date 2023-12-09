@@ -144,6 +144,11 @@ int32_t mapper_get_analog_sensitivity(uint8_t analog)
     return mapper_impl_get_analog_sensitivity(mapper_inst, analog);
 }
 
+bool mapper_get_analog_invert(uint8_t analog)
+{
+    return mapper_impl_get_analog_invert(mapper_inst, analog);
+}
+
 uint8_t mapper_get_nanalogs(void)
 {
     return mapper_impl_get_nanalogs(mapper_inst);
