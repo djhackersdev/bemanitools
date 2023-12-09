@@ -190,6 +190,11 @@ bool mapper_set_analog_sensitivity(uint8_t analog, int32_t sensitivity)
     return mapper_impl_set_analog_sensitivity(mapper_inst, analog, sensitivity);
 }
 
+bool mapper_set_analog_invert(uint8_t analog, bool invert)
+{
+    return mapper_impl_set_analog_invert(mapper_inst, analog, invert);
+}
+
 void mapper_set_light_map(const struct mapped_light *ml, uint8_t game_light)
 {
     mapper_impl_set_light_map(mapper_inst, ml, game_light);

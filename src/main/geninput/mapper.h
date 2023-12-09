@@ -73,6 +73,8 @@ bool mapper_impl_set_analog_map(
     struct mapper *m, uint8_t analog, const struct mapped_analog *ma);
 bool mapper_impl_set_analog_sensitivity(
     struct mapper *m, uint8_t analog, int32_t sensitivity);
+bool mapper_impl_set_analog_invert(
+    struct mapper *m, uint8_t analog, bool invert);
 void mapper_impl_set_light_map(
     struct mapper *m, const struct mapped_light *ml, uint8_t game_light);
 void mapper_impl_set_nanalogs(struct mapper *m, uint8_t nanalogs);
