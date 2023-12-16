@@ -6,9 +6,25 @@
 #include "util/fs.h"
 #include "util/mem.h"
 
-static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f);
-static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f);
-static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f);
+enum mapper_config_version {
+    MAPPER_VERSION_BEFORE_VERSIONING,
+    MAPPER_VERSION_INVERT_AXIS,
+
+    // --- Add new versions above this line --- //
+    MAPPER_VERSION_PLUS_ONE,
+    MAPPER_VERSION_LATEST = MAPPER_VERSION_PLUS_ONE - 1,
+};
+
+#define FOURCC(a, b, c, d) \
+    ((uint32_t) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a)))
+
+// Bemanitools Mapper Data
+static const uint32_t mapper_fourcc = FOURCC('B', 'T', 'M', 'D');
+
+static uint32_t mapper_impl_config_load_version(FILE *f);
+static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version);
+static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version);
+static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version);
 static void mapper_impl_config_save_actions(struct mapper *m, FILE *f);
 static void mapper_impl_config_save_analogs(struct mapper *m, FILE *f);
 static void mapper_impl_config_save_lights(struct mapper *m, FILE *f);
@@ -16,14 +32,17 @@ static void mapper_impl_config_save_lights(struct mapper *m, FILE *f);
 struct mapper *mapper_impl_config_load(FILE *f)
 {
     struct mapper *m;
+    uint32_t version = 0;
 
     hid_mgr_lock(); /* Need to convert from HID objects to /dev nodes */
 
+    version = mapper_impl_config_load_version(f);
+
     m = mapper_impl_create();
 
-    if (!mapper_impl_config_load_actions(m, f) ||
-        !mapper_impl_config_load_analogs(m, f) ||
-        !mapper_impl_config_load_lights(m, f)) {
+    if (!mapper_impl_config_load_actions(m, f, version) ||
+        !mapper_impl_config_load_analogs(m, f, version) ||
+        !mapper_impl_config_load_lights(m, f, version)) {
         mapper_impl_destroy(m);
         m = NULL;
     }
@@ -33,7 +52,29 @@ struct mapper *mapper_impl_config_load(FILE *f)
     return m;
 }
 
-static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f)
+static uint32_t mapper_impl_config_load_version(FILE *f)
+{
+    uint32_t fourcc = 0;
+    uint32_t version = 0;
+
+    if (!read_u32(f, &fourcc)) {
+        return 0;
+    }
+    
+    if (fourcc == mapper_fourcc) {
+        
+        if (!read_u32(f, &version)) {
+            fseek(f, -4, SEEK_CUR);
+        }
+
+    } else {
+        fseek(f, -4, SEEK_CUR);
+    }
+
+    return version;
+}
+
+static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_action ma;
@@ -69,7 +110,7 @@ static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f)
     return true;
 }
 
-static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
+static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_analog ma;
@@ -102,8 +143,14 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
                 return false;
             }
 
-            if (!read_u8(f, &invert)) {
-                return false;
+            if (version >= MAPPER_VERSION_INVERT_AXIS) {
+
+                if (!read_u8(f, &invert)) {
+                    return false;
+                }
+
+            } else {
+                invert = false;
             }
 
             mapper_impl_set_analog_map(m, i, &ma);
@@ -117,7 +164,7 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f)
     return true;
 }
 
-static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f)
+static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_light ml;
@@ -162,7 +209,12 @@ static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f)
 
 void mapper_impl_config_save(struct mapper *m, FILE *f)
 {
+    const uint32_t mapper_latest_version = MAPPER_VERSION_LATEST;
+
     hid_mgr_lock();
+
+    write_u32(f, &mapper_fourcc);
+    write_u32(f, &mapper_latest_version);
 
     mapper_impl_config_save_actions(m, f);
     mapper_impl_config_save_analogs(m, f);
