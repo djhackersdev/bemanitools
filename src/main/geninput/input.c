@@ -25,10 +25,20 @@ static volatile long input_init_count;
 static FILE *mapper_config_open(const char *game_type, const char *mode)
 {
     char path[MAX_PATH];
+    FILE *f;
 
-    str_format(path, sizeof(path), "%s_v5_00a07.bin", game_type);
+    str_format(path, sizeof(path), "%s.bin", game_type);
+    f = fopen_appdata("DJHACKERS", path, mode);
 
-    return fopen_appdata("DJHACKERS", path, mode);
+    // Try to load the old save file only if we're loading
+    if (f == NULL) {
+        if (strchr(mode, 'r') != NULL) {
+            str_format(path, sizeof(path), "%s_v5_00a07.bin", game_type);
+            f = fopen_appdata("DJHACKERS", path, mode);
+        }
+    }
+    
+    return f;
 }
 
 void input_set_loggers(
