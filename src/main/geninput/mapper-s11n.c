@@ -7,7 +7,7 @@
 #include "util/mem.h"
 
 enum mapper_config_version {
-    MAPPER_VERSION_BEFORE_VERSIONING,
+    MAPPER_VERSION_BEFORE_VERSIONING = 0,
     MAPPER_VERSION_INVERT_AXIS,
 
     // --- Add new versions above this line --- //
@@ -32,7 +32,7 @@ static void mapper_impl_config_save_lights(struct mapper *m, FILE *f);
 struct mapper *mapper_impl_config_load(FILE *f)
 {
     struct mapper *m;
-    uint32_t version = 0;
+    uint32_t version = MAPPER_VERSION_BEFORE_VERSIONING;
 
     hid_mgr_lock(); /* Need to convert from HID objects to /dev nodes */
 
@@ -55,7 +55,7 @@ struct mapper *mapper_impl_config_load(FILE *f)
 static uint32_t mapper_impl_config_load_version(FILE *f)
 {
     uint32_t fourcc = 0;
-    uint32_t version = 0;
+    uint32_t version = MAPPER_VERSION_BEFORE_VERSIONING;
 
     if (!read_u32(f, &fourcc)) {
         return 0;
