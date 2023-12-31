@@ -214,6 +214,7 @@ void avs_context_property_set_log_level(struct property *config_prop, enum log_l
 {
     struct property_node *log_level_node;
     enum property_type type;
+    const char *loglevel_str;
 
     log_level_node = property_search(config_prop, NULL, "config/log/level");
 
@@ -226,8 +227,6 @@ void avs_context_property_set_log_level(struct property *config_prop, enum log_l
     // Different AVS config formats depending on AVS version, detect based on the existing values
     switch (type) {
         case PROPERTY_TYPE_STR:
-            const char *loglevel_str;
-
             switch (loglevel) {
                 case LOG_LEVEL_FATAL:
                     loglevel_str = "fatal";

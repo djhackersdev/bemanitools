@@ -70,6 +70,18 @@ static void boot_property_log_node_tree_rec(
     struct property_node* child_node;
     enum property_type property_type;
 
+    int8_t value_s8;
+    int16_t value_s16;
+    int32_t value_s32;
+    int64_t value_s64;
+    uint8_t value_u8;
+    uint16_t value_u16;
+    uint32_t value_u32;
+    uint64_t value_u64;
+    char value_str[4096];
+    bool value_bool;
+    char value_untyped[4096];
+
     // Carry on the full root path down the node tree
     property_node_name(parent_node, cur_node_name, sizeof(cur_node_name));
 
@@ -89,72 +101,52 @@ static void boot_property_log_node_tree_rec(
                 break;
 
             case PROPERTY_TYPE_S8:
-                int8_t value_s8;
-
                 property_node_read(parent_node, property_type, &value_s8, sizeof(value_s8));
                 log_misc("%s: %d", cur_path, value_s8);
                 break;
 
             case PROPERTY_TYPE_S16:
-                int16_t value_s16;
-
                 property_node_read(parent_node, property_type, &value_s16, sizeof(value_s16));
                 log_misc("%s: %d", cur_path, value_s16);
                 break;
 
             case PROPERTY_TYPE_S32:
-                int32_t value_s32;
-
                 property_node_read(parent_node, property_type, &value_s32, sizeof(value_s32));
                 log_misc("%s: %d", cur_path, value_s32);
                 break;
 
             case PROPERTY_TYPE_S64:
-                int64_t value_s64;
-
                 property_node_read(parent_node, property_type, &value_s64, sizeof(value_s64));
                 log_misc("%s: %lld", cur_path, value_s64);
                 break;
             
             case PROPERTY_TYPE_U8:
-                uint8_t value_u8;
-
                 property_node_read(parent_node, property_type, &value_u8, sizeof(value_u8));
                 log_misc("%s: %u", cur_path, value_u8);
                 break;
 
             case PROPERTY_TYPE_U16:
-                uint16_t value_u16;
-
                 property_node_read(parent_node, property_type, &value_u16, sizeof(value_u16));
                 log_misc("%s: %u", cur_path, value_u16);
                 break;
 
             case PROPERTY_TYPE_U32:
-                uint32_t value_u32;
-
                 property_node_read(parent_node, property_type, &value_u32, sizeof(value_u32));
                 log_misc("%s: %u", cur_path, value_u32);
                 break;
 
             case PROPERTY_TYPE_U64:
-                uint64_t value_u64;
-
                 property_node_read(parent_node, property_type, &value_u64, sizeof(value_u64));
                 log_misc("%s: %llu", cur_path, value_u64);
                 break;
 
             case PROPERTY_TYPE_STR:
-                char value_str[4096];
-
                 property_node_read(parent_node, property_type, value_str, sizeof(value_str));
                 log_misc("%s: %s", cur_path, value_str);
 
                 break;
 
             case PROPERTY_TYPE_BOOL:
-                bool value_bool;
-
                 property_node_read(parent_node, property_type, &value_bool, sizeof(value_bool));
                 log_misc("%s: %d", cur_path, value_bool);
 
@@ -170,8 +162,6 @@ static void boot_property_log_node_tree_rec(
 
             // Treat as string
             case PROPERTY_TYPE_UNTYPED:
-                char value_untyped[4096];
-
                 property_node_read(parent_node, property_type, value_untyped, sizeof(value_untyped));
                 log_misc("%s: %s", cur_path, value_untyped);
 
@@ -294,7 +284,6 @@ static void boot_property_avs_rewind(uint32_t context)
 
 struct property *boot_property_load_avs(const char *filename)
 {
-    uint16_t mode;
     avs_desc desc;
     struct property *prop;
 
