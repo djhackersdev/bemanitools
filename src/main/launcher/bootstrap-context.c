@@ -1,6 +1,6 @@
 #define LOG_MODULE "bootstrap-context"
 
-#include "launcher/bs-config.h"
+#include "launcher/bootstrap-config.h"
 #include "launcher/property.h"
 
 #include "util/log.h"

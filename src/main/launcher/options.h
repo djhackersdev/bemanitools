@@ -7,7 +7,7 @@
 #include "util/array.h"
 #include "util/log.h"
 
-#include "launcher/bs-config.h"
+#include "launcher/bootstrap-config.h"
 
 struct options {
     size_t std_heap_size;

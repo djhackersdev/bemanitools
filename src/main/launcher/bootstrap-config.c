@@ -3,7 +3,7 @@
 
 #include "imports/avs.h"
 
-#include "launcher/bs-config.h"
+#include "launcher/bootstrap-config.h"
 
 #include "util/defs.h"
 #include "util/hex.h"

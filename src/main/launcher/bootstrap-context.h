@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include "launcher/bs-config.h"
+#include "launcher/bootstrap-config.h"
 
 void bootstrap_context_init();
 void bootstrap_context_finit();

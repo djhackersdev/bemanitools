@@ -9,8 +9,8 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-context.h"
+#include "launcher/bootstrap-config.h"
 #include "launcher/bootstrap-context.h"
-#include "launcher/bs-config.h"
 #include "launcher/ea3-ident.h"
 #include "launcher/logger.h"
 #include "launcher/module.h"

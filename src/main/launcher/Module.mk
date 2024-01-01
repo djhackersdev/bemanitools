@@ -14,8 +14,8 @@ libs_launcher   := \
 
 src_launcher    := \
     avs-context.c \
+    bootstrap-config.c \
     bootstrap-context.c \
-    bs-config.c \
     ea3-ident.c \
     logger.c \
     main.c \
