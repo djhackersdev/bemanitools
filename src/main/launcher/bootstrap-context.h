@@ -5,9 +5,6 @@
 
 #include "launcher/bootstrap-config.h"
 
-void bootstrap_context_init();
-void bootstrap_context_finit();
-
 void bootstrap_context_init(
     const char *avs_config_path,
     const char *ea3_config_path,
