@@ -75,27 +75,3 @@ void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)
         ident->hardid + 4,
         sizeof(ident->hardid) - 4);
 }
-
-void ea3_ident_to_property(
-    const struct ea3_ident *ident, struct property *ea3_config)
-{
-    struct property_node *ea3_node;
-    struct property_node *node;
-    int i;
-
-    ea3_node = property_search(ea3_config, NULL, "/ea3");
-
-    if (ea3_node == NULL) {
-        log_fatal("ea3 config is missing /ea3 node");
-    }
-
-    for (i = 0; ea3_ident_psmap[i].type != PSMAP_TYPE_TERMINATOR; i++) {
-        node = property_search(ea3_config, ea3_node, ea3_ident_psmap[i].path);
-
-        if (node != NULL) {
-            property_node_remove(node);
-        }
-    }
-
-    property_psmap_export(ea3_config, ea3_node, ident, ea3_ident_psmap);
-}

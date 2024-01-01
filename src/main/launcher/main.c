@@ -13,6 +13,7 @@
 #include "launcher/bootstrap-context.h"
 #include "launcher/ea3-ident.h"
 #include "launcher/eamuse.h"
+#include "launcher/eamuse-config.h"
 #include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
@@ -449,7 +450,10 @@ int main(int argc, const char **argv)
     eamuse_init(
         &bootstrap_config.startup.eamuse,
         &ea3_ident,
-        &options);
+        options.override_urlslash_enabled,
+        options.override_urlslash_value,
+        options.override_service,
+        options.log_property_configs);
 
     /* Run application */
 

@@ -28,12 +28,12 @@ struct ea3_ident {
     char pcbid[24];
 };
 
+extern struct property_psmap ea3_ident_psmap[9];
+
 void ea3_ident_init(struct ea3_ident *ident);
 void ea3_ident_initialize_from_file(const char *path, struct ea3_ident *ea3_ident);
 bool ea3_ident_from_property(
     struct ea3_ident *ident, struct property *ea3_config);
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident);
-void ea3_ident_to_property(
-    const struct ea3_ident *ident, struct property *ea3_config);
     
 #endif

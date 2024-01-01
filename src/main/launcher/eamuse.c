@@ -1,108 +1,63 @@
+#define LOG_MODULE "eamuse"
+
 #include "eamuse.h"
 
 #include "ea3-ident.h"
+#include "eamuse-config.h"
 #include "property.h"
 #include "options.h"
 
 #include "imports/avs-ea3.h"
 #include "util/log.h"
 
-static const struct bootstrap_eamuse_config* eamuse_config;
-static struct property_node *ea3_config_node;
-static struct property *ea3_config_property;
-
-static void ea3_config_setup(
-    const struct ea3_ident *ea3_ident,
-    const char *eamuse_config_file,
-    bool override_urlslash_enabled,
-    bool override_urlslash_value,
-    const char *service_url,
-    struct property **ea3_config_property)
-{
-    struct property_node *ea3_config_node;
-
-    log_assert(ea3_ident);
-    log_assert(eamuse_config_file);
-    log_assert(ea3_config_property);
-
-    log_misc("Preparing ea3 configuration...");
-
-    log_misc("Loading ea3-config from file: %s", eamuse_config_file);
-
-    *ea3_config_property = boot_property_load_avs(eamuse_config_file);
-    ea3_config_node = property_search(*ea3_config_property, 0, "/ea3");
-
-    if (ea3_config_node == NULL) {
-        log_fatal("%s: /ea3 missing", eamuse_config_file);
-    }
-
-    ea3_ident_to_property(ea3_ident, *ea3_config_property);
-
-    if (override_urlslash_enabled) {
-        log_misc(
-            "Overriding url_slash to: %d", override_urlslash_value);
-
-        boot_property_node_replace_bool(
-            *ea3_config_property,
-            ea3_config_node,
-            "network/url_slash",
-            override_urlslash_value);
-    }
-
-    if (service_url) {
-        log_misc("Overriding service url to: %s", service_url);
-
-        boot_property_node_replace_str(
-            *ea3_config_property,
-            ea3_config_node,
-            "network/services",
-            service_url);
-    }
-}
+static struct property *_eamuse_property;
 
 void eamuse_init(
     const struct bootstrap_eamuse_config* config,
     const struct ea3_ident* ea3_ident,
-    const struct options* options)
+    bool override_urlslash_enabled,
+    bool override_urlslash_value,
+    const char *override_service_url,
+    bool log_property_config)
 {
+    struct property_node *node;
+
     log_assert(config);
     log_assert(ea3_ident);
-    log_assert(options);
+    log_assert(override_service_url);
 
-    eamuse_config = config;
+    if (config->enable) {
+        _eamuse_property = eamuse_config_load_from_avs_path(config->config_file);
 
-    if (eamuse_config->enable) {
-        ea3_config_setup(
-            ea3_ident,
-            eamuse_config->config_file,
-            options->override_urlslash_enabled,
-            options->override_urlslash_value,
-            options->override_service,
-            &ea3_config_property);
+        eamuse_config_inject_ea3_ident(_eamuse_property, ea3_ident);
+        eamuse_config_inject_parameters(
+            _eamuse_property,
+            override_urlslash_enabled,
+            override_urlslash_value,
+            override_service_url);
 
-        if (options->log_property_configs) {
+        if (log_property_config) {
             log_misc("Property ea3-config");
-            boot_property_log(ea3_config_property);
+            boot_property_log(_eamuse_property);
         }
+
+        node = eamuse_config_resolve_root_node(_eamuse_property);
 
         log_info("Booting ea3...");
 
-        ea3_config_node = property_search(ea3_config_property, 0, "/ea3");
+        ea3_boot(node);
 
-        log_assert(ea3_config_node);
-
-        ea3_boot(ea3_config_node);
+        log_misc("Booting ea3 done");
     } else {
-        ea3_config_property = NULL;
-        ea3_config_node = NULL;
+        _eamuse_property = NULL;
     }
 }
 
 void eamuse_fini()
 {
-    if (eamuse_config->enable) {
+    if (_eamuse_property) {
         ea3_shutdown();
-        ea3_config_node = NULL;
-        boot_property_free(ea3_config_property);
+        boot_property_free(_eamuse_property);
+        _eamuse_property = NULL;
     }
 }

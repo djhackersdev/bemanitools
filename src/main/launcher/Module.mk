@@ -18,6 +18,7 @@ src_launcher    := \
     bootstrap-context.c \
     ea3-ident.c \
     eamuse.c \
+    eamuse-config.c \
     logger.c \
     main.c \
     module.c \
