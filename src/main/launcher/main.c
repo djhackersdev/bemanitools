@@ -12,6 +12,7 @@
 #include "launcher/bootstrap-config.h"
 #include "launcher/bootstrap-context.h"
 #include "launcher/ea3-ident.h"
+#include "launcher/eamuse.h"
 #include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
@@ -298,55 +299,6 @@ void invoke_dll_module_init(
     std_setenv("/env/profile/soft_id_code", sidcode_long);
 }
 
-static void ea3_config_setup(
-    const struct ea3_ident *ea3_ident,
-    const char *eamuse_config_file,
-    bool override_urlslash_enabled,
-    bool override_urlslash_value,
-    const char *service_url,
-    struct property **ea3_config_property)
-{
-    struct property_node *ea3_config_node;
-
-    log_assert(ea3_ident);
-    log_assert(eamuse_config_file);
-    log_assert(ea3_config_property);
-
-    log_misc("Preparing ea3 configuration...");
-
-    log_misc("Loading ea3-config from file: %s", eamuse_config_file);
-
-    *ea3_config_property = boot_property_load_avs(eamuse_config_file);
-    ea3_config_node = property_search(*ea3_config_property, 0, "/ea3");
-
-    if (ea3_config_node == NULL) {
-        log_fatal("%s: /ea3 missing", eamuse_config_file);
-    }
-
-    ea3_ident_to_property(ea3_ident, *ea3_config_property);
-
-    if (override_urlslash_enabled) {
-        log_misc(
-            "Overriding url_slash to: %d", override_urlslash_value);
-
-        boot_property_node_replace_bool(
-            *ea3_config_property,
-            ea3_config_node,
-            "network/url_slash",
-            override_urlslash_value);
-    }
-
-    if (service_url) {
-        log_misc("Overriding service url to: %s", service_url);
-
-        boot_property_node_replace_str(
-            *ea3_config_property,
-            ea3_config_node,
-            "network/services",
-            service_url);
-    }
-}
-
 int main(int argc, const char **argv)
 {
     struct options options;
@@ -361,11 +313,8 @@ int main(int argc, const char **argv)
     struct ea3_ident ea3_ident;
 
     struct property *app_config_property;
-    struct property_node *app_config_node;    
-
-    struct property *ea3_config_property;
-    struct property_node *ea3_config_node;
-
+    struct property_node *app_config_node;
+    
     options_init(&options);
 
     if (!options_read_cmdline(&options, argc, argv) ||
@@ -497,31 +446,10 @@ int main(int argc, const char **argv)
 
     /* Start up e-Amusement client */
 
-    if (bootstrap_config.startup.eamuse.enable) {
-        ea3_config_setup(
-            &ea3_ident,
-            bootstrap_config.startup.eamuse.config_file,
-            options.override_urlslash_enabled,
-            options.override_urlslash_value,
-            options.override_service,
-            &ea3_config_property);
-
-        if (options.log_property_configs) {
-            log_misc("Property ea3-config");
-            boot_property_log(ea3_config_property);
-        }
-
-        log_info("Booting ea3...");
-
-        ea3_config_node = property_search(ea3_config_property, 0, "/ea3");
-
-        log_assert(ea3_config_node);
-
-        ea3_boot(ea3_config_node);
-    } else {
-        ea3_config_property = NULL;
-        ea3_config_node = NULL;
-    }
+    eamuse_init(
+        &bootstrap_config.startup.eamuse,
+        &ea3_ident,
+        &options);
 
     /* Run application */
 
@@ -531,11 +459,7 @@ int main(int argc, const char **argv)
 
     log_info("Shutting down launcher...");
 
-    if (bootstrap_config.startup.eamuse.enable) {
-        ea3_shutdown();
-        ea3_config_node = NULL;
-        boot_property_free(ea3_config_property);
-    }
+    eamuse_fini();
 
     app_config_node = NULL;
     if (app_config_property) {
