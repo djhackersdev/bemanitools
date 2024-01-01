@@ -16,6 +16,7 @@ void avs_init(
     struct property_node *config_node,
     uint32_t avs_heap_size,
     uint32_t std_heap_size);
+void avs_fs_dir_log(const char *path);
 void avs_fini(void);
 
 #endif

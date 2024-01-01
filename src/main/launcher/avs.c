@@ -209,6 +209,33 @@ void avs_init(
 #endif
 }
 
+void avs_fs_dir_log(const char *path)
+{
+    const char* name;
+
+    log_assert(path);
+
+    avs_desc dir = avs_fs_opendir(path);
+
+    if (dir < 0) {
+        log_warning("Opening avs dir %s failed, skipping logging contents", path);
+    }
+
+    log_misc("Contents of %s:", path);
+
+    do {
+        name = avs_fs_readdir(dir);
+
+        if (name == NULL) {
+            break;
+        }
+
+        log_misc("%s", name);
+    } while (name != NULL);
+
+    avs_fs_closedir(dir);
+}
+
 void avs_fini(void)
 {
     avs_shutdown();
