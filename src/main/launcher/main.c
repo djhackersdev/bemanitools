@@ -9,7 +9,7 @@
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
-#include "launcher/avs-context.h"
+#include "launcher/avs.h"
 #include "launcher/bootstrap-config.h"
 #include "launcher/bootstrap-context.h"
 #include "launcher/ea3-ident.h"
@@ -383,7 +383,7 @@ int main(int argc, const char **argv)
         property_util_log(avs_config_property);
     }
 
-    avs_context_init(
+    avs_init(
         avs_config_property,
         property_search(avs_config_property, 0, "/config"),
         bootstrap_config.startup.avs.avs_heap_size,
@@ -465,7 +465,7 @@ int main(int argc, const char **argv)
     }
 
     log_to_writer(log_writer_file, stdout);
-    avs_context_fini();
+    avs_fini();
     property_util_log(avs_config_property);
 
     module_context_fini(&module);

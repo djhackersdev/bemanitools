@@ -8,7 +8,7 @@
 
 #include "imports/avs.h"
 
-#include "launcher/avs-context.h"
+#include "launcher/avs.h"
 #include "launcher/logger.h"
 #include "launcher/property-util.h"
 
@@ -155,118 +155,7 @@ static void _avs_context_create_config_fs_dir(
     }
 }
 
-void avs_context_property_set_local_fs_nvram_raw(
-    struct property *config_prop,
-    const char* dev_nvram_raw_path)
-{
-    char path_dev_raw[MAX_PATH];
-    char path_dev_nvram[MAX_PATH];
-
-    struct property_node *fs_node;
-    struct property_node *mounttable_node;
-    struct property_node *vfs_node;
-
-    str_cpy(path_dev_raw, sizeof(path_dev_raw), dev_nvram_raw_path);
-    str_cat(path_dev_raw, sizeof(path_dev_raw), "/dev/raw");
-
-    str_cpy(path_dev_nvram, sizeof(path_dev_nvram), dev_nvram_raw_path);
-    str_cat(path_dev_nvram, sizeof(path_dev_nvram), "/dev/nvram");
-
-    fs_node = property_search(config_prop, NULL, "config/fs");
-
-    if (!fs_node) {
-        log_fatal("Cannot find config/fs in avs config");
-    }
-
-    // Check if "new" mounttable config is used for dev/nvram and dev/raw or legacy config
-    if (property_search(config_prop, fs_node, "mounttable")) {
-        property_remove(config_prop, fs_node, "mounttable");
-
-        mounttable_node = property_node_create(config_prop, fs_node, PROPERTY_TYPE_VOID, "mounttable");
-
-        vfs_node = property_node_create(config_prop, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
-
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_raw);
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/raw");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
-
-        vfs_node = property_node_create(config_prop, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
-
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_nvram);
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/nvram");
-        property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
-    } else {
-        property_util_node_replace_str(config_prop, fs_node, "nvram/device", path_dev_raw);
-        property_util_node_replace_str(config_prop, fs_node, "nvram/fstype", "fs");
-        property_util_node_replace_str(config_prop, fs_node, "nvram/option", "vf=1,posix=1");
-
-        property_util_node_replace_str(config_prop, fs_node, "raw/device", path_dev_nvram);
-        property_util_node_replace_str(config_prop, fs_node, "raw/fstype", "fs");
-        property_util_node_replace_str(config_prop, fs_node, "raw/option", "vf=1,posix=1");
-    }
-}
-
-void avs_context_property_set_log_level(struct property *config_prop, enum log_level loglevel)
-{
-    struct property_node *log_level_node;
-    enum property_type type;
-    const char *loglevel_str;
-
-    log_level_node = property_search(config_prop, NULL, "config/log/level");
-
-    if (!log_level_node) {
-        log_fatal("config/log/level missing in AVS configuration");
-    }
-
-    type = property_node_type(log_level_node);
-
-    // Different AVS config formats depending on AVS version, detect based on the existing values
-    switch (type) {
-        case PROPERTY_TYPE_STR:
-            switch (loglevel) {
-                case LOG_LEVEL_FATAL:
-                    loglevel_str = "fatal";
-                    break;
-
-                case LOG_LEVEL_WARNING:
-                    loglevel_str = "warn";
-                    break;
-
-                case LOG_LEVEL_INFO:
-                    loglevel_str = "info";
-                    break;
-
-                case LOG_LEVEL_MISC:
-                    loglevel_str = "misc";
-                    break;
-
-                default:
-                    log_fatal("Unsupported log level: %d", loglevel);
-                    break;
-            }
-
-            property_node_remove(log_level_node);
-            property_node_create(config_prop, log_level_node, PROPERTY_TYPE_STR, NULL, loglevel_str);
-
-            break;
-
-        case PROPERTY_TYPE_U32:
-            property_node_remove(log_level_node);
-            property_node_create(config_prop, log_level_node, PROPERTY_TYPE_U32, NULL, loglevel);
-
-            break;
-
-        default:
-            log_fatal("Unsupported property type %d for config/log/level node in AVS config", type);
-            break;
-    }
-}
-
-void avs_context_init(
+void avs_init(
     struct property *config_prop,
     struct property_node *config_node,
     uint32_t avs_heap_size,
@@ -320,7 +209,7 @@ void avs_context_init(
 #endif
 }
 
-void avs_context_fini(void)
+void avs_fini(void)
 {
     avs_shutdown();
 

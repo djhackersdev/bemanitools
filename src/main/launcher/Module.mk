@@ -13,8 +13,8 @@ libs_launcher   := \
     util \
 
 src_launcher    := \
+    avs.c \
     avs-config.c \
-    avs-context.c \
     bootstrap-config.c \
     bootstrap-context.c \
     ea3-ident.c \
