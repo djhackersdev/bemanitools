@@ -1,4 +1,4 @@
-#define LOG_MODULE "launcher-property"
+#define LOG_MODULE "property-util"
 
 #include <windows.h>
 
@@ -8,7 +8,7 @@
 
 #include "imports/avs.h"
 
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 
 #include "util/log.h"
 #include "util/mem.h"
@@ -16,7 +16,7 @@
 
 typedef void (*rewinder)(uint32_t context);
 
-static struct property *do_property_load(
+static struct property *property_util_do_load(
     avs_reader_t reader, rewinder rewinder, uint32_t context, const char *name)
 {
     struct property *prop;
@@ -44,7 +44,7 @@ static struct property *do_property_load(
     return prop;
 }
 
-static int boot_property_fread(uint32_t context, void *bytes, size_t nbytes)
+static int property_util_fread(uint32_t context, void *bytes, size_t nbytes)
 {
     FILE *f;
 
@@ -53,13 +53,13 @@ static int boot_property_fread(uint32_t context, void *bytes, size_t nbytes)
     return fread(bytes, 1, nbytes, f);
 }
 
-static void boot_property_frewind(uint32_t context)
+static void property_util_frewind(uint32_t context)
 {
     FILE *f = TlsGetValue(context);
     rewind(f);
 }
 
-static void boot_property_log_node_tree_rec(
+static void property_util_log_node_tree_rec(
         struct property_node *parent_node,
         const char* parent_path)
 {
@@ -173,24 +173,24 @@ static void boot_property_log_node_tree_rec(
         }
     } else {
         while (child_node) {
-            boot_property_log_node_tree_rec(child_node, cur_path);
+            property_util_log_node_tree_rec(child_node, cur_path);
 
             child_node = property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
         }
     }
 }
 
-void boot_property_log(struct property *property)
+void property_util_log(struct property *property)
 {
-    boot_property_log_node_tree_rec(property_search(property, NULL, "/"), "");
+    property_util_log_node_tree_rec(property_search(property, NULL, "/"), "");
 }
 
-void boot_property_node_log(struct property_node *node)
+void property_util_node_log(struct property_node *node)
 {
-    boot_property_log_node_tree_rec(node, "");
+    property_util_log_node_tree_rec(node, "");
 }
 
-struct property *boot_property_load(const char *filename)
+struct property *property_util_load_file(const char *filename)
 {
     FILE *f;
     uint32_t f_keyhole;
@@ -209,8 +209,8 @@ struct property *boot_property_load(const char *filename)
         log_fatal("%s: Error opening configuration file", filename);
     }
 
-    prop = do_property_load(
-        boot_property_fread, boot_property_frewind, f_keyhole, filename);
+    prop = property_util_do_load(
+        property_util_fread, property_util_frewind, f_keyhole, filename);
 
     TlsFree(f_keyhole);
 
@@ -226,7 +226,7 @@ struct cstring_read_handle {
 };
 
 static int
-boot_property_cstring_read(uint32_t context, void *bytes, size_t nbytes)
+property_util_cstring_read(uint32_t context, void *bytes, size_t nbytes)
 {
     int result = 0;
     struct cstring_read_handle *h = TlsGetValue(context);
@@ -239,13 +239,13 @@ boot_property_cstring_read(uint32_t context, void *bytes, size_t nbytes)
     return result;
 }
 
-static void boot_property_cstring_rewind(uint32_t context)
+static void property_util_cstring_rewind(uint32_t context)
 {
     struct cstring_read_handle *h = TlsGetValue(context);
     h->offset = 0;
 }
 
-struct property *boot_property_load_cstring(const char *cstring)
+struct property *property_util_load_cstring(const char *cstring)
 {
     uint32_t s_keyhole;
     struct property *prop;
@@ -259,9 +259,9 @@ struct property *boot_property_load_cstring(const char *cstring)
     s_keyhole = TlsAlloc();
     TlsSetValue(s_keyhole, &read_handle);
 
-    prop = do_property_load(
-        boot_property_cstring_read,
-        boot_property_cstring_rewind,
+    prop = property_util_do_load(
+        property_util_cstring_read,
+        property_util_cstring_rewind,
         s_keyhole,
         "<string>");
 
@@ -270,19 +270,19 @@ struct property *boot_property_load_cstring(const char *cstring)
     return prop;
 }
 
-static int boot_property_avs_read(uint32_t context, void *bytes, size_t nbytes)
+static int property_util_avs_read(uint32_t context, void *bytes, size_t nbytes)
 {
     avs_desc desc = (avs_desc) context;
     return avs_fs_read(desc, bytes, nbytes);
 }
 
-static void boot_property_avs_rewind(uint32_t context)
+static void property_util_avs_rewind(uint32_t context)
 {
     avs_desc desc = (avs_desc) context;
     avs_fs_lseek(desc, 0, AVS_SEEK_SET);
 }
 
-struct property *boot_property_load_avs(const char *filename)
+struct property *property_util_load_avs(const char *filename)
 {
     avs_desc desc;
     struct property *prop;
@@ -293,15 +293,15 @@ struct property *boot_property_load_avs(const char *filename)
         log_fatal("%s: Error opening configuration file", filename);
     }
 
-    prop = do_property_load(
-        boot_property_avs_read, boot_property_avs_rewind, desc, filename);
+    prop = property_util_do_load(
+        property_util_avs_read, property_util_avs_rewind, desc, filename);
 
     avs_fs_close(desc);
 
     return prop;
 }
 
-void boot_property_node_replace_u8(
+void property_util_node_replace_u8(
         struct property *property,
         struct property_node *node,
         const char *name,
@@ -318,7 +318,7 @@ void boot_property_node_replace_u8(
     property_node_create(property, node, PROPERTY_TYPE_U8, name, val);
 }
 
-void boot_property_node_replace_bool(
+void property_util_node_replace_bool(
         struct property *property,
         struct property_node *node,
         const char *name,
@@ -335,7 +335,7 @@ void boot_property_node_replace_bool(
     property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
 }
 
-void boot_property_node_replace_str(
+void property_util_node_replace_str(
         struct property *property,
         struct property_node *node,
         const char *name,
@@ -352,7 +352,7 @@ void boot_property_node_replace_str(
     property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
 }
 
-void boot_property_free(struct property *prop)
+void property_util_free(struct property *prop)
 {
     void *buffer;
 

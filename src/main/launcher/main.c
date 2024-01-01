@@ -17,7 +17,7 @@
 #include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 #include "launcher/stubs.h"
 
 #include "util/defs.h"
@@ -97,7 +97,7 @@ static void avs_config_setup(
     log_assert(bootstrap_config);
     log_assert(avs_config_property);
 
-    *avs_config_property = boot_property_load(bootstrap_config->startup.avs.config_file);
+    *avs_config_property = property_util_load_file(bootstrap_config->startup.avs.config_file);
     avs_config_node = property_search(*avs_config_property, 0, "/config");
 
     if (avs_config_node == NULL) {
@@ -199,7 +199,7 @@ static void app_config_setup(
     } else if (app_config_path && path_exists(app_config_path)) {
         log_misc("Loading avs-config from file: %s", app_config_path);
 
-        *app_config_property = boot_property_load_avs(app_config_path);
+        *app_config_property = property_util_load_avs(app_config_path);
 
         *app_config_node = property_search(*app_config_property, 0, "/param");
 
@@ -209,7 +209,7 @@ static void app_config_setup(
     } else {
         log_warning("Explicit app config (file) missing, defaulting to empty");
 
-        *app_config_property = boot_property_load_cstring("<param>dummy</param>");
+        *app_config_property = property_util_load_cstring("<param>dummy</param>");
         *app_config_node = property_search(*app_config_property, 0, "/param");
     }
 }
@@ -371,7 +371,7 @@ int main(int argc, const char **argv)
 
         if (options.log_property_configs) {
             log_misc("Property bootstrap-config");
-            boot_property_log(bootstrap_config_property);
+            property_util_log(bootstrap_config_property);
         }
     }
 
@@ -386,7 +386,7 @@ int main(int argc, const char **argv)
 
     if (options.log_property_configs) {
         log_misc("Property avs-config");
-        boot_property_log(avs_config_property);
+        property_util_log(avs_config_property);
     }
 
     avs_context_init(
@@ -440,7 +440,7 @@ int main(int argc, const char **argv)
 
     if (options.log_property_configs) {
         log_misc("Property app-config");
-        boot_property_node_log(app_config_node);
+        property_util_node_log(app_config_node);
     }
 
     invoke_dll_module_init(&ea3_ident, &module, app_config_node);
@@ -467,17 +467,17 @@ int main(int argc, const char **argv)
 
     app_config_node = NULL;
     if (app_config_property) {
-        boot_property_free(app_config_property);
+        property_util_log(app_config_property);
     }
 
     log_to_writer(log_writer_file, stdout);
     avs_context_fini();
-    boot_property_free(avs_config_property);
+    property_util_log(avs_config_property);
 
     module_context_fini(&module);
 
     if (bootstrap_config_property) {
-        boot_property_free(bootstrap_config_property);
+        property_util_log(bootstrap_config_property);
     }
 
     options_fini(&options);

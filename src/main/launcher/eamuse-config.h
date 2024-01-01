@@ -1,7 +1,7 @@
 #ifndef LAUNCHER_EAMUSE_CONFIG_H
 #define LAUNCHER_EAMUSE_CONFIG_H
 
-#include "launcher/property.h"
+#include "imports/avs.h"
 
 struct property* eamuse_config_load_from_avs_path(const char *avs_path);
 

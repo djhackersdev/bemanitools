@@ -10,7 +10,7 @@
 
 #include "launcher/avs-context.h"
 #include "launcher/logger.h"
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 
 #include "util/codepage.h"
 #include "util/fs.h"
@@ -200,13 +200,13 @@ void avs_context_property_set_local_fs_nvram_raw(
         property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/nvram");
         property_node_create(config_prop, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
     } else {
-        boot_property_node_replace_str(config_prop, fs_node, "nvram/device", path_dev_raw);
-        boot_property_node_replace_str(config_prop, fs_node, "nvram/fstype", "fs");
-        boot_property_node_replace_str(config_prop, fs_node, "nvram/option", "vf=1,posix=1");
+        property_util_node_replace_str(config_prop, fs_node, "nvram/device", path_dev_raw);
+        property_util_node_replace_str(config_prop, fs_node, "nvram/fstype", "fs");
+        property_util_node_replace_str(config_prop, fs_node, "nvram/option", "vf=1,posix=1");
 
-        boot_property_node_replace_str(config_prop, fs_node, "raw/device", path_dev_nvram);
-        boot_property_node_replace_str(config_prop, fs_node, "raw/fstype", "fs");
-        boot_property_node_replace_str(config_prop, fs_node, "raw/option", "vf=1,posix=1");
+        property_util_node_replace_str(config_prop, fs_node, "raw/device", path_dev_nvram);
+        property_util_node_replace_str(config_prop, fs_node, "raw/fstype", "fs");
+        property_util_node_replace_str(config_prop, fs_node, "raw/option", "vf=1,posix=1");
     }
 }
 

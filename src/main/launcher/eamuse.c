@@ -1,13 +1,13 @@
 #define LOG_MODULE "eamuse"
 
-#include "eamuse.h"
-
-#include "ea3-ident.h"
-#include "eamuse-config.h"
-#include "property.h"
-#include "options.h"
-
 #include "imports/avs-ea3.h"
+
+#include "launcher/ea3-ident.h"
+#include "launcher/eamuse.h"
+#include "launcher/eamuse-config.h"
+#include "launcher/property-util.h"
+#include "launcher/options.h"
+
 #include "util/log.h"
 
 static struct property *_eamuse_property;
@@ -38,7 +38,7 @@ void eamuse_init(
 
         if (log_property_config) {
             log_misc("Property ea3-config");
-            boot_property_log(_eamuse_property);
+            property_util_log(_eamuse_property);
         }
 
         node = eamuse_config_resolve_root_node(_eamuse_property);
@@ -57,7 +57,7 @@ void eamuse_fini()
 {
     if (_eamuse_property) {
         ea3_shutdown();
-        boot_property_free(_eamuse_property);
+        property_util_free(_eamuse_property);
         _eamuse_property = NULL;
     }
 }

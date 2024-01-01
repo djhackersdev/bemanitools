@@ -1,7 +1,7 @@
 #define LOG_MODULE "bootstrap-context"
 
 #include "launcher/bootstrap-config.h"
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 
 #include "util/log.h"
 #include "util/str.h"
@@ -53,7 +53,7 @@ void bootstrap_context_init_from_file(
     log_info("Bootstrap from configuration %s with selector %s", config_path, selector);
 
     bootstrap_config_init(config);
-    *bootstrap_config_property = boot_property_load(config_path);
+    *bootstrap_config_property = property_util_load_file(config_path);
 
     log_info(
         "Loading bootstrap selector '%s'...", selector);

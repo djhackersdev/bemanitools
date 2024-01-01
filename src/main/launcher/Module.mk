@@ -23,7 +23,7 @@ src_launcher    := \
     main.c \
     module.c \
     options.c \
-    property.c \
+    property-util.c \
     stubs.c \
     version.c \
 

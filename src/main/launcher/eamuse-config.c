@@ -6,7 +6,7 @@
 
 #include "launcher/ea3-ident.h"
 #include "launcher/eamuse-config.h"
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 
 #include "util/log.h"
 
@@ -21,7 +21,7 @@ struct property* eamuse_config_load_from_avs_path(
 
     log_misc("Loading ea3-config from avs path: %s", avs_path);
 
-    property = boot_property_load_avs(avs_path);
+    property = property_util_load_avs(avs_path);
 
     // Check if root node exists, call already errors if not
     eamuse_config_resolve_root_node(property);
@@ -84,7 +84,7 @@ void eamuse_config_inject_parameters(
         log_misc(
             "Overriding url_slash to: %d", urlslash_value);
 
-        boot_property_node_replace_bool(
+        property_util_node_replace_bool(
             eamuse_property,
             node,
             "network/url_slash",
@@ -94,7 +94,7 @@ void eamuse_config_inject_parameters(
     if (service_url) {
         log_misc("Overriding service url to: %s", service_url);
 
-        boot_property_node_replace_str(
+        property_util_node_replace_str(
             eamuse_property,
             node,
             "network/services",

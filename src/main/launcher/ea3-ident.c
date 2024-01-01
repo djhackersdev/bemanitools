@@ -4,7 +4,7 @@
 
 #include "launcher/ea3-ident.h"
 #include "launcher/module.h"
-#include "launcher/property.h"
+#include "launcher/property-util.h"
 
 #include "util/defs.h"
 #include "util/hex.h"
@@ -37,7 +37,7 @@ void ea3_ident_initialize_from_file(
     log_assert(path);
     log_assert(ea3_ident);
 
-    property = boot_property_load(path);
+    property = property_util_load_file(path);
     node = property_search(property, NULL, "/ea3_conf");
 
     if (node == NULL) {
@@ -49,7 +49,7 @@ void ea3_ident_initialize_from_file(
             "%s: Error reading IDs from config file", path);
     }
 
-    boot_property_free(property);
+    property_util_free(property);
 }
 
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)
