@@ -139,7 +139,7 @@ bool bootstrap_config_from_property(
 
 // TODO this should rather move somewhere else?
 void bootstrap_config_update_avs(
-    const struct bootstrap_config *config, struct property_node *avs_root);
+    const struct bootstrap_config *config, struct property *avs_property);
 bool bootstrap_config_iter_default_file(
     struct bootstrap_config *config,
     struct bootstrap_default_file_config *default_file);

@@ -3,6 +3,7 @@
 
 #include "imports/avs.h"
 
+#include "launcher/avs-config.h"
 #include "launcher/bootstrap-config.h"
 
 #include "util/defs.h"
@@ -374,73 +375,20 @@ bool bootstrap_config_from_property(
 }
 
 void bootstrap_config_update_avs(
-    const struct bootstrap_config *config, struct property_node *avs_root)
+    const struct bootstrap_config *config, struct property *avs_property)
 {
-// Different AVS version generations changed the property types in the avs-config.xml slightly
-// which needs to be considered to avoid property map reading/write to cause memory corruption
-// which naturally lead to hard to debug application failures
-// Furthermore, some attributes didn't exist on older versions
-#if AVS_VERSION <= 1306
-    if (config->module_params) {
-        property_remove(NULL, avs_root, "mode/product");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_U8, "mode/product", 1);
-        property_remove(NULL, avs_root, "net/enable_raw");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_U8, "net/enable_raw", 1);
-        property_remove(NULL, avs_root, "net/eaudp/enable");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_U8, "net/eaudp/enable", 1);
-        property_remove(NULL, avs_root, "sntp/ea_on");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_U8, "sntp/ea_on", 1);
-    }
+    avs_config_set_mode_product(avs_property, true);
+    avs_config_set_net_raw(avs_property, true);
+    avs_config_set_net_eaudp(avs_property, true);
+    avs_config_set_sntp_ea(avs_property, true);
 
     if (config->startup.drm.device[0]) {
-        property_remove(NULL, avs_root, "fs/root/device");
-        property_node_create(
-            NULL,
-            avs_root,
-            PROPERTY_TYPE_STR,
-            "fs/root/device",
-            config->startup.drm.device);
+        avs_config_set_fs_root_device(avs_property, config->startup.drm.device);
     }
 
     if (config->log_node) {
-        property_remove(NULL, avs_root, "log");
-        property_node_clone(NULL, avs_root, config->log_node, TRUE);
+        avs_config_set_logging(avs_property, config);
     }
-#else
-    if (config->module_params) {
-        property_remove(NULL, avs_root, "mode/product");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_BOOL, "mode/product", 1);
-        property_remove(NULL, avs_root, "net/enable_raw");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_BOOL, "net/enable_raw", 1);
-        property_remove(NULL, avs_root, "net/eaudp/enable");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_BOOL, "net/eaudp/enable", 1);
-        property_remove(NULL, avs_root, "sntp/ea_on");
-        property_node_create(
-            NULL, avs_root, PROPERTY_TYPE_BOOL, "sntp/ea_on", 1);
-    }
-
-    if (config->startup.drm.device[0]) {
-        property_remove(NULL, avs_root, "fs/root/device");
-        property_node_create(
-            NULL,
-            avs_root,
-            PROPERTY_TYPE_STR,
-            "fs/root/device",
-            config->startup.drm.device);
-    }
-
-    if (config->log_node) {
-        property_remove(NULL, avs_root, "log");
-        property_node_clone(NULL, avs_root, config->log_node, TRUE);
-    }
-#endif
 }
 
 bool bootstrap_config_iter_default_file(

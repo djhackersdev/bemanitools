@@ -8,6 +8,7 @@
 #include "imports/avs-ea3.h"
 #include "imports/avs.h"
 
+#include "launcher/avs-config.h"
 #include "launcher/avs-context.h"
 #include "launcher/bootstrap-config.h"
 #include "launcher/bootstrap-context.h"
@@ -92,17 +93,10 @@ static void avs_config_setup(
         enum log_level loglevel,
         struct property **avs_config_property)
 {
-    struct property_node *avs_config_node;
-
     log_assert(bootstrap_config);
     log_assert(avs_config_property);
 
-    *avs_config_property = property_util_load_file(bootstrap_config->startup.avs.config_file);
-    avs_config_node = property_search(*avs_config_property, 0, "/config");
-
-    if (avs_config_node == NULL) {
-        log_fatal("%s: /config missing", bootstrap_config->startup.avs.config_file);
-    }
+    *avs_config_property = avs_config_load_from_file_path(bootstrap_config->startup.avs.config_file);
 
     if (dev_nvram_raw_path) {
         if (!path_exists(dev_nvram_raw_path)) {
@@ -114,16 +108,16 @@ static void avs_config_setup(
             }
         }
 
-        avs_context_property_set_local_fs_nvram_raw(
+        avs_config_set_local_fs_path_dev_nvram_and_raw(
             *avs_config_property,
             dev_nvram_raw_path);
     }
 
     if (override_loglevel_enabled) {
-        avs_context_property_set_log_level(*avs_config_property, loglevel);
+        avs_config_set_log_level(*avs_config_property, loglevel);
     }
 
-    bootstrap_config_update_avs(bootstrap_config, avs_config_node);
+    bootstrap_config_update_avs(bootstrap_config, *avs_config_property);
 }
 
 static void load_hook_dlls(struct array *hook_dlls)

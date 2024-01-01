@@ -13,6 +13,7 @@ libs_launcher   := \
     util \
 
 src_launcher    := \
+    avs-config.c \
     avs-context.c \
     bootstrap-config.c \
     bootstrap-context.c \

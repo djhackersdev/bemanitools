@@ -38,7 +38,7 @@ struct property_node* eamuse_config_resolve_root_node(struct property *property)
     node = property_search(property, 0, EAMUSE_CONFIG_ROOT_NODE);
 
     if (node == NULL) {
-        log_fatal("%s: " EAMUSE_CONFIG_ROOT_NODE " missing");
+        log_fatal("Root node " EAMUSE_CONFIG_ROOT_NODE " in eamuse config missing");
     }
 
     return node;
