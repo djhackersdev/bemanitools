@@ -95,11 +95,11 @@ static void avs_config_setup(
     log_assert(bootstrap_config);
     log_assert(avs_config_property);
 
-    *avs_config_property = boot_property_load(bootstrap_config->startup.avs_config_file);
+    *avs_config_property = boot_property_load(bootstrap_config->startup.avs.config_file);
     avs_config_node = property_search(*avs_config_property, 0, "/config");
 
     if (avs_config_node == NULL) {
-        log_fatal("%s: /config missing", bootstrap_config->startup.avs_config_file);
+        log_fatal("%s: /config missing", bootstrap_config->startup.avs.config_file);
     }
 
     if (dev_nvram_raw_path) {
@@ -442,20 +442,20 @@ int main(int argc, const char **argv)
     avs_context_init(
         avs_config_property,
         property_search(avs_config_property, 0, "/config"),
-        bootstrap_config.startup.avs_heap_size,
-        bootstrap_config.startup.std_heap_size);
+        bootstrap_config.startup.avs.avs_heap_size,
+        bootstrap_config.startup.avs.std_heap_size);
     
     bootstrap_context_post_avs_setup(&bootstrap_config);
   
     /* Load game DLL */
 
-    log_info("Load game DLL: %s", bootstrap_config.startup.module_file);
+    log_info("Load game DLL: %s", bootstrap_config.startup.module.file);
 
     if (options.iat_hook_dlls.nitems > 0) {
         module_context_init_with_iat_hooks(
-            &module, bootstrap_config.startup.module_file, &options.iat_hook_dlls);
+            &module, bootstrap_config.startup.module.file, &options.iat_hook_dlls);
     } else {
-        module_context_init(&module, bootstrap_config.startup.module_file);
+        module_context_init(&module, bootstrap_config.startup.module.file);
     }
 
     /* Load hook DLLs */
@@ -497,10 +497,10 @@ int main(int argc, const char **argv)
 
     /* Start up e-Amusement client */
 
-    if (bootstrap_config.startup.eamuse_enable) {
+    if (bootstrap_config.startup.eamuse.enable) {
         ea3_config_setup(
             &ea3_ident,
-            bootstrap_config.startup.eamuse_config_file,
+            bootstrap_config.startup.eamuse.config_file,
             options.override_urlslash_enabled,
             options.override_urlslash_value,
             options.override_service,
@@ -531,7 +531,7 @@ int main(int argc, const char **argv)
 
     log_info("Shutting down launcher...");
 
-    if (bootstrap_config.startup.eamuse_enable) {
+    if (bootstrap_config.startup.eamuse.enable) {
         ea3_shutdown();
         ea3_config_node = NULL;
         boot_property_free(ea3_config_property);

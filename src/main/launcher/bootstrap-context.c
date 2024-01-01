@@ -23,20 +23,20 @@ void bootstrap_context_init(
 
     bootstrap_config_init(config);
 
-    str_cpy(config->startup.avs_config_file, sizeof(config->startup.avs_config_file), avs_config_path);
-    str_cpy(config->startup.eamuse_config_file, sizeof(config->startup.eamuse_config_file), ea3_config_path);
+    str_cpy(config->startup.avs.config_file, sizeof(config->startup.avs.config_file), avs_config_path);
+    str_cpy(config->startup.eamuse.config_file, sizeof(config->startup.eamuse.config_file), ea3_config_path);
 
-    config->startup.avs_heap_size = avs_heap_size;
-    config->startup.std_heap_size = std_heap_size;
+    config->startup.avs.avs_heap_size = avs_heap_size;
+    config->startup.avs.std_heap_size = std_heap_size;
 
     if (logfile) {
-        config->startup.log_enable_file = true;
+        config->startup.log.enable_file = true;
 
-        str_cpy(config->startup.log_file, sizeof(config->startup.log_file), logfile);
-        str_cpy(config->startup.log_name, sizeof(config->startup.log_name), logfile);
+        str_cpy(config->startup.log.file, sizeof(config->startup.log.file), logfile);
+        str_cpy(config->startup.log.name, sizeof(config->startup.log.name), logfile);
     }
 
-    str_cpy(config->startup.module_file, sizeof(config->startup.module_file), module);
+    str_cpy(config->startup.module.file, sizeof(config->startup.module.file), module);
 }
 
 void bootstrap_context_init_from_file(
@@ -68,7 +68,7 @@ void bootstrap_context_init_from_file(
 
 void bootstrap_context_post_avs_setup(struct bootstrap_config *config)
 {
-    struct bootstrap_default_file default_file;
+    struct bootstrap_default_file_config default_file;
     struct avs_stat st;
 
     log_assert(config);

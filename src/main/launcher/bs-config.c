@@ -11,153 +11,178 @@
 #include "util/str.h"
 
 // clang-format off
-PSMAP_BEGIN(bootstrap_startup_psmap)
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_startup_config, avs_config_file,
+PSMAP_BEGIN(bootstrap_startup_avs_psmap)
+PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_avs_config, config_file,
     "boot/file")
-PSMAP_REQUIRED(PSMAP_TYPE_U32,  struct bootstrap_startup_config, avs_heap_size,
+PSMAP_REQUIRED(PSMAP_TYPE_U32,  struct bootstrap_avs_config, avs_heap_size,
     "boot/heap_avs")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, std_heap_size,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_avs_config, std_heap_size,
     "boot/heap_std", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, mount_table_selector,
+PSMAP_END
+
+PSMAP_BEGIN(bootstrap_startup_boot_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_boot_config, mount_table_selector,
     "boot/mounttable_selector", "boot")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, watcher_enable,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_boot_config, watcher_enable,
     "boot/watcher", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, timemachine_enable,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_boot_config, timemachine_enable,
     "boot/timemachine", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, launch_config_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_boot_config, launch_config_file,
     "boot/launch_path", "/dev/raw/launch.xml")
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, log_level,
+PSMAP_BEGIN(bootstrap_startup_log_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, level,
     "log/level", "all")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, log_name,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, name,
     "log/name", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, log_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, file,
     "log/file", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, log_bufsz,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_log_config, bufsz,
     "log/sz_buf", 4096)
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_startup_config, log_output_delay_ms,
+PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_log_config, output_delay_ms,
     "log/output_delay", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_enable_console,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_console,
     "log/enable_console", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_enable_sci,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_sci,
     "log/enable_netsci", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_enable_net,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_net,
     "log/enable_netlog", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_enable_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_file,
     "log/enable_file", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_rotate,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, rotate,
     "log/rotate", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, log_append,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, append,
     "log/append", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_startup_config, log_count,
+PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_log_config, count,
     "log/gen", 10)
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_startup_config, minidump_count,
+PSMAP_BEGIN(bootstrap_startup_minidump_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_minidump_config, count,
     "minidump/gen", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, minidump_continue,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_minidump_config, continue_,
     "minidump/cont_debug", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, minidump_log,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_minidump_config, log,
     "minidump/echo_log", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_startup_config, minidump_type,
+PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_minidump_config, type,
     "minidump/dump_type", 2)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, minidump_path,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_minidump_config, path,
     "minidump/path", "/dev/raw/minidump")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, minidump_symbufsz,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_minidump_config, symbufsz,
     "minidump/sz_symbuf", 32768)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, minidump_search_path,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_minidump_config, search_path,
     "minidump/search", ".")
+PSMAP_END
 
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_startup_config, module_file,
+PSMAP_BEGIN(bootstrap_startup_module_psmap)
+PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_module_config, file,
     "component/file")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, module_load_type,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_module_config, load_type,
     "component/load_type", "MEMORY")
+PSMAP_END
 
+PSMAP_BEGIN(bootstrap_startup_dlm_psmap)
 /* disabled until we implement PSMAP_TYPE_BIN
    PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, ntdll_digest,
        "dlml/ntdll/hash", "")
  */
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, ntdll_size,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, size,
     "dlml/ntdll/size", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, ntdll_ift_table,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_table,
     "dlml/ntdll/ift_table", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, ntdll_ift_insert,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_insert,
     "dlml/ntdll/insert_ift", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, ntdll_ift_remove,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_remove,
     "dlml/ntdll/remove_ift", 0)
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, shield_enable,
+PSMAP_BEGIN(bootstrap_startup_shield_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, enable,
     "shield/enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, shield_verbose,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, verbose,
     "shield/verbose", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, shield_use_loadlibrary,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, use_loadlibrary,
     "shield/use_loadlibrary", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, shield_logger,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, logger,
     "shield/logger", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_sleep_min,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, sleep_min,
     "shield/sleepmin", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_sleep_blur,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, sleep_blur,
     "shield/sleepblur", 90)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, shield_whitelist_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, whitelist_file,
     "shield/whitelist", "prop/whitelist.csv")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_tick_sleep,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, tick_sleep,
     "shield/ticksleep", 100)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_tick_error,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, tick_error,
     "shield/tickerror", 1000)
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_startup_config, shield_overwork_threshold,
+PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_shield_config, overwork_threshold,
     "shield/overwork_threshold", 50)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_overwork_delay,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, overwork_delay,
     "shield/overwork_delay", 100)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, shield_pause_delay,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, pause_delay,
     "shield/pause_delay", 1000)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, shield_unlimited_key,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, unlimited_key,
     "shield/unlimited_key", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_startup_config, shield_killer_port,
+PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_shield_config, killer_port,
     "shield_killer/port", 5001)
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, dongle_license_cn,
+PSMAP_BEGIN(bootstrap_startup_dongle_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, license_cn,
     "dongle/license", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, dongle_account_cn,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, account_cn,
     "dongle/account", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, dongle_driver_dll,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, driver_dll,
     "dongle/pkcs11_driver", "eTPKCS11.dll")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, dongle_disable_gc,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_dongle_config, disable_gc,
     "dongle/disable_gc", 0)
+PSMAP_END
 
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_startup_config, drm_dll,
+PSMAP_BEGIN(bootstrap_startup_drm_psmap)
+PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_drm_config, dll,
     "drm/dll")
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_startup_config, drm_fstype,
+PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_drm_config, fstype,
     "drm/fstype")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, drm_device,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, device,
     "drm/device", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, drm_mount,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, mount,
     "drm/dst", "/")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, drm_options,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, options,
     "drm/option", "")
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, lte_enable,
+PSMAP_BEGIN(bootstrap_startup_lte_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_lte_config, enable,
     "lte/enable", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, lte_config_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_lte_config, config_file,
     "lte/file", "/dev/nvram/lte-config.xml")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, lte_unlimited_key,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_lte_config, unlimited_key,
     "lte/unlimited_key", "")
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, ssl_options,
+PSMAP_BEGIN(bootstrap_startup_ssl_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_ssl_config, options,
     "ssl/option", "")
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, esign_enable,
+PSMAP_BEGIN(bootstrap_startup_esign_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_esign_config, enable,
     "esign/enable", 0)
+PSMAP_END
 
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, eamuse_enable,
+PSMAP_BEGIN(bootstrap_startup_eamuse_psmap)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, enable,
     "eamuse/enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, eamuse_sync,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, sync,
     "eamuse/sync", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, eamuse_enable_model,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, enable_model,
     "eamuse/enable_model", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, eamuse_config_file,
+PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_eamuse_config, config_file,
     "eamuse/file", "/dev/nvram/ea3-config.xml")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_startup_config, eamuse_updatecert_enable,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, updatecert_enable,
     "eamuse/updatecert_enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_startup_config, eamuse_updatecert_interval,
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_eamuse_config, updatecert_interval,
     "eamuse/updatecert_interval", 0)
 PSMAP_END
 
@@ -261,9 +286,82 @@ bool bootstrap_config_from_property(
 
     /* Now parse the startup node */
     log_misc(ROOT_NODE "/startup/%s: loading merge result...", selector);
+
     if (!property_psmap_import(
-            NULL, startup_config, &config->startup, bootstrap_startup_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s: load failed", selector);
+            NULL, startup_config, &config->startup.avs, bootstrap_startup_avs_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/boot (avs): load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.boot, bootstrap_startup_boot_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/boot: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.log, bootstrap_startup_log_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/log: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.minidump, bootstrap_startup_minidump_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/minidump: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.module, bootstrap_startup_module_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/component: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.dlm_ntdll, bootstrap_startup_dlm_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/dlm/ntdll: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.shield, bootstrap_startup_shield_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/shield: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.dongle, bootstrap_startup_dongle_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/dongle: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.drm, bootstrap_startup_drm_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/drm: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.lte, bootstrap_startup_lte_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/lte: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.ssl, bootstrap_startup_ssl_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/ssl: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.esign, bootstrap_startup_esign_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/esign: load failed", selector);
+        return false;
+    }
+
+    if (!property_psmap_import(
+            NULL, startup_config, &config->startup.eamuse, bootstrap_startup_eamuse_psmap)) {
+        log_warning(ROOT_NODE "/startup/%s/eamuse: load failed", selector);
         return false;
     }
 
@@ -271,6 +369,7 @@ bool bootstrap_config_from_property(
         property_search(NULL, startup_config, "component/param");
     config->log_node = property_search(NULL, startup_config, "log");
     config->default_node = property_search(NULL, startup_config, "default");
+
     return true;
 }
 
@@ -297,14 +396,14 @@ void bootstrap_config_update_avs(
             NULL, avs_root, PROPERTY_TYPE_U8, "sntp/ea_on", 1);
     }
 
-    if (config->startup.drm_device[0]) {
+    if (config->startup.drm.device[0]) {
         property_remove(NULL, avs_root, "fs/root/device");
         property_node_create(
             NULL,
             avs_root,
             PROPERTY_TYPE_STR,
             "fs/root/device",
-            config->startup.drm_device);
+            config->startup.drm.device);
     }
 
     if (config->log_node) {
@@ -327,14 +426,14 @@ void bootstrap_config_update_avs(
             NULL, avs_root, PROPERTY_TYPE_BOOL, "sntp/ea_on", 1);
     }
 
-    if (config->startup.drm_device[0]) {
+    if (config->startup.drm.device[0]) {
         property_remove(NULL, avs_root, "fs/root/device");
         property_node_create(
             NULL,
             avs_root,
             PROPERTY_TYPE_STR,
             "fs/root/device",
-            config->startup.drm_device);
+            config->startup.drm.device);
     }
 
     if (config->log_node) {
@@ -346,7 +445,7 @@ void bootstrap_config_update_avs(
 
 bool bootstrap_config_iter_default_file(
     struct bootstrap_config *config,
-    struct bootstrap_default_file *default_file)
+    struct bootstrap_default_file_config *default_file)
 {
     if (!config->default_file) {
         config->default_file =
