@@ -3,9 +3,11 @@ exes            += inject
 ldflags_inject  := \
     -mconsole \
     -lpsapi \
+    -ldbghelp \
 
 libs_inject     := \
     util \
+    dwarfstack \
 
 src_inject      := \
     main.c \

@@ -34,6 +34,8 @@ EXPORTS
     property_node_type @329 NONAME
     property_node_clone @130 NONAME
     property_node_traversal @93 NONAME
+    property_node_refdata @330 NONAME == XC058ba5000151
+    property_query_size @250 NONAME == XC058ba5000101
     property_psmap_import @102 NONAME
     property_psmap_export @110 NONAME
     property_read_query_memsize @100 NONAME

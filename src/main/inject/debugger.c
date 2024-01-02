@@ -11,10 +11,10 @@
 #include "inject/debugger.h"
 #include "inject/logger.h"
 
+#include "util/debug.h"
 #include "util/log.h"
 #include "util/mem.h"
 #include "util/proc.h"
-#include "util/signal.h"
 #include "util/str.h"
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
@@ -271,7 +271,7 @@ static uint32_t debugger_loop()
                     "EXCEPTION_DEBUG_EVENT(pid %ld, tid %ld): x%s 0x%p",
                     de.dwProcessId,
                     de.dwThreadId,
-                    signal_exception_code_to_str(
+                    debug_exception_code_to_str(
                         de.u.Exception.ExceptionRecord.ExceptionCode),
                     de.u.Exception.ExceptionRecord.ExceptionAddress);
 

@@ -9,9 +9,9 @@ EXPORTS
     avs_fs_lstat @79 NONAME
     avs_fs_open @58 NONAME
     avs_fs_read @61 NONAME
-    avs_fs_opendir @573 NONAME
-    avs_fs_readdir @573 NONAME
-    avs_fs_closedir @573 NONAME
+    avs_fs_opendir @72 NONAME == XCd229cc0000f0
+    avs_fs_readdir @73 NONAME == XCd229cc0000bb
+    avs_fs_closedir @74 NONAME == XCd229cc0000b8
     avs_net_ctrl @98 NONAME
     avs_shutdown @286 NONAME
     avs_thread_create @6 NONAME
@@ -27,13 +27,16 @@ EXPORTS
     property_destroy @128 NONAME
     property_insert_read @131 NONAME
     property_node_create @145 NONAME
-    property_node_name @573 NONAME
-    property_node_read @573 NONAME
+    property_node_name @150 NONAME
+    property_node_read @154 NONAME == XCd229cc0000f3
     property_node_refer @158 NONAME
     property_node_remove @146 NONAME
-    property_node_type @573 NONAME
+    property_node_type @151 NONAME == XCd229cc000071
     property_node_clone @147 NONAME
     property_node_traversal @149 NONAME
+    property_node_refdata @148 NONAME == XCd229cc00009f
+    property_node_datasize @153 NONAME == XCd229cc000083
+    property_query_size @142 NONAME == XCd229cc000032
     property_psmap_export @162 NONAME
     property_psmap_import @161 NONAME
     property_read_query_memsize @159 NONAME

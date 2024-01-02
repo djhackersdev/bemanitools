@@ -4,7 +4,7 @@
 
 #include "imports/avs.h"
 
-#include "launcher/ea3-ident.h"
+#include "launcher/ea3-ident-config.h"
 #include "launcher/eamuse-config.h"
 #include "launcher/property-util.h"
 
@@ -12,24 +12,23 @@
 
 #define EAMUSE_CONFIG_ROOT_NODE "/ea3"
 
-struct property* eamuse_config_load_from_avs_path(
-    const char *avs_path)
+struct property* eamuse_config_avs_load(const char *path)
 {
     struct property *property;
 
-    log_assert(avs_path);
+    log_assert(path);
 
-    log_misc("Loading ea3-config from avs path: %s", avs_path);
+    log_misc("Loading from avs path: %s", path);
 
-    property = property_util_load_avs(avs_path);
+    property = property_util_avs_fs_load(path);
 
     // Check if root node exists, call already errors if not
-    eamuse_config_resolve_root_node(property);
+    eamuse_config_root_get(property);
 
     return property;
 }
 
-struct property_node* eamuse_config_resolve_root_node(struct property *property)
+struct property_node* eamuse_config_root_get(struct property *property)
 {
     struct property_node *node;
 
@@ -44,60 +43,81 @@ struct property_node* eamuse_config_resolve_root_node(struct property *property)
     return node;
 }
 
-void eamuse_config_inject_ea3_ident(
-    struct property *eamuse_property,
-    const struct ea3_ident *ea3_ident)
+void eamuse_config_id_softid_set(struct property_node *node, const char *value)
 {
-    struct property_node *ea3_node;
-    struct property_node *node;
-    int i;
+    log_assert(node);
+    log_assert(value);
 
-    log_misc("Injecting ea3_ident data...");
-
-    ea3_node = eamuse_config_resolve_root_node(eamuse_property);
-
-    for (i = 0; ea3_ident_psmap[i].type != PSMAP_TYPE_TERMINATOR; i++) {
-        node = property_search(eamuse_property, ea3_node, ea3_ident_psmap[i].path);
-
-        if (node != NULL) {
-            property_node_remove(node);
-        }
-    }
-
-    property_psmap_export(eamuse_property, ea3_node, ea3_ident, ea3_ident_psmap);
+    property_util_node_str_replace(NULL, node, "id/softid", value);
 }
 
-void eamuse_config_inject_parameters(
-    struct property *eamuse_property,
-    bool urlslash_enabled,
-    bool urlslash_value,
-    const char *service_url)
+void eamuse_config_id_hardid_set(struct property_node *node, const char *value)
 {
-    struct property_node *node;
+    log_assert(node);
+    log_assert(value);
 
-    log_assert(eamuse_property);
-    log_assert(service_url);
+    property_util_node_str_replace(NULL, node, "id/hardid", value);
+}
 
-    node = eamuse_config_resolve_root_node(eamuse_property);
+void eamuse_config_id_pcbid_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
 
-    if (urlslash_enabled) {
-        log_misc(
-            "Overriding url_slash to: %d", urlslash_value);
+    property_util_node_str_replace(NULL, node, "id/pcbid", value);
+}
 
-        property_util_node_replace_bool(
-            eamuse_property,
-            node,
-            "network/url_slash",
-            urlslash_value);
-    }
+void eamuse_config_soft_model_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
 
-    if (service_url) {
-        log_misc("Overriding service url to: %s", service_url);
+    property_util_node_str_replace(NULL, node, "soft/model", value);
+}
 
-        property_util_node_replace_str(
-            eamuse_property,
-            node,
-            "network/services",
-            service_url);
-    }
+void eamuse_config_soft_dest_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
+
+    property_util_node_str_replace(NULL, node, "soft/dest", value);
+}
+
+void eamuse_config_soft_spec_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
+
+    property_util_node_str_replace(NULL, node, "soft/spec", value);
+}
+
+void eamuse_config_soft_rev_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
+
+    property_util_node_str_replace(NULL, node, "soft/rev", value);
+}
+
+void eamuse_config_soft_ext_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
+
+    property_util_node_str_replace(NULL, node, "soft/ext", value);
+}
+
+void eamuse_config_network_url_slash_set(struct property_node *node, bool value)
+{
+    log_assert(node);
+
+    property_util_node_bool_replace(NULL, node, "network/url_slash", value);
+}
+
+void eamuse_config_network_service_url_set(struct property_node *node, const char *value)
+{
+    log_assert(node);
+    log_assert(value);
+
+    property_util_node_str_replace(NULL, node, "network/services", value);
 }

@@ -1,3 +1,5 @@
+#define LOG_MODULE "options"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,51 +8,33 @@
 
 #include "launcher/options.h"
 
+#include "util/mem.h"
 #include "util/str.h"
-
-#define DEFAULT_HEAP_SIZE 16777216
 
 void options_init(struct options *options)
 {
-    options->std_heap_size = DEFAULT_HEAP_SIZE;
-    options->avs_heap_size = DEFAULT_HEAP_SIZE;
-    options->bootstrap_config_path = "prop/bootstrap.xml";
-    options->bootstrap_selector = NULL;
-    options->app_config_path = "prop/app-config.xml";
-    options->avs_config_path = "prop/avs-config.xml";
-    options->ea3_config_path = "prop/ea3-config.xml";
-    options->ea3_ident_path = "prop/ea3-ident.xml";
-    options->avs_fs_dev_nvram_raw_path = NULL;
-    options->softid = NULL;
-    options->pcbid = NULL;
-    options->module = NULL;
-    options->override_loglevel_enabled = false;
-    options->loglevel = LOG_LEVEL_INFO;
-    options->logfile = NULL;
-    options->log_property_configs = false;
-    options->remote_debugger = false;
-    array_init(&options->hook_dlls);
-    array_init(&options->before_hook_dlls);
-    array_init(&options->iat_hook_dlls);
+    memset(options, 0, sizeof(struct options));
 
-    options->override_service = NULL;
-    options->override_urlslash_enabled = false;
-    options->override_urlslash_value = false;
+    array_init(&options->hook.hook_dlls);
+    array_init(&options->hook.before_hook_dlls);
+    array_init(&options->hook.iat_hook_dlls);
 }
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
 {
-    bool got_module = false;
+    bool got_launcher_config;
+
+    got_launcher_config = false;
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'C':
+                case 'T':
                     if (i + 1 >= argc) {
                         return false;
                     }
 
-                    options->bootstrap_config_path = argv[++i];
+                    options->bootstrap.config_path = argv[++i];
 
                     break;
 
@@ -59,43 +43,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->bootstrap_selector = argv[++i];
-
-                    break;
-
-                case 'A':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    options->app_config_path = argv[++i];
-
-                    break;
-
-                case 'E':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    options->ea3_config_path = argv[++i];
-
-                    break;
-
-                case 'V':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    options->avs_config_path = argv[++i];
-
-                    break;
-
-                case 'F':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    options->avs_fs_dev_nvram_raw_path = argv[++i];
+                    options->bootstrap.selector = argv[++i];
 
                     break;
 
@@ -104,7 +52,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->pcbid = argv[++i];
+                    options->eamuse.pcbid = argv[++i];
 
                     break;
 
@@ -113,7 +61,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->softid = argv[++i];
+                    options->eamuse.softid = argv[++i];
 
                     break;
 
@@ -122,37 +70,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->avs_heap_size =
-                        (size_t) strtol(argv[++i], NULL, 0);
-
-                    if (options->avs_heap_size == 0) {
-                        return false;
-                    }
-
-                    break;
-
-#ifdef AVS_HAS_STD_HEAP
-                case 'T':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    options->std_heap_size =
-                        (size_t) strtol(argv[++i], NULL, 0);
-
-                    if (options->std_heap_size == 0) {
-                        return false;
-                    }
-
-                    break;
-#endif
-
-                case 'K':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    *array_append(const char *, &options->hook_dlls) =
+                    *array_append(const char *, &options->hook.hook_dlls) =
                         argv[++i];
 
                     break;
@@ -162,7 +80,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    *array_append(const char *, &options->before_hook_dlls) =
+                    *array_append(const char *, &options->hook.before_hook_dlls) =
                         argv[++i];
 
                     break;
@@ -175,12 +93,12 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     const char *dll = argv[++i];
                     log_assert(strstr(dll, "=") != NULL);
 
-                    *array_append(const char *, &options->iat_hook_dlls) = dll;
+                    *array_append(const char *, &options->hook.iat_hook_dlls) = dll;
 
                     break;
                 }
 
-                case 'N':
+                case 'L':
                     if (i + 1 >= argc) {
                         return false;
                     }
@@ -191,8 +109,8 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->loglevel = (enum log_level) tmp;
-                    options->override_loglevel_enabled = true;
+                    options->log.level = xmalloc(sizeof(enum log_level));
+                    *(options->log.level) = (enum log_level) tmp;
 
                     break;
 
@@ -201,12 +119,12 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->logfile = argv[++i];
+                    options->log.file_path = argv[++i];
 
                     break;
 
-                case 'L':
-                    options->log_property_configs = true;
+                case 'C':
+                    options->debug.log_property_configs = true;
 
                     break;
 
@@ -215,7 +133,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->override_service = argv[++i];
+                    options->eamuse.service_url = argv[++i];
 
                     break;
 
@@ -224,22 +142,23 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->override_urlslash_enabled = true;
+                    options->eamuse.urlslash = xmalloc(sizeof(bool));
 
                     const char *urlslash_value = argv[++i];
 
-                    options->override_urlslash_value = false;
+                    *(options->eamuse.urlslash) = false;
+
                     if (_stricmp(urlslash_value, "1") == 0) {
-                        options->override_urlslash_value = true;
+                        *(options->eamuse.urlslash) = true;
                     }
                     if (_stricmp(urlslash_value, "true") == 0) {
-                        options->override_urlslash_value = true;
+                        *(options->eamuse.urlslash) = true;
                     }
 
                     break;
 
                 case 'D':
-                    options->remote_debugger = true;
+                    options->debug.remote_debugger = true;
 
                     break;
 
@@ -247,67 +166,71 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     break;
             }
         } else {
-            /* override module from bootstrap config */
-            if (!got_module) {
-                options->module = argv[i];
-                got_module = true;
+            if (!got_launcher_config) {
+                options->launcher.config_path = argv[i];
+                got_launcher_config = true;
             }
         }
     }
 
-    return true;
+    return got_launcher_config;
 }
 
 void options_print_usage(void)
 {
     fprintf(
         stderr,
-        "Usage: launcher.exe [launcher options...] <app.dll> [hooks "
-        "options...] \n"
+        "Usage:\n"
+        "  launcher.exe [launcher options as overrides...] <path launcher.xml> "
+        "[further options, e.g. for hook libraries to pick up...]\n"
         "\n"
-        "       The following options can be specified before the app DLL "
-        "path:\n"
+        "       The following options can be specified before the launcher.xml "
+        "configuration file:\n"
         "\n"
-        "       -C [filename]   Bootstrap configuration file (default: "
-        "prop/bootstrap.xml)\n"
+        "  Bootstrap\n"
+        "       -T [filename]   Bootstrap configuration file\n"
         "       -Z [selector]   Bootstrap selector used in configuration\n"
-        "       -A [filename]   App configuration file (default: "
-        "prop/app-config.xml)\n"
-        "       -V [filename]   AVS configuration file (default: "
-        "prop/avs-config.xml)\n"
-        "       -E [filename]   ea3 configuration file (default: "
-        "prop/ea3-config.xml)\n"
-        "       -H [bytes]      AVS heap size (default: 16777216)\n"
-#ifdef AVS_HAS_STD_HEAP
-        "       -T [bytes]      'std' heap size (default 16777216)\n"
-#endif
-        "       -F [path]       Specify a local file system path to point "
-        "dev/nvram and dev/raw to (default: use avs config)\n"
-        "       -P [pcbid]      Specify PCBID (default: use ea3 config)\n"
-        "       -R [pcbid]      Specify Soft ID (default: use ea3 config)\n"
-        "       -S [url]        Specify service url (default: use ea3 config)\n"
-        "       -U [0/1]        Specify url_slash (default: use ea3 config)\n"
-        "       -K [filename]   Load hook DLL (can be specified multiple "
+        "\n"
+        "  Eamuse\n"
+        "       -P [pcbid]      Specify PCBID\n"
+        "       -R [softid]     Specify Soft ID\n"
+        "       -S [url]        Specify service url\n"
+        "       -U [0/1]        Specify url_slash enabled/disabled\n"
+        "\n"
+        "  Hook\n"
+        "       -H [filename]   Load hook DLL (can be specified multiple "
         "times)\n"
         "       -B [filename]   Load pre-hook DLL loaded before avs boot "
         "(can be specified multiple times)\n"
         "       -I [filename]   Load pre-hook DLL that overrides IAT reference "
         "before execution (can be specified multiple times)\n"
-        "       -N [0/1/2/3]    Log level for both console and file with "
+        "\n"
+        "  Logging\n"
+        "       -L [0/1/2/3]    Log level for both console and file with "
         "increasing verbosity (0 = fatal, 1 = warn, 2 = info, 3 = misc)\n"
         "       -Y [filename]   Log to a file in addition to the console\n"
-        "       -L              Log all loaded and final (property) "
+        "\n"
+        "  Debug\n"
+        "       -D              Halt the launcher before bootstrapping AVS "
+        "until a remote debugger is attached\n"
+        "       -C              Log all loaded and final (property) "
         "configuration that launcher uses for bootstrapping. IMPORTANT: DO NOT "
         "ENABLE unless you know what you are doing. This prints sensitive data "
         "and credentials to the console and logfile. BE CAUTIOUS not to share "
-        "this information before redaction.\n"
-        "       -D              Halt the launcher before bootstrapping AVS "
-        "until a remote debugger is attached\n");
+        "this information before redaction.");
 }
 
 void options_fini(struct options *options)
 {
-    array_fini(&options->hook_dlls);
-    array_fini(&options->before_hook_dlls);
-    array_fini(&options->iat_hook_dlls);
+    array_fini(&options->hook.hook_dlls);
+    array_fini(&options->hook.before_hook_dlls);
+    array_fini(&options->hook.iat_hook_dlls);
+
+    if (options->log.level) {
+        free(options->log.level);
+    }
+
+    if (options->eamuse.urlslash) {
+        free(options->eamuse.urlslash);
+    }
 }

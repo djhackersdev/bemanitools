@@ -8,9 +8,9 @@ EXPORTS
     avs_fs_lstat @71 NONAME
     avs_fs_open @75 NONAME
     avs_fs_read @77 NONAME
-    avs_fs_opendir @573 NONAME
-    avs_fs_readdir @573 NONAME
-    avs_fs_closedir @573 NONAME
+    avs_fs_opendir @76 NONAME
+    avs_fs_readdir @78 NONAME
+    avs_fs_closedir @61 NONAME
     avs_net_ctrl @107 NONAME
     avs_shutdown @140 NONAME
     avs_thread_create @156 NONAME
@@ -28,13 +28,15 @@ EXPORTS
     property_insert_read @255 NONAME
     property_node_create @266 NONAME
     property_node_datasize @267 NONAME
-    property_node_name @573 NONAME
-    property_node_read @573 NONAME
+    property_node_name @274 NONAME
+    property_node_read @276 NONAME
     property_node_refer @278 NONAME
     property_node_remove @279 NONAME
-    property_node_type @573 NONAME
+    property_node_type @282 NONAME
     property_node_clone @280 NONAME
     property_node_traversal @282 NONAME
+    property_node_refdata @277 NONAME
+    property_query_size @290 NONAME
     property_psmap_import @288 NONAME
     property_psmap_export @287 NONAME
     property_read_query_memsize @291 NONAME

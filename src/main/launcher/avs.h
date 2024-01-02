@@ -1,21 +1,19 @@
-#ifndef LAUNCHER_AVS_CONTEXT_H
-#define LAUNCHER_AVS_CONTEXT_H
+#ifndef LAUNCHER_AVS_H
+#define LAUNCHER_AVS_H
 
 #include <stdint.h>
 
 #include "imports/avs.h"
 
-#include "util/log.h"
-
-#if AVS_VERSION < 1600
-#define AVS_HAS_STD_HEAP
-#endif
-
+void avs_fs_assert_root_device_exists(struct property_node *node);
+void avs_fs_mountpoint_dir_create(
+        struct property_node *node,
+        const char *folder_name);
 void avs_init(
-    struct property *config_prop,
-    struct property_node *config_node,
+    struct property_node *node,
     uint32_t avs_heap_size,
     uint32_t std_heap_size);
+void avs_fs_file_copy(const char *src, const char *dst);
 void avs_fs_dir_log(const char *path);
 void avs_fini(void);
 

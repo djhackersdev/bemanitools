@@ -10,7 +10,9 @@
 #include "launcher/logger.h"
 #include "launcher/version.h"
 
+#include "util/fs.h"
 #include "util/log.h"
+#include "util/mem.h"
 
 static FILE *log_file;
 static HANDLE log_mutex;
@@ -222,7 +224,7 @@ static void logger_log_header()
         launcher_gitrev);
 }
 
-bool logger_init(const char *log_file_path)
+void logger_early_init(const char *log_file_path)
 {
     if (log_file_path) {
         log_file = fopen(log_file_path, "w+");
@@ -238,17 +240,84 @@ bool logger_init(const char *log_file_path)
         log_info("Log file: %s", log_file_path);
 
         if (!log_file) {
-            log_warning(
+            log_fatal(
                 "ERROR: Opening log file %s failed: %s",
                 log_file_path,
                 strerror(errno));
-            return false;
         }
     }
 
     log_mutex = CreateMutex(NULL, FALSE, NULL);
+}
 
-    return true;
+void logger_init(
+    const char *filename,
+    bool enable_console,
+    bool enable_file,
+    bool rotate_file,
+    bool append_file,
+    uint16_t count_file)
+{
+    // Remark: very basic implementation for now, logger needs a proper cleanup
+    // anyway before implementing more features such as rotation
+
+    if (enable_file) {
+        if (log_file) {
+            // Log file stitching of early log output
+            fseek(log_file, 0, SEEK_END);
+            size_t file_size = ftell(log_file);
+            fseek(log_file, 0, SEEK_SET);
+
+            void* buffer = xmalloc(file_size);
+
+            fread(buffer, file_size, 1, log_file);
+
+            fclose(log_file);
+
+            log_file = fopen(filename, "w+");
+
+            fwrite(buffer, file_size, 1, log_file);
+            fflush(log_file);
+            free(buffer);
+        }
+    } else {
+        if (log_file) {
+            fclose(log_file);
+            log_file = NULL;
+        }
+    }
+}
+
+void logger_level_set(enum logger_level level)
+{
+    enum log_level internal_level;
+
+    switch (level) {
+        case LOGGER_LEVEL_OFF:
+        case LOGGER_LEVEL_FATAL:
+            internal_level = LOG_LEVEL_FATAL;
+            break;
+
+        case LOGGER_LEVEL_WARNING:
+            internal_level = LOG_LEVEL_WARNING;
+            break;
+
+        case LOGGER_LEVEL_DEFAULT:
+        case LOGGER_LEVEL_INFO:
+            internal_level = LOG_LEVEL_INFO;
+            break;
+
+        case LOGGER_LEVEL_MISC:
+        case LOGGER_LEVEL_ALL:
+            internal_level = LOG_LEVEL_MISC;
+            break;
+
+        default:
+            internal_level = LOG_LEVEL_FATAL;
+            log_assert(false);
+    }
+
+    log_set_level(internal_level);
 }
 
 void logger_log_avs_log_message(char *str, size_t len)
@@ -288,6 +357,7 @@ void logger_finit()
     log_misc("Logger finit");
 
     if (log_file) {
+        fflush(log_file);
         fclose(log_file);
     }
 

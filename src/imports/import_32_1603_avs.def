@@ -26,6 +26,9 @@ EXPORTS
     property_node_type @169 NONAME == XCnbrep70000a8
     property_node_clone @165 NONAME
     property_node_traversal @167 NONAME
+    property_node_refdata @166 NONAME == XCnbrep70000a5
+    property_node_datasize @171 NONAME == XCnbrep70000aa
+    property_query_size @160 NONAME == XCnbrep700009f
     property_node_read @172 NONAME == XCnbrep70000ab
     property_node_refer @176 NONAME
     property_read_query_memsize @177 NONAME

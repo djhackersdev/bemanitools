@@ -1,14 +1,12 @@
-#ifndef LAUNCHER_EA3_IDENT_H
-#define LAUNCHER_EA3_IDENT_H
+#ifndef LAUNCHER_EA3_IDENT_CONFIG_H
+#define LAUNCHER_EA3_IDENT_CONFIG_H
 
 #include "imports/avs.h"
-
-#include "launcher/module.h"
 
 /* N.B. even though this might look like a Konami ABI, this is purely an
    internal data structure. */
 
-struct ea3_ident {
+struct ea3_ident_config {
     /* psmapped structure offset can't be zero for some stupid reason */
 
     uint32_t dummy;
@@ -28,12 +26,10 @@ struct ea3_ident {
     char pcbid[24];
 };
 
-extern struct property_psmap ea3_ident_psmap[9];
-
-void ea3_ident_init(struct ea3_ident *ident);
-void ea3_ident_initialize_from_file(const char *path, struct ea3_ident *ea3_ident);
-bool ea3_ident_from_property(
-    struct ea3_ident *ident, struct property *ea3_config);
-void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident);
+void ea3_ident_config_init(struct ea3_ident_config *config);
+void ea3_ident_config_from_file_load(const char *path, struct ea3_ident_config *config);
+void ea3_ident_config_load(struct property *property, struct ea3_ident_config *config);
+bool ea3_ident_config_hardid_is_defined(struct ea3_ident_config *config);
+void ea3_ident_config_hardid_from_ethernet_set(struct ea3_ident_config *config);
     
 #endif

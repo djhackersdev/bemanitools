@@ -1,10 +1,12 @@
-#define LOG_MODULE "bootstrap"
+#define LOG_MODULE "bootstrap-config"
+
 #include <string.h>
 
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
 #include "launcher/bootstrap-config.h"
+#include "launcher/property-util.h"
 
 #include "util/defs.h"
 #include "util/hex.h"
@@ -12,16 +14,13 @@
 #include "util/str.h"
 
 // clang-format off
-PSMAP_BEGIN(bootstrap_startup_avs_psmap)
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_avs_config, config_file,
-    "boot/file")
-PSMAP_REQUIRED(PSMAP_TYPE_U32,  struct bootstrap_avs_config, avs_heap_size,
-    "boot/heap_avs")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_avs_config, std_heap_size,
-    "boot/heap_std", 0)
-PSMAP_END
-
 PSMAP_BEGIN(bootstrap_startup_boot_psmap)
+PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_boot_config, config_file,
+    "boot/file")
+PSMAP_REQUIRED(PSMAP_TYPE_U32,  struct bootstrap_boot_config, avs_heap_size,
+    "boot/heap_avs")
+PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_boot_config, std_heap_size,
+    "boot/heap_std", 0)
 PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_boot_config, mount_table_selector,
     "boot/mounttable_selector", "boot")
 PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_boot_config, watcher_enable,
@@ -195,6 +194,13 @@ PSMAP_END
 #define ROOT_NODE "/config"
 #define MODULE_PATH_PREFIX "modules/"
 
+#define NODE_MISSING_FATAL(subnode) log_fatal("%s/%s: Node missing", ROOT_NODE, subnode);
+#define NODE_STARTUP_MISSING_FATAL(profile) log_fatal("%s/startup/%s: Node missing", ROOT_NODE, profile);
+#define NODE_PROFILE_MISSING_FATAL(profile, subnode) log_fatal("%s/%s/%s: Node missing", ROOT_NODE, profile, subnode);
+#define NODE_PROFILE_LOADING_FATAL(profile, subnode) log_fatal("%s/startup/%s/%s: Node loading", ROOT_NODE, profile, subnode);
+
+#define DEFAULT_HEAP_SIZE 16777216
+
 const char *const inherited_nodes[] = {
     "develop",
     "default",
@@ -210,222 +216,292 @@ const char *const inherited_nodes[] = {
     "lte",
 };
 
-void bootstrap_config_init(struct bootstrap_config *config)
+static void _bootstrap_config_profile_node_verify(struct property_node *node, const char *profile)
 {
-    memset(config, 0, sizeof(*config));
+    struct property_node *profile_node;
+
+    log_assert(node);
+    log_assert(profile);
+
+    profile_node =
+        property_search(NULL, node, profile);
+    
+    if (!profile_node) {
+        NODE_STARTUP_MISSING_FATAL(profile);
+    }
 }
 
-bool bootstrap_config_from_property(
-    struct bootstrap_config *config,
-    struct property *prop,
-    const char *selector)
+static struct property_node* _bootstrap_config_root_node_get(struct property *property)
 {
-    struct property_node *bootstrap_config =
-        property_search(prop, NULL, ROOT_NODE);
-    if (!bootstrap_config) {
-        log_warning(ROOT_NODE ": missing");
-        return false;
-    }
-    log_misc(ROOT_NODE ": loading...");
-    if (!property_psmap_import(
-            NULL, bootstrap_config, config, bootstrap_psmap)) {
-        log_warning(ROOT_NODE ": load failed");
-        return false;
+    struct property_node *root_node;
+
+    log_assert(property);
+
+    root_node = property_search(property, NULL, ROOT_NODE);
+
+    if (!root_node) {
+        NODE_MISSING_FATAL("");
     }
 
-    /* Setup root startup node */
-    struct property_node *startup_root =
-        property_search(NULL, bootstrap_config, "startup");
-    if (!startup_root) {
-        log_warning(ROOT_NODE "/startup: missing");
-        return false;
-    }
-    struct property_node *startup_config =
-        property_search(NULL, startup_root, selector);
-    if (!startup_config) {
-        log_warning(ROOT_NODE "/startup/%s: missing", selector);
-        return false;
+    return root_node;
+}
+
+static struct property_node* _bootstrap_config_startup_node_get(struct property_node *node)
+{
+    struct property_node *startup_node;
+
+    log_assert(node);
+
+    startup_node =
+        property_search(NULL, node, "startup");
+    
+    if (!startup_node) {
+        NODE_MISSING_FATAL("startup");
     }
 
-    /* Resolve inheritance */
-    struct property_node *startup_parent = startup_config;
+    return startup_node;
+}
+
+static void _bootstrap_config_inheritance_resolve(
+    struct property_node *startup_node,
+    const char *profile_name)
+{
+    struct property_node *startup_parent_node;
+    struct property_node *startup_profile_node;
+    struct property_node *tmp_node;
+
+    char inherit_name[64];
+    avs_error error;
+
+    startup_profile_node =
+        property_search(NULL, startup_node, profile_name);
+
+    if (!startup_profile_node) {
+        log_fatal(ROOT_NODE "/startup/%s: missing", profile_name);
+    }
+
+    startup_parent_node = startup_profile_node;
+
     for (;;) {
-        char inherit_name[64];
-        int r = property_node_refer(
+        error = property_node_refer(
             NULL,
-            startup_parent,
+            startup_parent_node,
             "inherit@",
             PROPERTY_TYPE_ATTR,
             inherit_name,
             sizeof(inherit_name));
-        if (r < 0) {
+
+        if (AVS_IS_ERROR(error)) {
             break;
         }
 
-        startup_parent = property_search(NULL, startup_root, inherit_name);
-        if (!startup_parent) {
-            log_warning(ROOT_NODE "/startup/%s: missing", inherit_name);
-            return false;
+        startup_parent_node = property_search(NULL, startup_node, inherit_name);
+
+        if (!startup_parent_node) {
+            NODE_STARTUP_MISSING_FATAL(inherit_name);
         }
 
         for (int i = 0; i < _countof(inherited_nodes); i++) {
-            if (property_search(NULL, startup_config, inherited_nodes[i])) {
+            if (property_search(NULL, startup_node, inherited_nodes[i])) {
                 continue;
             }
 
-            struct property_node *node =
-                property_search(NULL, startup_parent, inherited_nodes[i]);
-            if (node) {
+            tmp_node =
+                property_search(NULL, startup_parent_node, inherited_nodes[i]);
+
+            if (tmp_node) {
                 log_misc(
                     ROOT_NODE "/startup/%s: merging %s...",
                     inherit_name,
                     inherited_nodes[i]);
-                property_node_clone(NULL, startup_config, node, TRUE);
+
+                property_node_clone(NULL, startup_profile_node, tmp_node, TRUE);
             }
         }
     }
-
-    /* Now parse the startup node */
-    log_misc(ROOT_NODE "/startup/%s: loading merge result...", selector);
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.avs, bootstrap_startup_avs_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/boot (avs): load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.boot, bootstrap_startup_boot_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/boot: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.log, bootstrap_startup_log_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/log: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.minidump, bootstrap_startup_minidump_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/minidump: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.module, bootstrap_startup_module_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/component: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.dlm_ntdll, bootstrap_startup_dlm_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/dlm/ntdll: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.shield, bootstrap_startup_shield_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/shield: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.dongle, bootstrap_startup_dongle_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/dongle: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.drm, bootstrap_startup_drm_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/drm: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.lte, bootstrap_startup_lte_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/lte: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.ssl, bootstrap_startup_ssl_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/ssl: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.esign, bootstrap_startup_esign_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/esign: load failed", selector);
-        return false;
-    }
-
-    if (!property_psmap_import(
-            NULL, startup_config, &config->startup.eamuse, bootstrap_startup_eamuse_psmap)) {
-        log_warning(ROOT_NODE "/startup/%s/eamuse: load failed", selector);
-        return false;
-    }
-
-    config->module_params =
-        property_search(NULL, startup_config, "component/param");
-    config->log_node = property_search(NULL, startup_config, "log");
-    config->default_node = property_search(NULL, startup_config, "default");
-
-    return true;
 }
 
-void bootstrap_config_update_avs(
-    const struct bootstrap_config *config, struct property *avs_property)
+static void _bootstrap_config_load_bootstrap_module_app_config(
+        struct property_node *profile_node,
+        struct bootstrap_module_config *config)
 {
-    avs_config_set_mode_product(avs_property, true);
-    avs_config_set_net_raw(avs_property, true);
-    avs_config_set_net_eaudp(avs_property, true);
-    avs_config_set_sntp_ea(avs_property, true);
+    struct property_node *app_node;
 
-    if (config->startup.drm.device[0]) {
-        avs_config_set_fs_root_device(avs_property, config->startup.drm.device);
-    }
+    log_assert(profile_node);
+    log_assert(config);
 
-    if (config->log_node) {
-        avs_config_set_logging(avs_property, config);
+    app_node = property_search(NULL, profile_node, "component/param");
+
+    config->app_config = property_util_clone(app_node);
+}
+
+static void _bootstrap_config_load_bootstrap_default_files_config(
+        const char *profile_name,
+        struct property_node *profile_node,
+        struct bootstrap_default_file_config *config)
+{
+    int i;
+    int result;
+    struct property_node *child;
+
+    log_assert(profile_node);
+    log_assert(config);
+
+    child = property_search(NULL, profile_node, "default/file");
+    i = 0;
+
+    while (child) {
+        if (i >= DEFAULT_FILE_MAX) {
+            log_warning("Currently not supporting more than %d default files, skipping remaining", i);
+            break;
+        }
+
+        result = property_node_refer(
+            NULL,
+            child,
+            "src@",
+            PROPERTY_TYPE_ATTR,
+            &config->file[i].src,
+            sizeof(config->file[i].src));
+
+        if (result < 0) {
+            log_fatal("Missing src attribute on default file node of profile %s", profile_name);
+        }
+
+        result = property_node_refer(
+            NULL,
+            child,
+            "dst@",
+            PROPERTY_TYPE_ATTR,
+            &config->file[i].dst,
+            sizeof(config->file[i].dst));
+
+        if (result < 0) {
+            log_fatal("Missing dst attribute on default file node of profile %s", profile_name);
+        }
+
+        child = property_node_traversal(child, TRAVERSE_NEXT_SEARCH_RESULT);
+        i++;
     }
 }
 
-bool bootstrap_config_iter_default_file(
-    struct bootstrap_config *config,
-    struct bootstrap_default_file_config *default_file)
+static void _bootstrap_config_load_bootstrap(
+    struct property_node *startup_node,
+    const char *profile,
+    struct bootstrap_startup_config *config)
 {
-    if (!config->default_file) {
-        config->default_file =
-            property_search(NULL, config->default_node, "file");
-    } else {
-        config->default_file = property_node_traversal(
-            config->default_file, TRAVERSE_NEXT_SEARCH_RESULT);
-    }
-    if (!config->default_file) {
-        return false;
+    struct property_node *profile_node;
+
+    profile_node = property_search(NULL, startup_node, profile);
+
+    if (!profile_node) {
+        NODE_PROFILE_LOADING_FATAL(profile, "");
     }
 
-    int r;
-    r = property_node_refer(
-        NULL,
-        config->default_file,
-        "src@",
-        PROPERTY_TYPE_ATTR,
-        &default_file->src,
-        sizeof(default_file->src));
-    if (r < 0) {
-        return false;
+    _bootstrap_config_load_bootstrap_default_files_config(profile, profile_node, &config->default_file);
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->boot, bootstrap_startup_boot_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "boot");
     }
-    r = property_node_refer(
-        NULL,
-        config->default_file,
-        "dst@",
-        PROPERTY_TYPE_ATTR,
-        &default_file->dest,
-        sizeof(default_file->dest));
-    if (r < 0) {
-        return false;
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->log, bootstrap_startup_log_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "log");
     }
-    return true;
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->minidump, bootstrap_startup_minidump_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "minidump");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->module, bootstrap_startup_module_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "component");
+    }
+
+    _bootstrap_config_load_bootstrap_module_app_config(profile_node, &config->module);
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->dlm_ntdll, bootstrap_startup_dlm_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "dlm/ntdll");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->shield, bootstrap_startup_shield_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "shield");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->dongle, bootstrap_startup_dongle_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "dongle");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->drm, bootstrap_startup_drm_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "drm");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->lte, bootstrap_startup_lte_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "lte");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->ssl, bootstrap_startup_ssl_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "ssl");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->esign, bootstrap_startup_esign_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "esign");
+    }
+
+    if (!property_psmap_import(
+            NULL, profile_node, &config->eamuse, bootstrap_startup_eamuse_psmap)) {
+        NODE_PROFILE_LOADING_FATAL(profile, "eamuse");
+    }
+}
+
+void bootstrap_config_init(struct bootstrap_config *config)
+{
+    log_assert(config);
+
+    memset(config, 0, sizeof(*config)); 
+}
+
+void bootstrap_config_load(
+    struct property *property,
+    const char *profile,
+    struct bootstrap_config *config)
+{
+    struct property_node *root_node;
+    struct property_node *startup_node;
+
+    log_assert(property);
+    log_assert(profile);
+    log_assert(config);
+    
+    log_info(ROOT_NODE ": loading...");
+
+    root_node = _bootstrap_config_root_node_get(property);
+  
+    if (!property_psmap_import(
+            NULL, root_node, config, bootstrap_psmap)) {
+        log_fatal(ROOT_NODE ": loading failed");
+    }
+
+    startup_node = _bootstrap_config_startup_node_get(root_node);
+    
+    _bootstrap_config_profile_node_verify(startup_node, profile);
+
+    _bootstrap_config_inheritance_resolve(startup_node, profile);
+
+    log_misc(ROOT_NODE "/startup/%s: loading merged result...", profile);
+
+    property_util_node_log(startup_node);
+
+    _bootstrap_config_load_bootstrap(startup_node, profile, &config->startup);
+
+    log_misc("Loading finished");
 }

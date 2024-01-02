@@ -1,3 +1,5 @@
+#define LOG_MODULE "stubs"
+
 #include <windows.h>
 
 #include <stdbool.h>

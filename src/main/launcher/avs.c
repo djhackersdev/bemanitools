@@ -1,4 +1,4 @@
-#define LOG_MODULE "avs-context"
+#define LOG_MODULE "avs"
 
 #include <windows.h>
 
@@ -8,14 +8,20 @@
 
 #include "imports/avs.h"
 
+#include "launcher/avs-config.h"
 #include "launcher/avs.h"
 #include "launcher/logger.h"
 #include "launcher/property-util.h"
 
 #include "util/codepage.h"
 #include "util/fs.h"
+#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
+
+#if AVS_VERSION < 1600
+#define AVS_HAS_STD_HEAP
+#endif
 
 static void *avs_heap;
 
@@ -86,8 +92,20 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
     free(utf16);
 }
 
-static void _avs_context_create_config_fs_dir(
-        struct property *prop,
+void avs_fs_assert_root_device_exists(struct property_node *node)
+{
+    char root_device_path[PATH_MAX];
+    char cwd_path[PATH_MAX];
+
+    avs_config_fs_root_device_get(node, root_device_path, sizeof(root_device_path));
+    getcwd(cwd_path, sizeof(cwd_path));
+
+    if (!path_exists(root_device_path)) {
+        log_fatal("Root device path '%s' does not exist in current working dir '%s'", root_device_path, cwd_path);
+    }
+}
+
+void avs_fs_mountpoint_dir_create(
         struct property_node *node,
         const char *folder_name)
 {
@@ -103,14 +121,14 @@ static void _avs_context_create_config_fs_dir(
     str_cpy(fs_path, sizeof(fs_path), "/fs/");
     str_cat(fs_path, sizeof(fs_path), folder_name);
 
-    fs_node = property_search(prop, node, fs_path);
+    fs_node = property_search(NULL, node, fs_path);
 
     if (!fs_node) {
         log_warning("Could not find file system node %s in avs configuration", fs_path);
         return;
     }
 
-    res = property_node_refer(prop, fs_node, "device", PROPERTY_TYPE_STR,
+    res = property_node_refer(NULL, fs_node, "device", PROPERTY_TYPE_STR,
         device_path, sizeof(device_path));
 
     if (res < 0) {
@@ -118,7 +136,7 @@ static void _avs_context_create_config_fs_dir(
     }
 
     // 'fstype' attribute is optional and defaults to value 'fs'
-    if (!property_search(prop, fs_node, "fstype")) {
+    if (!property_search(NULL, fs_node, "fstype")) {
         if (path_exists(device_path)) {
             // skip if exists already
             return;
@@ -130,7 +148,7 @@ static void _avs_context_create_config_fs_dir(
             log_fatal("Creating directory %s failed", device_path);
         }
     } else {
-        res = property_node_refer(prop, fs_node, "fstype", PROPERTY_TYPE_STR,
+        res = property_node_refer(NULL, fs_node, "fstype", PROPERTY_TYPE_STR,
                 fs_type, sizeof(fs_type));
 
         if (res < 0) {
@@ -156,19 +174,15 @@ static void _avs_context_create_config_fs_dir(
 }
 
 void avs_init(
-    struct property *config_prop,
-    struct property_node *config_node,
+    struct property_node *node,
     uint32_t avs_heap_size,
     uint32_t std_heap_size)
 {
-    log_assert(config_prop);
-    log_assert(config_node);
+    log_assert(node);
+    log_assert(avs_heap_size > 0);
+    log_assert(std_heap_size > 0);
 
-    log_misc("Creating AVS file system directories for nvram and raw if not exist...");
-
-    // create nvram and raw directories if possible for non-mounttable configurations
-    _avs_context_create_config_fs_dir(config_prop, config_node, "nvram");
-    _avs_context_create_config_fs_dir(config_prop, config_node, "raw");
+    log_info("init");
 
     avs_heap = VirtualAlloc(
         NULL, avs_heap_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -196,7 +210,7 @@ void avs_init(
 
 #ifdef AVS_HAS_STD_HEAP
     avs_boot(
-        config_node,
+        node,
         std_heap,
         std_heap_size,
         avs_heap,
@@ -205,8 +219,31 @@ void avs_init(
         NULL);
 #else
     /* AVS v2.16.xx and I suppose onward uses a unified heap */
-    avs_boot(config_node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
+    avs_boot(node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
 #endif
+
+    log_misc("init done");
+}
+
+void avs_fs_file_copy(const char *src, const char *dst)
+{
+    struct avs_stat st;
+
+    log_assert(src);
+    log_assert(dst);
+
+    log_misc("Copying %s to %s...", src, dst);
+
+    if (!avs_fs_lstat(src, &st)) {
+        log_fatal("File source %s does not exist or is not accessible", src);
+    }
+
+    if (avs_fs_copy(src, dst) < 0) {
+        log_fatal(
+            "Failed copying file %s to %s",
+            src,
+            dst);
+    }
 }
 
 void avs_fs_dir_log(const char *path)
@@ -238,6 +275,8 @@ void avs_fs_dir_log(const char *path)
 
 void avs_fini(void)
 {
+    log_info("fini");
+
     avs_shutdown();
 
 #ifdef AVS_HAS_STD_HEAP
@@ -245,4 +284,6 @@ void avs_fini(void)
 #endif
 
     VirtualFree(avs_heap, 0, MEM_RELEASE);
+
+    log_misc("fini done");
 }

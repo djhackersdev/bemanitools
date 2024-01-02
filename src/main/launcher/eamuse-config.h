@@ -3,18 +3,18 @@
 
 #include "imports/avs.h"
 
-struct property* eamuse_config_load_from_avs_path(const char *avs_path);
+struct property* eamuse_config_avs_load(const char *path);
+struct property_node* eamuse_config_root_get(struct property *property);
 
-struct property_node* eamuse_config_resolve_root_node(struct property *property);
-
-void eamuse_config_inject_ea3_ident(
-    struct property *eamuse_property,
-    const struct ea3_ident *ea3_ident);
-
-void eamuse_config_inject_parameters(
-    struct property *eamuse_property,
-    bool urlslash_enabled,
-    bool urlslash_value,
-    const char *service_url);
+void eamuse_config_id_softid_set(struct property_node *node, const char *value);
+void eamuse_config_id_hardid_set(struct property_node *node, const char *value);
+void eamuse_config_id_pcbid_set(struct property_node *node, const char *value);
+void eamuse_config_soft_model_set(struct property_node *node, const char *value);
+void eamuse_config_soft_dest_set(struct property_node *node, const char *value);
+void eamuse_config_soft_spec_set(struct property_node *node, const char *value);
+void eamuse_config_soft_rev_set(struct property_node *node, const char *value);
+void eamuse_config_soft_ext_set(struct property_node *node, const char *value);
+void eamuse_config_network_url_slash_set(struct property_node *node, bool value);
+void eamuse_config_network_service_url_set(struct property_node *node, const char *value);
 
 #endif

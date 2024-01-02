@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
+
+#include "avs-util/error.h"
 
 #include "imports/avs.h"
 
@@ -14,7 +17,15 @@
 #include "util/mem.h"
 #include "util/str.h"
 
+#define PROPERTY_STRUCTURE_META_SIZE 576
+
 typedef void (*rewinder)(uint32_t context);
+
+struct cstring_read_handle {
+    const char *buffer;
+    size_t buffer_len;
+    size_t offset;
+};
 
 static struct property *property_util_do_load(
     avs_reader_t reader, rewinder rewinder, uint32_t context, const char *name)
@@ -80,7 +91,8 @@ static void property_util_log_node_tree_rec(
     uint64_t value_u64;
     char value_str[4096];
     bool value_bool;
-    char value_untyped[4096];
+    
+    avs_error error;
 
     // Carry on the full root path down the node tree
     property_node_name(parent_node, cur_node_name, sizeof(cur_node_name));
@@ -102,42 +114,42 @@ static void property_util_log_node_tree_rec(
 
             case PROPERTY_TYPE_S8:
                 property_node_read(parent_node, property_type, &value_s8, sizeof(value_s8));
-                log_misc("%s: %d", cur_path, value_s8);
+                log_misc("%s: %" PRId8, cur_path, value_s8);
                 break;
 
             case PROPERTY_TYPE_S16:
                 property_node_read(parent_node, property_type, &value_s16, sizeof(value_s16));
-                log_misc("%s: %d", cur_path, value_s16);
+                log_misc("%s: %" PRId16, cur_path, value_s16);
                 break;
 
             case PROPERTY_TYPE_S32:
                 property_node_read(parent_node, property_type, &value_s32, sizeof(value_s32));
-                log_misc("%s: %d", cur_path, value_s32);
+                log_misc("%s: %" PRId32, cur_path, value_s32);
                 break;
 
             case PROPERTY_TYPE_S64:
                 property_node_read(parent_node, property_type, &value_s64, sizeof(value_s64));
-                log_misc("%s: %lld", cur_path, value_s64);
+                log_misc("%s: %" PRId64, cur_path, value_s64);
                 break;
             
             case PROPERTY_TYPE_U8:
                 property_node_read(parent_node, property_type, &value_u8, sizeof(value_u8));
-                log_misc("%s: %u", cur_path, value_u8);
+                log_misc("%s: %" PRIu8, cur_path, value_u8);
                 break;
 
             case PROPERTY_TYPE_U16:
                 property_node_read(parent_node, property_type, &value_u16, sizeof(value_u16));
-                log_misc("%s: %u", cur_path, value_u16);
+                log_misc("%s: %" PRIu16, cur_path, value_u16);
                 break;
 
             case PROPERTY_TYPE_U32:
                 property_node_read(parent_node, property_type, &value_u32, sizeof(value_u32));
-                log_misc("%s: %u", cur_path, value_u32);
+                log_misc("%s: %" PRIu32, cur_path, value_u32);
                 break;
 
             case PROPERTY_TYPE_U64:
                 property_node_read(parent_node, property_type, &value_u64, sizeof(value_u64));
-                log_misc("%s: %llu", cur_path, value_u64);
+                log_misc("%s: %" PRIu64, cur_path, value_u64);
                 break;
 
             case PROPERTY_TYPE_STR:
@@ -157,14 +169,46 @@ static void property_util_log_node_tree_rec(
                 break;
 
             case PROPERTY_TYPE_ATTR:
-                log_misc("%s: <ATTRIBUTE>", cur_path);
+                error = property_node_read(parent_node, property_type, value_str, sizeof(value_str));
+
+                if (AVS_IS_ERROR(error)) {
+                    log_fatal("%s, property read failed: %s", cur_path, avs_util_error_str(error));
+                }
+
+                log_misc("%s@: %s", cur_path, value_str);
+
                 break;
 
-            // Treat as string
-            case PROPERTY_TYPE_UNTYPED:
-                property_node_read(parent_node, property_type, value_untyped, sizeof(value_untyped));
-                log_misc("%s: %s", cur_path, value_untyped);
+            case PROPERTY_TYPE_VOID_WITH_ATTRIBUTES:
+                log_misc("%s: <VOID>", cur_path);
 
+                child_node = property_node_traversal(parent_node, TRAVERSE_FIRST_ATTR);
+
+                while (child_node) {
+                    property_util_log_node_tree_rec(child_node, cur_path);
+
+                    child_node = property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
+                }
+
+                break;
+
+            case PROPERTY_TYPE_STR_WITH_ATTRIBUTES:
+                error = property_node_read(parent_node, property_type, value_str, sizeof(value_str));
+
+                if (AVS_IS_ERROR(error)) {
+                    log_fatal("%s, property read failed: %s", cur_path, avs_util_error_str(error));
+                }
+
+                log_misc("%s: %s", cur_path, value_str);
+
+                child_node = property_node_traversal(parent_node, TRAVERSE_FIRST_ATTR);
+
+                while (child_node) {
+                    property_util_log_node_tree_rec(child_node, cur_path);
+
+                    child_node = property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
+                }
+                
                 break;
 
             default:
@@ -180,6 +224,39 @@ static void property_util_log_node_tree_rec(
     }
 }
 
+static int
+property_util_cstring_read(uint32_t context, void *bytes, size_t nbytes)
+{
+    int result = 0;
+    struct cstring_read_handle *h = TlsGetValue(context);
+
+    if (h->offset < h->buffer_len) {
+        result = min(nbytes, h->buffer_len - h->offset);
+        memcpy(bytes, (const void *) (h->buffer + h->offset), result);
+        h->offset += result;
+    }
+    return result;
+}
+
+static void property_util_cstring_rewind(uint32_t context)
+{
+    struct cstring_read_handle *h = TlsGetValue(context);
+    h->offset = 0;
+}
+
+static int property_util_avs_read(uint32_t context, void *bytes, size_t nbytes)
+{
+    avs_desc desc = (avs_desc) context;
+    return avs_fs_read(desc, bytes, nbytes);
+}
+
+static void property_util_avs_rewind(uint32_t context)
+{
+    avs_desc desc = (avs_desc) context;
+    avs_fs_lseek(desc, 0, AVS_SEEK_SET);
+}
+
+
 void property_util_log(struct property *property)
 {
     property_util_log_node_tree_rec(property_search(property, NULL, "/"), "");
@@ -190,11 +267,13 @@ void property_util_node_log(struct property_node *node)
     property_util_log_node_tree_rec(node, "");
 }
 
-struct property *property_util_load_file(const char *filename)
+struct property *property_util_load(const char *filename)
 {
     FILE *f;
     uint32_t f_keyhole;
     struct property *prop;
+
+    log_assert(filename);
 
     /* AVS callbacks are only given a 32-bit context parameter, even in 64-bit
        builds of AVS. We allocate a 32-bit TLS key and pass the context in this
@@ -219,36 +298,33 @@ struct property *property_util_load_file(const char *filename)
     return prop;
 }
 
-struct cstring_read_handle {
-    const char *buffer;
-    size_t buffer_len;
-    size_t offset;
-};
-
-static int
-property_util_cstring_read(uint32_t context, void *bytes, size_t nbytes)
+struct property *property_util_avs_fs_load(const char *filename)
 {
-    int result = 0;
-    struct cstring_read_handle *h = TlsGetValue(context);
+    avs_desc desc;
+    struct property *prop;
 
-    if (h->offset < h->buffer_len) {
-        result = min(nbytes, h->buffer_len - h->offset);
-        memcpy(bytes, (const void *) (h->buffer + h->offset), result);
-        h->offset += result;
+    log_assert(filename);
+
+    desc = avs_fs_open(filename, AVS_FILE_READ, AVS_FILE_FLAG_SHARE_READ);
+
+    if (!desc) {
+        log_fatal("%s: Error opening configuration file", filename);
     }
-    return result;
+
+    prop = property_util_do_load(
+        property_util_avs_read, property_util_avs_rewind, desc, filename);
+
+    avs_fs_close(desc);
+
+    return prop;
 }
 
-static void property_util_cstring_rewind(uint32_t context)
-{
-    struct cstring_read_handle *h = TlsGetValue(context);
-    h->offset = 0;
-}
-
-struct property *property_util_load_cstring(const char *cstring)
+struct property *property_util_cstring_load(const char *cstring)
 {
     uint32_t s_keyhole;
     struct property *prop;
+
+    log_assert(cstring);
 
     // see above
     struct cstring_read_handle read_handle;
@@ -270,44 +346,38 @@ struct property *property_util_load_cstring(const char *cstring)
     return prop;
 }
 
-static int property_util_avs_read(uint32_t context, void *bytes, size_t nbytes)
+uint32_t property_util_property_query_real_size(struct property *property)
 {
-    avs_desc desc = (avs_desc) context;
-    return avs_fs_read(desc, bytes, nbytes);
-}
+    avs_error size;
 
-static void property_util_avs_rewind(uint32_t context)
-{
-    avs_desc desc = (avs_desc) context;
-    avs_fs_lseek(desc, 0, AVS_SEEK_SET);
-}
+    log_assert(property);
 
-struct property *property_util_load_avs(const char *filename)
-{
-    avs_desc desc;
-    struct property *prop;
+    // Returns the size of the actual data in the property structure only
+    // Hence, using that size only, allocating another buffer for a copy
+    // of this might fail or copying the data will fail because the buffer
+    // is too small
+    size = property_query_size(property);
 
-    desc = avs_fs_open(filename, AVS_FILE_READ, AVS_FILE_FLAG_SHARE_READ);
-
-    if (!desc) {
-        log_fatal("%s: Error opening configuration file", filename);
+    if (AVS_IS_ERROR(size)) {
+        log_fatal("Querying property size failed: %s", avs_util_error_str(size));
     }
 
-    prop = property_util_do_load(
-        property_util_avs_read, property_util_avs_rewind, desc, filename);
-
-    avs_fs_close(desc);
-
-    return prop;
+    // Hack: *2 to have enough space and not cut off data when cloning/copying
+    // property data because...reasons? I haven't figured this one out and
+    // there doesn't seem to be an actual API call for that to return the
+    // "true" size that allows the caller to figure out how much memory
+    // they have to allocate to create a copy of the property structure
+    // with property_create and  
+    return (PROPERTY_STRUCTURE_META_SIZE + size) * 2;
 }
 
-void property_util_node_replace_u8(
-        struct property *property,
-        struct property_node *node,
-        const char *name,
-        uint8_t val)
+void property_util_node_u8_replace(struct property *property,
+    struct property_node *node, const char *name, uint8_t val)
 {
     struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
 
     tmp = property_search(property, node, name);
 
@@ -318,13 +388,64 @@ void property_util_node_replace_u8(
     property_node_create(property, node, PROPERTY_TYPE_U8, name, val);
 }
 
-void property_util_node_replace_bool(
-        struct property *property,
-        struct property_node *node,
-        const char *name,
-        bool val)
+void property_util_node_u16_replace(struct property *property,
+    struct property_node *node, const char *name, uint16_t val)
 {
     struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    property_node_create(property, node, PROPERTY_TYPE_U16, name, val);
+}
+
+void property_util_node_u32_replace(struct property *property,
+    struct property_node *node, const char *name, uint32_t val)
+{
+    struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    property_node_create(property, node, PROPERTY_TYPE_U32, name, val);
+}
+
+void property_util_node_str_replace(struct property *property,
+    struct property_node *node, const char *name, const char *val)
+{
+    struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
+}
+
+void property_util_node_bool_replace(struct property *property,
+    struct property_node *node, const char *name, bool val)
+{
+    struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
 
     tmp = property_search(property, node, name);
 
@@ -335,21 +456,115 @@ void property_util_node_replace_bool(
     property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
 }
 
-void property_util_node_replace_str(
-        struct property *property,
-        struct property_node *node,
-        const char *name,
-        const char *val)
+static void _property_util_node_merge_rec(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source)
 {
-    struct property_node *tmp;
+    char name[256];
+    struct property_node* child;
+    struct property_node* matching_child;
 
-    tmp = property_search(property, node, name);
+    log_assert(parent_property);
 
-    if (tmp) {
-        property_node_remove(tmp);
+    if (!source) {
+        return;
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
+    if (!parent) {
+        property_node_clone(parent_property, parent, source, true);
+        return;
+    }
+
+    child = property_node_traversal(source, TRAVERSE_FIRST_CHILD);
+
+    while (child) {
+        property_node_name(child, name, sizeof(name));
+
+        matching_child = property_search(parent_property, parent, name);
+
+        if (!matching_child) {
+            property_node_clone(parent_property, parent, child, true);
+        } else {
+            _property_util_node_merge_rec(parent_property, matching_child, child);
+        }
+
+        child = property_node_traversal(child, TRAVERSE_NEXT_SIBLING);
+    }
+}
+
+struct property* property_util_merge(struct property **properties, size_t count)
+{
+    uint32_t total_size;
+    void *buffer;
+    struct property *merged_property;
+    int i;
+    struct property_node *parent_node;
+    struct property_node *to_merge_node;
+
+    log_assert(properties);
+    log_assert(count > 0);
+
+    total_size = 0;
+
+    for (int i = 0; i < count; i++) {
+        total_size += property_util_property_query_real_size(properties[i]);
+    }
+
+    buffer = xmalloc(total_size);
+
+    merged_property = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
+            PROPERTY_FLAG_APPEND,
+        buffer,
+        total_size);
+
+    for (i = 0; i < count; i++) {
+        parent_node = property_search(merged_property, NULL, "/");
+        to_merge_node = property_search(properties[i], NULL, "/");
+
+        property_util_node_merge(merged_property, parent_node, to_merge_node);
+    }
+
+    return merged_property;
+}
+
+struct property* property_util_clone(struct property_node *node)
+{
+    struct property *property;
+    struct property_node *root_node;
+    uint32_t size;
+    void *buffer;
+
+    if (!node) {
+        return NULL;
+    }
+
+    // Hack: Is it even possible to get the size of a (sub-) node without
+    // the property? 256kb should be fine for now, even for larger
+    // configurations. Obviously, this scales horribly and wastes a lot of
+    // memory for most smaller sub-nodes
+    size = 1024 * 256;
+
+    buffer = xmalloc(size);
+    property = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
+            PROPERTY_FLAG_APPEND,
+        buffer,
+        size);
+    root_node = property_search(property, NULL, "");
+    
+    property_node_clone(property, root_node, node, true);
+
+    return property;
+}
+
+void property_util_node_merge(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source)
+{
+    _property_util_node_merge_rec(parent_property, parent, source);
 }
 
 void property_util_free(struct property *prop)

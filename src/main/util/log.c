@@ -64,6 +64,15 @@ static void log_builtin_format(
     }
 }
 
+void log_exception_handler(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    log_builtin_format(LOG_LEVEL_FATAL, LOG_MODULE, fmt, ap);
+    va_end(ap);
+}
+
 void log_assert_body(const char *file, int line, const char *function)
 {
     log_impl_fatal("assert", "%s:%d: function `%s'", file, line, function);

@@ -27,21 +27,39 @@ enum property_node_traversal {
 };
 
 enum property_type {
-    PROPERTY_TYPE_VOID = 1,
-    PROPERTY_TYPE_S8 = 2,
-    PROPERTY_TYPE_U8 = 3,
-    PROPERTY_TYPE_S16 = 4,
-    PROPERTY_TYPE_U16 = 5,
-    PROPERTY_TYPE_S32 = 6,
-    PROPERTY_TYPE_U32 = 7,
-    PROPERTY_TYPE_S64 = 8,
-    PROPERTY_TYPE_U64 = 9,
-    PROPERTY_TYPE_BIN = 10,
-    PROPERTY_TYPE_STR = 11,
-    PROPERTY_TYPE_ATTR = 46,
-    PROPERTY_TYPE_BOOL = 52,
+    PROPERTY_TYPE_VOID = 0x01,
+    PROPERTY_TYPE_S8 = 0x02,
+    PROPERTY_TYPE_U8 = 0x03,
+    PROPERTY_TYPE_S16 = 0x04,
+    PROPERTY_TYPE_U16 = 0x05,
+    PROPERTY_TYPE_S32 = 0x06,
+    PROPERTY_TYPE_U32 = 0x07,
+    PROPERTY_TYPE_S64 = 0x08,
+    PROPERTY_TYPE_U64 = 0x09,
+    PROPERTY_TYPE_BIN = 0x0A,
+    PROPERTY_TYPE_STR = 0x0B,
+    PROPERTY_TYPE_IP4 = 0x0C,
+    PROPERTY_TYPE_TIME = 0x0D,
+    PROPERTY_TYPE_FLOAT = 0x0E,
+    PROPERTY_TYPE_DOUBLE = 0x0F,
+    PROPERTY_TYPE_4U8 = 0x25,
+    PROPERTY_TYPE_ATTR = 0x2E,
+    PROPERTY_TYPE_BOOL = 0x34,
+
     // Missing __type attribute
-    PROPERTY_TYPE_UNTYPED = 65,
+    PROPERTY_TYPE_VOID_WITH_ATTRIBUTES = 0x40 | PROPERTY_TYPE_VOID,
+    PROPERTY_TYPE_ARRAY_S8 = 0x40 | PROPERTY_TYPE_S8,
+    PROPERTY_TYPE_ARRAY_U8 = 0x40 | PROPERTY_TYPE_U8,
+    PROPERTY_TYPE_ARRAY_S16 = 0x40 | PROPERTY_TYPE_S16,
+    PROPERTY_TYPE_ARRAY_U16 = 0x40 | PROPERTY_TYPE_U16,
+    PROPERTY_TYPE_ARRAY_S32 = 0x40 | PROPERTY_TYPE_S32,
+    PROPERTY_TYPE_ARRAY_U32 = 0x40 | PROPERTY_TYPE_U32,
+    PROPERTY_TYPE_ARRAY_S64 = 0x40 | PROPERTY_TYPE_S64,
+    PROPERTY_TYPE_ARRAY_U64 = 0x40 | PROPERTY_TYPE_U64,
+    PROPERTY_TYPE_ARRAY_TIME = 0x40 | PROPERTY_TYPE_TIME,
+    PROPERTY_TYPE_ARRAY_BOOL = 0x40 | PROPERTY_TYPE_BOOL,
+
+    PROPERTY_TYPE_STR_WITH_ATTRIBUTES = 0x40 | PROPERTY_TYPE_STR,
 };
 
 struct property;
@@ -166,6 +184,9 @@ void avs_boot(
 void avs_shutdown(void);
 
 typedef uint32_t avs_desc;
+typedef int avs_error;
+
+#define AVS_IS_ERROR(x) x < 0
 
 void log_body_fatal(const char *module, const char *fmt, ...);
 void log_body_info(const char *module, const char *fmt, ...);
@@ -194,6 +215,7 @@ int property_insert_read(
     uint32_t context);
 int property_mem_write(struct property *prop, void *bytes, int nbytes);
 void *property_desc_to_buffer(struct property *prop);
+avs_error property_query_size(struct property *prop);
 void property_file_write(struct property *prop, const char *path);
 int property_set_flag(struct property *prop, int flags, int mask);
 void property_destroy(struct property *prop);
@@ -233,8 +255,8 @@ void property_node_remove(struct property_node *node);
 enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
-void property_node_datasize(struct property_node *node);
-void property_node_read(struct property_node *node, enum property_type type, void* data, uint32_t data_size);
+int property_node_datasize(struct property_node *node);
+avs_error property_node_read(struct property_node *node, enum property_type type, void* data, uint32_t data_size);
 
 static inline void property_remove(struct property *prop, struct property_node *node, const char *path)
 {

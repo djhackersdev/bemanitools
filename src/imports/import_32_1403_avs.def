@@ -2,15 +2,15 @@ LIBRARY libavs-win32
 
 EXPORTS
     avs_boot @298 NONAME
-    avs_fs_close @573 NONAME
-    avs_fs_copy @573 NONAME
-    avs_fs_lseek @573 NONAME
-    avs_fs_lstat @573 NONAME
-    avs_fs_open @573 NONAME
-    avs_fs_read @573 NONAME
-    avs_fs_opendir @573 NONAME
-    avs_fs_readdir @573 NONAME
-    avs_fs_closedir @573 NONAME
+    avs_fs_close @573 NONAME == XC0bbe97000119
+    avs_fs_copy @573 NONAME == XC0bbe97000120
+    avs_fs_lseek @573 NONAME == 
+    avs_fs_lstat @573 NONAME == XC0bbe9700005f
+    avs_fs_open @573 NONAME == XC0bbe970000b3
+    avs_fs_read @573 NONAME == 
+    avs_fs_opendir @573 NONAME == XC0bbe970000db
+    avs_fs_readdir @573 NONAME == 
+    avs_fs_closedir @573 NONAME == 
     avs_net_ctrl @100 NONAME
     avs_shutdown @299 NONAME
     avs_thread_create @6 NONAME
@@ -24,12 +24,14 @@ EXPORTS
     property_desc_to_buffer @131 NONAME
     property_destroy @130 NONAME
     property_insert_read @133 NONAME
-    property_node_name @573 NONAME
-    property_node_read @573 NONAME
+    property_node_name @573 NONAME == 
+    property_node_read @573 NONAME == 
     property_node_remove @148 NONAME
-    property_node_type @573 NONAME
+    property_node_type @573 NONAME == 
     property_node_clone @149 NONAME
     property_node_traversal @151 NONAME
+    property_node_refdata @573 NONAME == 
+    property_query_size @573 NONAME == 
     property_psmap_import @163 NONAME
     property_psmap_export @164 NONAME
     property_read_query_memsize @161 NONAME
