@@ -1,0 +1,44 @@
+LIBRARY libavs-win32
+
+EXPORTS
+    avs_boot @237 NONAME == XC058ba50000f4
+    avs_fs_close @276 NONAME == XC058ba500011b
+    avs_fs_copy @283 NONAME == XC058ba5000122
+    avs_fs_lseek @16 NONAME == XC058ba500000f
+    avs_fs_lstat @97 NONAME == XC058ba5000063
+    avs_fs_open @178 NONAME == XC058ba50000b6
+    avs_fs_read @306 NONAME == XC058ba5000139
+    avs_fs_opendir @216 NONAME == XC058ba50000dd
+    avs_fs_readdir @130 NONAME == XC058ba5000086
+    avs_fs_closedir @131 NONAME == XC058ba5000087
+    avs_net_ctrl @15 NONAME == XC058ba500000e
+    avs_shutdown @333 NONAME == XC058ba5000154
+    avs_thread_create @183 NONAME == XC058ba50000bb
+    avs_thread_destroy @76 NONAME == XC058ba500004e
+    avs_thread_exit @147 NONAME == XC058ba5000097
+    avs_thread_join @92 NONAME == XC058ba500005e
+    log_body_misc @44 NONAME == XC058ba500002d
+    log_body_info @339 NONAME == XC058ba500015a
+    log_body_warning @219 NONAME == XC058ba50000e1
+    log_body_fatal @128 NONAME == XC058ba5000084
+    property_create @256 NONAME == XC058ba5000107
+    property_desc_to_buffer @201 NONAME == XC058ba50000cd
+    property_destroy @264 NONAME == XC058ba500010f
+    property_insert_read @23 NONAME == XC058ba5000016
+    property_node_create @316 NONAME == XC058ba5000143
+    property_node_datasize @249 NONAME == XC058ba5000100
+    property_node_name @255 NONAME == XC058ba5000106
+    property_node_read @2 NONAME == XC058ba5000001
+    property_node_refer @268 NONAME == XC058ba5000113
+    property_node_remove @129 NONAME == XC058ba5000085
+    property_node_type @329 NONAME == XC058ba5000150
+    property_node_clone @252 NONAME == XC058ba5000103
+    property_node_traversal @93 NONAME == XC058ba500005f
+    property_node_refdata @330 NONAME == XC058ba5000151
+    property_query_size @250 NONAME == XC058ba5000101
+    property_psmap_import @102 NONAME == XC058ba5000068
+    property_psmap_export @110 NONAME == XC058ba5000071
+    property_read_query_memsize @100 NONAME == XC058ba5000066
+    property_search @244 NONAME == XC058ba50000fb
+    std_getenv @226 NONAME == XC058ba50000e8
+    std_setenv @114 NONAME == XC058ba5000075

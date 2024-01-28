@@ -80,7 +80,7 @@ cflags          += \
 # Each AVS-dependent project should consume the earliest AVS import definition
 # that is still ABI-compatible with the real build its target links against.
 
-avsvers_32      := 1700 1603 1601 1508 1403 1304 1101 1002 803 0
+avsvers_32      := 1700 1603 1601 1508 1403 1306 1304 1101 1002 803 0
 avsvers_64      := 1700 1603 1601 1509 1508
 
 imps            += avs avs-ea3
@@ -692,9 +692,9 @@ $(zipdir)/ddr-12.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/ddr-13.zip: \
-		build/bin/avs2_1304-32/launcher.exe \
-		build/bin/avs2_1304-32/ddrhook2.dll \
-		build/bin/avs2_1304-32/unicorntail.dll \
+		build/bin/avs2_1306-32/launcher.exe \
+		build/bin/avs2_1306-32/ddrhook2.dll \
+		build/bin/avs2_1306-32/unicorntail.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/ddrio.dll \
 		build/bin/indep-32/ddrio-mm.dll \
