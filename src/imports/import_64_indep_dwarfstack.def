@@ -1,0 +1,13 @@
+LIBRARY dwarfstack
+
+EXPORTS
+    dwstOfFile @ 441
+	dwstOfFileW @ 443
+	dwstOfProcess @ 446
+	dwstOfProcessW @ 448
+	dwstOfLocation @ 444
+	dwstOfLocationW @ 445
+	dwstOfException @ 438
+	dwstOfExceptionW @ 440
+	dwstExceptionDialog @ 436
+	dwstExceptionDialogW @ 437
