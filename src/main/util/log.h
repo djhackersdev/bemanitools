@@ -66,6 +66,7 @@ enum log_level {
     LOG_LEVEL_MISC = 3,
 };
 
+void log_exception_handler(const char *fmt, ...);
 void log_assert_body(const char *file, int line, const char *function);
 void log_to_external(
     log_formatter_t misc,
