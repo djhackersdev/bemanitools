@@ -87,6 +87,7 @@ enum psmap_type {
     PSMAP_TYPE_STR = 10,
     PSMAP_TYPE_ATTR = 45,
     PSMAP_TYPE_BOOL = 50,
+    PSMAP_TYPE_TERMINATOR = 0xFF,
 };
 
 #define PSMAP_FLAG_HAVE_DEFAULT 0x01
@@ -123,7 +124,7 @@ struct property_psmap {
 
 #define PSMAP_END              \
     {                          \
-        0xFF, 0, 0, 0, NULL, 0 \
+        PSMAP_TYPE_TERMINATOR, 0, 0, 0, NULL, 0 \
     }                          \
     }                          \
     ;
