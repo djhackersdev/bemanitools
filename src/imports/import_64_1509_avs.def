@@ -3,10 +3,15 @@ LIBRARY libavs-win64
 EXPORTS
     avs_boot @285 NONAME
     avs_fs_close @65 NONAME
+    avs_fs_copy @81 NONAME
     avs_fs_lseek @59 NONAME
     avs_fs_lseek64 @60 NONAME
+    avs_fs_lstat @78 NONAME
     avs_fs_open @58 NONAME
     avs_fs_read @61 NONAME
+    avs_fs_opendir @573 NONAME == 
+    avs_fs_readdir @573 NONAME == 
+    avs_fs_closedir @573 NONAME == 
     avs_net_ctrl @98 NONAME
     avs_shutdown @286 NONAME
     avs_thread_create @6 NONAME
@@ -22,8 +27,16 @@ EXPORTS
     property_destroy @128 NONAME
     property_insert_read @131 NONAME
     property_node_create @145 NONAME
+    property_node_name @573 NONAME == 
+    property_node_read @573 NONAME == 
+    property_query_size @573 NONAME == 
     property_node_refer @158 NONAME
     property_node_remove @146 NONAME
+    property_node_type @573 NONAME == 
+    property_node_clone @147 NONAME
+    property_node_traversal @149 NONAME
+    property_node_refdata @573 NONAME == 
+    property_node_datasize @573 NONAME == 
     property_psmap_export @162 NONAME
     property_psmap_import @161 NONAME
     property_read_query_memsize @159 NONAME
