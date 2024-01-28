@@ -215,6 +215,7 @@ int property_insert_read(
     uint32_t context);
 int property_mem_write(struct property *prop, void *bytes, int nbytes);
 void *property_desc_to_buffer(struct property *prop);
+avs_error property_query_size(struct property *prop);
 void property_file_write(struct property *prop, const char *path);
 int property_set_flag(struct property *prop, int flags, int mask);
 void property_destroy(struct property *prop);
@@ -254,7 +255,18 @@ void property_node_remove(struct property_node *node);
 enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
-void property_node_datasize(struct property_node *node);
+int property_node_datasize(struct property_node *node);
+avs_error property_node_read(struct property_node *node, enum property_type type, void* data, uint32_t data_size);
+
+static inline void property_remove(struct property *prop, struct property_node *node, const char *path)
+{
+    struct property_node *cur = property_search(prop, node, path);
+    while (cur) {
+        struct property_node *next = property_node_traversal(node, TRAVERSE_NEXT_SEARCH_RESULT);
+        property_node_remove(cur);
+        cur = next;
+    }
+}
 
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
