@@ -1,14 +1,14 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <windows.h>
 
 #include "aciodrv/device.h"
 
-#include "aciotest/bi2a-sdvx.h"
 #include "aciotest/bi2a-iidx.h"
+#include "aciotest/bi2a-sdvx.h"
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
@@ -58,25 +58,23 @@ static bool aciotest_assign_handler(
         if (bi2a_mode == 255) {
             printf(
                 "Unknown BI2A mode specified, please check your command.\n"
-                "Using bi2a-sdvx mode as default, press ENTER to continue\n"
-                );
+                "Using bi2a-sdvx mode as default, press ENTER to continue\n");
             bi2a_mode = 0;
             getchar();
         }
 
-        switch (bi2a_mode)
-        {
-        case 0:
-            handler->init = aciotest_bi2a_sdvx_handler_init;
-            handler->update = aciotest_bi2a_sdvx_handler_update;
-            break;
-        case 1:
-            handler->init = aciotest_bi2a_iidx_handler_init;
-            handler->update = aciotest_bi2a_iidx_handler_update;
-            break;
+        switch (bi2a_mode) {
+            case 0:
+                handler->init = aciotest_bi2a_sdvx_handler_init;
+                handler->update = aciotest_bi2a_sdvx_handler_update;
+                break;
+            case 1:
+                handler->init = aciotest_bi2a_iidx_handler_init;
+                handler->update = aciotest_bi2a_iidx_handler_update;
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
         return true;
     }
@@ -107,9 +105,9 @@ int main(int argc, char **argv)
     }
 
     if (argc == 4) {
-        if(!strcmp(argv[3],"bi2a-iidx")) {
+        if (!strcmp(argv[3], "bi2a-iidx")) {
             bi2a_mode = 1;
-        } else if(!strcmp(argv[3],"bi2a-sdvx")) {
+        } else if (!strcmp(argv[3], "bi2a-sdvx")) {
             bi2a_mode = 0;
         }
     }
