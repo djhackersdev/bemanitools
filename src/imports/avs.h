@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/stat.h>
 
 enum property_create_flag {
     PROPERTY_FLAG_READ = 0x1,
@@ -26,18 +27,39 @@ enum property_node_traversal {
 };
 
 enum property_type {
-    PROPERTY_TYPE_VOID = 1,
-    PROPERTY_TYPE_S8 = 2,
-    PROPERTY_TYPE_U8 = 3,
-    PROPERTY_TYPE_S16 = 4,
-    PROPERTY_TYPE_U16 = 5,
-    PROPERTY_TYPE_S32 = 6,
-    PROPERTY_TYPE_U32 = 7,
-    PROPERTY_TYPE_S64 = 8,
-    PROPERTY_TYPE_U64 = 9,
-    PROPERTY_TYPE_BIN = 10,
-    PROPERTY_TYPE_STR = 11,
-    PROPERTY_TYPE_BOOL = 52
+    PROPERTY_TYPE_VOID = 0x01,
+    PROPERTY_TYPE_S8 = 0x02,
+    PROPERTY_TYPE_U8 = 0x03,
+    PROPERTY_TYPE_S16 = 0x04,
+    PROPERTY_TYPE_U16 = 0x05,
+    PROPERTY_TYPE_S32 = 0x06,
+    PROPERTY_TYPE_U32 = 0x07,
+    PROPERTY_TYPE_S64 = 0x08,
+    PROPERTY_TYPE_U64 = 0x09,
+    PROPERTY_TYPE_BIN = 0x0A,
+    PROPERTY_TYPE_STR = 0x0B,
+    PROPERTY_TYPE_IP4 = 0x0C,
+    PROPERTY_TYPE_TIME = 0x0D,
+    PROPERTY_TYPE_FLOAT = 0x0E,
+    PROPERTY_TYPE_DOUBLE = 0x0F,
+    PROPERTY_TYPE_4U8 = 0x25,
+    PROPERTY_TYPE_ATTR = 0x2E,
+    PROPERTY_TYPE_BOOL = 0x34,
+
+    // Missing __type attribute
+    PROPERTY_TYPE_VOID_WITH_ATTRIBUTES = 0x40 | PROPERTY_TYPE_VOID,
+    PROPERTY_TYPE_ARRAY_S8 = 0x40 | PROPERTY_TYPE_S8,
+    PROPERTY_TYPE_ARRAY_U8 = 0x40 | PROPERTY_TYPE_U8,
+    PROPERTY_TYPE_ARRAY_S16 = 0x40 | PROPERTY_TYPE_S16,
+    PROPERTY_TYPE_ARRAY_U16 = 0x40 | PROPERTY_TYPE_U16,
+    PROPERTY_TYPE_ARRAY_S32 = 0x40 | PROPERTY_TYPE_S32,
+    PROPERTY_TYPE_ARRAY_U32 = 0x40 | PROPERTY_TYPE_U32,
+    PROPERTY_TYPE_ARRAY_S64 = 0x40 | PROPERTY_TYPE_S64,
+    PROPERTY_TYPE_ARRAY_U64 = 0x40 | PROPERTY_TYPE_U64,
+    PROPERTY_TYPE_ARRAY_TIME = 0x40 | PROPERTY_TYPE_TIME,
+    PROPERTY_TYPE_ARRAY_BOOL = 0x40 | PROPERTY_TYPE_BOOL,
+
+    PROPERTY_TYPE_STR_WITH_ATTRIBUTES = 0x40 | PROPERTY_TYPE_STR,
 };
 
 struct property;
@@ -66,6 +88,7 @@ enum psmap_type {
     PSMAP_TYPE_STR = 10,
     PSMAP_TYPE_ATTR = 45,
     PSMAP_TYPE_BOOL = 50,
+    PSMAP_TYPE_TERMINATOR = 0xFF,
 };
 
 #define PSMAP_FLAG_HAVE_DEFAULT 0x01
@@ -102,7 +125,7 @@ struct property_psmap {
 
 #define PSMAP_END              \
     {                          \
-        0xFF, 0, 0, 0, NULL, 0 \
+        PSMAP_TYPE_TERMINATOR, 0, 0, 0, NULL, 0 \
     }                          \
     }                          \
     ;
@@ -160,6 +183,11 @@ void avs_boot(
 
 void avs_shutdown(void);
 
+typedef uint32_t avs_desc;
+typedef int avs_error;
+
+#define AVS_IS_ERROR(x) x < 0
+
 void log_body_fatal(const char *module, const char *fmt, ...);
 void log_body_info(const char *module, const char *fmt, ...);
 void log_body_misc(const char *module, const char *fmt, ...);
@@ -187,6 +215,7 @@ int property_insert_read(
     uint32_t context);
 int property_mem_write(struct property *prop, void *bytes, int nbytes);
 void *property_desc_to_buffer(struct property *prop);
+avs_error property_query_size(struct property *prop);
 void property_file_write(struct property *prop, const char *path);
 int property_set_flag(struct property *prop, int flags, int mask);
 void property_destroy(struct property *prop);
@@ -203,8 +232,8 @@ int property_psmap_export(
     const struct property_psmap *psmap);
 
 struct property_node *property_node_clone(
-    struct property *new_parent,
-    int unk0,
+    struct property *parent_prop,
+    struct property_node *parent_node,
     struct property_node *src,
     bool deep);
 struct property_node *property_node_create(
@@ -226,15 +255,73 @@ void property_node_remove(struct property_node *node);
 enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
-void property_node_datasize(struct property_node *node);
+int property_node_datasize(struct property_node *node);
+avs_error property_node_read(struct property_node *node, enum property_type type, void* data, uint32_t data_size);
+
+static inline void property_remove(struct property *prop, struct property_node *node, const char *path)
+{
+    struct property_node *cur = property_search(prop, node, path);
+    while (cur) {
+        struct property_node *next = property_node_traversal(node, TRAVERSE_NEXT_SEARCH_RESULT);
+        property_node_remove(cur);
+        cur = next;
+    }
+}
 
 bool std_getenv(const char *key, char *val, uint32_t nbytes);
 void std_setenv(const char *key, const char *val);
 
-void* avs_fs_open(const char* path, int mode, int flags);
+struct avs_stat {
+    uint64_t st_atime;
+    uint64_t st_mtime;
+    uint64_t st_ctime;
+    uint32_t unk1;
+    uint32_t filesize;
+    struct stat padding;
+};
+
+#if AVS_VERSION <= 1306
+enum avs_file_mode {
+    AVS_FILE_READ = 0x00,
+    AVS_FILE_WRITE = 0x01,
+    AVS_FILE_READ_WRITE = 0x02,
+    AVS_FILE_CREATE = 0x10,
+    AVS_FILE_TRUNCATE = 0x20,
+    AVS_FILE_EXCLUSIVE = 0x80,
+};
+#else
+enum avs_file_mode {
+    AVS_FILE_READ = 0x01,
+    AVS_FILE_WRITE = 0x02,
+    AVS_FILE_CREATE = 0x10,
+    AVS_FILE_TRUNCATE = 0x20,
+    AVS_FILE_EXCLUSIVE = 0x80,
+};
+#endif
+
+enum avs_file_flag {
+    AVS_FILE_FLAG_SHARE_READ = 0x124,
+    AVS_FILE_FLAG_SHARE_WRITE = 0x92,
+};
+
+enum avs_seek_origin {
+    AVS_SEEK_SET = 0,
+    AVS_SEEK_CUR = 1,
+    AVS_SEEK_END = 2,
+};
+
+avs_desc avs_fs_open(const char *path, uint16_t mode, int flags);
+int avs_fs_close(avs_desc desc);
+size_t avs_fs_read(avs_desc desc, char *buf, uint32_t sz);
+int avs_fs_lseek(avs_desc desc, long pos, int whence);
+int avs_fs_lstat(const char *path, struct avs_stat *st);
+int avs_fs_copy(const char *src, const char *dest);
 int avs_fs_addfs(void *filesys_struct);
 int avs_fs_mount(
     const char *mountpoint, const char *fsroot, const char *fstype, void *data);
+avs_desc avs_fs_opendir(const char *path);
+const char* avs_fs_readdir(avs_desc dir);
+void avs_fs_closedir(avs_desc dir);
 
 bool avs_is_active();
 
