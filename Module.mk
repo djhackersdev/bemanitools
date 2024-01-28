@@ -257,6 +257,7 @@ $(zipdir)/iidx-09-to-12.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-09.bat \
 		dist/iidx/gamestart-10.bat \
@@ -282,6 +283,7 @@ $(zipdir)/iidx-13.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-13.bat \
 		dist/iidx/iidxhook-13.conf \
@@ -298,6 +300,7 @@ $(zipdir)/iidx-14-to-17.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-14.bat \
 		dist/iidx/gamestart-15.bat \
@@ -485,6 +488,7 @@ $(zipdir)/jb-01.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/jbio.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-01.bat \
 		dist/jb/jbhook-01.conf \
@@ -499,6 +503,7 @@ $(zipdir)/jb-02.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/jbio.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-02.bat \
 		dist/jb/jbhook-02.conf \
@@ -659,6 +664,7 @@ $(zipdir)/ddr-12-us.zip: \
 		build/bin/indep-32/ddrio-smx.dll \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-12-us.bat \
 		dist/ddr/gamestart-12-eu.bat \
@@ -776,6 +782,7 @@ $(zipdir)/popn-15-to-18.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/popnio.dll \
 		build/bin/indep-32/ezusb2-popn-shim.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/popn/config.bat \
 		dist/popn/gamestart-15.bat \
 		dist/popn/gamestart-16.bat \
@@ -807,6 +814,7 @@ $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/iidxhook-util-config-gfx-test.exe \
 		build/bin/indep-32/iidxhook-util-config-misc-test.exe \
 		build/bin/indep-32/iidxhook-util-config-sec-test.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		build/bin/indep-32/inject.exe \
 		build/bin/indep-32/security-id-test.exe \
 		build/bin/indep-32/security-mcode-test.exe \
