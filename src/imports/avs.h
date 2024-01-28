@@ -182,6 +182,11 @@ void avs_boot(
 
 void avs_shutdown(void);
 
+typedef uint32_t avs_desc;
+typedef int avs_error;
+
+#define AVS_IS_ERROR(x) x < 0
+
 void log_body_fatal(const char *module, const char *fmt, ...);
 void log_body_info(const char *module, const char *fmt, ...);
 void log_body_misc(const char *module, const char *fmt, ...);
