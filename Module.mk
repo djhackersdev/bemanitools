@@ -91,6 +91,7 @@ include src/main/acioemu/Module.mk
 include src/main/aciomgr/Module.mk
 include src/main/aciotest/Module.mk
 include src/main/asio/Module.mk
+include src/main/avs-util/Module.mk
 include src/main/bio2drv/Module.mk
 include src/main/bio2emu-iidx/Module.mk
 include src/main/bio2emu/Module.mk
