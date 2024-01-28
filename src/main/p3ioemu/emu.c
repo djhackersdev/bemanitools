@@ -48,8 +48,8 @@ static void p3io_cmd_get_cab_type_or_dipsw(
 static void p3io_cmd_get_video_freq(
     const struct p3io_req_get_video_freq *req,
     struct p3io_resp_get_video_freq *resp);
-static void
-p3io_cmd_unknown_2b(const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp);
+static void p3io_cmd_unknown_2b(
+    const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp);
 static void
 p3io_cmd_init(const struct p3io_req_init *req, struct p3io_resp_init *resp);
 static void p3io_cmd_get_coinstock(
@@ -57,8 +57,9 @@ static void p3io_cmd_get_coinstock(
 static void p3io_cmd_set_coin_counter(
     const struct p3io_req_set_coin_counter *req,
     struct p3io_resp_set_coin_counter *resp);
-static void
-p3io_cmd_unknown(const struct p3io_req_unknown_generic *req, struct p3io_resp_unknown_generic *resp);
+static void p3io_cmd_unknown(
+    const struct p3io_req_unknown_generic *req,
+    struct p3io_resp_unknown_generic *resp);
 
 void p3io_emu_init(const struct p3io_ops *ops, void *ctx)
 {
@@ -518,8 +519,8 @@ static void p3io_cmd_get_video_freq(
     }
 }
 
-static void
-p3io_cmd_unknown_2b(const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp)
+static void p3io_cmd_unknown_2b(
+    const struct p3io_req_unknown_2b *req, struct p3io_resp_unknown_2b *resp)
 {
     log_misc("Unknown 2b");
 
@@ -573,10 +574,13 @@ static void p3io_cmd_set_coin_counter(
     resp->status = 0;
 }
 
-static void
-p3io_cmd_unknown(const struct p3io_req_unknown_generic *req, struct p3io_resp_unknown_generic *resp)
+static void p3io_cmd_unknown(
+    const struct p3io_req_unknown_generic *req,
+    struct p3io_resp_unknown_generic *resp)
 {
-    log_warning("Unsupported P3IO command, sending default response (might not work/crash though): %02x",
+    log_warning(
+        "Unsupported P3IO command, sending default response (might not "
+        "work/crash though): %02x",
         req->hdr.cmd);
 
     p3io_resp_hdr_init(&resp->hdr, sizeof(*resp), &req->hdr);
