@@ -50,8 +50,9 @@ arrays_fail:
 caps_fail:
     /**
      * Still allow the device to be used as input.
-     * Useful for devices like the Sony DUALSHOCK 4, where it indicates it can receive outputs
-     * but it errors out when trying to initialize an output report.
+     * Useful for devices like the Sony DUALSHOCK 4, where it indicates it can
+     * receive outputs but it errors out when trying to initialize an output
+     * report.
      */
     return true;
 }
@@ -213,7 +214,7 @@ r_init_fail:
     meta->nreports = 0;
     free(meta->reports);
     meta->reports = NULL;
-    
+
     meta->nlights = 0;
     meta->nbuttons = 0;
     // Failed out before allocating memory
