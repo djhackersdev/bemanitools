@@ -4,8 +4,12 @@ given in tags. The pipeline will pick this up and cuts out the relevant section 
 
 ## 5.47
 ### Features
+N/A
 
 ### Fixes
+* fix(ddr/p3ioemu): Handle unknown 2B command to fix DDR X IO errors
+* fix(ddr/p3io): Crash on all supported DDR games due to incorrect p3io message size validation
+* fix(geninput): Sony DualShock 4 not working
 
 ## 5.46
 ### Features
