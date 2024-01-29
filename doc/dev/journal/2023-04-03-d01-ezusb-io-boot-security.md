@@ -1,30 +1,29 @@
 # Beatmania IIDX 10th Style - D01 IO boot code and security init
 
-Date: 2023-04-03
-Author: icex2
+Date: 2023-04-03 Author: icex2
 
 Documenting decompiled and reverse engineered code snippets from the D01 JAE `bm2dx.exe`. These
 helped me figuring out the two different security boot modes the game supports.
 
-In summary, it supports booting with the C02 IO with a C02 black dongle and a D01 IO board with
-a D01 dongle. No other combination is valid because they didn't make sense back then. You either
-had an upgraded old style/twinkle cabinet to C02 (GEC02) or you bought a new dedicated cabinet
-(GQD01). With 10th style supporting the old C02 dongle, it appears that all owners of a C02 cabinet
-with IO board and C02 dongle received a free software update/HDD. This might make sense considering
-the short life span of C02 and the game being super buggy, especially in earlier/initial revisions.
+In summary, it supports booting with the C02 IO with a C02 black dongle and a D01 IO board with a
+D01 dongle. No other combination is valid because they didn't make sense back then. You either had
+an upgraded old style/twinkle cabinet to C02 (GEC02) or you bought a new dedicated cabinet (GQD01).
+With 10th style supporting the old C02 dongle, it appears that all owners of a C02 cabinet with IO
+board and C02 dongle received a free software update/HDD. This might make sense considering the
+short life span of C02 and the game being super buggy, especially in earlier/initial revisions.
 
 The game expects the following "configurations" from bemanitools:
 
-* Booting as upgraded C02 with free D01 upgrade
-  * `sec.boot_version=GEC02   `
-  * `sec.boot_seeds=0:0:1`
-  * `sec.black_plug_mcode=GEC02JAA`
-  * "D01 IO pin" on IO board not active
-* Booting as dedicated 
-  * `sec.boot_version=GEC02   `
-  * `sec.boot_seeds=0:1:1`
-  * `sec.black_plug_mcode=GQD01JAA`
-  * "D01 IO pin" on IO board ACTIVE
+- Booting as upgraded C02 with free D01 upgrade
+  - `sec.boot_version=GEC02   `
+  - `sec.boot_seeds=0:0:1`
+  - `sec.black_plug_mcode=GEC02JAA`
+  - "D01 IO pin" on IO board not active
+- Booting as dedicated
+  - `sec.boot_version=GEC02   `
+  - `sec.boot_seeds=0:1:1`
+  - `sec.black_plug_mcode=GQD01JAA`
+  - "D01 IO pin" on IO board ACTIVE
 
 All the above was derived from reading and understanding the documented code excerpts below.
 

@@ -1,36 +1,36 @@
 # A simple memory patching hook
 
-This is a hook which can be passed along with other hooks to be injected into 
-the target application of your choice (e.g. when using inject or launcher). It
-allows you to patch raw memory contents of either the target application or
-any libraries loaded with it. No static hex-edits anymore. Instead, create a
-simple script file and also document your patches for others which allows them
-to easily disable/enable them.
+This is a hook which can be passed along with other hooks to be injected into the target application
+of your choice (e.g. when using inject or launcher). It allows you to patch raw memory contents of
+either the target application or any libraries loaded with it. No static hex-edits anymore. Instead,
+create a simple script file and also document your patches for others which allows them to easily
+disable/enable them.
 
 # Setup
 
-Copy the *mempatch-hook.dll* to the target application of your choice and add
-it to the list of libraries to inject:
+Copy the *mempatch-hook.dll* to the target application of your choice and add it to the list of
+libraries to inject:
 
 Example when using *inject.exe*:
+
 ```
 inject iidxhook3.dll mempatch-hook.dll bm2dx.exe --config iidxhook-16.conf --mempatch myPatch.mph %*
 ```
 
 When using *launcher.exe*:
+
 ```
 launcher -K iidxhook4.dll -K mempatch-hook.dll bm2dx.dll --config iidxhook.conf --mempatch myPatch.mph %*
 ```
 
-To load a patch script, add the *--mempatch <path to patch script>* argument (as
-shown above in the example). You can specify this more than once which allows
-you to apply multiple scripts in order, e.g. 
-*--mempatch myPatch1.mph --mempatch myPatch1.mph*.
+To load a patch script, add the *--mempatch <path to patch script>* argument (as shown above in the
+example). You can specify this more than once which allows you to apply multiple scripts in order,
+e.g. *--mempatch myPatch1.mph --mempatch myPatch1.mph*.
 
 # Patch script format
 
-A patch script is a simple list of items seperated by a newline character 
-(i.e. one item = one line). Example script file:
+A patch script is a simple list of items seperated by a newline character (i.e. one item = one
+line). Example script file:
 
 ```
 # This is a comment
