@@ -707,7 +707,7 @@ $(zipdir)/ddr-13.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/ddr-14-to-16.zip: \
+$(zipdir)/ddr-14-to-18.zip: \
 		build/bin/avs2_1508-32/launcher.exe \
 		build/bin/avs2_1508-32/ddrhook2.dll \
 		build/bin/avs2_1508-32/unicorntail.dll \
@@ -716,6 +716,8 @@ $(zipdir)/ddr-14-to-16.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
+        dist/ddr/gamestart-17.bat \
+        dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-14.bat \
 		dist/ddr/gamestart-15.bat \
 		dist/ddr/gamestart-16.bat \
@@ -723,7 +725,7 @@ $(zipdir)/ddr-14-to-16.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
-$(zipdir)/ddr-16-x64.zip: \
+$(zipdir)/ddr-16-to-18-x64.zip: \
 		build/bin/avs2_1603-64/launcher.exe \
 		build/bin/avs2_1603-64/ddrhook2.dll \
 		build/bin/avs2_1603-64/unicorntail.dll \
@@ -732,6 +734,8 @@ $(zipdir)/ddr-16-x64.zip: \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \
 		dist/ddr/config.bat \
+        dist/ddr/gamestart-17.bat \
+        dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-16.bat \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -836,8 +840,8 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/ddr-12.zip \
 		$(zipdir)/ddr-12-us.zip \
 		$(zipdir)/ddr-13.zip \
-		$(zipdir)/ddr-14-to-16.zip \
-		$(zipdir)/ddr-16-x64.zip \
+		$(zipdir)/ddr-14-to-18.zip \
+		$(zipdir)/ddr-16-to-18-x64.zip \
 		$(zipdir)/ddr-hwio-x86.zip \
 		$(zipdir)/ddr-hwio-x64.zip \
 		$(zipdir)/doc.zip \
