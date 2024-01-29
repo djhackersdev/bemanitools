@@ -43,6 +43,7 @@ FORCE:
 build-docker \
 clean \
 code-format \
+doc-format \
 print-building \
 print-release \
 run-tests \
@@ -53,6 +54,7 @@ release: \
 print-release \
 clean \
 code-format \
+doc-format \
 all \
 run-tests
 
@@ -73,6 +75,10 @@ clean:
 code-format:
 	$(V)echo "Applying clang-format..."
 	$(V)find src/main src/test -name '*.c' -o -name '*.h' | xargs clang-format -i -style=file
+
+doc-format:
+	$(V)echo "Applying mdformat on all docs..."
+	$(V)find . -name '*.md' | xargs mdformat --wrap 100
 
 run-tests:
 	$(V)echo "Running tests..."
