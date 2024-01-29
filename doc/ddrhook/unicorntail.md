@@ -17,11 +17,11 @@ A Chimera PCB however is different in many aspects to the Dragon PCB and require
 The Dragon's P3IO has two serial ports that the regular P3IOs do not, and one of these serial ports
 is used to communicate with the card readers. Note that these are actual serial ports driven
 directly by the P3IO microcontroller, these are NOT just passed through to the motherboard like the
-proprietary COM1 and COM2 connectors. 
+proprietary COM1 and COM2 connectors.
 
-Unicorn Tail intercepts serial port IO commands being sent to the P3IO and redirects them to a 
-COM4 in Windows instead, where two readers can be connected via the motherboard's RS232 port or 
-a usb RS232 adapter.
+Unicorn Tail intercepts serial port IO commands being sent to the P3IO and redirects them to a COM4
+in Windows instead, where two readers can be connected via the motherboard's RS232 port or a usb
+RS232 adapter.
 
 ## Drivers
 
@@ -33,11 +33,10 @@ HDD or grabbed from
 
 Using Device Manager in Windows, ensure the following COM ports are connected and setup.
 
-COM1: EXTIO
-COM4: Two readers
+COM1: EXTIO COM4: Two readers
 
-Windows is often poor about saving the COM port number, so ewf commit (if applicable) and 
-reboot after saving this setting to ensure it sticks.
+Windows is often poor about saving the COM port number, so ewf commit (if applicable) and reboot
+after saving this setting to ensure it sticks.
 
 ## Setup and run
 
@@ -48,8 +47,8 @@ e.g.:
 launcher.exe -H 33554432 -K unicorntail.dll arkmdxp3.dll %*
 ```
 
-If you want to use any ddrhook library in addition, you have to have the hooks in the right order
-to make everything work correctly, e.g.:
+If you want to use any ddrhook library in addition, you have to have the hooks in the right order to
+make everything work correctly, e.g.:
 
 ```shell
 launcher.exe -H 33554432 -K unicorntail.dll -K ddrhook2.dll arkmdxp3.dll %*

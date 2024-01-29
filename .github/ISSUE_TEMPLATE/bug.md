@@ -22,10 +22,11 @@ necessary -->
 <!-- Try running the game with a default configuration as well. If that also causes issues, please point that out here in the report. This might speed up the debugging process.-->
 
 <!--- Provide a detailed step by step description how to reproduce this issue -->
+
 1.
-2.
-3.
-4.
+1.
+1.
+1.
 
 ## Possible solution
 
@@ -35,11 +36,11 @@ necessary -->
 
 ### Bemanitools version(s) affected
 
-* <!--- Add one or multiple versions as a bullet list -->
+- <!--- Add one or multiple versions as a bullet list -->
 
 ### Game(s) and version(s) affected
 
-* <!--- Add one or multiple game versions as a bullet list -->
+- <!--- Add one or multiple game versions as a bullet list -->
 
 ### Log output
 
@@ -88,7 +89,7 @@ used if you altered it. -->
 
 ### APIs used
 
-* <!--- List all APIs you used as a bullet list, e.g. iidxio-keyboard, eamio-keyboard -->
+- <!--- List all APIs you used as a bullet list, e.g. iidxio-keyboard, eamio-keyboard -->
 
 ### OS version
 
@@ -96,7 +97,7 @@ used if you altered it. -->
 
 ### Hardware specs
 
-* CPU: <!--- Insert, e.g. Core i7 2600k 3.20ghz -->
-* RAM: <!--- Insert, e.g. 16 GB -->
-* GPU: <!--- Insert, e.g. Nvidia GeForce GTX 970, 4GB -->
-* Controllers/IO: <!--- Insert, e.g. DJ Dao RE over USB -->
+- CPU: <!--- Insert, e.g. Core i7 2600k 3.20ghz -->
+- RAM: <!--- Insert, e.g. 16 GB -->
+- GPU: <!--- Insert, e.g. Nvidia GeForce GTX 970, 4GB -->
+- Controllers/IO: <!--- Insert, e.g. DJ Dao RE over USB -->

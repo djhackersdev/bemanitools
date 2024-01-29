@@ -27,9 +27,9 @@ N/A
 
 #### How to fix
 
-* Make sure your data is not set to read only, especially the dev folder.
-* Disable all network adapters other than the one used to connect to the Internet.
-* Check for hidden network adapters in Device Manager.
+- Make sure your data is not set to read only, especially the dev folder.
+- Disable all network adapters other than the one used to connect to the Internet.
+- Check for hidden network adapters in Device Manager.
 
 ## 5-1500 series errors
 
@@ -41,7 +41,7 @@ IO ERROR
 
 #### Known occurances
 
-* Pop'n Music 15
+- Pop'n Music 15
 
 #### How to fix
 
@@ -59,8 +59,8 @@ N/A
 
 #### How to fix
 
-* Check the integrity of the data you have, i.e. some files might be corrupted
-* Check your physical drive. Is it failing?
+- Check the integrity of the data you have, i.e. some files might be corrupted
+- Check your physical drive. Is it failing?
 
 ## 5-1501 series errors
 
@@ -76,9 +76,9 @@ N/A
 
 #### How to fix
 
-* Recopy Bemanitools.
-* For Reflec Beat, make sure you are not missing device.dll. (This seems to apply to some older
-version of bemanitools)
+- Recopy Bemanitools.
+- For Reflec Beat, make sure you are not missing device.dll. (This seems to apply to some older
+  version of bemanitools)
 
 ## 5-1502 series errors
 
@@ -90,13 +90,13 @@ BACKUP CHECK ERROR
 
 #### Known occurances
 
-* Pop'n'Music 21 Sunny Park
+- Pop'n'Music 21 Sunny Park
 
 #### How to fix
 
-* Give access to gamestart.bat and launcher.exe from Windows Firewall if enabled.
-* Make sure no antivirus software firewall is blocking access to those files.
-* Start gamestart.bat as Administrator.
+- Give access to gamestart.bat and launcher.exe from Windows Firewall if enabled.
+- Make sure no antivirus software firewall is blocking access to those files.
+- Start gamestart.bat as Administrator.
 
 ### 5-1502-0000
 
@@ -110,7 +110,7 @@ N/A
 
 #### How to fix
 
-* Make sure `/dev/` isn't read-only.
+- Make sure `/dev/` isn't read-only.
 
 ### 5-1502-0002
 
@@ -120,7 +120,7 @@ HDD READ ERROR
 
 #### Known occurances
 
-* GFDM V4
+- GFDM V4
 
 #### How to fix
 
@@ -132,7 +132,7 @@ Unknown
 
 #### Description
 
-USB I/O ERROR 
+USB I/O ERROR
 
 ##### FPGA WRITE ERROR
 
@@ -146,22 +146,22 @@ timeouts making this code prone to fail.
 
 #### Known occurances
 
-* IIDX
+- IIDX
 
 #### How to fix
 
 #### FPGA WRITE ERROR
 
-* Restart the game
-* Re-copy bemanitools
+- Restart the game
+- Re-copy bemanitools
 
 #### FW TRNS-OUT
 
-* Restart the game
-* Re-copy bemanitools
-* Running the process on high priority and with admin rights
-* If you attached a debugger, that might have messed with the timing and caused this. Try a
-different debugger or attach it later in the boot process
+- Restart the game
+- Re-copy bemanitools
+- Running the process on high priority and with admin rights
+- If you attached a debugger, that might have messed with the timing and caused this. Try a
+  different debugger or attach it later in the boot process
 
 ### 5-1503-0001
 
@@ -179,10 +179,10 @@ N/A
 
 #### How to fix
 
-* Check the integrity of the data you have, i.e. some files might be corrupted
-* If the data came in an archive format, try extracting it again with another application.
-* Make sure your game is up to date with the current data available.
-* Check your physical drive. Is it failing?
+- Check the integrity of the data you have, i.e. some files might be corrupted
+- If the data came in an archive format, try extracting it again with another application.
+- Make sure your game is up to date with the current data available.
+- Check your physical drive. Is it failing?
 
 ### 5-1503-0004
 
@@ -202,13 +202,13 @@ N/A
 
 Real hardware:
 
-* Check the USB cable between the PC and the IO board is okay.
-* Make sure the IO board is getting enough of a clean supply of power.
+- Check the USB cable between the PC and the IO board is okay.
+- Make sure the IO board is getting enough of a clean supply of power.
 
 Bemanitools:
 
-* Don't attempt to put your computer to sleep while playing rhythm games.
-* Change launcher.exe process priority to High when starting the game.
+- Don't attempt to put your computer to sleep while playing rhythm games.
+- Change launcher.exe process priority to High when starting the game.
 
 ### 5-1503-0006
 
@@ -222,7 +222,7 @@ N/A
 
 #### How do I fix it?
 
-* Recopy Bemanitools.
+- Recopy Bemanitools.
 
 ### 5-1503-0007
 
@@ -236,7 +236,7 @@ N/A
 
 #### How do I fix it?
 
-* Run the game using gamestart.bat, don't just drag and drop the game dll onto launcher.exe
+- Run the game using gamestart.bat, don't just drag and drop the game dll onto launcher.exe
 
 ### 5-1503-0008
 
@@ -246,7 +246,7 @@ FPGA Write error
 
 #### Known occurances
 
-* IIDX Tricoro
+- IIDX Tricoro
 
 Seen in Tricoro Omnimix RC1.
 
@@ -266,7 +266,7 @@ N/A
 
 #### How do I fix it?
 
-* Make sure your AC(real)IO board is on the correct COM port.
+- Make sure your AC(real)IO board is on the correct COM port.
 
 ## 5-1504 series errors
 
@@ -286,8 +286,8 @@ N/A
 
 Real hardware:
 
-* Make sure your readers are connected and powered on.
-* Check your serial cables are good.
+- Make sure your readers are connected and powered on.
+- Check your serial cables are good.
 
 ### 5-1504-0003
 
@@ -330,13 +330,13 @@ the game may take 1-3 minutes longer to boot as it regenerates backup data.
 
 #### Known occurances
 
-* Jubeat Ripples
+- Jubeat Ripples
 
 #### How do I fix it?
 
-* Check the integrity of the data you have, i.e. some files might be corrupted
-* If the data came in an archive format, try extracting it again with another application.
-* Check your physical drive. Is it failing?
+- Check the integrity of the data you have, i.e. some files might be corrupted
+- If the data came in an archive format, try extracting it again with another application.
+- Check your physical drive. Is it failing?
 
 ### 5-1505-0001
 
@@ -350,9 +350,9 @@ N/A
 
 #### How do I fix it?
 
-* Check the integrity of the data you have, i.e. some files might be corrupted
-* If the data came in an archive format, try extracting it again with another application.
-* Check your physical drive. Is it failing?
+- Check the integrity of the data you have, i.e. some files might be corrupted
+- If the data came in an archive format, try extracting it again with another application.
+- Check your physical drive. Is it failing?
 
 ### 5-1505-0002
 
@@ -371,9 +371,9 @@ N/A
 
 ##### Real hardware
 
-* There may be a coin stuck, check.
-* The coin mechanism may be stuck, check.
-* Don't hold down the coin line so long.
+- There may be a coin stuck, check.
+- The coin mechanism may be stuck, check.
+- Don't hold down the coin line so long.
 
 ### 5-1505-0006
 
@@ -387,9 +387,9 @@ N/A
 
 #### How do I fix it?
 
-* Check the integrity of the data you have, i.e. some files might be corrupted
-* If the data came in an archive format, try extracting it again with another application.
-* Check your physical drive. Is it failing?
+- Check the integrity of the data you have, i.e. some files might be corrupted
+- If the data came in an archive format, try extracting it again with another application.
+- Check your physical drive. Is it failing?
 
 ### 5-1505-0025
 
@@ -399,11 +399,11 @@ N/A
 
 #### Known occurances
 
-* Jubeat Saucer Fullfill
+- Jubeat Saucer Fullfill
 
 #### How do I fix it?
 
-* Disable excess network adapters
+- Disable excess network adapters
 
 ## 5-1506 series errors
 
@@ -419,7 +419,7 @@ The backup data is corrupted. Press the test button to re-initialize it.
 
 #### Known occurances
 
-* IIDX 15 (BACKUP DATA ERROR)
+- IIDX 15 (BACKUP DATA ERROR)
 
 #### How do I fix it?
 
@@ -442,7 +442,7 @@ This error may happen before the monitor check on IIDX.
 
 #### Known occurances
 
-* IIDX (version?)
+- IIDX (version?)
 
 #### How do I fix it?
 
@@ -460,8 +460,8 @@ N/A
 
 #### How do I fix it?
 
-* "Set" and save the clock date and time in the test menu
-* Recopy Bemanitools
+- "Set" and save the clock date and time in the test menu
+- Recopy Bemanitools
 
 ## 5-1507 series errors
 
@@ -509,7 +509,7 @@ LAMP CHECK ERROR
 
 #### Known occurances
 
-* Pop'n Music 20 Fantasia
+- Pop'n Music 20 Fantasia
 
 #### How do I fix it?
 
@@ -527,7 +527,7 @@ The original message in Japanese: 電源を再投入して下さい
 
 #### Known occurances
 
-* Pop'n Music 22 Lapistoria
+- Pop'n Music 22 Lapistoria
 
 #### How do I fix it?
 
@@ -551,12 +551,12 @@ N/A
 
 #### How do I fix it?
 
-* Restart your game.
-* Check if your computer is connected to the Internet at all.
-* Make sure the services URL is correct.
-* Disable all network adapters other than the one used to connect to the Internet. Alternatively,
-setting that adapter to have the highest affinity also works.
-* If none of the above work, reinstall a newer or older version of your network drivers.
+- Restart your game.
+- Check if your computer is connected to the Internet at all.
+- Make sure the services URL is correct.
+- Disable all network adapters other than the one used to connect to the Internet. Alternatively,
+  setting that adapter to have the highest affinity also works.
+- If none of the above work, reinstall a newer or older version of your network drivers.
 
 ### 5-2002-0000
 
@@ -570,7 +570,7 @@ N/A
 
 #### How do I fix it?
 
-* Make sure you're editing the right file for network configuration settings.
+- Make sure you're editing the right file for network configuration settings.
 
 ### 5-2002-0916
 
@@ -602,18 +602,18 @@ Press the service button to start the game.
 
 #### Known occurances
 
-* IIDX, probably all known versions
+- IIDX, probably all known versions
 
 #### How do I fix it?
 
 The original message is already telling you what is going on:
 
-* Check if your machine/pc has an internet connection
-* Check your firewall settings
-* Check that the server address is configured and correct in `iidxhook.conf` (old games) or
-`ea3-config.xml`
-* You can disable the network in the operator menu to just boot the game first. Note that this is
-not possible on any versions starting IIDX 20 (tricoro).
+- Check if your machine/pc has an internet connection
+- Check your firewall settings
+- Check that the server address is configured and correct in `iidxhook.conf` (old games) or
+  `ea3-config.xml`
+- You can disable the network in the operator menu to just boot the game first. Note that this is
+  not possible on any versions starting IIDX 20 (tricoro).
 
 ### 5-2002-2301
 
@@ -669,7 +669,7 @@ N/A
 
 #### How do I fix it?
 
-* Check that there is a valid PCBID in ea3-config.xml.
+- Check that there is a valid PCBID in ea3-config.xml.
 
 ### 5-2002-2400
 
@@ -698,19 +698,19 @@ N/A
 
 #### How do I fix it?
 
-* Check your services URL in `ea3-config.xml`. Make sure to remove any slash at the end of the URL
-and check for https/http.
-* If you are running Spada, ensure to use a service URL that supports that older game (check with
-your private server provider)
-* If you are running Tune Street, ensure to use a service URL that supports that older game (check
-with your private server provider)
+- Check your services URL in `ea3-config.xml`. Make sure to remove any slash at the end of the URL
+  and check for https/http.
+- If you are running Spada, ensure to use a service URL that supports that older game (check with
+  your private server provider)
+- If you are running Tune Street, ensure to use a service URL that supports that older game (check
+  with your private server provider)
 
 ### 5-2003-2404
 
 #### Description
 
-Malformed `<network>` section.  The `<network>` section in your `ea3-config.xml` file is malformed
-in some way.
+Malformed `<network>` section. The `<network>` section in your `ea3-config.xml` file is malformed in
+some way.
 
 #### Known occurances
 
@@ -758,15 +758,15 @@ N/A
 
 #### How do I fix it?
 
-Check if your `hosts` file has any DNS redirects to other private servers that might interfere
-with this
+Check if your `hosts` file has any DNS redirects to other private servers that might interfere with
+this
 
 ### 5-2016-0000
 
 #### Description
 
-"apsmanager" is a special eAM Participation system for Korean machines(XXX:K). This system
-is maybe not supported by private servers.
+"apsmanager" is a special eAM Participation system for Korean machines(XXX:K). This system is maybe
+not supported by private servers.
 
 #### Known occurances
 
