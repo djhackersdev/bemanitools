@@ -1,3 +1,5 @@
+#define LOG_MODULE "module"
+
 #include <windows.h>
 
 #include "hook/pe.h"
@@ -6,16 +8,20 @@
 #include "imports/eapki.h"
 
 #include "launcher/module.h"
+#include "launcher/property-util.h"
 
 #include "util/log.h"
 #include "util/str.h"
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
 
-static bool module_replace_dll_iat(HMODULE hModule, struct array *iat_hook_dlls)
+static bool
+module_replace_dll_iat(HMODULE hModule, const struct array *iat_hook_dlls)
 {
     log_assert(hModule);
     log_assert(iat_hook_dlls);
+
+    log_misc("replace dll iat: %p", hModule);
 
     if (iat_hook_dlls->nitems == 0)
         return true;
@@ -127,10 +133,12 @@ inject_fail:
     return false;
 }
 
-void module_context_init(struct module_context *module, const char *path)
+void module_init(struct module_context *module, const char *path)
 {
     log_assert(module != NULL);
     log_assert(path != NULL);
+
+    log_info("init: %s", path);
 
     module->dll = LoadLibrary(path);
 
@@ -159,15 +167,19 @@ void module_context_init(struct module_context *module, const char *path)
     }
 
     module->path = str_dup(path);
+
+    log_misc("init done");
 }
 
-void module_context_init_with_iat_hooks(
+void module_with_iat_hooks_init(
     struct module_context *module,
     const char *path,
-    struct array *iat_hook_dlls)
+    const struct array *iat_hook_dlls)
 {
     log_assert(module != NULL);
     log_assert(path != NULL);
+
+    log_info("init iat hooks: %s", path);
 
     module->dll = LoadLibraryExA(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
 
@@ -211,16 +223,71 @@ void module_context_init_with_iat_hooks(
     module->path = str_dup(path);
 }
 
-bool module_context_invoke_init(
+void module_init_invoke(
     const struct module_context *module,
-    char *sidcode,
-    struct property_node *app_config)
+    struct ea3_ident_config *ea3_ident_config,
+    struct property_node *app_params_node)
 {
+    char sidcode_short[17];
+    char sidcode_long[21];
+    char security_code[9];
     dll_entry_init_t init;
+    bool ok;
 
-    log_assert(module != NULL);
-    log_assert(sidcode != NULL);
-    log_assert(app_config != NULL);
+    log_info("init invoke");
+
+    /* Set up security env vars */
+
+    str_format(
+        security_code,
+        lengthof(security_code),
+        "G*%s%s%s%s",
+        ea3_ident_config->model,
+        ea3_ident_config->dest,
+        ea3_ident_config->spec,
+        ea3_ident_config->rev);
+
+    log_misc("security code: %s", security_code);
+
+    std_setenv("/env/boot/version", "0.0.0");
+    std_setenv("/env/profile/security_code", security_code);
+    std_setenv("/env/profile/system_id", ea3_ident_config->pcbid);
+    std_setenv("/env/profile/account_id", ea3_ident_config->pcbid);
+    std_setenv("/env/profile/license_id", ea3_ident_config->softid);
+    std_setenv("/env/profile/software_id", ea3_ident_config->softid);
+    std_setenv("/env/profile/hardware_id", ea3_ident_config->hardid);
+
+    /* Set up the short sidcode string, let dll_entry_init mangle it */
+
+    str_format(
+        sidcode_short,
+        lengthof(sidcode_short),
+        "%s%s%s%s%s",
+        ea3_ident_config->model,
+        ea3_ident_config->dest,
+        ea3_ident_config->spec,
+        ea3_ident_config->rev,
+        ea3_ident_config->ext);
+
+    log_misc("sidcode short: %s", sidcode_short);
+
+    /* Set up long-form sidcode env var */
+
+    str_format(
+        sidcode_long,
+        lengthof(sidcode_long),
+        "%s:%s:%s:%s:%s",
+        ea3_ident_config->model,
+        ea3_ident_config->dest,
+        ea3_ident_config->spec,
+        ea3_ident_config->rev,
+        ea3_ident_config->ext);
+
+    log_misc("sidecode long: %s", sidcode_long);
+
+    /* Set this up beforehand, as certain games require it in dll_entry_init */
+
+    std_setenv("/env/profile/soft_id_code", sidcode_long);
 
     init = (void *) GetProcAddress(module->dll, "dll_entry_init");
 
@@ -229,15 +296,66 @@ bool module_context_invoke_init(
             "%s: dll_entry_init not found. Is this a game DLL?", module->path);
     }
 
-    return init(sidcode, app_config);
+    log_info("Invoking game init...");
+
+    struct property *prop =
+        property_util_cstring_load("<param><io>p3io</io></param>");
+
+    struct property_node *prop_node = property_search(prop, NULL, "/param");
+
+    property_util_log(prop);
+    property_util_node_log(prop_node);
+
+    ok = init(sidcode_short, prop_node);
+
+    if (!ok) {
+        log_fatal("%s: dll_module_init() returned failure", module->path);
+    } else {
+        log_info("Game init done");
+    }
+
+    /* Back-propagate sidcode, as some games modify it during init */
+
+    memcpy(
+        ea3_ident_config->model,
+        sidcode_short + 0,
+        sizeof(ea3_ident_config->model) - 1);
+    ea3_ident_config->dest[0] = sidcode_short[3];
+    ea3_ident_config->spec[0] = sidcode_short[4];
+    ea3_ident_config->rev[0] = sidcode_short[5];
+    memcpy(
+        ea3_ident_config->ext,
+        sidcode_short + 6,
+        sizeof(ea3_ident_config->ext));
+
+    /* Set up long-form sidcode env var again */
+
+    str_format(
+        sidcode_long,
+        lengthof(sidcode_long),
+        "%s:%s:%s:%s:%s",
+        ea3_ident_config->model,
+        ea3_ident_config->dest,
+        ea3_ident_config->spec,
+        ea3_ident_config->rev,
+        ea3_ident_config->ext);
+
+    std_setenv("/env/profile/soft_id_code", sidcode_long);
+
+    log_misc("back-propagated sidcode long: %s", sidcode_long);
+
+    log_misc("init invoke done");
 }
 
-bool module_context_invoke_main(const struct module_context *module)
+bool module_main_invoke(const struct module_context *module)
 {
     /* GCC warns if you call a variable "main" */
     dll_entry_main_t main_;
+    bool result;
 
     log_assert(module != NULL);
+
+    log_info("main invoke");
 
     main_ = (void *) GetProcAddress(module->dll, "dll_entry_main");
 
@@ -246,11 +364,19 @@ bool module_context_invoke_main(const struct module_context *module)
             "%s: dll_entry_main not found. Is this a game DLL?", module->path);
     }
 
-    return main_();
+    log_info("Invoking game's main function...");
+
+    result = main_();
+
+    log_info("Main terminated, result: %d", result);
+
+    return result;
 }
 
-void module_context_fini(struct module_context *module)
+void module_fini(struct module_context *module)
 {
+    log_info("fini");
+
     if (module == NULL) {
         return;
     }
@@ -260,4 +386,6 @@ void module_context_fini(struct module_context *module)
     if (module->dll != NULL) {
         FreeLibrary(module->dll);
     }
+
+    log_misc("fini done");
 }

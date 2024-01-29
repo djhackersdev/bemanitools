@@ -6,7 +6,16 @@ EXPORTS
     avs_thread_exit @11 NONAME
     avs_thread_join @12 NONAME
     avs_fs_addfs @73 NONAME
+    avs_fs_close @86 NONAME == XCgsqzn0000055
+    avs_fs_copy @102 NONAME == XCgsqzn0000065
+    avs_fs_lseek @80 NONAME == XCgsqzn000004f
+    avs_fs_lstat @100 NONAME == XCgsqzn0000063
     avs_fs_mount @76 NONAME
+    avs_fs_open @79 NONAME == XCgsqzn000004e
+    avs_fs_read @82 NONAME == XCgsqzn0000051
+    avs_fs_opendir @93 NONAME == XCgsqzn000005c
+    avs_fs_readdir @94 NONAME == XCgsqzn000005d
+    avs_fs_closedir @95 NONAME == XCgsqzn000005e
     avs_net_ctrl @119 NONAME
     property_create @145 NONAME
     property_destroy @146 NONAME
@@ -14,7 +23,15 @@ EXPORTS
     property_insert_read @149 NONAME
     property_search @162 NONAME
     property_node_create @163 NONAME
+    property_node_name @168 NONAME == XCgsqzn00000a7
     property_node_remove @164 NONAME
+    property_node_type @169 NONAME == XCgsqzn00000a8
+    property_node_clone @165 NONAME
+    property_node_traversal @167 NONAME
+    property_node_refdata @166 NONAME == XCgsqzn00000a5
+    property_node_datasize @171 NONAME == XCgsqzn00000aa
+    property_node_read @172 NONAME == XCgsqzn00000ab
+    property_query_size @160 NONAME == XCgsqzn000009f
     property_node_refer @176 NONAME
     property_read_query_memsize @177 NONAME
     property_psmap_import @179 NONAME

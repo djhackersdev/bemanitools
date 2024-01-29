@@ -511,7 +511,7 @@ static void ac_io_emu_icca_cipher_set_key(
     resp.cmd.raw[0] = (reader_key >> 24) & 0xFF;
     resp.cmd.raw[1] = (reader_key >> 16) & 0xFF;
     resp.cmd.raw[2] = (reader_key >> 8) & 0xFF;
-    resp.cmd.raw[3] = (reader_key) &0xFF;
+    resp.cmd.raw[3] = (reader_key) & 0xFF;
 
     // so I looked these constants up, this isn't actually a secure key
     // generator it's actually Marsaglia's "KISS" algorithm with different

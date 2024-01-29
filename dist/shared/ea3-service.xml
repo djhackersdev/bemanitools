@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<ea3>
+    <network>
+        <!-- USER TODO: Change to your favorite eamuse service URL -->
+        <services>http://localhost</services>
+    </network>
+</ea3>
