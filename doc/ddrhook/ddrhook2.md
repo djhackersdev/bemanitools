@@ -9,6 +9,8 @@ The following games are supported by this hook library:
 * Dance Dance Revolution 2013
 * Dance Dance Revolution 2014
 * Dance Dance Revolution A
+* Dance Dance Revolution A20
+* Dance Dance Revolution A20+
 
 Note that different builds of the same hook library are required to run the
 different versions. See different distribution packages, e.g. `ddr-12.zip`,
