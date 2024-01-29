@@ -1,3 +1,5 @@
+#define LOG_MODULE "stubs"
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -116,6 +118,8 @@ static void *STDCALL my_GetProcAddress(HMODULE dll, const char *name)
 
 void stubs_init(void)
 {
+    log_info("Init");
+
     hook_table_apply(
         NULL, "kernel32.dll", stub_hook_syms, lengthof(stub_hook_syms));
 }
