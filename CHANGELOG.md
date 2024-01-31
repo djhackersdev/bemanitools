@@ -4,6 +4,9 @@ given in tags. The pipeline will pick this up and cuts out the relevant section 
 
 ## 5.48
 ### Features
+* feat(config): Add invert analog input option. Remark: The old configuration file format is
+  upgraded but downgrading is not possible anymore. The new saves are using a new filename
+  and it doesn't delete the old files, see `C:\Users\<YOUR_USERNAME>\AppData\Roaming\DJHACKERS`
 
 ### Fixes
 
