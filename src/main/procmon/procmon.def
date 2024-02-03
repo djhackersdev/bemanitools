@@ -1,0 +1,10 @@
+LIBRARY procmon
+
+EXPORTS
+    procmon_api_version
+    procmon_set_loggers
+    procmon_init
+    procmon_file_mon_enable
+    procmon_module_mon_enable
+    procmon_thread_mon_enable
+    procmon_fini
