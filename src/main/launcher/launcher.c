@@ -26,6 +26,8 @@
 #include "launcher/property-util.h"
 #include "launcher/stubs.h"
 
+#include "procmon-lib/procmon.h"
+
 #include "util/debug.h"
 #include "util/defs.h"
 #include "util/fs.h"
@@ -232,6 +234,32 @@ _launcher_remote_debugger_trap(const struct launcher_debug_config *config)
     }
 }
 
+static void _launcher_procmon_init(
+    const struct launcher_debug_config *config,
+    struct procmon *procmon)
+{
+    procmon_init(procmon);
+
+    if (procmon_available()) {
+        procmon_load(procmon);
+
+        procmon->set_loggers(log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        procmon->init();
+
+        if (config->procmon_file) {
+            procmon->file_mon_enable();
+        }
+
+        if (config->procmon_module) {
+            procmon->module_mon_enable();
+        }
+
+        if (config->procmon_thread) {
+            procmon->thread_mon_enable();
+        }
+    }
+}
+
 static void _launcher_bootstrap_config_load(
     const struct launcher_bootstrap_config *launcher_bootstrap_config,
     struct bootstrap_config *config)
@@ -397,7 +425,8 @@ void _launcher_init(
     const struct options *options,
     struct launcher_config *launcher_config,
     struct bootstrap_config *bootstrap_config,
-    struct ea3_ident_config *ea3_ident_config)
+    struct ea3_ident_config *ea3_ident_config,
+    struct procmon *procmon)
 {
     struct property *launcher_property;
 
@@ -447,6 +476,8 @@ void _launcher_init(
     _launcher_config_full_resolved_log(launcher_config);
 
     _launcher_remote_debugger_trap(&launcher_config->debug);
+
+    _launcher_procmon_init(&launcher_config->debug, procmon);
 
     _launcher_bootstrap_config_load(
         &launcher_config->bootstrap, bootstrap_config);
@@ -508,16 +539,22 @@ void _launcher_run(
 
 void _launcher_fini(
     struct launcher_config *launcher_config,
-    const struct bootstrap_config *bootstrap_config)
+    const struct bootstrap_config *bootstrap_config,
+    struct procmon *procmon)
 {
     log_assert(launcher_config);
     log_assert(bootstrap_config);
+    log_assert(procmon);
 
     bootstrap_eamuse_fini(&bootstrap_config->startup.eamuse);
 
     bootstrap_avs_fini();
 
     bootstrap_module_game_fini();
+
+    if (procmon->module != NULL) {
+        procmon_free(procmon);
+    }
 
     launcher_config_fini(launcher_config);
 
@@ -531,13 +568,14 @@ void launcher_main(const struct options *options)
     struct launcher_config launcher_config;
     struct bootstrap_config bootstrap_config;
     struct ea3_ident_config ea3_ident_config;
+    struct procmon procmon;
 
     log_assert(options);
 
     _launcher_init(
-        options, &launcher_config, &bootstrap_config, &ea3_ident_config);
+        options, &launcher_config, &bootstrap_config, &ea3_ident_config, &procmon);
 
     _launcher_run(&launcher_config, &bootstrap_config, &ea3_ident_config);
 
-    _launcher_fini(&launcher_config, &bootstrap_config);
+    _launcher_fini(&launcher_config, &bootstrap_config, &procmon);
 }
