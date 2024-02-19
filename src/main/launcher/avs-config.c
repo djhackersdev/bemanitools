@@ -554,3 +554,220 @@ void avs_config_local_fs_path_dev_nvram_and_raw_set(
             NULL, fs_node, "raw/option", "vf=1,posix=1");
     }
 }
+
+void avs_config_vfs_mounttable_get(
+    struct property_node *node, struct avs_config_vfs_mounttable *mounttable)
+{
+    struct property_node *fs_node;
+    struct property_node *mounttable_node;
+    struct property_node *cur;
+    char mounttable_selector[128];
+    char name[128];
+    uint8_t pos;
+
+    log_assert(node);
+    log_assert(mounttable);
+
+    fs_node = property_search(NULL, node, "fs");
+
+    if (!fs_node) {
+        log_fatal("Cannot find 'fs' node in avs config");
+    }
+
+    // Check if new mounttable config is used for dev/nvram and dev/raw or
+    // legacy config
+    mounttable_node = property_search(NULL, fs_node, "mounttable");
+
+    memset(mounttable, 0, sizeof(*mounttable));
+    pos = 0;
+
+    if (mounttable_node) {
+        cur = property_search(NULL, fs_node, "mounttable_selector");
+
+        if (!cur) {
+            log_fatal("Missing 'mounttable_selector' on mounttable");
+        }
+
+        if (AVS_IS_ERROR(property_node_read(
+                cur,
+                PROPERTY_TYPE_STR,
+                mounttable_selector,
+                sizeof(mounttable_selector)))) {
+            log_fatal("Reading 'mounttable_selector' failed");
+        }
+
+        log_misc("Mounttable selector: %s", mounttable_selector);
+
+        cur = property_node_traversal(mounttable_node, TRAVERSE_FIRST_CHILD);
+
+        while (cur) {
+            property_node_name(cur, name, sizeof(name));
+
+            if (str_eq(name, "vfs")) {
+                if (pos >= AVS_CONFIG_MOUNTTABLE_MAX_ENTRIES) {
+                    log_warning(
+                        "Exceeding max number of supported mounttable entries "
+                        "(%d), ignoring remaining",
+                        pos);
+                    break;
+                }
+
+                if (AVS_IS_ERROR(property_node_refer(
+                        NULL,
+                        cur,
+                        "name@",
+                        PROPERTY_TYPE_ATTR,
+                        name,
+                        sizeof(name)))) {
+                    log_fatal("Missing 'name' attribute on vfs node");
+                }
+
+                if (str_eq(name, mounttable_selector)) {
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            cur,
+                            "fstype@",
+                            PROPERTY_TYPE_ATTR,
+                            mounttable->entry[pos].fstype,
+                            sizeof(mounttable->entry[pos].fstype)))) {
+                        // default
+                        str_cpy(
+                            mounttable->entry[pos].fstype,
+                            sizeof(mounttable->entry[pos].fstype),
+                            "fs");
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            cur,
+                            "src@",
+                            PROPERTY_TYPE_ATTR,
+                            mounttable->entry[pos].src,
+                            sizeof(mounttable->entry[pos].src)))) {
+                        log_fatal(
+                            "Missing 'src' attribute on vfs node, name: %s",
+                            name);
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            cur,
+                            "dst@",
+                            PROPERTY_TYPE_ATTR,
+                            mounttable->entry[pos].dst,
+                            sizeof(mounttable->entry[pos].dst)))) {
+                        log_fatal(
+                            "Missing 'dst' attribute on vfs node, name: %s",
+                            name);
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            cur,
+                            "opt@",
+                            PROPERTY_TYPE_ATTR,
+                            mounttable->entry[pos].opt,
+                            sizeof(mounttable->entry[pos].opt)))) {
+                        // optional
+                    }
+
+                    pos++;
+                }
+            }
+
+            cur = property_node_traversal(cur, TRAVERSE_NEXT_SIBLING);
+        }
+    } else {
+        cur = property_search(NULL, fs_node, "nvram");
+
+        if (cur) {
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "fstype",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].fstype,
+                    sizeof(mounttable->entry[pos].fstype)))) {
+                // default
+                str_cpy(
+                    mounttable->entry[pos].fstype,
+                    sizeof(mounttable->entry[pos].fstype),
+                    "fs");
+            }
+
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "device",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].src,
+                    sizeof(mounttable->entry[pos].src)))) {
+                log_fatal("Missing 'device' attribute on nvram node");
+            }
+
+            str_cpy(
+                mounttable->entry[pos].dst,
+                sizeof(mounttable->entry[pos].dst),
+                "/dev/nvram");
+
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "opt",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].opt,
+                    sizeof(mounttable->entry[pos].opt)))) {
+                // optional
+            }
+
+            pos++;
+        }
+
+        cur = property_search(NULL, fs_node, "raw");
+
+        if (cur) {
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "fstype",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].fstype,
+                    sizeof(mounttable->entry[pos].fstype)))) {
+                // default
+                str_cpy(
+                    mounttable->entry[pos].fstype,
+                    sizeof(mounttable->entry[pos].fstype),
+                    "fs");
+            }
+
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "device",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].src,
+                    sizeof(mounttable->entry[pos].src)))) {
+                log_fatal("Missing 'device' attribute on raw node");
+            }
+
+            str_cpy(
+                mounttable->entry[pos].dst,
+                sizeof(mounttable->entry[pos].dst),
+                "/dev/raw");
+
+            if (AVS_IS_ERROR(property_node_refer(
+                    NULL,
+                    cur,
+                    "opt",
+                    PROPERTY_TYPE_STR,
+                    mounttable->entry[pos].opt,
+                    sizeof(mounttable->entry[pos].opt)))) {
+                // optional
+            }
+
+            pos++;
+        }
+    }
+
+    mounttable->num_entries = pos;
+}

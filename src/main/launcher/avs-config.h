@@ -1,11 +1,24 @@
 #ifndef LAUNCHER_AVS_CONFIG_H
 #define LAUNCHER_AVS_CONFIG_H
 
+#include "core/log-bt.h"
+
 #include "imports/avs.h"
 
 #include "launcher/bootstrap-config.h"
 
-#include "util/log.h"
+#define AVS_CONFIG_MOUNTTABLE_MAX_ENTRIES 16
+
+struct avs_config_vfs_mounttable {
+    struct {
+        char fstype[64];
+        char src[512];
+        char dst[512];
+        char opt[256];
+    } entry[AVS_CONFIG_MOUNTTABLE_MAX_ENTRIES];
+
+    uint8_t num_entries;
+};
 
 struct property *avs_config_load(const char *filepath);
 struct property_node *avs_config_root_get(struct property *property);
@@ -34,8 +47,11 @@ void avs_config_log_append_set(struct property_node *node, bool append);
 void avs_config_log_count_set(struct property_node *node, uint16_t count);
 
 void avs_config_set_log_level(
-    struct property_node *node, enum log_level loglevel);
+    struct property_node *node, enum core_log_bt_log_level loglevel);
 void avs_config_local_fs_path_dev_nvram_and_raw_set(
     struct property_node *node, const char *dev_nvram_raw_path);
+
+void avs_config_vfs_mounttable_get(
+    struct property_node *node, struct avs_config_vfs_mounttable *mounttable);
 
 #endif
