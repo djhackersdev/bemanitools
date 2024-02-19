@@ -8,25 +8,34 @@
 
 #include "util/str.h"
 
-static HMODULE (STDCALL *real_GetModuleHandleA)(LPCSTR lpModuleName);
-static BOOL (STDCALL *real_GetModuleHandleExA)(DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule);
-static BOOL (STDCALL *real_GetModuleHandleExW)(DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule);
-static HMODULE (STDCALL *real_GetModuleHandleW)(LPCWSTR lpModuleName);
-static HMODULE (STDCALL *real_LoadLibraryA)(LPCSTR lpLibFileName);
-static HMODULE (STDCALL *real_LoadLibraryW)(LPCWSTR lpLibFileName);
-static HMODULE (STDCALL *real_LoadLibraryExA)(LPCSTR lpLibFileName, HANDLE hFile, DWORD  dwFlags);
-static HMODULE (STDCALL *real_LoadLibraryExW)(LPCWSTR lpLibFileName, HANDLE hFile, DWORD  dwFlags);
-static FARPROC (STDCALL *real_GetProcAddress)(HMODULE hModule, LPCSTR  lpProcName);
+static HMODULE(STDCALL *real_GetModuleHandleA)(LPCSTR lpModuleName);
+static BOOL(STDCALL *real_GetModuleHandleExA)(
+    DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule);
+static BOOL(STDCALL *real_GetModuleHandleExW)(
+    DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule);
+static HMODULE(STDCALL *real_GetModuleHandleW)(LPCWSTR lpModuleName);
+static HMODULE(STDCALL *real_LoadLibraryA)(LPCSTR lpLibFileName);
+static HMODULE(STDCALL *real_LoadLibraryW)(LPCWSTR lpLibFileName);
+static HMODULE(STDCALL *real_LoadLibraryExA)(
+    LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+static HMODULE(STDCALL *real_LoadLibraryExW)(
+    LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+static FARPROC(STDCALL *real_GetProcAddress)(
+    HMODULE hModule, LPCSTR lpProcName);
 
 static HMODULE STDCALL my_GetModuleHandleA(LPCSTR lpModuleName);
-static BOOL STDCALL my_GetModuleHandleExA(DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule);
-static BOOL STDCALL my_GetModuleHandleExW(DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule);
+static BOOL STDCALL
+my_GetModuleHandleExA(DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule);
+static BOOL STDCALL
+my_GetModuleHandleExW(DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule);
 static HMODULE STDCALL my_GetModuleHandleW(LPCWSTR lpModuleName);
 static HMODULE STDCALL my_LoadLibraryA(LPCSTR lpLibFileName);
 static HMODULE STDCALL my_LoadLibraryW(LPCWSTR lpLibFileName);
-static HMODULE STDCALL my_LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD  dwFlags);
-static HMODULE STDCALL my_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD  dwFlags);
-static FARPROC STDCALL my_GetProcAddress(HMODULE hModule, LPCSTR  lpProcName);
+static HMODULE STDCALL
+my_LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+static HMODULE STDCALL
+my_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+static FARPROC STDCALL my_GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
 
 static const struct hook_symbol _procmon_module_hook_syms[] = {
     {
@@ -89,31 +98,51 @@ static HMODULE STDCALL my_GetModuleHandleA(LPCSTR lpModuleName)
     return result;
 }
 
-static BOOL STDCALL my_GetModuleHandleExA(DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule)
+static BOOL STDCALL
+my_GetModuleHandleExA(DWORD dwFlags, LPCSTR lpModuleName, HMODULE *phModule)
 {
     BOOL result;
 
-    log_misc("GetModuleHandleExA(dwFlags %lu, lpModuleName %s, phModule %p)", dwFlags, lpModuleName, phModule);
+    log_misc(
+        "GetModuleHandleExA(dwFlags %lu, lpModuleName %s, phModule %p)",
+        dwFlags,
+        lpModuleName,
+        phModule);
 
     result = real_GetModuleHandleExA(dwFlags, lpModuleName, phModule);
 
-    log_misc("GetModuleHandleExA(dwFlags %lu, lpModuleName %s, phModule %p) = %d", dwFlags, lpModuleName, phModule, result);
+    log_misc(
+        "GetModuleHandleExA(dwFlags %lu, lpModuleName %s, phModule %p) = %d",
+        dwFlags,
+        lpModuleName,
+        phModule,
+        result);
 
     return result;
 }
 
-static BOOL STDCALL my_GetModuleHandleExW(DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule)
+static BOOL STDCALL
+my_GetModuleHandleExW(DWORD dwFlags, LPCWSTR lpModuleName, HMODULE *phModule)
 {
     BOOL result;
     char *tmp;
 
     wstr_narrow(lpModuleName, &tmp);
 
-    log_misc("GetModuleHandleExW(dwFlags %lu, lpModuleName %s, phModule %p)", dwFlags, tmp, phModule);
+    log_misc(
+        "GetModuleHandleExW(dwFlags %lu, lpModuleName %s, phModule %p)",
+        dwFlags,
+        tmp,
+        phModule);
 
     result = real_GetModuleHandleExW(dwFlags, lpModuleName, phModule);
 
-    log_misc("GetModuleHandleExW(dwFlags %lu, lpModuleName %s, phModule %p) = %d", dwFlags, tmp, phModule, result);
+    log_misc(
+        "GetModuleHandleExW(dwFlags %lu, lpModuleName %s, phModule %p) = %d",
+        dwFlags,
+        tmp,
+        phModule,
+        result);
 
     free(tmp);
 
@@ -169,31 +198,51 @@ static HMODULE STDCALL my_LoadLibraryW(LPCWSTR lpLibFileName)
     return result;
 }
 
-static HMODULE STDCALL my_LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
+static HMODULE STDCALL
+my_LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 {
     HMODULE result;
 
-    log_misc("LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu)", lpLibFileName, hFile, dwFlags);
+    log_misc(
+        "LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu)",
+        lpLibFileName,
+        hFile,
+        dwFlags);
 
     result = real_LoadLibraryExA(lpLibFileName, hFile, dwFlags);
 
-    log_misc("LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu) = %p", lpLibFileName, hFile, dwFlags, result);
+    log_misc(
+        "LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu) = %p",
+        lpLibFileName,
+        hFile,
+        dwFlags,
+        result);
 
     return result;
 }
 
-static HMODULE STDCALL my_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
+static HMODULE STDCALL
+my_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 {
     HMODULE result;
     char *tmp;
 
     wstr_narrow(lpLibFileName, &tmp);
 
-    log_misc("LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu)", tmp, hFile, dwFlags);
+    log_misc(
+        "LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu)",
+        tmp,
+        hFile,
+        dwFlags);
 
     result = real_LoadLibraryExW(lpLibFileName, hFile, dwFlags);
 
-    log_misc("LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu) = %p", tmp, hFile, dwFlags, result);
+    log_misc(
+        "LoadLibraryExA(lpLibFileName %s, hFile %p, dwFlags %lu) = %p",
+        tmp,
+        hFile,
+        dwFlags,
+        result);
 
     free(tmp);
 
@@ -208,7 +257,11 @@ static FARPROC STDCALL my_GetProcAddress(HMODULE hModule, LPCSTR lpProcName)
 
     result = real_GetProcAddress(hModule, lpProcName);
 
-    log_misc("GetProcAddress(hModule %p, lpProcName %s = %p", hModule, lpProcName, result);
+    log_misc(
+        "GetProcAddress(hModule %p, lpProcName %s = %p",
+        hModule,
+        lpProcName,
+        result);
 
     return result;
 }
@@ -216,7 +269,10 @@ static FARPROC STDCALL my_GetProcAddress(HMODULE hModule, LPCSTR lpProcName)
 void procmon_module_init()
 {
     hook_table_apply(
-        NULL, "kernel32.dll", _procmon_module_hook_syms, lengthof(_procmon_module_hook_syms));
+        NULL,
+        "kernel32.dll",
+        _procmon_module_hook_syms,
+        lengthof(_procmon_module_hook_syms));
 
     log_misc("init");
 }
@@ -224,7 +280,10 @@ void procmon_module_init()
 void procmon_module_fini()
 {
     hook_table_revert(
-        NULL, "kernel32.dll", _procmon_module_hook_syms, lengthof(_procmon_module_hook_syms));
-    
+        NULL,
+        "kernel32.dll",
+        _procmon_module_hook_syms,
+        lengthof(_procmon_module_hook_syms));
+
     log_misc("fini");
 }

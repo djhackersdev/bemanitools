@@ -7,10 +7,10 @@
 #include "procmon-lib/procmon.h"
 
 #define PROCMON_LIB "procmon.dll"
-#define CONCAT(x, y) x ## y
-#define LOAD_FUNC(lib_func, module, path, func_name) \
-    lib_func = (CONCAT(func_name, _t)) GetProcAddress(module, #func_name); \
-    if (lib_func == NULL) { \
+#define CONCAT(x, y) x##y
+#define LOAD_FUNC(lib_func, module, path, func_name)                           \
+    lib_func = (CONCAT(func_name, _t)) GetProcAddress(module, #func_name);     \
+    if (lib_func == NULL) {                                                    \
         log_fatal("Failed to load function '%s' from '%s'", #func_name, path); \
     }
 
@@ -74,9 +74,18 @@ void procmon_load(struct procmon *procmon)
 
     LOAD_FUNC(procmon->set_loggers, module, PROCMON_LIB, procmon_set_loggers);
     LOAD_FUNC(procmon->init, module, PROCMON_LIB, procmon_init);
-    LOAD_FUNC(procmon->file_mon_enable, module, PROCMON_LIB, procmon_file_mon_enable);
-    LOAD_FUNC(procmon->module_mon_enable, module, PROCMON_LIB, procmon_module_mon_enable);
-    LOAD_FUNC(procmon->thread_mon_enable, module, PROCMON_LIB, procmon_thread_mon_enable);
+    LOAD_FUNC(
+        procmon->file_mon_enable, module, PROCMON_LIB, procmon_file_mon_enable);
+    LOAD_FUNC(
+        procmon->module_mon_enable,
+        module,
+        PROCMON_LIB,
+        procmon_module_mon_enable);
+    LOAD_FUNC(
+        procmon->thread_mon_enable,
+        module,
+        PROCMON_LIB,
+        procmon_thread_mon_enable);
 }
 
 void procmon_free(struct procmon *procmon)
