@@ -7,13 +7,13 @@ ldflags_inject  := \
     -ldbghelp \
 
 libs_inject     := \
+    core \
     util \
     dwarfstack \
 
 src_inject      := \
     main.c \
     debugger.c \
-    logger.c \
     options.c \
     version.c \
 

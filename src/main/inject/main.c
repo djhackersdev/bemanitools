@@ -1,3 +1,5 @@
+#define LOG_MODULE "inject"
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -10,18 +12,67 @@
 #include "cconfig/cconfig-util.h"
 #include "cconfig/cmd.h"
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-file.h"
+#include "core/log-sink-list.h"
+#include "core/log-sink-mutex.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "inject/debugger.h"
-#include "inject/logger.h"
 #include "inject/options.h"
 #include "inject/version.h"
 
 #include "util/cmdline.h"
 #include "util/debug.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/os.h"
 #include "util/signal.h"
 #include "util/str.h"
+
+static void _inject_log_header()
+{
+    log_info(
+        "\n"
+        "  _        _           _   \n"
+        " (_)_ __  (_) ___  ___| |_ \n"
+        " | | '_ \\ | |/ _ \\/ __| __|\n"
+        " | | | | || |  __/ (__| |_ \n"
+        " |_|_| |_|/ |\\___|\\___|\\__|\n"
+        "        |__/               ");
+
+    log_info(
+        "inject build date %s, gitrev %s", inject_build_date, inject_gitrev);
+}
+
+void _inject_log_init(
+    const char *log_file_path, enum core_log_bt_log_level level)
+{
+    struct core_log_sink sinks[2];
+    struct core_log_sink sink_composed;
+    struct core_log_sink sink_mutex;
+
+    core_log_bt_ext_impl_set();
+
+    if (log_file_path) {
+        core_log_sink_std_out_open(true, &sinks[0]);
+        core_log_sink_file_open(log_file_path, false, true, 10, &sinks[1]);
+        core_log_sink_list_open(sinks, 2, &sink_composed);
+    } else {
+        core_log_sink_std_out_open(true, &sink_composed);
+    }
+
+    // Different threads logging the same destination, e.g. debugger thread,
+    // main thread
+    core_log_sink_mutex_open(&sink_composed, &sink_mutex);
+
+    core_log_bt_init(&sink_mutex);
+    core_log_bt_level_set(level);
+}
 
 static bool init_options(int argc, char **argv, struct options *options)
 {
@@ -146,7 +197,7 @@ static bool inject_hook_dlls(uint32_t hooks, char **argv)
 static void signal_shutdown_handler()
 {
     debugger_finit(true);
-    logger_finit();
+    core_log_bt_fini();
 }
 
 int main(int argc, char **argv)
@@ -161,13 +212,17 @@ int main(int argc, char **argv)
         goto init_options_fail;
     }
 
-    if (!logger_init(strlen(options.log_file) > 0 ? options.log_file : NULL)) {
-        goto init_logger_fail;
-    }
+    core_thread_crt_ext_impl_set();
+    // TODO expose log level
 
+    _inject_log_init(
+        strlen(options.log_file) > 0 ? options.log_file : NULL,
+        CORE_LOG_BT_LOG_LEVEL_MISC);
+
+    _inject_log_header();
     os_version_log();
 
-    debug_init();
+    debug_init(core_log_fatal_impl_get());
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
     signal_register_shutdown_handler(signal_shutdown_handler);
@@ -216,7 +271,7 @@ int main(int argc, char **argv)
 
     debugger_finit(false);
 
-    logger_finit();
+    core_log_bt_fini();
 
     return EXIT_SUCCESS;
 
@@ -228,9 +283,8 @@ inject_hook_dlls_fail:
 debugger_init_fail:
 verify_2_fail:
 verify_fail:
-    logger_finit();
+    core_log_bt_fini();
 
-init_logger_fail:
 init_options_fail:
     return EXIT_FAILURE;
 }
