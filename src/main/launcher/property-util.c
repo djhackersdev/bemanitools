@@ -28,6 +28,11 @@ struct cstring_read_handle {
     size_t offset;
 };
 
+struct property_util_node_merge_ctx {
+    const char *path;
+    const struct property_util_node_merge_strategies *strategies;
+};
+
 static struct property *property_util_do_load(
     avs_reader_t reader, rewinder rewinder, uint32_t context, const char *name)
 {
@@ -47,10 +52,21 @@ static struct property *property_util_do_load(
             PROPERTY_FLAG_APPEND,
         buffer,
         nbytes);
+
+    if (!prop) {
+        log_fatal(
+            "%s: Creating property failed: %s",
+            name,
+            avs_util_property_error_get_and_clear(prop));
+    }
+
     rewinder(context);
 
     if (!property_insert_read(prop, 0, reader, context)) {
-        log_fatal("%s: Error reading configuration file", name);
+        log_fatal(
+            "%s: Error reading configuration file: %s",
+            name,
+            avs_util_property_error_get_and_clear(prop));
     }
 
     return prop;
@@ -74,9 +90,8 @@ static void property_util_frewind(uint32_t context)
 static void property_util_log_node_tree_rec(
     struct property_node *parent_node, const char *parent_path)
 {
-    char cur_path[4096];
-    // 256 found in AVS code as size used on property_node_name
-    char cur_node_name[256];
+    char cur_path[PROPERTY_NODE_PATH_LEN_MAX];
+    char cur_node_name[PROPERTY_NODE_NAME_SIZE_MAX];
 
     struct property_node *child_node;
     enum property_type property_type;
@@ -282,6 +297,82 @@ static void property_util_avs_rewind(uint32_t context)
     avs_fs_lseek(desc, 0, AVS_SEEK_SET);
 }
 
+static void _property_util_node_merge_recursive(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source,
+    void *ctx)
+{
+    uint8_t i;
+    bool consumed;
+    struct property_node *result;
+
+    const struct property_util_node_merge_ctx *ctx_;
+    struct property_util_node_merge_ctx ctx_next;
+
+    char parent_name[PROPERTY_NODE_NAME_SIZE_MAX];
+    char parent_path[PROPERTY_NODE_PATH_LEN_MAX];
+
+    log_assert(source);
+    log_assert(ctx);
+
+    ctx_ = (const struct property_util_node_merge_ctx *) ctx;
+
+    log_assert(ctx_->path);
+    log_assert(ctx_->strategies);
+    log_assert(ctx_->strategies->num > 0);
+
+    // Default to copying to an empty node
+    if (!parent) {
+        result = property_node_clone(parent_property, NULL, source, true);
+
+        if (!result) {
+            log_fatal("Copying '%s' into empty parent failed", ctx_->path);
+        }
+
+        return;
+    }
+
+    property_node_name(parent, parent_name, sizeof(parent_name));
+
+    str_cpy(parent_path, sizeof(parent_path), ctx_->path);
+    str_cat(parent_path, sizeof(parent_path), "/");
+    str_cat(parent_path, sizeof(parent_path), parent_name);
+
+    ctx_next.path = parent_path;
+    ctx_next.strategies = ctx_->strategies;
+
+    consumed = false;
+
+    // Apply given strategies, one MUST consume
+    for (i = 0; i < ctx_->strategies->num; i++) {
+        log_assert(ctx_->strategies->entry[i].path);
+
+        // path == "" matches everything
+        if (str_eq(ctx_->strategies->entry[i].path, "") ||
+            str_eq(ctx_->strategies->entry[i].path, parent_path)) {
+
+            consumed = ctx_->strategies->entry[i].merge_strategy_do(
+                parent_property,
+                parent,
+                source,
+                &ctx_next,
+                _property_util_node_merge_recursive);
+
+            log_misc(
+                "Merge strategy for '%s' consumed: %d",
+                ctx_->strategies->entry[i].path,
+                consumed);
+
+            if (consumed) {
+                break;
+            }
+        }
+    }
+
+    log_assert(consumed);
+}
+
 void property_util_log(struct property *property)
 {
     property_util_log_node_tree_rec(property_search(property, NULL, "/"), "");
@@ -371,6 +462,52 @@ struct property *property_util_cstring_load(const char *cstring)
     return prop;
 }
 
+struct property *property_util_clone(struct property *property)
+{
+    struct property *clone;
+    size_t size;
+    void *buffer;
+
+    struct property_node *node_property;
+    struct property_node *node_clone;
+
+    log_assert(property);
+
+    size = property_util_property_query_real_size(property);
+
+    buffer = xmalloc(size);
+
+    clone = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
+            PROPERTY_FLAG_APPEND,
+        buffer,
+        size);
+
+    if (!clone) {
+        log_fatal("Creating property failed");
+    }
+
+    node_property = property_search(property, NULL, "/");
+    node_clone = property_search(clone, NULL, "/");
+
+    if (!property_node_clone(clone, node_clone, node_property, true)) {
+        log_fatal(
+            "Cloning property data failed: %s",
+            avs_util_property_error_get_and_clear(clone));
+    }
+
+    return clone;
+}
+
+void property_util_free(struct property *prop)
+{
+    void *buffer;
+
+    buffer = property_desc_to_buffer(prop);
+    property_destroy(prop);
+    free(buffer);
+}
+
 uint32_t property_util_property_query_real_size(struct property *property)
 {
     avs_error size;
@@ -414,7 +551,15 @@ void property_util_node_u8_replace(
         property_node_remove(tmp);
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_U8, name, val);
+    tmp = property_node_create(property, node, PROPERTY_TYPE_U8, name, val);
+
+    if (!tmp) {
+        log_fatal(
+            "Creating node '%s' failed: %s",
+            name,
+            property ? avs_util_property_error_get_and_clear(property) :
+                       "unknown");
+    }
 }
 
 void property_util_node_u16_replace(
@@ -434,7 +579,15 @@ void property_util_node_u16_replace(
         property_node_remove(tmp);
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_U16, name, val);
+    tmp = property_node_create(property, node, PROPERTY_TYPE_U16, name, val);
+
+    if (!tmp) {
+        log_fatal(
+            "Creating node '%s' failed: %s",
+            name,
+            property ? avs_util_property_error_get_and_clear(property) :
+                       "unknown");
+    }
 }
 
 void property_util_node_u32_replace(
@@ -454,7 +607,15 @@ void property_util_node_u32_replace(
         property_node_remove(tmp);
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_U32, name, val);
+    tmp = property_node_create(property, node, PROPERTY_TYPE_U32, name, val);
+
+    if (!tmp) {
+        log_fatal(
+            "Creating node '%s' failed: %s",
+            name,
+            property ? avs_util_property_error_get_and_clear(property) :
+                       "unknown");
+    }
 }
 
 void property_util_node_str_replace(
@@ -474,7 +635,15 @@ void property_util_node_str_replace(
         property_node_remove(tmp);
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
+    tmp = property_node_create(property, node, PROPERTY_TYPE_STR, name, val);
+
+    if (!tmp) {
+        log_fatal(
+            "Creating node '%s' failed: %s",
+            name,
+            property ? avs_util_property_error_get_and_clear(property) :
+                       "unknown");
+    }
 }
 
 void property_util_node_bool_replace(
@@ -494,89 +663,70 @@ void property_util_node_bool_replace(
         property_node_remove(tmp);
     }
 
-    property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
-}
+    tmp = property_node_create(property, node, PROPERTY_TYPE_BOOL, name, val);
 
-static void _property_util_node_merge_rec(
-    struct property *parent_property,
-    struct property_node *parent,
-    struct property_node *source)
-{
-    char name[256];
-    struct property_node *child;
-    struct property_node *matching_child;
-
-    log_assert(parent_property);
-
-    if (!source) {
-        return;
-    }
-
-    if (!parent) {
-        property_node_clone(parent_property, parent, source, true);
-        return;
-    }
-
-    child = property_node_traversal(source, TRAVERSE_FIRST_CHILD);
-
-    while (child) {
-        property_node_name(child, name, sizeof(name));
-
-        matching_child = property_search(parent_property, parent, name);
-
-        if (!matching_child) {
-            property_node_clone(parent_property, parent, child, true);
-        } else {
-            _property_util_node_merge_rec(
-                parent_property, matching_child, child);
-        }
-
-        child = property_node_traversal(child, TRAVERSE_NEXT_SIBLING);
+    if (!tmp) {
+        log_fatal(
+            "Creating node '%s' failed: %s",
+            name,
+            property ? avs_util_property_error_get_and_clear(property) :
+                       "unknown");
     }
 }
 
-struct property *property_util_merge(struct property **properties, size_t count)
+void property_util_node_attribute_replace(
+    struct property *property,
+    struct property_node *node,
+    const char *name,
+    const char *val)
 {
-    uint32_t total_size;
-    void *buffer;
+    struct property_node *tmp;
+
+    log_assert(node);
+    log_assert(name);
+
+    tmp = property_search(property, node, name);
+
+    if (tmp) {
+        property_node_remove(tmp);
+    }
+
+    tmp = property_node_create(property, node, PROPERTY_TYPE_ATTR, name, val);
+}
+
+struct property *
+property_util_many_merge(struct property **properties, size_t count)
+{
     struct property *merged_property;
+    struct property *tmp;
     int i;
-    struct property_node *parent_node;
-    struct property_node *to_merge_node;
 
     log_assert(properties);
     log_assert(count > 0);
 
-    total_size = 0;
+    merged_property = property_util_clone(properties[0]);
 
-    for (int i = 0; i < count; i++) {
-        total_size += property_util_property_query_real_size(properties[i]);
+    if (count == 1) {
+        return merged_property;
     }
 
-    buffer = xmalloc(total_size);
+    for (i = 1; i < count; i++) {
+        tmp = property_util_merge(merged_property, properties[i]);
 
-    merged_property = property_create(
-        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
-            PROPERTY_FLAG_APPEND,
-        buffer,
-        total_size);
-
-    for (i = 0; i < count; i++) {
-        parent_node = property_search(merged_property, NULL, "/");
-        to_merge_node = property_search(properties[i], NULL, "/");
-
-        property_util_node_merge(merged_property, parent_node, to_merge_node);
+        property_util_free(merged_property);
+        merged_property = tmp;
     }
 
     return merged_property;
 }
 
-struct property *property_util_clone(struct property_node *node)
+struct property *property_util_node_extract(struct property_node *node)
 {
     struct property *property;
     struct property_node *root_node;
     uint32_t size;
     void *buffer;
+    struct property_node *result;
 
     if (!node) {
         return NULL;
@@ -596,24 +746,146 @@ struct property *property_util_clone(struct property_node *node)
         size);
     root_node = property_search(property, NULL, "");
 
-    property_node_clone(property, root_node, node, true);
+    result = property_node_clone(property, root_node, node, true);
+
+    if (!result) {
+        log_fatal("Cloning node into empty property failed");
+    }
 
     return property;
 }
 
-void property_util_node_merge(
-    struct property *parent_property,
-    struct property_node *parent,
-    struct property_node *source)
+struct property *
+property_util_merge(struct property *parent, struct property *source)
 {
-    _property_util_node_merge_rec(parent_property, parent, source);
+    struct property_util_node_merge_strategies strategies;
+
+    log_assert(parent);
+    log_assert(source);
+
+    strategies.num = 1;
+
+    strategies.entry[0].path = "";
+    strategies.entry[0].merge_strategy_do =
+        property_util_node_merge_default_strategy_do;
+
+    return property_util_merge_with_strategies(parent, source, &strategies);
 }
 
-void property_util_free(struct property *prop)
+struct property *property_util_merge_with_strategies(
+    struct property *parent,
+    struct property *source,
+    const struct property_util_node_merge_strategies *strategies)
 {
+    struct property_util_node_merge_ctx ctx;
+    size_t total_size;
     void *buffer;
+    struct property *merged;
+    struct property_node *parent_node;
+    struct property_node *source_node;
 
-    buffer = property_desc_to_buffer(prop);
-    property_destroy(prop);
-    free(buffer);
+    log_assert(parent);
+    log_assert(source);
+    log_assert(strategies);
+
+    // We can't estimate how these two are being merged as in how much new
+    // data is being inserted from source into parent. Therefore, worse-case
+    // estimate memory requirement for no overlap
+    total_size = 0;
+    total_size += property_util_property_query_real_size(parent);
+    total_size += property_util_property_query_real_size(source);
+
+    buffer = xmalloc(total_size);
+
+    merged = property_create(
+        PROPERTY_FLAG_READ | PROPERTY_FLAG_WRITE | PROPERTY_FLAG_CREATE |
+            PROPERTY_FLAG_APPEND,
+        buffer,
+        total_size);
+
+    ctx.path = "";
+    ctx.strategies = strategies;
+
+    parent_node = property_search(parent, NULL, "/");
+
+    if (!property_node_clone(merged, NULL, parent_node, true)) {
+        log_fatal(
+            "Copying parent base failed: %s",
+            avs_util_property_error_get_and_clear(merged));
+    }
+
+    // Grab parent_node from merged property which is the target one to merge
+    // into
+    parent_node = property_search(merged, NULL, "/");
+    source_node = property_search(source, NULL, "/");
+
+    _property_util_node_merge_recursive(merged, parent_node, source_node, &ctx);
+
+    return merged;
+}
+
+bool property_util_node_merge_default_strategy_do(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source,
+    void *ctx,
+    property_util_node_merge_recursion_do_t node_merge_recursion_do)
+{
+    struct property_node *result;
+
+    struct property_node *parent_child;
+    struct property_node *source_child;
+    struct property_node *source_child_child;
+
+    char child_node_name[PROPERTY_NODE_NAME_SIZE_MAX];
+
+    log_assert(parent);
+    log_assert(source);
+
+    source_child = property_node_traversal(source, TRAVERSE_FIRST_CHILD);
+
+    while (source_child) {
+        property_node_name(
+            source_child, child_node_name, sizeof(child_node_name));
+
+        parent_child = property_search(NULL, parent, child_node_name);
+
+        if (parent_child) {
+            source_child_child =
+                property_node_traversal(source_child, TRAVERSE_FIRST_CHILD);
+
+            if (source_child_child) {
+                // Continue recursion if there are actually more children
+                node_merge_recursion_do(
+                    parent_property, parent_child, source_child, ctx);
+            } else {
+                // Found identical leaf node, remove the matching parent's child
+                // and copy the source child over to the parent and terminate
+                // the recursion
+                property_node_remove(parent_child);
+                result = property_node_clone(
+                    parent_property, parent, source_child, true);
+
+                if (!result) {
+                    log_fatal(
+                        "Replacing leaf node '%s' failed", child_node_name);
+                }
+            }
+        } else {
+            // Could not find an identical child on parent, copy source
+            // recursively to parent
+            result = property_node_clone(
+                parent_property, parent, source_child, true);
+
+            if (!result) {
+                log_fatal("Deep copying child '%s' failed", child_node_name);
+            }
+        }
+
+        source_child =
+            property_node_traversal(source_child, TRAVERSE_NEXT_SIBLING);
+    }
+
+    // Default strategy always consumes
+    return true;
 }
