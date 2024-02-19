@@ -277,6 +277,7 @@ static void _bootstrap_config_inheritance_resolve(
 
     char inherit_name[64];
     avs_error error;
+    struct property_node *result;
 
     startup_profile_node = property_search(NULL, startup_node, profile_name);
 
@@ -319,7 +320,15 @@ static void _bootstrap_config_inheritance_resolve(
                     inherit_name,
                     inherited_nodes[i]);
 
-                property_node_clone(NULL, startup_profile_node, tmp_node, TRUE);
+                result = property_node_clone(
+                    NULL, startup_profile_node, tmp_node, true);
+
+                if (!result) {
+                    log_fatal(
+                        "Merging '%s' into '%s' failed",
+                        inherited_nodes[i],
+                        inherit_name);
+                }
             }
         }
     }
@@ -335,7 +344,7 @@ static void _bootstrap_config_load_bootstrap_module_app_config(
 
     app_node = property_search(NULL, profile_node, "component/param");
 
-    config->app_config = property_util_clone(app_node);
+    config->app_config = property_util_node_extract(app_node);
 }
 
 static void _bootstrap_config_load_bootstrap_default_files_config(

@@ -160,40 +160,54 @@ void bootstrap_default_files_create(
 void bootstrap_avs_init(
     const struct bootstrap_boot_config *config,
     const struct bootstrap_log_config *log_config,
-    struct property_node *override_node)
+    struct property *override_property)
 {
-    struct property *property;
-    struct property_node *node;
+    struct property *file_property;
+    struct property *merged_property;
+    struct property_node *root_node;
 
     log_assert(config);
     log_assert(log_config);
-    log_assert(override_node);
+    log_assert(override_property);
 
     log_info("avs init");
 
-    property = avs_config_load(config->config_file);
-    node = avs_config_root_get(property);
-
-    property_util_node_merge(property, node, override_node);
+    file_property = avs_config_load(config->config_file);
 
     if (_bootstrap_log_property_configs) {
-        log_misc("avs-config");
-        property_util_node_log(node);
+        log_misc("avs-config from file: %s", config->config_file);
+        property_util_log(file_property);
     }
 
-    _bootstrap_avs_config_force_overrides_apply(node);
-    _bootstrap_avs_config_log_overrides_apply(node, log_config);
+    merged_property =
+        avs_config_property_merge(file_property, override_property);
 
-    avs_fs_assert_root_device_exists(node);
+    property_util_free(file_property);
 
-    log_misc("Creating AVS file system directories for nvram and raw...");
+    if (_bootstrap_log_property_configs) {
+        log_misc("avs-config merged with overrides");
+        property_util_log(merged_property);
+    }
 
-    avs_fs_mountpoint_dir_create(node, "nvram");
-    avs_fs_mountpoint_dir_create(node, "raw");
+    root_node = avs_config_root_get(merged_property);
 
-    avs_init(node, config->avs_heap_size, config->std_heap_size);
+    _bootstrap_avs_config_force_overrides_apply(root_node);
+    _bootstrap_avs_config_log_overrides_apply(root_node, log_config);
 
-    property_util_free(property);
+    if (_bootstrap_log_property_configs) {
+        log_misc("avs-config final");
+        property_util_log(merged_property);
+    }
+
+    avs_fs_assert_root_device_exists(root_node);
+
+    log_misc("Creating AVS file system directories...");
+
+    avs_fs_mountpoints_fs_dirs_create(root_node);
+
+    avs_init(root_node, config->avs_heap_size, config->std_heap_size);
+
+    property_util_free(merged_property);
 
     log_misc("avs init done");
 }
@@ -201,35 +215,47 @@ void bootstrap_avs_init(
 void bootstrap_eamuse_init(
     const struct bootstrap_eamuse_config *config,
     const struct ea3_ident_config *ea3_ident_config,
-    struct property_node *override_node)
+    struct property *override_property)
 {
-    struct property *property;
-    struct property_node *node;
+    struct property *file_property;
+    struct property *merged_property;
+    struct property_node *root_node;
 
     log_assert(config);
     log_assert(ea3_ident_config);
-    log_assert(override_node);
+    log_assert(override_property);
 
     log_info("eamuse init");
 
     if (config->enable) {
-        property = eamuse_config_avs_load(config->config_file);
-        node = eamuse_config_root_get(property);
-
-        property_util_node_merge(property, node, override_node);
-
-        _bootstrap_eamuse_ea3_ident_config_inject(node, ea3_ident_config);
-
-        property_util_node_log(node);
+        file_property = eamuse_config_avs_load(config->config_file);
 
         if (_bootstrap_log_property_configs) {
-            log_misc("eamuse-config");
-            property_util_node_log(node);
+            log_misc("eamuse-config from file: %s", config->config_file);
+            property_util_log(file_property);
         }
 
-        eamuse_init(node);
+        merged_property = property_util_merge(file_property, override_property);
 
-        property_util_free(property);
+        property_util_free(file_property);
+
+        if (_bootstrap_log_property_configs) {
+            log_misc("eamuse-config merged with overrides");
+            property_util_log(merged_property);
+        }
+
+        root_node = eamuse_config_root_get(merged_property);
+
+        _bootstrap_eamuse_ea3_ident_config_inject(root_node, ea3_ident_config);
+
+        if (_bootstrap_log_property_configs) {
+            log_misc("eamuse-config final");
+            property_util_log(merged_property);
+        }
+
+        eamuse_init(root_node);
+
+        property_util_free(merged_property);
     } else {
         log_warning("Eamuse disabled");
     }

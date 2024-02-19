@@ -75,7 +75,7 @@ _launcher_config_layered_config_nodes_load(struct property_node *node)
             // <config> node
             cur = property_node_traversal(cur, TRAVERSE_FIRST_CHILD);
 
-            config_property[cnt] = property_util_clone(cur);
+            config_property[cnt] = property_util_node_extract(cur);
         } else {
             log_fatal(
                 "Unsupported 'kind' attribute value '%s' of config node", kind);
@@ -89,8 +89,7 @@ _launcher_config_layered_config_nodes_load(struct property_node *node)
         return NULL;
     }
 
-    merged_property =
-        property_util_merge((struct property **) &config_property[0], cnt);
+    merged_property = property_util_many_merge(config_property, cnt);
 
     for (int i = 0; i < cnt; i++) {
         property_util_free(config_property[i]);

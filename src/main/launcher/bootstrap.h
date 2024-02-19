@@ -13,11 +13,11 @@ void bootstrap_default_files_create(
 void bootstrap_avs_init(
     const struct bootstrap_boot_config *config,
     const struct bootstrap_log_config *log_config,
-    struct property_node *override_node);
+    struct property *override_property);
 void bootstrap_eamuse_init(
     const struct bootstrap_eamuse_config *config,
     const struct ea3_ident_config *ea3_ident_config,
-    struct property_node *override_node);
+    struct property *override_property);
 void bootstrap_module_init(
     const struct bootstrap_module_config *module_config,
     const struct array *iat_hook_dlls);

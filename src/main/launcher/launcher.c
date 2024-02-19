@@ -265,8 +265,7 @@ _launcher_remote_debugger_trap(const struct launcher_debug_config *config)
 }
 
 static void _launcher_procmon_init(
-    const struct launcher_debug_config *config,
-    struct procmon *procmon)
+    const struct launcher_debug_config *config, struct procmon *procmon)
 {
     procmon_init(procmon);
 
@@ -537,7 +536,7 @@ void _launcher_init(
     bootstrap_avs_init(
         &bootstrap_config->startup.boot,
         &bootstrap_config->startup.log,
-        avs_config_root_get(launcher_config->avs.property));
+        launcher_config->avs.property);
     bootstrap_default_files_create(&bootstrap_config->startup.default_file);
 
     _launcher_ea3_ident_config_load(
@@ -576,7 +575,7 @@ void _launcher_run(
     bootstrap_eamuse_init(
         &bootstrap_config->startup.eamuse,
         ea3_ident_config,
-        eamuse_config_root_get(launcher_config->eamuse.property));
+        launcher_config->eamuse.property);
 
     bootstrap_module_game_run();
 }
@@ -619,7 +618,11 @@ void launcher_main(const struct options *options)
     log_assert(options);
 
     _launcher_init(
-        options, &launcher_config, &bootstrap_config, &ea3_ident_config, &procmon);
+        options,
+        &launcher_config,
+        &bootstrap_config,
+        &ea3_ident_config,
+        &procmon);
 
     _launcher_run(&launcher_config, &bootstrap_config, &ea3_ident_config);
 
