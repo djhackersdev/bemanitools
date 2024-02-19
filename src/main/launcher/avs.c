@@ -121,87 +121,31 @@ void avs_fs_assert_root_device_exists(struct property_node *node)
     }
 }
 
-void avs_fs_mountpoint_dir_create(
-    struct property_node *node, const char *folder_name)
+void avs_fs_mountpoints_fs_dirs_create(struct property_node *node)
 {
-    char fs_path[1024];
-    char fs_type[255];
-    char device_path[1024];
-    struct property_node *fs_node;
-    int res;
+    struct avs_config_vfs_mounttable mounttable;
+    uint8_t i;
 
-    memset(fs_path, 0, sizeof(fs_path));
-    memset(fs_type, 0, sizeof(fs_type));
+    avs_config_vfs_mounttable_get(node, &mounttable);
 
-    str_cpy(fs_path, sizeof(fs_path), "/fs/");
-    str_cat(fs_path, sizeof(fs_path), folder_name);
-
-    fs_node = property_search(NULL, node, fs_path);
-
-    if (!fs_node) {
-        log_warning(
-            "Could not find file system node %s in avs configuration", fs_path);
-        return;
+    if (mounttable.num_entries == 0) {
+        log_warning("No mountpoints found in mounttable");
     }
 
-    res = property_node_refer(
-        NULL,
-        fs_node,
-        "device",
-        PROPERTY_TYPE_STR,
-        device_path,
-        sizeof(device_path));
+    for (i = 0; i < mounttable.num_entries; i++) {
+        if (str_eq(mounttable.entry[i].fstype, "fs")) {
+            log_misc(
+                "Creating avs fs directory '%s' for destination/device '%s'...",
+                mounttable.entry[i].src,
+                mounttable.entry[i].dst);
 
-    if (res < 0) {
-        log_fatal(
-            "Getting 'device' attribute from avs config entry %s failed",
-            fs_path);
-    }
-
-    // 'fstype' attribute is optional and defaults to value 'fs'
-    if (!property_search(NULL, fs_node, "fstype")) {
-        if (path_exists(device_path)) {
-            // skip if exists already
-            return;
-        }
-
-        log_misc("Creating avs directory %s", device_path);
-
-        if (!path_mkdir(device_path)) {
-            log_fatal("Creating directory %s failed", device_path);
-        }
-    } else {
-        res = property_node_refer(
-            NULL,
-            fs_node,
-            "fstype",
-            PROPERTY_TYPE_STR,
-            fs_type,
-            sizeof(fs_type));
-
-        if (res < 0) {
-            log_fatal(
-                "Getting 'fstype' attribute from avs config entry %s failed",
-                fs_path);
-        }
-
-        if (!strcmp(fs_type, "fs") || !strcmp(fs_type, "nvram")) {
-            if (path_exists(device_path)) {
-                // skip if exists already
-                return;
+            if (!path_exists(mounttable.entry[i].src)) {
+                if (!path_mkdir(mounttable.entry[i].src)) {
+                    log_fatal(
+                        "Creating fs directory %s failed",
+                        mounttable.entry[i].src);
+                }
             }
-
-            log_misc("Creating avs directory %s", device_path);
-
-            if (!path_mkdir(device_path)) {
-                log_fatal("Creating directory %s failed", device_path);
-            }
-        } else {
-            log_fatal(
-                "Cannot create folders for unsupported file system type %s of "
-                "path %s in avs config",
-                fs_type,
-                fs_path);
         }
     }
 }
@@ -211,9 +155,12 @@ void avs_init(
 {
     log_assert(node);
     log_assert(avs_heap_size > 0);
-    log_assert(std_heap_size > 0);
+    // Modern games don't have a separate std heap anymore
+    log_assert(std_heap_size >= 0);
 
     log_info("init");
+
+    log_misc("Allocating avs heap: %d", avs_heap_size);
 
     avs_heap = VirtualAlloc(
         NULL, avs_heap_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -226,6 +173,8 @@ void avs_init(
     }
 
 #ifdef AVS_HAS_STD_HEAP
+    log_misc("Allocating std heap: %d", std_heap_size);
+
     std_heap = VirtualAlloc(
         NULL, std_heap_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
