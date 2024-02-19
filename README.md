@@ -136,21 +136,34 @@ or FAQ. We advice you to read them as your questions and concerns might already 
 know if there is any information that you consider helpful or important to know and should be added.
 
 ### Setup and dependencies
-Most (older generation) games were developed for Windows XP Embedded but should run fine on any
-consumer version of Windows XP. Newer versions of Windows, e.g. Windows 7, 8 and 10, should be fine
-as well. Some hooks also include fixes required to run the games on a more recent version.
+The games bemanitools support span several generations of (embedded) Windows versions:
+XP, 7 and 10 (IoT). With these come different generations of dependencies as requirements.
 
-Depending on the game, you also need the following dependencies installed:
+Simplified, this boils down to the following list of C++ Redistributable (vcredist) packages that are
+recommended to be installed without going into detail which game needs exactly which version.
+Keep in mind the "bitness" (32-bit vs. 64-bit) of each specific game and download the right
+ones accordingly.
 
-* The 32-bit (x86) version of
-  [Microsoft Visual C++ 2010 Service Pack 1 Redistributable Package MFC Security Update](https://www.microsoft.com/en-sg/download/details.aspx?id=26999)
-* The 32-bit (x86) and 64-bit (x64) versions of
-  [Microsoft Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-sg/download/details.aspx?id=40784)
-* The [DirectX 9 End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
+You can use a tool like [dependencywalker](https://www.dependencywalker.com/) to figure that
+out if it is relevant to you.
 
-See also
-[bemanitools-supplement](https://www.github.com/djhackersdev/bemanitools-supplement/)
-for files.
+Links/files are also provided by
+[bemanitools-supplement](https://github.com/djhackersdev/bemanitools-supplement/tree/master/misc/win-runtime#windows-runtimes-and-libraries)
+
+#### Visual C++ Redistributable Packages
+* 2010
+  * [32-bit (x86)](http://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe)
+  * [64-bit (x64)](http://download.microsoft.com/download/d/2/4/d242c3fb-da5a-4542-ad66-f9661d0a8d19/vcredist_x64.exe)
+* 2013
+  * [32-bit (x86)](http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe)
+  * [64-bit (x64)](http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe)
+* 2015
+  * [32-bit (x86)](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe)
+  * [64-bit (x64)](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe)
+
+#### DirectX 9
+Most/nearly all games support to this day use the DirectX 9(ex) API. Make sure to install the
+[DirectX 9 End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
 
 ## Development
 ### Building
