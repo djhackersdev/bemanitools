@@ -25,7 +25,7 @@ toolchain_64          := x86_64-w64-mingw32-
 
 gitrev                := $(shell git rev-parse HEAD)
 cppflags              := -I src -I src/main -I src/test -DGITREV=$(gitrev)
-cflags                := -O2 -pipe -ffunction-sections -fdata-sections \
+cflags                := -g -O2 -pipe -ffunction-sections -fdata-sections \
                           -Wall -std=c99 -DPSAPI_VERSION=1
 cflags_release        := -Werror
 ldflags		          := -Wl,--gc-sections -static-libgcc
@@ -246,7 +246,6 @@ $$(dll_$1_$2_$3) $$(implib_$1_$2_$3):	$$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) \
 	$(V)$$(toolchain_$1)gcc -shared \
 		-o $$(dll_$1_$2_$3) -Wl,--out-implib,$$(implib_$1_$2_$3) \
 		-Wl,--start-group $$^ -Wl,--end-group $$(ldflags_$3)
-	$(V)$$(toolchain_$1)strip $$(dll_$1_$2_$3)
 	$(V)$$(toolchain_$1)ranlib $$(implib_$1_$2_$3)
 
 endef
@@ -263,7 +262,6 @@ $$(exe_$1_$2_$3): $$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) $$(absdpl_$1_$2_$3) \
 		| $$(bindir_$1_$2)
 	$(V)echo ... $$@
 	$(V)$$(toolchain_$1)gcc -o $$@ $$^ $$(ldflags_$3)
-	$(V)$$(toolchain_$1)strip $$@
 
 endef
 
