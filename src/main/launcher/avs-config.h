@@ -9,6 +9,8 @@
 
 struct property *avs_config_load(const char *filepath);
 struct property_node *avs_config_root_get(struct property *property);
+struct property *
+avs_config_property_merge(struct property *parent, struct property *source);
 
 void avs_config_fs_root_device_get(
     struct property_node *node, char *buffer, size_t size);

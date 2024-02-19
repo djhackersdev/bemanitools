@@ -15,6 +15,175 @@
 
 #define AVS_CONFIG_ROOT_NODE "/config"
 
+static const char *_avs_config_property_mounttable_path =
+    "/config/fs/mounttable";
+
+static void _avs_config_node_vfs_copy(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source)
+{
+    // Use max path size to fit dst and src fs paths
+    char data[MAX_PATH];
+
+    // Remark: Using property_node_clone doesn't work here
+    // Cloning non-deep only clones the vfs node. Cloning deep doesn't seem
+    // to work with arbitrary attributes that don't follow the general
+    // design of a property structure. This seems to require clear typing for
+    // nodes in order to allow property_node_clone to work
+
+    // Ignore errors and default to empty
+    memset(data, 0, sizeof(data));
+    property_node_refer(
+        NULL, source, "name@", PROPERTY_TYPE_ATTR, data, sizeof(data));
+    property_util_node_attribute_replace(
+        parent_property, parent, "name@", data);
+
+    memset(data, 0, sizeof(data));
+    property_node_refer(
+        NULL, source, "fstype@", PROPERTY_TYPE_ATTR, data, sizeof(data));
+    property_util_node_attribute_replace(
+        parent_property, parent, "fstype@", data);
+
+    memset(data, 0, sizeof(data));
+    property_node_refer(
+        NULL, source, "src@", PROPERTY_TYPE_ATTR, data, sizeof(data));
+    property_util_node_attribute_replace(parent_property, parent, "src@", data);
+
+    memset(data, 0, sizeof(data));
+    property_node_refer(
+        NULL, source, "dst@", PROPERTY_TYPE_ATTR, data, sizeof(data));
+    property_util_node_attribute_replace(parent_property, parent, "dst@", data);
+
+    memset(data, 0, sizeof(data));
+    property_node_refer(
+        NULL, source, "opt@", PROPERTY_TYPE_ATTR, data, sizeof(data));
+    property_util_node_attribute_replace(parent_property, parent, "opt@", data);
+}
+
+static bool _avs_config_mounttable_vfs_nodes_merge_strategy_do(
+    struct property *parent_property,
+    struct property_node *parent,
+    struct property_node *source,
+    void *ctx,
+    property_util_node_merge_recursion_do_t node_merge_recursion_do)
+{
+    struct property_node *parent_child;
+    struct property_node *source_child;
+
+    char parent_child_name[PROPERTY_NODE_NAME_SIZE_MAX];
+    char name_parent[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char dst_parent[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+
+    char source_child_name[PROPERTY_NODE_NAME_SIZE_MAX];
+    char name_source[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char dst_source[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+
+    bool node_consumed;
+    bool found_parent;
+
+    source_child = property_node_traversal(source, TRAVERSE_FIRST_CHILD);
+
+    node_consumed = false;
+
+    while (source_child) {
+        property_node_name(
+            source_child, source_child_name, sizeof(source_child_name));
+
+        if (str_eq(source_child_name, "vfs")) {
+            node_consumed = true;
+
+            parent_child =
+                property_node_traversal(parent, TRAVERSE_FIRST_CHILD);
+
+            found_parent = false;
+
+            while (parent_child) {
+                property_node_name(
+                    parent_child, parent_child_name, sizeof(parent_child_name));
+
+                if (str_eq(parent_child_name, "vfs")) {
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            source_child,
+                            "name@",
+                            PROPERTY_TYPE_ATTR,
+                            name_source,
+                            sizeof(name_source)))) {
+                        log_fatal(
+                            "Missing 'name' attribute on avs config mounttable "
+                            "vfs source node");
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            source_child,
+                            "dst@",
+                            PROPERTY_TYPE_ATTR,
+                            dst_source,
+                            sizeof(dst_source)))) {
+                        log_fatal(
+                            "Missing 'dst' attribute on avs config mounttable "
+                            "vfs source node");
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            parent_child,
+                            "name@",
+                            PROPERTY_TYPE_ATTR,
+                            name_parent,
+                            sizeof(name_parent)))) {
+                        log_fatal(
+                            "Missing 'name' attribute on avs config mounttable "
+                            "vfs parent node");
+                    }
+
+                    if (AVS_IS_ERROR(property_node_refer(
+                            NULL,
+                            parent_child,
+                            "dst@",
+                            PROPERTY_TYPE_ATTR,
+                            dst_parent,
+                            sizeof(dst_parent)))) {
+                        log_fatal(
+                            "Missing 'dst' attribute on avs config mounttable "
+                            "vfs parent node");
+                    }
+
+                    // Found existing matching node on parent, replace it
+                    if (str_eq(name_source, name_parent) &&
+                        str_eq(dst_source, dst_parent)) {
+                        _avs_config_node_vfs_copy(
+                            parent_property, parent_child, source_child);
+
+                        found_parent = true;
+                        break;
+                    }
+                }
+
+                parent_child = property_node_traversal(
+                    parent_child, TRAVERSE_NEXT_SIBLING);
+            }
+
+            // Not found an existing node that got replaced, insert/merge new
+            // data
+            if (!found_parent) {
+                parent_child = property_node_create(
+                    parent_property, parent, PROPERTY_TYPE_VOID, "vfs");
+
+                _avs_config_node_vfs_copy(
+                    parent_property, parent_child, source_child);
+            }
+        }
+
+        source_child =
+            property_node_traversal(source_child, TRAVERSE_NEXT_SIBLING);
+    }
+
+    return node_consumed;
+}
+
 struct property *avs_config_load(const char *filepath)
 {
     struct property *property;
@@ -44,6 +213,27 @@ struct property_node *avs_config_root_get(struct property *property)
     }
 
     return node;
+}
+
+struct property *
+avs_config_property_merge(struct property *parent, struct property *source)
+{
+    struct property_util_node_merge_strategies strategies;
+
+    log_assert(parent);
+    log_assert(source);
+
+    strategies.num = 2;
+
+    strategies.entry[0].path = _avs_config_property_mounttable_path;
+    strategies.entry[0].merge_strategy_do =
+        _avs_config_mounttable_vfs_nodes_merge_strategy_do;
+
+    strategies.entry[1].path = "";
+    strategies.entry[1].merge_strategy_do =
+        property_util_node_merge_default_strategy_do;
+
+    return property_util_merge_with_strategies(parent, source, &strategies);
 }
 
 void avs_config_fs_root_device_get(
