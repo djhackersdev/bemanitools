@@ -7,6 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-file.h"
+#include "core/log-sink-list.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
+
 #include "imports/avs-ea3.h"
 #include "imports/avs.h"
 
@@ -20,40 +27,63 @@
 #include "launcher/eamuse.h"
 #include "launcher/hook.h"
 #include "launcher/launcher-config.h"
-#include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
 #include "launcher/property-util.h"
 #include "launcher/stubs.h"
+#include "launcher/version.h"
 
 #include "procmon-lib/procmon.h"
 
 #include "util/debug.h"
 #include "util/defs.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/os.h"
 #include "util/proc.h"
 #include "util/signal.h"
 #include "util/str.h"
 
-static void _launcher_signal_shutdown_handler()
+static void _launcher_log_header()
 {
-    logger_finit();
-    ExitProcess(EXIT_FAILURE);
+    log_info(
+        "\n"
+        " .__                             .__                   \n"
+        " |  | _____   __ __  ____   ____ |  |__   ___________  \n"
+        " |  | \\__  \\ |  |  \\/    \\_/ ___\\|  |  \\_/ __ \\_  __ \\ \n"
+        " |  |__/ __ \\|  |  /   |  \\  \\___|   Y  \\  ___/|  | \\/ \n"
+        " |____(____  /____/|___|  /\\___  >___|  /\\___  >__|    \n"
+        "          \\/           \\/     \\/     \\/     \\/       ");
+
+    log_info(
+        "launcher build date %s, gitrev %s",
+        launcher_build_date,
+        launcher_gitrev);
 }
 
-static void _launcher_logger_early_init(const struct options_log *options)
+void _launcher_log_init(
+    const char *log_file_path, enum core_log_bt_log_level level)
 {
-    log_assert(options);
+    struct core_log_sink sinks[2];
+    struct core_log_sink sink_composed;
 
-    // Early logging pre AVS setup depend entirely on command args
-    // We don't even have the bootstrap configuration loaded at this point
-    logger_early_init(options->file_path);
+    core_log_bt_ext_impl_set();
 
-    if (options->level) {
-        log_set_level(*(options->level));
+    if (log_file_path) {
+        core_log_sink_std_out_open(true, &sinks[0]);
+        core_log_sink_file_open(log_file_path, false, true, 10, &sinks[1]);
+        core_log_sink_list_open(sinks, 2, &sink_composed);
+    } else {
+        core_log_sink_std_out_open(true, &sink_composed);
     }
+
+    core_log_bt_init(&sink_composed);
+    core_log_bt_level_set(level);
+}
+
+static void _launcher_signal_shutdown_handler()
+{
+    core_log_bt_fini();
+    ExitProcess(EXIT_FAILURE);
 }
 
 static void _launcher_env_game_dir_verify()
@@ -243,7 +273,7 @@ static void _launcher_procmon_init(
     if (procmon_available()) {
         procmon_load(procmon);
 
-        procmon->set_loggers(log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(procmon->set_loggers);
         procmon->init();
 
         if (config->procmon_file) {
@@ -283,19 +313,23 @@ static void _launcher_bootstrap_log_config_options_override(
             "Command line override bootstrap log level: %d", *(options->level));
 
         switch (*(options->level)) {
-            case LOG_LEVEL_FATAL:
+            case CORE_LOG_BT_LOG_LEVEL_OFF:
+                str_cpy(config->level, sizeof(config->level), "disable");
+                break;
+
+            case CORE_LOG_BT_LOG_LEVEL_FATAL:
                 str_cpy(config->level, sizeof(config->level), "fatal");
                 break;
 
-            case LOG_LEVEL_WARNING:
+            case CORE_LOG_BT_LOG_LEVEL_WARNING:
                 str_cpy(config->level, sizeof(config->level), "warn");
                 break;
 
-            case LOG_LEVEL_INFO:
+            case CORE_LOG_BT_LOG_LEVEL_INFO:
                 str_cpy(config->level, sizeof(config->level), "info");
                 break;
 
-            case LOG_LEVEL_MISC:
+            case CORE_LOG_BT_LOG_LEVEL_MISC:
                 str_cpy(config->level, sizeof(config->level), "misc");
                 break;
 
@@ -421,6 +455,11 @@ static void _launcher_debugger_break()
     }
 }
 
+void _launcher_log_reinit()
+{
+    core_log_bt_ext_impl_set();
+}
+
 void _launcher_init(
     const struct options *options,
     struct launcher_config *launcher_config,
@@ -435,9 +474,12 @@ void _launcher_init(
     log_assert(bootstrap_config);
     log_assert(ea3_ident_config);
 
-    _launcher_logger_early_init(&options->log);
+    // Early logging pre AVS setup depend entirely on command args
+    // We don't even have the bootstrap configuration loaded at this point
+    _launcher_log_init(options->log.file_path, *(options->log.level));
+    _launcher_log_header();
 
-    debug_init();
+    debug_init(core_log_fatal_impl_get());
     signal_exception_handler_init(_launcher_signal_shutdown_handler);
     signal_register_shutdown_handler(&_launcher_signal_shutdown_handler);
 
@@ -453,7 +495,9 @@ void _launcher_init(
     launcher_config_init(launcher_config);
 
     if (options->launcher.config_path) {
-        log_info("Loading launcher configuration from file: %s", options->launcher.config_path);
+        log_info(
+            "Loading launcher configuration from file: %s",
+            options->launcher.config_path);
 
         launcher_property = property_util_load(options->launcher.config_path);
         launcher_config_load(launcher_property, launcher_config);
@@ -550,6 +594,8 @@ void _launcher_fini(
 
     bootstrap_avs_fini();
 
+    _launcher_log_reinit();
+
     bootstrap_module_game_fini();
 
     if (procmon->module != NULL) {
@@ -560,7 +606,7 @@ void _launcher_fini(
 
     log_info("Shutdown complete");
 
-    logger_finit();
+    core_log_bt_fini();
 }
 
 void launcher_main(const struct options *options)

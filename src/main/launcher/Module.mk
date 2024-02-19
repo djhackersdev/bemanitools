@@ -11,6 +11,7 @@ deplibs_launcher := \
 
 libs_launcher   := \
     avs-util \
+    core \
     hook \
     util \
     dwarfstack \
@@ -28,7 +29,6 @@ src_launcher    := \
     hook.c \
     launcher-config.c \
     launcher.c \
-    logger.c \
     main.c \
     module.c \
     options.c \

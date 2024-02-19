@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include "launcher/hook.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "launcher/hook.h"
 
 void hook_load_dll(const char *path)
 {

@@ -6,16 +6,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "core/log-bt.h"
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
 #include "launcher/avs.h"
-#include "launcher/logger.h"
 #include "launcher/property-util.h"
 
 #include "util/codepage.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 
@@ -84,12 +85,23 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
     utf8[utf8_len] = '\0';
 
     // Write to launcher's dedicated logging backend
-    logger_log_avs_log_message(utf8, utf8_len);
+    core_log_bt_direct_sink_write(utf8, utf8_len);
 
     /* Clean up */
 
     free(utf8);
     free(utf16);
+}
+
+static void _avs_switch_log_engine()
+{
+    // Switch the logging backend now that AVS is booted to use a single logging
+    // engine which avoids concurrency issues as AVS runs it's own async logger
+    // thread
+    core_log_impl_set(
+        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+
+    log_misc("Switched logging engine to AVS");
 }
 
 void avs_fs_assert_root_device_exists(struct property_node *node)
@@ -241,6 +253,8 @@ void avs_init(
     avs_boot(
         node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
 #endif
+
+    _avs_switch_log_engine();
 
     log_misc("init done");
 }

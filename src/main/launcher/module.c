@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/pe.h"
 
 #include "imports/avs.h"
@@ -10,7 +12,6 @@
 #include "launcher/module.h"
 #include "launcher/property-util.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 #define MM_ALLOCATION_GRANULARITY 0x10000

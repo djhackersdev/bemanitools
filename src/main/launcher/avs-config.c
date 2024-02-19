@@ -4,12 +4,13 @@
 
 #include "avs-util/error.h"
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
 #include "launcher/property-util.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 #define AVS_CONFIG_ROOT_NODE "/config"
@@ -254,26 +255,30 @@ void avs_config_log_count_set(struct property_node *node, uint16_t count)
 }
 
 void avs_config_set_log_level(
-    struct property_node *node, enum log_level loglevel)
+    struct property_node *node, enum core_log_bt_log_level loglevel)
 {
     const char *str;
 
     log_assert(node);
 
     switch (loglevel) {
-        case LOG_LEVEL_FATAL:
+        case CORE_LOG_BT_LOG_LEVEL_OFF:
+            str = "disable";
+            break;
+
+        case CORE_LOG_BT_LOG_LEVEL_FATAL:
             str = "fatal";
             break;
 
-        case LOG_LEVEL_WARNING:
+        case CORE_LOG_BT_LOG_LEVEL_WARNING:
             str = "warn";
             break;
 
-        case LOG_LEVEL_INFO:
+        case CORE_LOG_BT_LOG_LEVEL_INFO:
             str = "info";
             break;
 
-        case LOG_LEVEL_MISC:
+        case CORE_LOG_BT_LOG_LEVEL_MISC:
             str = "misc";
             break;
 

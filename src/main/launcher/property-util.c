@@ -9,11 +9,12 @@
 
 #include "avs-util/error.h"
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/property-util.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

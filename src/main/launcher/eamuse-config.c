@@ -2,13 +2,13 @@
 
 #include <stdlib.h>
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/ea3-ident-config.h"
 #include "launcher/eamuse-config.h"
 #include "launcher/property-util.h"
-
-#include "util/log.h"
 
 #define EAMUSE_CONFIG_ROOT_NODE "/ea3"
 

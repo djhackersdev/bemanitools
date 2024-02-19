@@ -107,12 +107,14 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
 
                     long tmp = strtol(argv[++i], NULL, 0);
 
-                    if (tmp < LOG_LEVEL_FATAL || tmp > LOG_LEVEL_MISC) {
+                    if (tmp < CORE_LOG_BT_LOG_LEVEL_OFF ||
+                        tmp > CORE_LOG_BT_LOG_LEVEL_MISC) {
                         return false;
                     }
 
-                    options->log.level = xmalloc(sizeof(enum log_level));
-                    *(options->log.level) = (enum log_level) tmp;
+                    options->log.level =
+                        xmalloc(sizeof(enum core_log_bt_log_level));
+                    *(options->log.level) = (enum core_log_bt_log_level) tmp;
 
                     break;
 

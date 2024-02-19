@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <windows.h>
 
-#include "launcher/debug.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "launcher/debug.h"
 
 void debug_remote_debugger_trap()
 {

@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "util/array.h"
-#include "util/log.h"
+#include "core/log-bt.h"
+#include "core/log.h"
 
 #include "launcher/bootstrap-config.h"
+
+#include "util/array.h"
 
 // Launcher options (cmd params) are limited to:
 // - Options to run a (vanilla) game without additional launcher features, e.g.
@@ -28,7 +30,7 @@ struct options {
     } bootstrap;
 
     struct options_log {
-        enum log_level *level;
+        enum core_log_bt_log_level *level;
         const char *file_path;
     } log;
 

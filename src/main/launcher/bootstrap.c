@@ -1,5 +1,12 @@
 #define LOG_MODULE "bootstrap"
 
+#include "core/log-bt.h"
+#include "core/log-sink-file.h"
+#include "core/log-sink-list.h"
+#include "core/log-sink-null.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
+
 #include "launcher/avs-config.h"
 #include "launcher/avs.h"
 #include "launcher/bootstrap-config.h"
@@ -7,11 +14,9 @@
 #include "launcher/eamuse-config.h"
 #include "launcher/eamuse.h"
 #include "launcher/launcher-config.h"
-#include "launcher/logger.h"
 #include "launcher/module.h"
 #include "launcher/property-util.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static bool _bootstrap_log_property_configs;
@@ -61,22 +66,22 @@ static void _bootstrap_avs_config_log_overrides_apply(
     avs_config_log_count_set(node, log_config->count);
 }
 
-static enum logger_level _bootstrap_log_map_level(const char *level)
+static enum core_log_bt_log_level _bootstrap_log_map_level(const char *level)
 {
     if (str_eq(level, "fatal")) {
-        return LOGGER_LEVEL_FATAL;
+        return CORE_LOG_BT_LOG_LEVEL_FATAL;
     } else if (str_eq(level, "warning")) {
-        return LOGGER_LEVEL_WARNING;
+        return CORE_LOG_BT_LOG_LEVEL_WARNING;
     } else if (str_eq(level, "info")) {
-        return LOGGER_LEVEL_INFO;
+        return CORE_LOG_BT_LOG_LEVEL_INFO;
     } else if (str_eq(level, "misc")) {
-        return LOGGER_LEVEL_MISC;
+        return CORE_LOG_BT_LOG_LEVEL_MISC;
     } else if (str_eq(level, "all")) {
-        return LOGGER_LEVEL_ALL;
+        return CORE_LOG_BT_LOG_LEVEL_MISC;
     } else if (str_eq(level, "disable")) {
-        return LOGGER_LEVEL_OFF;
+        return CORE_LOG_BT_LOG_LEVEL_OFF;
     } else if (str_eq(level, "default")) {
-        return LOGGER_LEVEL_DEFAULT;
+        return CORE_LOG_BT_LOG_LEVEL_WARNING;
     } else {
         log_fatal("Unknown log level string %s", level);
     }
@@ -93,22 +98,44 @@ void bootstrap_init(bool log_property_configs)
 
 void bootstrap_log_init(const struct bootstrap_log_config *config)
 {
-    enum logger_level level;
+    struct core_log_sink sinks[2];
+    struct core_log_sink sink_composed;
+    enum core_log_bt_log_level level;
 
     log_assert(config);
 
     log_info("log init");
 
-    logger_init(
-        config->file,
-        config->enable_console,
-        config->enable_file,
-        config->rotate,
-        config->append,
-        config->count);
+    // Shutdown old setup
+    core_log_bt_fini();
+
+    if (config->enable_file && strlen(config->file) > 0 &&
+        config->enable_console) {
+        core_log_sink_std_out_open(true, &sinks[0]);
+        core_log_sink_file_open(
+            config->file,
+            config->append,
+            config->rotate,
+            config->count,
+            &sinks[1]);
+        core_log_sink_list_open(sinks, 2, &sink_composed);
+    } else if (config->enable_file && strlen(config->file) > 0) {
+        core_log_sink_file_open(
+            config->file,
+            config->append,
+            config->rotate,
+            config->count,
+            &sink_composed);
+    } else if (config->enable_console) {
+        core_log_sink_std_out_open(true, &sink_composed);
+    } else {
+        core_log_sink_null_open(&sink_composed);
+    }
+
+    core_log_bt_init(&sink_composed);
 
     level = _bootstrap_log_map_level(config->level);
-    logger_level_set(level);
+    core_log_bt_level_set(level);
 
     log_misc("log init done");
 }

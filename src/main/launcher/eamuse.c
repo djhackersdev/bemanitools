@@ -1,8 +1,8 @@
 #define LOG_MODULE "eamuse"
 
-#include "imports/avs-ea3.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "imports/avs-ea3.h"
 
 void eamuse_init(struct property_node *node)
 {

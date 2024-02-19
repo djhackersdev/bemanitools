@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/ea3-ident-config.h"
@@ -9,7 +11,6 @@
 
 #include "util/defs.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define ROOT_NODE "/ea3_conf"

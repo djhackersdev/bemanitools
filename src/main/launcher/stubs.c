@@ -7,12 +7,13 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "launcher/stubs.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 struct ikey_status {
     uint32_t field_0;

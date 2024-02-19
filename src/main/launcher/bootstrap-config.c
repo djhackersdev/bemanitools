@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
@@ -10,7 +12,6 @@
 
 #include "util/defs.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/str.h"
 
 // clang-format off
