@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "sdvxhook2-cn/config-cn.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "sdvxhook2-cn/config-cn.h"
 
 #define SDVXHOOK2_CN_CONFIG_DISABLE_IO_EMU_KEY "io.disable_io_emu"
 #define SDVXHOOK2_CN_CONFIG_UNIS_PATH_KEY "cn.unis_path"

@@ -1,12 +1,14 @@
 #define LOG_MODULE "procmon"
 
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "core/log.h"
 
 #include "procmon/file.h"
 #include "procmon/module.h"
+#include "procmon/procmon.h"
 #include "procmon/thread.h"
-
-#include "util/log.h"
 
 static bool _procmon_file_mon_enabled;
 static bool _procmon_module_mon_enabled;
@@ -18,12 +20,12 @@ uint32_t procmon_api_version()
 }
 
 void procmon_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+    core_log_message_t misc,
+    core_log_message_t info,
+    core_log_message_t warning,
+    core_log_message_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 void procmon_init()

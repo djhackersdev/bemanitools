@@ -4,6 +4,7 @@ ldflags_ddrio-p3io:= \
 	-lsetupapi \
 
 libs_ddrio-p3io	:= \
+	core \
 	cconfig \
 	extio \
 	extiodrv \

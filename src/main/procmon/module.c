@@ -2,9 +2,10 @@
 
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static HMODULE (STDCALL *real_GetModuleHandleA)(LPCSTR lpModuleName);

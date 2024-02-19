@@ -1,6 +1,7 @@
 libs            += iidxhook-util
 
 libs_iidxhook-util     := \
+    core \
     util \
 
 src_iidxhook-util     := \

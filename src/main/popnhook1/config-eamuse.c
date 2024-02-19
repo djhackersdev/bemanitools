@@ -2,11 +2,11 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "popnhook1/config-eamuse.h"
 
 #include "security/mcode.h"
-
-#include "util/log.h"
 
 #define POPNHOOK1_CONFIG_EAMUSE_SERVER_KEY "eamuse.server"
 #define POPNHOOK1_CONFIG_EAMUSE_PCBID_KEY "eamuse.pcbid"

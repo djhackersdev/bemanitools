@@ -6,13 +6,14 @@
 #include <cfgmgr32.h>
 #include <setupapi.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "bio2emu/emu.h"
 #include "bio2emu/setupapi.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

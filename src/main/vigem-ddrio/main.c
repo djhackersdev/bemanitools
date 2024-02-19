@@ -8,9 +8,17 @@
 #include "ViGEm/Client.h"
 
 #include "bemanitools/ddrio.h"
-#include "util/log.h"
+
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "util/math.h"
-#include "util/thread.h"
+
 #include "vigemstub/helper.h"
 
 #include "vigem-ddrio/config-vigem-ddrio.h"
@@ -112,17 +120,23 @@ void set_reactive_lights(uint32_t input_state)
 
 int main(int argc, char **argv)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    core_thread_crt_ext_impl_set();
+    core_log_bt_ext_impl_set();
+
+    core_log_bt_ext_init_with_stdout();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_INFO);
 
     struct vigem_ddrio_config config;
     if (!get_vigem_ddrio_config(&config)) {
         exit(EXIT_FAILURE);
     }
 
-    ddr_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(ddr_io_set_loggers);
 
-    if (!ddr_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    if (!ddr_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_warning("Initializing ddrio failed");
         return -1;
     }

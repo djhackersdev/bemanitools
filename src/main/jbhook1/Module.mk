@@ -11,6 +11,7 @@ ldflags_jbhook1   := \
     -lopengl32 \
 
 libs_jbhook1       := \
+    core \
     acioemu \
     cconfig \
     eamio \

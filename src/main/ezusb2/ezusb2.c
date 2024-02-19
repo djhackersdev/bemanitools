@@ -4,6 +4,8 @@
 #include <setupapi.h>
 // clang-format on
 
+#include "core/log.h"
+
 #include "ezusb/ezusb.h"
 
 #include "ezusb2/cyioctl.h"
@@ -11,7 +13,6 @@
 
 #include "util/crc.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define REQ_TYPE_HOST_TO_DEV 0x40

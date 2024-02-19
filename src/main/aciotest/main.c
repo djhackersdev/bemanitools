@@ -15,7 +15,14 @@
 #include "aciotest/panb.h"
 #include "aciotest/rvol.h"
 
-#include "util/log.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
+#include "core/log.h"
 
 static uint8_t aciotest_cnt = 0;
 static uint8_t bi2a_mode = 255;
@@ -112,7 +119,10 @@ int main(int argc, char **argv)
         }
     }
 
-    log_to_writer(log_writer_stdout, NULL);
+    core_thread_crt_ext_impl_set();
+    core_log_bt_ext_impl_set();
+
+    core_log_bt_ext_init_with_stdout();
 
     struct aciodrv_device_ctx *device =
         aciodrv_device_open_path(argv[1], atoi(argv[2]));

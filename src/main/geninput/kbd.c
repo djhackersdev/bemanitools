@@ -11,12 +11,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "core/log.h"
+
 #include "geninput/hid.h"
 #include "geninput/kbd-data.h"
 #include "geninput/kbd.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

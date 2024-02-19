@@ -1,11 +1,12 @@
 #include <math.h>
 #include <stdbool.h>
 
+#include "core/log.h"
+
 #include "geninput/hid-mgr.h"
 #include "geninput/mapper.h"
 
 #include "util/array.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct action_iter {

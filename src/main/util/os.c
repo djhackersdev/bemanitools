@@ -6,7 +6,8 @@
 
 #include <stdbool.h>
 
-#include "util/log.h"
+#include "core/log.h"
+
 #include "util/os.h"
 #include "util/str.h"
 

@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include "procmon-lib/procmon.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "procmon-lib/procmon.h"
 
 #define PROCMON_LIB "procmon.dll"
 #define CONCAT(x, y) x ## y

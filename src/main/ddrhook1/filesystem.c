@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

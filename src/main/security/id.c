@@ -1,9 +1,10 @@
 #include <string.h>
 
+#include "core/log.h"
+
 #include "security/id.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 const struct security_id security_id_default = {

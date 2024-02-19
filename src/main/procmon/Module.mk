@@ -1,6 +1,7 @@
 dlls		+= procmon
 
 libs_procmon	:= \
+	core \
 	hook \
 	util \
 

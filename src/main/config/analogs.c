@@ -11,13 +11,14 @@
 #include "config/schema.h"
 #include "config/usages.h"
 
+#include "core/log.h"
+
 #include "geninput/hid-mgr.h"
 #include "geninput/input-config.h"
 #include "geninput/mapper.h"
 
 #include "util/array.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

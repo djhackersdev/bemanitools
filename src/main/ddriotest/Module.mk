@@ -1,6 +1,7 @@
 exes            += ddriotest \
 
 libs_ddriotest     := \
+    core \
     ddrio \
     util \
 

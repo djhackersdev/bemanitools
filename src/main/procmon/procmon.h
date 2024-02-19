@@ -4,14 +4,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 uint32_t procmon_api_version();
 void procmon_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal);
+    core_log_message_t misc,
+    core_log_message_t info,
+    core_log_message_t warning,
+    core_log_message_t fatal);
 void procmon_init();
 void procmon_file_mon_enable();
 void procmon_module_mon_enable();

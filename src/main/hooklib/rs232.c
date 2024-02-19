@@ -14,12 +14,13 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/hr.h"
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "util/array.h"
-#include "util/log.h"
 
 /* RS232 API hooks */
 

@@ -3,12 +3,13 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "popnhook1/config-sec.h"
 
 #include "security/mcode.h"
 #include "security/rp.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 #define POPNHOOK1_CONFIG_SEC_BLACK_PLUG_MCODE_KEY "sec.black_plug_mcode"
