@@ -31,4 +31,4 @@ set PATH=^
 :: Current working dir is the game's root folder
 cd /d %CONTENT_DIR%
 
-%BEMANITOOLS_DIR%\launcher %BEMANITOOLS_DIR%\launcher-cn.xml --config sdvxhook2-cn.conf %*
+%BEMANITOOLS_DIR%\launcher %BEMANITOOLS_DIR%\launcher-cn.xml --config %BEMANITOOLS_DIR%\sdvxhook2-cn.conf %*

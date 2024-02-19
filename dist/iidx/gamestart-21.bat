@@ -31,4 +31,4 @@ set PATH=^
 :: Current working dir is the game's root folder
 cd /d %CONTENT_DIR%
 
-%BEMANITOOLS_DIR%\launcher %BEMANITOOLS_DIR%\launcher-21.xml --config iidxhook-21.conf %*
+%BEMANITOOLS_DIR%\launcher %BEMANITOOLS_DIR%\launcher-21.xml --config %BEMANITOOLS_DIR%\iidxhook-21.conf %*
