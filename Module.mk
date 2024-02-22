@@ -710,6 +710,8 @@ $(zipdir)/ddr-14-to-18.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
+        dist/ddr/gamestart-17.bat \
+        dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-14.bat \
 		dist/ddr/gamestart-15.bat \
 		dist/ddr/gamestart-16.bat \
@@ -728,6 +730,8 @@ $(zipdir)/ddr-16-to-18-x64.zip: \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \
 		dist/ddr/config.bat \
+        dist/ddr/gamestart-17.bat \
+        dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
