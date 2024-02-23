@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<ea3_conf>
+    <soft>
+        <!-- USER TODO: Change these accordingly to match the specifications of the game and version you are running -->
+        <model __type="str">000</model>
+        <dest __type="str">A</dest>
+        <spec __type="str">A</spec>
+        <rev __type="str">A</rev>
+        <ext __type="str">1969032100</ext>
+    </soft>
+</ea3_conf>
