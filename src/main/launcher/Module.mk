@@ -3,22 +3,35 @@ rc_launcher     := launcher.rc
 
 ldflags_launcher := \
     -mconsole \
+    -ldbghelp \
 
 deplibs_launcher := \
     avs \
     avs-ea3 \
 
 libs_launcher   := \
+    avs-util \
+    core \
     hook \
     util \
+    dwarfstack \
 
 src_launcher    := \
-    avs-context.c \
-    ea3-config.c \
+    avs-config.c \
+    avs.c \
+    bootstrap-config.c \
+    bootstrap.c \
+    debug.c \
+    ea3-ident-config.c \
+    eamuse-config.c \
+    eamuse.c \
+    hook.c \
+    launcher-config.c \
+    launcher.c \
     main.c \
     module.c \
     options.c \
-    property.c \
+    property-util.c \
     stubs.c \
     version.c \
 
