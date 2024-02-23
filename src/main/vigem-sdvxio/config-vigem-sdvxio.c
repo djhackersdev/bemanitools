@@ -1,9 +1,9 @@
 #include "cconfig/cconfig-main.h"
 #include "cconfig/cconfig-util.h"
 
-#include "vigem-sdvxio/config-vigem-sdvxio.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "vigem-sdvxio/config-vigem-sdvxio.h"
 
 #define VIGEM_SDVXIO_CONFIG_ENABLE_KEYLIGHT_KEY "sdvxio.enable_keylight"
 #define VIGEM_SDVXIO_CONFIG_RELATIVE_ANALOG_KEY "sdvxio.use_relative_analog"

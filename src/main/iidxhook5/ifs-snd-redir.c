@@ -3,13 +3,14 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "imports/avs.h"
 
 #include "iidxhook5/ifs-snd-redir.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static void *(*real_avs_fs_open)(const char *path, int mode, int flags);

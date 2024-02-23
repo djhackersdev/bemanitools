@@ -5,9 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "util/log.h"
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "util/msg-thread.h"
-#include "util/thread.h"
 
 static bool msg_thread_step(HWND hwnd);
 
@@ -102,7 +103,7 @@ void msg_thread_init(HINSTANCE inst)
 {
     msg_thread_ready = CreateEvent(NULL, TRUE, FALSE, NULL);
     msg_thread_stop = CreateEvent(NULL, TRUE, FALSE, NULL);
-    msg_thread_id = thread_create(msg_thread_proc, inst, 0x4000, 0);
+    msg_thread_id = core_thread_create(msg_thread_proc, inst, 0x4000, 0);
 
     WaitForSingleObject(msg_thread_ready, INFINITE);
     CloseHandle(msg_thread_ready);
@@ -112,8 +113,8 @@ void msg_thread_fini(void)
 {
     SetEvent(msg_thread_stop);
 
-    thread_join(msg_thread_id, NULL);
-    thread_destroy(msg_thread_id);
+    core_thread_join(msg_thread_id, NULL);
+    core_thread_destroy(msg_thread_id);
 
     CloseHandle(msg_thread_stop);
 }

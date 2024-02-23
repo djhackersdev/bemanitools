@@ -15,6 +15,8 @@
 #include "acioemu/emu.h"
 #include "acioemu/icca.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
 
@@ -24,7 +26,6 @@
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu iidxhook_util_acio_emu;

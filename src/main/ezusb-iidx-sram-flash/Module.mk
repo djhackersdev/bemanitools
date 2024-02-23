@@ -4,6 +4,7 @@ ldflags_ezusb-iidx-sram-flash   := \
     -lsetupapi \
 
 libs_ezusb-iidx-sram-flash     := \
+    core \
     ezusb \
     ezusb-iidx \
     util \

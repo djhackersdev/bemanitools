@@ -4,6 +4,8 @@ deplibs_ddrhook2	:= \
 	avs \
 
 libs_ddrhook2		:= \
+	avs-util \
+	core \
 	acioemu \
 	ddrhook-util \
 	p3ioemu \

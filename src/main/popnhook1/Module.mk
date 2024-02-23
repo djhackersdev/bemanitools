@@ -8,6 +8,7 @@ ldflags_popnhook1   := \
     -liphlpapi \
 
 libs_popnhook1		:= \
+    core \
     iidxhook-util \
     ezusb-emu \
     ezusb2-popn-emu \

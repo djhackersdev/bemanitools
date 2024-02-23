@@ -7,20 +7,29 @@
 
 #include "bemanitools/eamio.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
 
 /**
  * Tool to test your implementations of eamio.
  */
 int main(int argc, char **argv)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    core_thread_crt_ext_impl_set();
+    core_log_bt_ext_impl_set();
 
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_bt_ext_init_with_stdout();
 
-    if (!eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    core_log_impl_assign(eam_io_set_loggers);
+
+    if (!eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         printf("Initializing eamio failed\n");
         return -1;
     }

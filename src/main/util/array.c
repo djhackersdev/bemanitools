@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "util/array.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 void array_init(struct array *array)

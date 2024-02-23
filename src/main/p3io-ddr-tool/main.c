@@ -7,14 +7,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
+
 #include "extiodrv/extio.h"
 
 #include "p3io/ddr.h"
 #include "p3iodrv/ddr.h"
 #include "p3iodrv/device.h"
-
-#include "util/log.h"
-#include "util/thread.h"
 
 #include "mode-test.h"
 
@@ -70,7 +72,7 @@ static mode_proc _mode_procs[MODE_TOTAL_COUNT] = {
     _mode_sensores,
 };
 
-static enum log_level _log_level = LOG_LEVEL_FATAL;
+static enum core_log_bt_log_level _log_level = CORE_LOG_BT_LOG_LEVEL_FATAL;
 static bool _extio_enabled = true;
 static const char *_p3io_device_path = "";
 static const char *_extio_com_port = "COM1";
@@ -196,11 +198,11 @@ static bool _process_cmd_args(int argc, char **argv)
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-v")) {
-            _log_level = LOG_LEVEL_WARNING;
+            _log_level = CORE_LOG_BT_LOG_LEVEL_WARNING;
         } else if (!strcmp(argv[i], "-vv")) {
-            _log_level = LOG_LEVEL_INFO;
+            _log_level = CORE_LOG_BT_LOG_LEVEL_INFO;
         } else if (!strcmp(argv[i], "-vvv")) {
-            _log_level = LOG_LEVEL_MISC;
+            _log_level = CORE_LOG_BT_LOG_LEVEL_MISC;
         } else if (!strcmp(argv[i], "-noextio")) {
             _extio_enabled = false;
         } else if (!strcmp(argv[i], "-p3io")) {
@@ -256,8 +258,9 @@ static bool _process_cmd_args(int argc, char **argv)
 
 static void _init_logging()
 {
-    log_to_writer(log_writer_stderr, NULL);
-    log_set_level(_log_level);
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(_log_level);
 }
 
 static bool _mode_invalid(HANDLE handle)

@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "iidxhook-util/config-misc.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "iidxhook-util/config-misc.h"
 
 #define IIDXHOOK_CONFIG_MISC_DISABLE_CLOCK_SET_KEY "misc.disable_clock_set"
 #define IIDXHOOK_CONFIG_MISC_RTEFFECT_STUB_KEY "misc.rteffect_stub"

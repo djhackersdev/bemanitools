@@ -5,6 +5,7 @@ ldflags_iidxhook1   := \
     -liphlpapi \
 
 libs_iidxhook1      := \
+    core \
     iidxhook-util \
     ezusb-emu \
     ezusb-iidx-16seg-emu \

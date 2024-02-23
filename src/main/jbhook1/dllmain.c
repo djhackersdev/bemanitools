@@ -10,6 +10,14 @@
 
 #include "cconfig/cconfig-hook.h"
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "hook/table.h"
 
 #include "hooklib/acp.h"
@@ -33,8 +41,6 @@
 #include "p3ioemu/emu.h"
 
 #include "util/defs.h"
-#include "util/log.h"
-#include "util/thread.h"
 
 #define JBHOOK1_INFO_HEADER \
     "jbhook1 for jubeat"    \
@@ -88,6 +94,14 @@ static const struct hook_symbol kernel32_hook_syms[] = {
 
 // so our CreateProcessA hook can check
 static bool vertical;
+
+static void _jbhook1_log_init()
+{
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_debug();
+    // TODO change log level support
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
 
 /**
  * This seems to be a good entry point to intercept before the game calls
@@ -153,19 +167,23 @@ static HWND CDECL my_mwindow_create(
 
     log_info("Starting up jubeat IO backend");
 
-    jb_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(jb_io_set_loggers);
 
-    if (!jb_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!jb_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing jb IO backend failed");
     }
 
     log_info("Starting up card reader backend");
 
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(eam_io_set_loggers);
 
-    if (!eam_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing card reader backend failed");
     }
 
@@ -201,7 +219,12 @@ static HWND CDECL my_mwindow_create(
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        log_to_writer(log_writer_debug, NULL);
+        // TODO why not use AVS threads?
+        core_thread_crt_ext_impl_set();
+
+        // TODO init debug logging but with avs available? why not use avs
+        // logging?
+        _jbhook1_log_init();
 
         /* Bootstrap hook for further init tasks (see above) */
 

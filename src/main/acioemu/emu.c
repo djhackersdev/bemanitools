@@ -14,9 +14,10 @@
 #include "acioemu/emu.h"
 #include "acioemu/pipe.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static HRESULT ac_io_emu_open(struct ac_io_emu *emu, struct irp *irp);
