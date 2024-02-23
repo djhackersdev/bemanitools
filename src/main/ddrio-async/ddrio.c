@@ -11,8 +11,9 @@
 
 #include "bemanitools/ddrio.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "util/time.h"
 
 typedef void (*ddr_io_set_loggers_t)(
@@ -154,7 +155,7 @@ void ddr_io_set_loggers(
     _log_formatter_warning = warning;
     _log_formatter_fatal = fatal;
 
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 bool ddr_io_init(
@@ -163,6 +164,8 @@ bool ddr_io_init(
     thread_destroy_t thread_destroy)
 {
     log_info("Loading ddrio-async-child.dll as child ddrio library...");
+
+    core_thread_impl_set(thread_create, thread_join, thread_destroy);
 
     _child_ddr_io_module = LoadLibraryA("ddrio-async-child.dll");
 

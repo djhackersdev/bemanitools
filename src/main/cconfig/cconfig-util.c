@@ -5,8 +5,9 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 bool cconfig_util_get_int(
@@ -220,10 +221,10 @@ void cconfig_util_set_data(
     free(str);
 }
 
-void cconfig_util_log(struct cconfig *config, log_formatter_t log_formatter)
+void cconfig_util_log(struct cconfig *config, core_log_message_t log_message)
 {
     for (uint32_t i = 0; i < config->nentries; i++) {
-        log_formatter(
+        log_message(
             LOG_MODULE,
             "%s=%s",
             config->entries[i].key,

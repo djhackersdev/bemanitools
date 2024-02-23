@@ -3,6 +3,7 @@ testexes            += security-id-test
 srcdir_security-id-test := src/test/security
 
 libs_security-id-test     := \
+    core \
     security \
     test \
     util \
@@ -17,6 +18,7 @@ testexes            += security-mcode-test
 srcdir_security-mcode-test := src/test/security
 
 libs_security-mcode-test     := \
+    core \
     security \
     test \
     util \
@@ -31,6 +33,7 @@ testexes            += security-util-test
 srcdir_security-util-test := src/test/security
 
 libs_security-util-test     := \
+    core \
     security \
     test \
     util \
@@ -45,6 +48,7 @@ testexes            += security-rp-test
 srcdir_security-rp-test := src/test/security
 
 libs_security-rp-test     := \
+    core \
     security \
     test \
     util \
@@ -59,6 +63,7 @@ testexes            += security-rp2-test
 srcdir_security-rp2-test := src/test/security
 
 libs_security-rp2-test     := \
+    core \
     security \
     test \
     util \
@@ -73,6 +78,7 @@ testexes            += security-rp3-test
 srcdir_security-rp3-test := src/test/security
 
 libs_security-rp3-test     := \
+    core \
     security \
     test \
     util \

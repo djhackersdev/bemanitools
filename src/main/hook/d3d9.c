@@ -1,10 +1,10 @@
 #define LOG_MODULE "hook-d3d9"
 
-#include "hook/d3d9.h"
-#include "hook/com-proxy.h"
-#include "hook/table.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "hook/com-proxy.h"
+#include "hook/d3d9.h"
+#include "hook/table.h"
 
 /* ------------------------------------------------------------------------------------------------------------------
  */

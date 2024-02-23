@@ -10,6 +10,7 @@ ldflags_vigem-sdvxio  := \
     -lsetupapi \
 
 libs_vigem-sdvxio     := \
+    core \
     cconfig \
     sdvxio \
     util \

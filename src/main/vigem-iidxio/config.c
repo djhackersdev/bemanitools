@@ -1,9 +1,9 @@
 #include "cconfig/cconfig-main.h"
 #include "cconfig/cconfig-util.h"
 
-#include "vigem-iidxio/config.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "vigem-iidxio/config.h"
 
 #define VIGEM_IIDXIO_CONFIG_TT_ANALOG_RELATIVE_KEY \
     "vigem.iidxio.tt.anlog.relative"

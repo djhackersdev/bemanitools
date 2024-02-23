@@ -6,8 +6,9 @@
 
 #include "cconfig/conf.h"
 
+#include "core/log.h"
+
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 enum cconfig_conf_error cconfig_conf_load_from_file(

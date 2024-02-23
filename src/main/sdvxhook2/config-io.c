@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "sdvxhook2/config-io.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "sdvxhook2/config-io.h"
 
 #define SDVXHOOK2_CONFIG_IO_DISABLE_CARD_READER_EMU_KEY \
     "io.disable_card_reader_emu"

@@ -1,9 +1,9 @@
 #include "cconfig/cconfig-main.h"
 #include "cconfig/cconfig-util.h"
 
-#include "vigem-ddrio/config-vigem-ddrio.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "vigem-ddrio/config-vigem-ddrio.h"
 
 #define VIGEM_DDRIO_CONFIG_ENABLE_REACTIVE_LIGHT_KEY \
     "ddrio.enable_reactive_light"

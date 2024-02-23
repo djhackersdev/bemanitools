@@ -4,6 +4,7 @@ deplibs_unicorntail	:= \
 	avs \
 
 libs_unicorntail	:= \
+	core \
 	p3io \
 	p3ioemu \
 	hook \

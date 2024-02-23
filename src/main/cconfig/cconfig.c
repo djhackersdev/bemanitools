@@ -2,7 +2,8 @@
 
 #include "cconfig/cconfig.h"
 
-#include "util/log.h"
+#include "core/log.h"
+
 #include "util/mem.h"
 #include "util/str.h"
 

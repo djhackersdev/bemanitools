@@ -2,10 +2,11 @@
 
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static BOOL STDCALL my_SetLocalTime(const SYSTEMTIME *lpSystemTime);
 static BOOL(STDCALL *real_SetLocalTime)(const SYSTEMTIME *lpSystemTime);

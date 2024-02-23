@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "jbhook1/config-gfx.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "jbhook1/config-gfx.h"
 
 #define JBHOOK1_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"
 #define JBHOOK1_CONFIG_GFX_VERTICAL_KEY "gfx.vertical"

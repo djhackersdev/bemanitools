@@ -1,6 +1,7 @@
 exes            += jbiotest \
 
 libs_jbiotest     := \
+    core \
     jbio \
     util \
 

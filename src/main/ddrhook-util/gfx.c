@@ -11,13 +11,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
 #include "ddrhook-util/gfx.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

@@ -3,12 +3,13 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "iidxhook-util/config-sec.h"
 
 #include "security/mcode.h"
 #include "security/rp.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 #define IIDXHOOK_CONFIG_SEC_BOOT_VERSION_KEY "sec.boot_version"
