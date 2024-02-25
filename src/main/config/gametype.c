@@ -6,8 +6,9 @@
 #include "config/resource.h"
 #include "config/schema.h"
 
+#include "core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 
 static INT_PTR CALLBACK
 game_type_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

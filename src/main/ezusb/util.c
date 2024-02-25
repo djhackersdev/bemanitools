@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "ezusb/util.h"
 
 #include "util/crc.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct ezusb_firmware *ezusb_firmware_load(const char *file)

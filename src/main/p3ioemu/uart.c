@@ -10,6 +10,8 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "p3io/cmd.h"
@@ -17,7 +19,6 @@
 #include "p3ioemu/uart.h"
 
 #include "util/iobuf.h"
-#include "util/log.h"
 
 static HRESULT
 p3io_uart_open(const wchar_t *path, uint32_t baud_rate, HANDLE *fd);

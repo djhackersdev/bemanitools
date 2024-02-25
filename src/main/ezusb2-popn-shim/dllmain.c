@@ -4,6 +4,8 @@
 
 #include <setupapi.h>
 
+#include "core/log.h"
+
 #include "ezusb2-emu/desc.h"
 #include "ezusb2-emu/device.h"
 
@@ -12,8 +14,6 @@
 #include "hooklib/setupapi.h"
 
 #include "ezusb2-popn-shim/proxy.h"
-
-#include "util/log.h"
 
 #define EZUSB_REAL_DLL_FILENAME "ezusb.dll"
 

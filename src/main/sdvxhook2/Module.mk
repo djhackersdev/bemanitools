@@ -12,6 +12,8 @@ deplibs_sdvxhook2   := \
     avs \
 
 libs_sdvxhook2      := \
+    avs-util \
+    core \
     acioemu \
     bio2emu \
     camhook \

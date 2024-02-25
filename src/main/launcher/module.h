@@ -5,6 +5,8 @@
 
 #include "imports/avs.h"
 
+#include "launcher/ea3-ident-config.h"
+
 #include "util/array.h"
 
 struct module_context {
@@ -12,16 +14,16 @@ struct module_context {
     char *path;
 };
 
-void module_context_init(struct module_context *module, const char *path);
-void module_context_init_with_iat_hooks(
+void module_init(struct module_context *module, const char *path);
+void module_with_iat_hooks_init(
     struct module_context *module,
     const char *path,
-    struct array *iat_hook_dlls);
-bool module_context_invoke_init(
+    const struct array *iat_hook_dlls);
+void module_init_invoke(
     const struct module_context *module,
-    char *sidcode,
-    struct property_node *app_config);
-bool module_context_invoke_main(const struct module_context *module);
-void module_context_fini(struct module_context *module);
+    struct ea3_ident_config *ea3_ident_config,
+    struct property_node *app_params_node);
+bool module_main_invoke(const struct module_context *module);
+void module_fini(struct module_context *module);
 
 #endif

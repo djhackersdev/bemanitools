@@ -2,11 +2,11 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "iidxhook-util/config-eamuse.h"
 
 #include "security/mcode.h"
-
-#include "util/log.h"
 
 #define IIDXHOOK_CONFIG_EAMUSE_CARD_TYPE_KEY "eamuse.card_type"
 #define IIDXHOOK_CONFIG_EAMUSE_SERVER_KEY "eamuse.server"

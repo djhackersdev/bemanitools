@@ -19,6 +19,8 @@
 
 #include "bemanitools/ddrio.h"
 
+#include "core/log.h"
+
 #include "ddrhook-util/_com4.h"
 
 #include "hook/iohook.h"
@@ -27,7 +29,6 @@
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 
 static struct ac_io_emu com4_ac_io_emu;
 static struct ac_io_emu_hdxs com4_hdxs;

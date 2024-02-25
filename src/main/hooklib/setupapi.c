@@ -4,12 +4,13 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "hooklib/setupapi.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* my hooks */

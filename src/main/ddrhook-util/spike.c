@@ -15,10 +15,11 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu spike_ac_io_emu;

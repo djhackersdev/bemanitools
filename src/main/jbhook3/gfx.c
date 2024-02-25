@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "jbhook3/options.h"
-
-#include "util/log.h"
 
 static bool jbhook3_gfx_windowed;
 static bool jbhook3_gfx_show_cursor;

@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "hooklib/app.h"
@@ -12,7 +14,6 @@
 #include "unicorntail/usbmem.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param);
 static bool my_dll_entry_main(void);
@@ -50,7 +51,7 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         goto end;
     }
 
-    log_to_external(
+    core_log_impl_set(
         log_body_misc, log_body_info, log_body_warning, log_body_fatal);
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);

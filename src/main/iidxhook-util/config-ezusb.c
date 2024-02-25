@@ -3,9 +3,10 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "iidxhook-util/config-ezusb.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 #define IIDXHOOK_UTIL_CONFIG_EZUSB_API_CALL_MONITORING_KEY \

@@ -2,8 +2,6 @@
 
 #include "eamio-icca/config-icc.h"
 
-#include "util/log.h"
-
 #define EAMIO_ICCA_CONFIG_ICC_PORT_KEY "icc.port"
 #define EAMIO_ICCA_CONFIG_ICC_BAUD_KEY "icc.baud"
 

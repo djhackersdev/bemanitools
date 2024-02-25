@@ -14,14 +14,19 @@
 #include "config/spinner.h"
 #include "config/usages.h"
 
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "eamio/eam-config.h"
 
 #include "geninput/input-config.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
-#include "util/thread.h"
 #include "util/winres.h"
 
 HPROPSHEETPAGE
@@ -61,11 +66,22 @@ int main(int argc, char **argv)
     wchar_t text[1024];
     int max_light;
     size_t i;
+    struct core_log_sink sink;
 
     inst = GetModuleHandle(NULL);
 
-    log_to_writer(log_writer_debug, NULL);
-    log_to_external(log_impl_misc, log_impl_info, log_impl_warning, my_fatal);
+    core_thread_crt_ext_impl_set();
+
+    core_log_impl_set(
+        core_log_bt_log_misc,
+        core_log_bt_log_info,
+        core_log_bt_log_warning,
+        my_fatal);
+
+    core_log_sink_debug_open(&sink);
+
+    core_log_bt_init(&sink);
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     usages_init(inst);
 
@@ -96,13 +112,17 @@ int main(int argc, char **argv)
         }
     }
 
-    input_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-    input_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
+    core_log_impl_assign(input_set_loggers);
+    input_init(
+        core_thread_create_impl_get(),
+        core_thread_join_impl_get(),
+        core_thread_destroy_impl_get());
 
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-    eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
+    core_log_impl_assign(eam_io_set_loggers);
+    eam_io_init(
+        core_thread_create_impl_get(),
+        core_thread_join_impl_get(),
+        core_thread_destroy_impl_get());
     eam_io_config_api = eam_io_get_config_api();
 
     // calculate these and check against the loaded config

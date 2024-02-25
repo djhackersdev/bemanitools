@@ -10,13 +10,14 @@
 
 #include <stdio.h>
 
+#include "asio/asio-reghook.h"
+
+#include "core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "asio/asio-reghook.h"
-
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

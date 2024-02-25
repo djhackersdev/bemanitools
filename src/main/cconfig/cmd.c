@@ -7,8 +7,9 @@
 
 #include "cconfig/cmd.h"
 
+#include "core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static void

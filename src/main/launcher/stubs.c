@@ -1,3 +1,5 @@
+#define LOG_MODULE "stubs"
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -5,12 +7,13 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "launcher/stubs.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 struct ikey_status {
     uint32_t field_0;
@@ -116,6 +119,8 @@ static void *STDCALL my_GetProcAddress(HMODULE dll, const char *name)
 
 void stubs_init(void)
 {
+    log_info("Init");
+
     hook_table_apply(
         NULL, "kernel32.dll", stub_hook_syms, lengthof(stub_hook_syms));
 }
