@@ -2,7 +2,7 @@
 
 #include "p3io/cmd.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 #include "ddr.h"
 #include "device.h"

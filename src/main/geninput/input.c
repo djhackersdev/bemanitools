@@ -7,6 +7,9 @@
 #include "bemanitools/glue.h"
 #include "bemanitools/input.h"
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "geninput/hid-mgr.h"
 #include "geninput/hid.h"
 #include "geninput/io-thread.h"
@@ -14,10 +17,8 @@
 #include "geninput/mapper.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/msg-thread.h"
 #include "util/str.h"
-#include "util/thread.h"
 
 static HINSTANCE input_hinst;
 static volatile long input_init_count;
@@ -47,7 +48,7 @@ void input_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 void input_init(
@@ -63,7 +64,7 @@ void input_init(
 
     mapper_inst = mapper_impl_create();
 
-    thread_api_init(create, join, destroy);
+    core_thread_impl_set(create, join, destroy);
     msg_thread_init(input_hinst);
     io_thread_init();
 }

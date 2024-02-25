@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 void *xcalloc(size_t nbytes)
 {

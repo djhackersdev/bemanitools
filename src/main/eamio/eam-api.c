@@ -11,14 +11,15 @@
 #include "bemanitools/eamio.h"
 #include "bemanitools/input.h"
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "eamio/eam-config.h"
 #include "eamio/eam-impl.h"
 #include "eamio/eam-s11n.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/msg-thread.h"
-#include "util/thread.h"
 
 static void eam_handle_hotplug_msg(WPARAM wparam, const DEV_BROADCAST_HDR *hdr);
 static FILE *eam_io_config_open(const char *mode);
@@ -108,14 +109,14 @@ void eam_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 bool eam_io_init(
     thread_create_t create, thread_join_t join, thread_destroy_t destroy)
 {
     input_init(create, join, destroy);
-    thread_api_init(create, join, destroy);
+    core_thread_impl_set(create, join, destroy);
     eam_io_config_load();
     msg_thread_init(eam_hinst);
 

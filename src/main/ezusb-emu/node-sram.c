@@ -2,12 +2,13 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "ezusb-emu/conf.h"
 #include "ezusb-emu/node-sram.h"
 #include "ezusb-iidx/sram-cmd.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 
 #define SRAM_NPAGES 12
 

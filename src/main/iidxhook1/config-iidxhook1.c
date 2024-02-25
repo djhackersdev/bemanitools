@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "iidxhook1/config-iidxhook1.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "iidxhook1/config-iidxhook1.h"
 
 #define IIDXHOOK_CONFIG_MISC_HAPPY_SKY_MS_BG_FIX_KEY "misc.happy_sky_ms_bg_fix"
 

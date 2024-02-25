@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include "core/log.h"
+
 #include "geninput/hotplug.h"
 #include "geninput/ri.h"
 
-#include "util/log.h"
 #include "util/msg-thread.h"
 
 void msg_window_setup(HWND hwnd)

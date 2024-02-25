@@ -5,8 +5,9 @@
 #include "aciodrv/device.h"
 #include "aciodrv/panb.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "core/thread.h"
+
+#include "core/log.h"
 
 static int auto_poll_proc(void *auto_poll_param);
 static int auto_poll_threadid;
@@ -50,7 +51,7 @@ bool aciodrv_proc_panb_init(struct aciodrv_device_ctx *device)
     InitializeCriticalSection(&keypair_lock);
     InitializeCriticalSection(&auto_poll_stop_lock);
     auto_poll_threadid =
-        thread_create(auto_poll_proc, (void *) device, 0x4000, 0);
+        core_thread_create(auto_poll_proc, (void *) device, 0x4000, 0);
 
     return true;
 }
@@ -80,8 +81,8 @@ void aciodrv_proc_panb_fini(struct aciodrv_device_ctx *device)
     auto_poll_stop = true;
     LeaveCriticalSection(&auto_poll_stop_lock);
 
-    thread_join(auto_poll_threadid, NULL);
-    thread_destroy(auto_poll_threadid);
+    core_thread_join(auto_poll_threadid, NULL);
+    core_thread_destroy(auto_poll_threadid);
 
     DeleteCriticalSection(&keypair_lock);
     DeleteCriticalSection(&auto_poll_stop_lock);

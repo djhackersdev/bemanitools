@@ -6,13 +6,14 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "hooklib/adapter.h"
 
 #include "util/codepage.h"
 #include "util/defs.h"
-#include "util/log.h"
 
 static DWORD WINAPI
 my_GetAdaptersInfo(PIP_ADAPTER_INFO adapter_info, PULONG out_buf_len);

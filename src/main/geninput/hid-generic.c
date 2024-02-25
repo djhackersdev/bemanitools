@@ -12,6 +12,8 @@
 #include <hidsdi.h>
 // clang-format on
 
+#include "core/log.h"
+
 #include "geninput/hid-generic-strings.h"
 #include "geninput/hid-generic.h"
 #include "geninput/hid-meta-in.h"
@@ -19,7 +21,6 @@
 #include "geninput/hid.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

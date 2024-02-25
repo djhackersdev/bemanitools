@@ -9,8 +9,9 @@
 
 #include "bemanitools/sdvxio.h"
 
+#include "core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/time.h"
 
 static void kfca_send_version(const struct ac_io_message *req);

@@ -3,11 +3,14 @@
 
 #include <windows.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+
 #include "ezusb-iidx/sram.h"
 #include "ezusb/ezusb.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 
 int main(int argc, char **argv)
 {
@@ -24,7 +27,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    log_to_writer(log_writer_stdout, NULL);
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_stdout();
 
     log_info("Opening ezusb '%s'...", argv[1]);
 

@@ -4,6 +4,7 @@ ldflags_iidxio-bio2      := \
     -lsetupapi \
 
 libs_iidxio-bio2         := \
+    core \
     aciodrv \
     bio2drv \
     cconfig \

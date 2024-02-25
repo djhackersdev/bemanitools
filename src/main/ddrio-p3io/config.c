@@ -1,6 +1,6 @@
 #include "cconfig/cconfig-util.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 #include "config.h"
 

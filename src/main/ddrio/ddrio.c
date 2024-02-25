@@ -4,7 +4,7 @@
 
 #include "bemanitools/input.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 void ddr_io_set_loggers(
     log_formatter_t misc,
