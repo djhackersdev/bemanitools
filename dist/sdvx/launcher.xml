@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<launcher version="1">
+  <bootstrap>
+    <selector __type="str">bemanitools_local_fs</selector>
+    <config kind="inline">
+      <config>
+        <startup>
+            <bemanitools_local_fs>
+                <default>
+                    <file dst="/dev/nvram/ea3-config.xml" src="/prop/eamuse-config.xml" />
+                    <file dst="/dev/nvram/coin.xml" src="/prop/coin.xml" />
+                    <file dst="/dev/nvram/eacoin.xml" src="/prop/eacoin.xml" />
+                </default>
+                <boot>
+                    <file>prop/avs-config.xml</file>
+                    <heap_avs __type="u32">16777216</heap_avs>
+                    <heap_std __type="u32">16777216</heap_std>
+                </boot>
+                <log>
+                    <level>info</level>
+                </log>
+                <eamuse>
+                    <file>/dev/nvram/ea3-config.xml</file>
+                </eamuse>
+                <component>
+                    <file>soundvoltex.dll</file>
+                    <param></param>
+                </component>
+            </bemanitools_local_fs>
+        </startup>
+      </config>
+    </config>
+  </bootstrap>
+  <ea3_ident>
+    <config kind="file">bemanitools/ea3-ident.xml</config>
+    <config kind="file">bemanitools/ea3-license.xml</config>
+  </ea3_ident>
+  <avs>
+    <config kind="inline">
+        <config>
+            <fs>
+                <root>
+                    <device __type="str">.</device>
+                </root>
+                <nvram>
+                    <device __type="str">dev/nvram</device>
+                    <fstype __type="str">fs</fstype>
+                    <option __type="str">vf=1,posix=1</option>
+                </nvram>
+                <raw>
+                    <device __type="str">dev/raw</device>
+                    <fstype __type="str">fs</fstype>
+                    <option __type="str">vf=1,posix=1</option>
+                </raw>
+            </fs>
+        </config>
+    </config>
+  </avs>
+  <eamuse>
+    <config kind="file">bemanitools/ea3-service.xml</config>
+  </eamuse>
+  <hook>
+    <hook_dlls>
+        <dll __type="str">sdvxhook.dll</dll>
+    </hook_dlls>
+    <before_hook_dlls>
+    </before_hook_dlls>
+    <iat_hook_dlls>
+    </iat_hook_dlls>
+  </hook>
+  <debug>
+    <remote_debugger __type="bool">0</remote_debugger>
+    <log_property_configs __type="bool">0</log_property_configs>
+  </debug>
+</launcher>
