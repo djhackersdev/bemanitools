@@ -36,6 +36,9 @@ struct launcher_config {
     struct launcher_debug_config {
         bool remote_debugger;
         bool log_property_configs;
+        bool procmon_file;
+        bool procmon_module;
+        bool procmon_thread;
     } debug;
 };
 

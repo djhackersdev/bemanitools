@@ -14,6 +14,8 @@ libs_launcher   := \
     core \
     hook \
     util \
+    dwarfstack \
+    procmon-lib \
 
 src_launcher    := \
     avs-config.c \
