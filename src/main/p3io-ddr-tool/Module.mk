@@ -4,6 +4,7 @@ ldflags_p3io-ddr-tool   := \
     -lsetupapi \
 
 libs_p3io-ddr-tool     := \
+    core \
     extiodrv \
     extio \
     p3iodrv \

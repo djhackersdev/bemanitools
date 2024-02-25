@@ -5,9 +5,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/iidxio.h"
 
 #include "cconfig/cconfig-hook.h"
+
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread.h"
 
 #include "ezusb-emu/node-security-plug.h"
 
@@ -37,8 +45,6 @@
 
 #include "imports/avs.h"
 
-#include "util/log.h"
-
 #define IIDXHOOK5_CN_INFO_HEADER \
     "iidxhook for tricoro CN"    \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
@@ -60,6 +66,14 @@ static const struct hook_symbol init_hook_user32_syms[] = {
 };
 
 static struct iidxhook_config_io config_io;
+
+static void _iidxhook5_cn_log_init()
+{
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_debug();
+    // TODO change log level support
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
 
 static void
 iidxhook5_cn_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
@@ -163,11 +177,12 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     if (!config_io.disable_io_emu) {
         log_info("Starting IIDX IO backend");
 
-        iidx_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(iidx_io_set_loggers);
 
         if (!iidx_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+                core_thread_create_impl_get(),
+                core_thread_join_impl_get(),
+                core_thread_destroy_impl_get())) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     } else {
@@ -200,7 +215,11 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         return TRUE;
     }
 
-    log_to_writer(log_writer_debug, NULL);
+    // Use AVS APIs
+    avs_util_core_interop_thread_avs_impl_set();
+
+    // TODO init debug logging but with avs available? why not use avs logging?
+    _iidxhook5_cn_log_init();
 
     hook_table_apply(
         NULL,

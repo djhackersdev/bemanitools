@@ -5,10 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/eamio.h"
 #include "bemanitools/sdvxio.h"
 
 #include "cconfig/cconfig-hook.h"
+
+#include "core/log.h"
+#include "core/thread.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
@@ -33,9 +38,7 @@
 
 #include "imports/avs.h"
 
-#include "util/log.h"
 #include "util/str.h"
-#include "util/thread.h"
 
 #define SDVXHOOK2_INFO_HEADER \
     "sdvxhook for VW"         \
@@ -105,11 +108,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up sdvxio.DLL */
     if (!config_io.disable_bio2_emu) {
         log_info("Starting sdvx IO backend");
-        sdvx_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(sdvx_io_set_loggers);
 
         if (!sdvx_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+                core_thread_create_impl_get(),
+                core_thread_join_impl_get(),
+                core_thread_destroy_impl_get())) {
             log_fatal("Initializing sdvx IO backend failed");
         }
     }
@@ -117,11 +121,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up EAMIO.DLL */
     if (!config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        eam_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(eam_io_set_loggers);
 
         if (!eam_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+                core_thread_create_impl_get(),
+                core_thread_join_impl_get(),
+                core_thread_destroy_impl_get())) {
             log_fatal("Initializing card reader backend failed");
         }
     }
@@ -207,8 +212,9 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         goto end;
     }
 
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    // Use AVS APIs
+    avs_util_core_interop_thread_avs_impl_set();
+    avs_util_core_interop_log_avs_impl_set();
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

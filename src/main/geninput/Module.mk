@@ -5,6 +5,7 @@ ldflags_geninput    := \
     -lsetupapi \
 
 libs_geninput       := \
+    core \
     util \
 
 src_geninput        := \

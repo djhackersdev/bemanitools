@@ -3,12 +3,15 @@
 
 #include <stdio.h>
 
-#include "util/log.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
 
-#define TEST_MODULE_BEGIN(name)                 \
-    int main(int argc, char **argv)             \
-    {                                           \
-        log_to_writer(log_writer_stderr, NULL); \
+#define TEST_MODULE_BEGIN(name)             \
+    int main(int argc, char **argv)         \
+    {                                       \
+        core_log_bt_ext_impl_set();         \
+        core_log_bt_ext_init_with_stderr(); \
         fprintf(stderr, "Executing test module '%s'...\n", #name);
 
 #define TEST_MODULE_TEST(func)                              \
@@ -19,6 +22,8 @@
 
 #define TEST_MODULE_END()                                   \
     fprintf(stderr, "Finished execution of test module\n"); \
+    core_log_bt_fini();                                     \
+                                                            \
     return 0;                                               \
     }
 

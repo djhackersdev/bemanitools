@@ -5,6 +5,7 @@ ldflags_ddrio-mm:= \
 	-lsetupapi \
 
 libs_ddrio-mm	:= \
+	core \
 	mm \
 	util \
 

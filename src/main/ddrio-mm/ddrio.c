@@ -7,11 +7,12 @@
 
 #include "bemanitools/ddrio.h"
 
+#include "core/log.h"
+
 #include "mm/mm.h"
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct ddr_bittrans {
@@ -117,7 +118,7 @@ void ddr_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 bool ddr_io_init(

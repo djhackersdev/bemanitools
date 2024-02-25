@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "popnhook1/config-gfx.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "popnhook1/config-gfx.h"
 
 #define POPNHOOK1_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"
 #define POPNHOOK1_CONFIG_GFX_FRAMED_KEY "gfx.framed"

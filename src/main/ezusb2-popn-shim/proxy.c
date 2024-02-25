@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <windows.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 struct CoinParam;
 struct EEP_HISTORY;

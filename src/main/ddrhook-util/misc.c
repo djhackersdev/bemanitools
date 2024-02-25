@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 
+#include "core/log.h"
+
 #include "ddrhook-util/gfx.h"
 
 #include "hook/pe.h"
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static LRESULT(STDCALL *real_SendMessageW)(

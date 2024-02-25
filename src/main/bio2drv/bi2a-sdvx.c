@@ -7,7 +7,7 @@
 
 #include "aciodrv/device.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 static const uint8_t _BIO2DR_BI2A_SDVX_INIT_DATA = 0x3B;
 

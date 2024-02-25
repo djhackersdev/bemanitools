@@ -7,7 +7,7 @@
 
 #include "cconfig/cconfig.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 bool cconfig_util_get_int(
     struct cconfig *config,
@@ -57,6 +57,6 @@ void cconfig_util_set_data(
     size_t len,
     const char *desc);
 
-void cconfig_util_log(struct cconfig *config, log_formatter_t log_formatter);
+void cconfig_util_log(struct cconfig *config, core_log_message_t log_message);
 
 #endif

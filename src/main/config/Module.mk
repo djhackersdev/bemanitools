@@ -3,6 +3,7 @@ rc_config       := config.rc
 cppflags_config := -DUNICODE
 
 libs_config     := \
+    core \
     eamio \
     geninput \
     util \

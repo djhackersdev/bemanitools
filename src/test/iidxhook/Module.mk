@@ -3,6 +3,7 @@ testexes            += iidxhook-config-iidxhook1-test
 srcdir_iidxhook-config-iidxhook1-test := src/test/iidxhook
 
 libs_iidxhook-config-iidxhook1-test     := \
+    core \
     cconfig \
     iidxhook1 \
     test \
@@ -18,6 +19,7 @@ testexes            += iidxhook-config-iidxhook2-test
 srcdir_iidxhook-config-iidxhook2-test := src/test/iidxhook
 
 libs_iidxhook-config-iidxhook2-test     := \
+    core \
     iidxhook2 \
     cconfig \
     test \

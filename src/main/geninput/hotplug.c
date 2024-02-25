@@ -6,12 +6,12 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "geninput/hid.h"
 #include "geninput/hotplug.h"
 #include "geninput/io-thread.h"
 #include "geninput/ri.h"
-
-#include "util/log.h"
 
 static HDEVNOTIFY hotplug_handle;
 

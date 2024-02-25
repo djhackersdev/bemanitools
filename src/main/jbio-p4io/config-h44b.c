@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "jbio-p4io/config-h44b.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "jbio-p4io/config-h44b.h"
 
 #define JBIO_CONFIG_H44B_PORT_KEY "h44b.port"
 #define JBIO_CONFIG_H44B_BAUD_KEY "h44b.baud"

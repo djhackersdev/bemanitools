@@ -9,6 +9,8 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "ezusb/util.h"
 
 #include "ezusb2/cyioctl.h"
@@ -27,7 +29,6 @@
 #include "util/fs.h"
 #include "util/hex.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 // The max buffer size in iidx's ezusb client library is 4096 for the initial

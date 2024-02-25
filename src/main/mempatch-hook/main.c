@@ -4,10 +4,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+
 #include "util/cmdline.h"
 #include "util/fs.h"
 #include "util/hex.h"
-#include "util/log.h"
 
 static bool patch_memory_check_data(
     uintptr_t base_address,
@@ -283,12 +286,12 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         int argc;
         char **argv;
         char *filepath;
-        FILE *logfile;
         bool patched;
 
         patched = false;
-        logfile = fopen("mempatch.log", "w+");
-        log_to_writer(log_writer_file, logfile);
+
+        core_log_bt_ext_impl_set();
+        core_log_bt_ext_init_with_file("mempatch.log", false, false, 0);
 
         args_recover(&argc, &argv);
 
@@ -319,8 +322,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
             log_info("Patching done");
         }
 
-        fflush(logfile);
-        fclose(logfile);
+        core_log_bt_fini();
     }
 
     return TRUE;

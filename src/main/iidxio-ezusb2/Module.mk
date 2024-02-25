@@ -5,6 +5,7 @@ ldflags_iidxio-ezusb2      := \
     -lsetupapi \
 
 libs_iidxio-ezusb2         := \
+    core \
     ezusb2 \
     ezusb \
     ezusb2-iidx \
