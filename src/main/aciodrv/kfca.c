@@ -5,7 +5,7 @@
 
 #include "aciodrv/device.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 static bool
 aciodrv_kfca_watchdog_start(struct aciodrv_device_ctx *device, uint8_t node_id)

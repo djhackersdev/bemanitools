@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "geninput/dev-list.h"
 #include "geninput/hid-generic.h"
 #include "geninput/hid-mgr.h"
@@ -10,9 +13,7 @@
 #include "geninput/pacdrive.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
-#include "util/thread.h"
 
 enum io_thread_cmd {
     IO_THREAD_CMD_STOP,
@@ -172,7 +173,7 @@ void io_thread_init(void)
 
     barrier = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    io_thread_id = thread_create(io_thread_proc, barrier, 16384, 0);
+    io_thread_id = core_thread_create(io_thread_proc, barrier, 16384, 0);
 
     WaitForSingleObject(barrier, INFINITE);
     CloseHandle(barrier);
@@ -200,6 +201,6 @@ void io_thread_fini(void)
 
     PostQueuedCompletionStatus(io_thread_cp, 0, (uintptr_t) &msg, NULL);
 
-    thread_join(io_thread_id, NULL);
-    thread_destroy(io_thread_id);
+    core_thread_join(io_thread_id, NULL);
+    core_thread_destroy(io_thread_id);
 }

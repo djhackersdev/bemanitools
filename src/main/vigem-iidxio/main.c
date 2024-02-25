@@ -9,9 +9,14 @@
 
 #include "bemanitools/iidxio.h"
 
-#include "util/log.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "util/math.h"
-#include "util/thread.h"
 #include "util/time.h"
 
 #include "vigem-iidxio/cab-16seg-sequencer.h"
@@ -259,7 +264,10 @@ static void _all_lights_off()
 
 int main(int argc, char **argv)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    core_thread_crt_ext_impl_set();
+    core_log_bt_ext_impl_set();
+
+    core_log_bt_ext_init_with_stdout();
 
     struct vigem_iidxio_config config;
 
@@ -267,10 +275,12 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    iidx_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(iidx_io_set_loggers);
 
-    if (!iidx_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    if (!iidx_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_warning("Initializing iidxio failed");
         return -1;
     }

@@ -10,6 +10,7 @@ ldflags_vigem-iidxio  := \
     -lsetupapi \
 
 libs_vigem-iidxio     := \
+    core \
     cconfig \
     iidxio \
     util \

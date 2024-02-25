@@ -1,6 +1,7 @@
 exes            += iidxiotest \
 
 libs_iidxiotest     := \
+    core \
     iidxio \
     util \
 

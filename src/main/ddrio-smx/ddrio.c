@@ -6,11 +6,12 @@
 #include "bemanitools/ddrio.h"
 #include "bemanitools/input.h"
 
+#include "core/log.h"
+
 #include "imports/SMX.h"
 #include "imports/avs.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 struct ddr_io_smx_pad_map {
     int pad_no;
@@ -99,7 +100,7 @@ void ddr_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
     input_set_loggers(misc, info, warning, fatal);
 
     /* We would need a log server thread to accept log messages from SMX, since

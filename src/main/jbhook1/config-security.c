@@ -2,11 +2,12 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "jbhook1/config-security.h"
 
 #include "security/mcode.h"
 
-#include "util/log.h"
 #include "util/net.h"
 
 #define JBHOOK1_CONFIG_SECURITY_MCODE_KEY "security.mcode"

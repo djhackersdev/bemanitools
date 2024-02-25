@@ -6,8 +6,9 @@
 
 #include "cconfig/cconfig-main.h"
 
+#include "core/log.h"
+
 #include "util/cmdline.h"
-#include "util/log.h"
 
 bool cconfig_main_config_init(
     struct cconfig *config,
@@ -84,7 +85,7 @@ bool cconfig_main_config_init(
         }
 
         log_misc("Config state after file loading:");
-        cconfig_util_log(config, log_impl_misc);
+        cconfig_util_log(config, core_log_misc_impl_get());
     }
 
     log_misc("Parsing override config parameters from cmd");
@@ -96,7 +97,7 @@ bool cconfig_main_config_init(
     }
 
     log_misc("Config state after cmd parameter overrides:");
-    cconfig_util_log(config, log_impl_misc);
+    cconfig_util_log(config, core_log_misc_impl_get());
 
     goto success;
 

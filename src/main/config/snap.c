@@ -6,10 +6,11 @@
 
 #include "config/snap.h"
 
+#include "core/log.h"
+
 #include "geninput/hid-mgr.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 enum snap_control_heuristic { CONTROL_CENTERING_AXIS, CONTROL_MULTISWITCH };

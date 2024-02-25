@@ -1,5 +1,5 @@
 dlls            += eamio
-libs_eamio      := geninput util
+libs_eamio      := core geninput util
 src_eamio       := \
     eam-api.c \
     eam-impl.c \

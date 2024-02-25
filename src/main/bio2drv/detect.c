@@ -8,10 +8,10 @@
 
 #include "bio2drv/detect.h"
 
+#include "core/log.h"
+
 #include <stdio.h>
 #include <string.h>
-
-#include "util/log.h"
 
 DEFINE_GUID(
     GUID_COM_BUS_ENUMERATOR,
@@ -142,7 +142,7 @@ void bio2drv_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, warning, info, fatal);
 }
 
 bool bio2drv_detect(

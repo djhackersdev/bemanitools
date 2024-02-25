@@ -7,6 +7,8 @@ deplibs_iidxhook6   := \
     avs \
 
 libs_iidxhook6      := \
+	avs-util \
+    core \
     iidxhook-d3d9 \
     iidxhook-util \
     ezusb-emu \

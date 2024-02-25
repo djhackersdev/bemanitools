@@ -10,6 +10,8 @@ ldflags_jbhook2   := \
     -lopengl32 \
 
 libs_jbhook2       := \
+    avs-util \
+    core \
     acioemu \
     eamio \
     jbio \

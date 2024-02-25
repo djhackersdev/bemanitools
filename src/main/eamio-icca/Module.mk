@@ -2,6 +2,7 @@ dlls                 += \
     eamio-icca \
 
 libs_eamio-icca      := \
+    core \
     aciodrv \
     aciomgr \
     cconfig \

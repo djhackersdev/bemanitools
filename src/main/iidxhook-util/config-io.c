@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "iidxhook-util/config-io.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "iidxhook-util/config-io.h"
 
 #define IIDXHOOK_UTIL_CONFIG_IO_DISABLE_CARD_READER_EMU_KEY \
     "io.disable_card_reader_emu"
