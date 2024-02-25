@@ -8,10 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "inject/debugger.h"
-#include "inject/logger.h"
+#include "core/log-bt.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "inject/debugger.h"
+
 #include "util/mem.h"
 #include "util/proc.h"
 #include "util/signal.h"
@@ -178,6 +179,7 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     log_assert(odsi);
 
     char *debug_str;
+    size_t debug_str_len;
 
     if (odsi->fUnicode) {
         debug_str = read_debug_wstr(process, odsi);
@@ -186,7 +188,9 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     }
 
     if (debug_str) {
-        logger_log(debug_str);
+        debug_str_len = strlen(debug_str);
+
+        core_log_bt_direct_sink_write(debug_str, debug_str_len);
 
         free(debug_str);
         return true;
