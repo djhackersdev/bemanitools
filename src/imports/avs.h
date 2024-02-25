@@ -220,6 +220,9 @@ void property_file_write(struct property *prop, const char *path);
 int property_set_flag(struct property *prop, int flags, int mask);
 void property_destroy(struct property *prop);
 
+avs_error property_get_error(struct property *prop);
+struct property *property_clear_error(struct property *prop);
+
 int property_psmap_import(
     struct property *prop,
     struct property_node *root,

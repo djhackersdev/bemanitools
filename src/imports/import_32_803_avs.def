@@ -25,6 +25,8 @@ EXPORTS
     property_destroy
     property_file_write
     property_insert_read
+    property_clear_error
+    property_get_error
     property_mem_write
     property_read_query_memsize
     property_search

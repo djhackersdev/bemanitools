@@ -97,3 +97,13 @@ const char *avs_util_error_str(avs_error error)
 
     return avs_util_error_unknown;
 }
+
+const char *avs_util_property_error_get_and_clear(struct property *prop)
+{
+    avs_error error;
+
+    error = property_get_error(prop);
+    property_clear_error(prop);
+
+    return avs_util_error_str(error);
+}
