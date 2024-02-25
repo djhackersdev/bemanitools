@@ -25,6 +25,8 @@ EXPORTS
     property_desc_to_buffer @201 NONAME == XC058ba50000cd
     property_destroy @264 NONAME == XC058ba500010f
     property_insert_read @23 NONAME == XC058ba5000016
+    property_clear_error @573 NONAME
+    property_get_error @573 NONAME
     property_node_create @316 NONAME == XC058ba5000143
     property_node_datasize @249 NONAME == XC058ba5000100
     property_node_name @255 NONAME == XC058ba5000106
