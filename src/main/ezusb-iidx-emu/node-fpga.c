@@ -2,12 +2,13 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "ezusb-iidx-emu/conf.h"
 #include "ezusb-iidx-emu/node-fpga.h"
 #include "ezusb-iidx/fpga-cmd.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 
 static uint16_t ezusb_iidx_emu_node_fpga_write_ptr;
 static uint16_t ezusb_iidx_emu_node_fpga_prog_size;

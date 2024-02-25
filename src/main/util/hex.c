@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 
 static bool hex_decode_nibble(char c, uint8_t *nibble)
 {

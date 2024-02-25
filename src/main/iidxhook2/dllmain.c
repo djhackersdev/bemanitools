@@ -9,6 +9,14 @@
 
 #include "cconfig/cconfig-hook.h"
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "ezusb-emu/desc.h"
 #include "ezusb-emu/device.h"
 #include "ezusb-emu/node-security-plug.h"
@@ -41,9 +49,6 @@
 
 #include "iidxhook2/config-iidxhook2.h"
 
-#include "util/log.h"
-#include "util/thread.h"
-
 #define IIDXHOOK2_INFO_HEADER \
     "iidxhook for DistorteD"  \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
@@ -64,6 +69,14 @@ static const struct hook_symbol init_hook_syms[] = {
      .patch = my_OpenProcess,
      .link = (void **) &real_OpenProcess},
 };
+
+static void _iidxhook2_log_init()
+{
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_debug();
+    // TODO change log level support
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
 
 static void iidxhook2_setup_d3d9_hooks(
     const struct iidxhook_config_gfx *config_gfx,
@@ -207,20 +220,24 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     /* Start up IIDXIO.DLL */
 
     log_info("Starting IIDX IO backend");
-    iidx_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(iidx_io_set_loggers);
 
-    if (!iidx_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!iidx_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing IIDX IO backend failed");
     }
 
     /* Start up EAMIO.DLL */
 
     log_misc("Initializing card reader backend");
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(eam_io_set_loggers);
 
-    if (!eam_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing card reader backend failed");
     }
 
@@ -254,7 +271,9 @@ skip:
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        log_to_writer(log_writer_debug, NULL);
+        core_thread_crt_ext_impl_set();
+
+        _iidxhook2_log_init();
 
         /* Bootstrap hook for further init tasks (see above) */
 

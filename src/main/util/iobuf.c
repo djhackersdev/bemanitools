@@ -1,8 +1,9 @@
 #define LOG_MODULE "util-iobuf"
 
-#include "util/iobuf.h"
+#include "core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
+#include "util/iobuf.h"
 #include "util/mem.h"
 
 void iobuf_log(struct iobuf *buffer, const char *tag)

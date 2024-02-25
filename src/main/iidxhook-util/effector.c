@@ -2,12 +2,13 @@
 
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "iidxhook-util/effector.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static BOOL my_EnableEqualizer(int a1);
 static BOOL my_GetEqualizerStatus(LPVOID buffer);

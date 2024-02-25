@@ -2,7 +2,7 @@
 
 #include "device.h"
 
-#include "util/log.h"
+#include "core/log.h"
 
 HRESULT extiodrv_device_open(const char *port, HANDLE *handle)
 {

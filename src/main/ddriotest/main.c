@@ -7,32 +7,41 @@
 
 #include "bemanitools/ddrio.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
 
 int main(int argc, char **argv)
 {
-    enum log_level log_level;
+    enum core_log_bt_log_level log_level;
 
-    log_level = LOG_LEVEL_FATAL;
+    log_level = CORE_LOG_BT_LOG_LEVEL_FATAL;
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-v")) {
-            log_level = LOG_LEVEL_WARNING;
+            log_level = CORE_LOG_BT_LOG_LEVEL_WARNING;
         } else if (!strcmp(argv[i], "-vv")) {
-            log_level = LOG_LEVEL_INFO;
+            log_level = CORE_LOG_BT_LOG_LEVEL_INFO;
         } else if (!strcmp(argv[i], "-vvv")) {
-            log_level = LOG_LEVEL_MISC;
+            log_level = CORE_LOG_BT_LOG_LEVEL_MISC;
         }
     }
 
-    log_to_writer(log_writer_stderr, NULL);
-    log_set_level(log_level);
+    core_thread_crt_ext_impl_set();
+    core_log_bt_ext_impl_set();
 
-    ddr_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(log_level);
 
-    if (!ddr_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    core_log_impl_assign(ddr_io_set_loggers);
+
+    if (!ddr_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         fprintf(stderr, "Initializing ddrio failed\n");
         return -1;
     }

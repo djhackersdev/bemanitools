@@ -1,9 +1,9 @@
 #include <stdbool.h>
 
+#include "core/log.h"
+
 #include "security/rp-blowfish-table.h"
 #include "security/rp-blowfish.h"
-
-#include "util/log.h"
 
 static int security_rp_blowfish_enc_sub(int a1)
 {

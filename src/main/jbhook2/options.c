@@ -9,7 +9,7 @@
 #include "util/cmdline.h"
 #include "util/defs.h"
 #include "util/hex.h"
-#include "util/log.h"
+
 #include "util/str.h"
 
 void options_init_from_cmdline(struct options *options)

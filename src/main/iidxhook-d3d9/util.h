@@ -3,9 +3,9 @@
 
 #include <windows.h>
 
-#include "d3d9-util/dxerr9.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "d3d9-util/dxerr9.h"
 
 inline void
 iidxhook_d3d9_util_check_and_handle_failure(HRESULT hr, const char *msg)
