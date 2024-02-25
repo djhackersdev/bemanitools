@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
@@ -17,7 +19,6 @@
 #include "jbhook-util-p3io/gfx.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

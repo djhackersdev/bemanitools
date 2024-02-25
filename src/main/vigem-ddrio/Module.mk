@@ -10,6 +10,7 @@ ldflags_vigem-ddrio  := \
     -lsetupapi \
 
 libs_vigem-ddrio     := \
+    core \
     cconfig \
     ddrio \
     util \

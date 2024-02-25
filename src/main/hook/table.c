@@ -174,10 +174,11 @@ static void hook_table_revert_to_iid(
             sym = &syms[j];
 
             if (hook_table_match_proc(&iate, sym)) {
-                // Only revert-able if the original pointer was stored previously
+                // Only revert-able if the original pointer was stored
+                // previously
                 if (sym->link != NULL && *sym->link != NULL) {
                     pe_patch(iate.ppointer, sym->link, sizeof(*sym->link));
-                } 
+                }
             }
         }
     }

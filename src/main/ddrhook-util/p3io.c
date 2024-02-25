@@ -7,10 +7,10 @@
 
 #include "ddrhook-util/p3io.h"
 
+#include "core/log.h"
+
 #include "p3ioemu/emu.h"
 #include "p3ioemu/uart.h"
-
-#include "util/log.h"
 
 extern bool _15khz;
 extern bool standard_def;

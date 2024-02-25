@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 HANDLE aciodrv_port_open(const char *port_path, int baud)
 {

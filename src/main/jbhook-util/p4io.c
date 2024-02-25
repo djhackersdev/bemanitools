@@ -4,13 +4,13 @@
 
 #include "bemanitools/jbio.h"
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 #include "jbhook-util/p4io.h"
 
 #include "p4io/cmd.h"
-
-#include "util/log.h"
 
 static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes);
 static uint32_t jbhook_command_handle(

@@ -10,14 +10,14 @@
 
 #include "cconfig/cconfig-main.h"
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "extiodrv/device.h"
 #include "extiodrv/extio.h"
 
 #include "p3iodrv/ddr.h"
 #include "p3iodrv/device.h"
-
-#include "util/log.h"
-#include "util/thread.h"
 
 #include "config.h"
 
@@ -255,7 +255,7 @@ void ddr_io_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 static void _ddr_io_config_init(struct ddrio_p3io_config *config_ddrio_p3io)

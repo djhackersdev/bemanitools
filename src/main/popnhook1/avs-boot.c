@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "imports/avs.h"
 
 #include "popnhook1/avs-boot.h"
-
-#include "util/log.h"
 
 static int (*real_ea3_boot_avs)(struct property_node *config);
 static int (*real_ea3_boot)(struct property_node *config);

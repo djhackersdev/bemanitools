@@ -11,10 +11,13 @@
 #include "bio2/bi2a-iidx.h"
 #include "bio2drv/detect.h"
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/proc.h"
 #include "util/str.h"
@@ -224,7 +227,8 @@ static HRESULT _iohook_handler(struct irp *irp)
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_stdout();
 
     if (reason != DLL_PROCESS_ATTACH) {
         return TRUE;

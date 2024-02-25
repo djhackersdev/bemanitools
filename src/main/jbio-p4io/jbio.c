@@ -7,16 +7,16 @@
 
 #include "aciomgr/manager.h"
 
+#include "bemanitools/jbio.h"
+
 #include "cconfig/cconfig-main.h"
 
-#include "bemanitools/jbio.h"
+#include "core/log.h"
 
 #include "jbio-p4io/config-h44b.h"
 #include "jbio-p4io/h44b.h"
 
 #include "p4iodrv/device.h"
-
-#include "util/log.h"
 
 static struct p4iodrv_ctx *p4io_ctx;
 static uint16_t jb_io_panels;
@@ -36,7 +36,7 @@ void jb_io_set_loggers(
 {
     aciomgr_set_loggers(misc, info, warning, fatal);
 
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 bool jb_io_init(

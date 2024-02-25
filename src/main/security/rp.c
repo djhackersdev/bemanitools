@@ -1,3 +1,5 @@
+#include "core/log.h"
+
 #include "security/rp.h"
 
 #include "security/rp-blowfish.h"
@@ -5,7 +7,6 @@
 #include "security/util.h"
 
 #include "util/crypto.h"
-#include "util/log.h"
 
 static uint32_t security_rp_get_len_mcode(const struct security_mcode *mcode)
 {

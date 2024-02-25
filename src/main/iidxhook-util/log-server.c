@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "hook/table.h"
 
 #include "iidxhook-util/log-server.h"
@@ -12,9 +15,7 @@
 #include "imports/avs.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
-#include "util/thread.h"
 
 static int log_thread_proc(void *ctx);
 static void
@@ -39,7 +40,7 @@ void log_server_init(void)
     log_rv_consumer = CreateSemaphore(NULL, 0, 1, NULL);
     ready = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    log_to_external(
+    core_log_impl_set(
         log_post_misc, log_post_info, log_post_warning, log_post_fatal);
 
     log_thread_id = avs_thread_create(log_thread_proc, ready, 16384, 0);

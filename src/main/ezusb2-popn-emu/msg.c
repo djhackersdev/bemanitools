@@ -6,6 +6,8 @@
 
 #include "bemanitools/popnio.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "ezusb-emu/msg.h"
@@ -19,7 +21,6 @@
 #include "ezusb2-popn/msg.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 
 /* ------------------------------------------------------------------------ */
 

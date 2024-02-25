@@ -14,6 +14,8 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
 
@@ -25,7 +27,6 @@
 #include "util/array.h"
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct array bio2_active_ports;
