@@ -1,6 +1,7 @@
 libs            += ezusb-iidx-emu
 
 libs_ezusb-iidx-emu      := \
+    core \
     ezusb-emu \
     ezusb-iidx-16seg-emu \
 

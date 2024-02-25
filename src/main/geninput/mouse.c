@@ -12,11 +12,12 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "geninput/hid.h"
 #include "geninput/mouse.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

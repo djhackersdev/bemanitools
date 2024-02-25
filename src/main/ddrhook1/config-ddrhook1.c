@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "ddrhook1/config-ddrhook1.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "ddrhook1/config-ddrhook1.h"
 
 #define DDRHOOK1_CONFIG_DDRHOOK1_USE_COM4_EMU_KEY "ddrhook1.use_com4_emu"
 #define DDRHOOK1_CONFIG_DDRHOOK1_STANDARD_DEF_KEY "ddrhook1.standard_def"

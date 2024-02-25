@@ -6,13 +6,14 @@
 #include <ntdef.h>
 #include <ntstatus.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "hooklib/acp.h"
 
 #include "util/codepage.h"
 #include "util/defs.h"
-#include "util/log.h"
 
 static NTSTATUS NTAPI my_RtlMultiByteToUnicodeN(
     wchar_t *dest,

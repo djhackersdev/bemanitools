@@ -4,6 +4,9 @@
 
 #include "bemanitools/eamio.h"
 
+#include "core/log.h"
+#include "core/thread.h"
+
 #include "ezusb-iidx-emu/card-mag.c"
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx/serial-cmd.h"
@@ -11,9 +14,7 @@
 #include "security/mcode.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
-#include "util/thread.h"
 
 #define CARD_ID_LEN 8
 
@@ -292,7 +293,7 @@ void ezusb_iidx_emu_node_serial_init(void)
             &ezusb_iidx_emu_node_serial_emulation_state[i].card_cs);
     }
 
-    ezusb_iidx_emu_node_serial_emu_thread = thread_create(
+    ezusb_iidx_emu_node_serial_emu_thread = core_thread_create(
         ezusb_iidx_emu_node_serial_emu_thread_proc, NULL, 0x4000, 0);
 }
 

@@ -2,10 +2,11 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "security/mcode.h"
 
 #include "util/crc.h"
-#include "util/log.h"
 
 static const uint16_t ezusb_iidx_emu_card_mag_checksum_table_payload[256] = {
     0x0,     0x1189,  0x2312,  0x329B,  0x4624,  0x57AD,  0x6536,  0x74BF,

@@ -2,9 +2,10 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "jbhook1/config-eamuse.h"
 
-#include "util/log.h"
 #include "util/net.h"
 
 #define JBHOOK1_CONFIG_EAMUSE_SERVER_KEY "eamuse.server"

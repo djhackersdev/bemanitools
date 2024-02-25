@@ -9,6 +9,7 @@ src_jbio-p4io          := \
     jbio.c \
 
 libs_jbio-p4io      := \
+    core \
     aciodrv \
     aciomgr \
     cconfig \

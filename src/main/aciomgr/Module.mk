@@ -1,6 +1,7 @@
 dlls            += aciomgr
 
 libs_aciomgr    := \
+    core \
     aciodrv \
     util \
 

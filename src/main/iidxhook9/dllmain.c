@@ -5,10 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/eamio.h"
 #include "bemanitools/iidxio.h"
 
 #include "cconfig/cconfig-hook.h"
+
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log.h"
+#include "core/thread.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
@@ -38,9 +45,7 @@
 #include "imports/avs.h"
 
 #include "util/cmdline.h"
-#include "util/log.h"
 #include "util/str.h"
-#include "util/thread.h"
 
 #define IIDXHOOK9_INFO_HEADER   \
     "iidxhook for Heroic Verse" \
@@ -97,6 +102,9 @@ static bool load_configs()
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
+    // Use AVS APIs
+    avs_util_core_interop_thread_avs_impl_set();
+
     // log_server_init is required due to IO occuring in a non avs_thread
     log_server_init();
 
@@ -124,11 +132,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up IIDXIO.DLL */
     if (!iidxhook9_config_io.disable_bio2_emu) {
         log_info("Starting IIDX IO backend");
-        iidx_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(iidx_io_set_loggers);
 
         if (!iidx_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+                core_thread_create_impl_get(),
+                core_thread_join_impl_get(),
+                core_thread_destroy_impl_get())) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     }
@@ -136,11 +145,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up EAMIO.DLL */
     if (!iidxhook9_config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        eam_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(eam_io_set_loggers);
 
         if (!eam_io_init(
-                avs_thread_create, avs_thread_join, avs_thread_destroy)) {
+                core_thread_create_impl_get(),
+                core_thread_join_impl_get(),
+                core_thread_destroy_impl_get())) {
             log_fatal("Initializing card reader backend failed");
         }
     }
@@ -271,8 +281,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         // if AVS is loaded, we're likely too late to be a prehook
         // so we warn the user
         // and switch the current logging context to AVS so it shows up in logs
-        log_to_external(
-            log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+        avs_util_core_interop_log_avs_impl_set();
+
         log_warning("iidxhook9 is designed to be used as a prehook");
         log_warning("please ensure that it is being loaded with -B");
         log_fatal("cya l8r in the prehook :3");
@@ -280,7 +290,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         // we can't log to external in DllMain (AVS) as we're a prehook
         // later during my_dll_entry_init, log_server_init is called
         // which sets swaps the main log write to that instead
-        log_to_writer(log_writer_file, stdout);
+        core_log_bt_ext_impl_set();
     }
 
     pre_hook();

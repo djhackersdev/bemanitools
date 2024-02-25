@@ -13,6 +13,8 @@
 #include "config/resource.h"
 #include "config/schema.h"
 
+#include "core/log.h"
+
 #include "eamio/eam-config.h"
 
 #include "geninput/hid-mgr.h"
@@ -21,7 +23,6 @@
 
 #include "util/array.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

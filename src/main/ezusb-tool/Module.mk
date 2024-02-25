@@ -4,6 +4,7 @@ ldflags_ezusb-tool   := \
     -lsetupapi \
 
 libs_ezusb-tool     := \
+    core \
     ezusb \
     util \
 

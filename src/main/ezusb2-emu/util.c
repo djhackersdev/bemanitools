@@ -6,13 +6,14 @@
 #include <stdio.h>
 #include <usb100.h>
 
+#include "core/log.h"
+
 #include "ezusb2/cyioctl.h"
 #include "ezusb2/ezusb2.h"
 
 #include "ezusb-emu/util.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 
 void ezusb2_emu_util_log_usb_msg(const char *prefix, const struct irp *irp)
 {

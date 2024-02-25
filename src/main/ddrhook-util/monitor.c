@@ -7,12 +7,13 @@
 #include <stdbool.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* Link pointers */

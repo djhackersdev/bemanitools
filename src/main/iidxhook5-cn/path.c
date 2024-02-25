@@ -4,11 +4,12 @@
 #include <string.h>
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "iidxhook5-cn/path.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 #define PATH_A "D:/JDZ-001/contents/"
