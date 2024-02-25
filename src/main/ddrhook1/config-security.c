@@ -2,11 +2,12 @@
 
 #include "cconfig/cconfig-util.h"
 
+#include "core/log.h"
+
 #include "ddrhook1/config-security.h"
 
 #include "security/mcode.h"
 
-#include "util/log.h"
 #include "util/net.h"
 
 #define DDRHOOK1_CONFIG_SECURITY_MCODE_KEY "security.mcode"

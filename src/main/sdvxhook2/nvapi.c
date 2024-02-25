@@ -10,12 +10,12 @@
 
 #include <stdio.h>
 
+#include "core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
 #include "sdvxhook2/nvapi.h"
-
-#include "util/log.h"
 
 static void *my_GetProcAddress(HMODULE dll, const char *name);
 

@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "sdvxio-kfca/config-kfca.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "sdvxio-kfca/config-kfca.h"
 
 #define SDVXIO_KFCA_CONFIG_KFCA_PORT_KEY "kfca.port"
 #define SDVXIO_KFCA_CONFIG_KFCA_BAUD_KEY "kfca.baud"

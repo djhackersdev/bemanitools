@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 #include "ezusb-iidx.h"
 #include "fpga-cmd.h"

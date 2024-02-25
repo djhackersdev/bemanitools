@@ -6,9 +6,9 @@
 
 #include "bemanitools/iidxio.h"
 
-#include "ezusb-iidx/seg16-cmd.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "ezusb-iidx/seg16-cmd.h"
 
 uint8_t ezusb_iidx_emu_node_16seg_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)

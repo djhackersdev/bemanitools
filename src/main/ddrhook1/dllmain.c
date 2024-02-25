@@ -2,10 +2,19 @@
 
 #include <stdbool.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/ddrio.h"
 #include "bemanitools/eamio.h"
 
 #include "cconfig/cconfig-hook.h"
+
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
 
 #include "ddrhook-util/_com4.h"
 #include "ddrhook-util/extio.h"
@@ -37,8 +46,6 @@
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
-#include "util/thread.h"
 
 #define DDRHOOK1_INFO_HEADER \
     "ddrhook1 for DDR X"     \
@@ -67,6 +74,15 @@ static const struct hook_symbol init_hook_syms[] = {
         .link = (void **) &real_GetModuleFileNameA,
     },
 };
+
+static void _ddrhook1_log_init()
+{
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_debug();
+
+    // TODO change log level support
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
 
 static DWORD STDCALL
 my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
@@ -155,7 +171,12 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
 
     log_info("Initializing DDR IO backend");
 
-    ok = ddr_io_init(thread_create, thread_join, thread_destroy);
+    core_log_impl_assign(ddr_io_set_loggers);
+
+    ok = ddr_io_init(
+        core_thread_create_impl_get(),
+        core_thread_join_impl_get(),
+        core_thread_destroy_impl_get());
 
     if (!ok) {
         log_fatal("Couldn't initialize DDR IO backend");
@@ -165,10 +186,12 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
     if (config_ddrhook1.use_com4_emu) {
         log_info("Initializing card reader backend");
 
-        eam_io_set_loggers(
-            log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+        core_log_impl_assign(eam_io_set_loggers);
 
-        ok = eam_io_init(thread_create, thread_join, thread_destroy);
+        ok = eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get());
 
         if (!ok) {
             log_fatal("Couldn't initialize card reader backend");
@@ -185,7 +208,12 @@ skip:
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        log_to_writer(log_writer_debug, NULL);
+        // Use AVS APIs
+        avs_util_core_interop_thread_avs_impl_set();
+
+        // TODO init debug logging but with avs available? why not use avs
+        // logging?
+        _ddrhook1_log_init();
 
         hook_table_apply(
             NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));

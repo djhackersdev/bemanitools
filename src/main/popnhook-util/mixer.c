@@ -6,10 +6,11 @@
 #include <mmsystem.h>
 // clang-format on
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 MMRESULT STDCALL hook_mixerGetLineControlsA(
     HMIXEROBJ hmxobj, LPMIXERLINECONTROLSA pmxlc, DWORD fdwControls);

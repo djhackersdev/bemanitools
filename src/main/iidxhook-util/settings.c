@@ -7,12 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "util/defs.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

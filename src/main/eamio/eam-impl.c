@@ -9,6 +9,8 @@
 
 #include "bemanitools/eamio.h"
 
+#include "core/log.h"
+
 #include "eamio/eam-impl.h"
 
 #include "geninput/hid-mgr.h"
@@ -16,7 +18,6 @@
 #include "util/defs.h"
 #include "util/fs.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

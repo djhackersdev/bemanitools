@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "util/log.h"
+#include "core/log.h"
 
 bool proc_is_running_as_admin_user()
 {

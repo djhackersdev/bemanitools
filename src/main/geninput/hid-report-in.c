@@ -10,9 +10,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "core/log.h"
+
 #include "geninput/hid-report-in.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 void hid_report_in_init(

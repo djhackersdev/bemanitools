@@ -12,12 +12,13 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "util/crc.h"
 #include "util/fs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define USBMEM_DEVICE_COUNT 2

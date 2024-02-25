@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "bio2drv/config-bio2.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "bio2drv/config-bio2.h"
 
 #define BIO2DRV_CONFIG_BIO2_AUTO_KEY "bio2.autodetect"
 #define BIO2DRV_CONFIG_BIO2_PORT_KEY "bio2.port"

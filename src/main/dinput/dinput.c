@@ -8,12 +8,13 @@
 
 #include <stdbool.h>
 
+#include "core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/pe.h"
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static HRESULT STDCALL my_DirectInput8Create(
     HINSTANCE hinst,

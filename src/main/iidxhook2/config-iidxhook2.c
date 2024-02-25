@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "iidxhook2/config-iidxhook2.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "iidxhook2/config-iidxhook2.h"
 
 #define IIDXHOOK_CONFIG_MISC_DISTORTED_MS_BG_FIX_KEY "misc.distorted_ms_bg_fix"
 

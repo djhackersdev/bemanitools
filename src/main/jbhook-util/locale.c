@@ -2,10 +2,11 @@
 
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 // ANSI/OEM Japanese; Japanese (Shift-JIS)
 #define CODEPAGE_SHIFT_JIS 932

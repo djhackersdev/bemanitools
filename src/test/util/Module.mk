@@ -7,6 +7,7 @@ ldflags_util-net-test   := \
     -liphlpapi \
 
 libs_util-net-test    := \
+    core \
     test \
     util \
 
