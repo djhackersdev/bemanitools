@@ -9,7 +9,6 @@ src_util        := \
     hex.c \
     iobuf.c \
     list.c \
-    log.c \
     math.c \
     mem.c \
     msg-thread.c \
@@ -18,7 +17,6 @@ src_util        := \
     proc.c \
     signal.c \
     str.c \
-    thread.c \
     time.c \
     winres.c \
 
