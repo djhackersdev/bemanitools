@@ -13,8 +13,10 @@ BUILDDIR        ?= build
 
 builddir_docker 	  := $(BUILDDIR)/docker
 
-docker_container_name := "bemanitools-build"
-docker_image_name     := "bemanitools-build:latest"
+docker_build_container_name := "bemanitools-build"
+docker_build_image_name     := "bemanitools-build:latest"
+docker_dev_container_name := "bemanitools-dev"
+docker_dev_image_name     := "bemanitools-dev:latest"
 
 depdir                := $(BUILDDIR)/dep
 objdir                := $(BUILDDIR)/obj
@@ -41,6 +43,7 @@ FORCE:
 
 .PHONY: \
 build-docker \
+dev-docker \
 clean \
 code-format \
 doc-format \
@@ -89,21 +92,38 @@ version:
 	$(V)echo "$(gitrev)" > version
 
 build-docker:
-	$(V)docker rm -f $(docker_container_name) 2> /dev/null || true
+	$(V)docker rm -f $(docker_build_container_name) 2> /dev/null || true
 	$(V)docker \
 		build \
-		-t $(docker_image_name) \
-		-f Dockerfile \
+		-t $(docker_build_image_name) \
+		-f Dockerfile.build \
 		.
 	$(V)docker \
 		run \
 		--volume $(shell pwd):/bemanitools \
-		--name $(docker_container_name) \
-		$(docker_image_name)
+		--name $(docker_build_container_name) \
+		$(docker_build_image_name)
+
+dev-docker:
+	$(V)docker rm -f $(docker_dev_container_name) 2> /dev/null || true
+	$(V)docker \
+		build \
+		-t $(docker_dev_image_name) \
+		-f Dockerfile.dev \
+		.
+	$(V)docker \
+		run \
+		--interactive \
+		--tty \
+		--volume $(shell pwd):/bemanitools \
+		--name $(docker_dev_container_name) \
+		$(docker_dev_image_name)
 
 clean-docker:
-	$(V)docker rm -f $(docker_container_name) || true
-	$(V)docker image rm -f $(docker_image_name) || true
+	$(V)docker rm -f $(docker_dev_container_name) || true
+	$(V)docker image rm -f $(docker_dev_image_name) || true
+	$(V)docker rm -f $(docker_build_container_name) || true
+	$(V)docker image rm -f $(docker_build_image_name) || true
 	$(V)rm -rf $(BUILDDIR)
 
 #

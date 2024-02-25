@@ -21,6 +21,8 @@ EXPORTS
     property_destroy @146 NONAME
     property_desc_to_buffer @147 NONAME
     property_insert_read @149 NONAME
+    property_clear_error @158 NONAME == XCgsqzn000009d
+    property_get_error @159 NONAME == XCgsqzn000009e
     property_search @162 NONAME
     property_node_create @163 NONAME
     property_node_name @168 NONAME == XCgsqzn00000a7

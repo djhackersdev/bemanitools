@@ -19,6 +19,8 @@ EXPORTS
     property_destroy @125 NONAME
     property_desc_to_buffer @126 NONAME
     property_insert_read @128 NONAME
+    property_clear_error @573 NONAME
+    property_get_error @573 NONAME
     property_search @141 NONAME
     property_node_create @142 NONAME
     property_node_name @147 NONAME == XCnbrep7000092
