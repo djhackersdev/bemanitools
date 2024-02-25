@@ -5,6 +5,8 @@
 
 #include "bemanitools/jbio.h"
 
+#include "core/log.h"
+
 #include "jbhook-util-p3io/p3io.h"
 
 #include "p3ioemu/emu.h"
@@ -12,8 +14,6 @@
 
 #include "security/rp-sign-key.h"
 #include "security/rp3.h"
-
-#include "util/log.h"
 
 static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state);
 static HRESULT jbhook_p3io_get_roundplug(

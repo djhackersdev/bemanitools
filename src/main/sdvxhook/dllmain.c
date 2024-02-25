@@ -3,8 +3,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/eamio.h"
 #include "bemanitools/sdvxio.h"
+
+#include "core/log.h"
+#include "core/thread.h"
 
 #include "hook/iohook.h"
 
@@ -17,7 +22,6 @@
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *config);
 static bool my_dll_entry_main(void);
@@ -32,10 +36,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("Starting up SDVX IO backend");
 
-    sdvx_io_set_loggers(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    core_log_impl_assign(sdvx_io_set_loggers);
 
-    ok = sdvx_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+    ok = sdvx_io_init(
+        core_thread_create_impl_get(),
+        core_thread_join_impl_get(),
+        core_thread_destroy_impl_get());
 
     if (!ok) {
         goto sdvx_io_fail;
@@ -43,10 +49,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("Starting up card reader backend");
 
-    eam_io_set_loggers(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    core_log_impl_assign(eam_io_set_loggers);
 
-    ok = eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+    ok = eam_io_init(
+        core_thread_create_impl_get(),
+        core_thread_join_impl_get(),
+        core_thread_destroy_impl_get());
 
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
@@ -100,8 +108,9 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         return TRUE;
     }
 
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    // Use AVS APIs
+    avs_util_core_interop_thread_avs_impl_set();
+    avs_util_core_interop_log_avs_impl_set();
 
     args_recover(&argc, &argv);
 

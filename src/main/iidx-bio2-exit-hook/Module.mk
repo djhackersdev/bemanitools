@@ -4,6 +4,7 @@ ldflags_iidx-bio2-exit-hook      := \
     -lsetupapi \
 
 libs_iidx-bio2-exit-hook       := \
+    core \
     bio2drv \
     hook \
     util \

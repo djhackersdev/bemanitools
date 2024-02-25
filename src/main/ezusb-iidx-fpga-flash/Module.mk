@@ -4,6 +4,7 @@ ldflags_ezusb-iidx-fpga-flash   := \
     -lsetupapi \
 
 libs_ezusb-iidx-fpga-flash     := \
+    core \
     ezusb \
     ezusb-iidx \
     util \

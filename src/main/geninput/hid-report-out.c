@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "geninput/hid-report-out.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 bool hid_report_out_init(

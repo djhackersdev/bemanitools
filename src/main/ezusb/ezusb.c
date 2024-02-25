@@ -4,10 +4,11 @@
 #include <setupapi.h>
 // clang-format on
 
+#include "core/log.h"
+
 #include "ezusb/ezusb.h"
 #include "ezusb/ezusbsys2.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static bool ezusb_reset(HANDLE handle, bool hold)

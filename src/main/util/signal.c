@@ -1,8 +1,9 @@
 #include <unistd.h>
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/signal.h"
 
 static signal_shutdown_handler_t shutdown_handler;

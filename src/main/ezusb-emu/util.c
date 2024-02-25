@@ -6,10 +6,11 @@
 #include <stdio.h>
 #include <usb100.h>
 
+#include "core/log.h"
+
 #include "ezusb-emu/util.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 
 enum ezusb_pipe {
     /* This is just the NT driver API. Add 1 to get the actual EP number. */

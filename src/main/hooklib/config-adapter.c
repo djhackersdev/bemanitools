@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "hooklib/config-adapter.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "hooklib/config-adapter.h"
 
 #define HOOKLIB_CONFIG_ADAPTER_OVERRIDE_IP_KEY "adapter.override_ip"
 

@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/log.h"
+
 #include "geninput/hid.h"
 #include "geninput/io-thread.h"
 #include "geninput/pacdrive.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 /* The PacDrive appears to have a malformed descriptor for its OUT report.

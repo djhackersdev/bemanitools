@@ -26,6 +26,8 @@ EXPORTS
     property_desc_to_buffer @129 NONAME
     property_destroy @128 NONAME
     property_insert_read @131 NONAME
+    property_clear_error @573 NONAME
+    property_get_error @573 NONAME
     property_node_create @145 NONAME
     property_node_name @150 NONAME
     property_node_read @154 NONAME == XCd229cc0000f3

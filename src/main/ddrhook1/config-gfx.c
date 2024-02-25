@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "ddrhook1/config-gfx.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "ddrhook1/config-gfx.h"
 
 #define DDRHOOK1_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"
 

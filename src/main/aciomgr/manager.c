@@ -5,14 +5,15 @@
 #include <stdatomic.h>
 
 #include "aciomgr/manager-init.h"
-
 #include "aciomgr/manager.h"
 
 #include "acio/acio.h"
 
 #include "aciodrv/device.h"
+
+#include "core/log.h"
+
 #include "util/array.h"
-#include "util/log.h"
 
 #define MAX_PORT_PATH_LENGTH 256
 
@@ -90,7 +91,7 @@ void aciomgr_set_loggers(
     log_formatter_t warning,
     log_formatter_t fatal)
 {
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, warning, info, fatal);
 }
 
 struct aciomgr_port_dispatcher *aciomgr_port_init(const char *path, int baud)
