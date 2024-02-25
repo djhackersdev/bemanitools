@@ -4,25 +4,53 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "core/log-bt.h"
+#include "core/log.h"
+
+#include "launcher/bootstrap-config.h"
+
 #include "util/array.h"
 
+// Launcher options (cmd params) are limited to:
+// - Options to run a (vanilla) game without additional launcher features, e.g.
+// hooking
+// - Options that are handy to have for development/debugging purpose, e.g.
+// quickly switching on/off
+//   logging levels
+//
+// Everything else is driven by a composable configuration file (launcher.xml)
 struct options {
-    size_t std_heap_size;
-    size_t avs_heap_size;
-    const char *app_config_path;
-    const char *avs_config_path;
-    const char *ea3_config_path;
-    const char *softid;
-    const char *pcbid;
-    const char *module;
-    const char *logfile;
-    struct array hook_dlls;
-    struct array before_hook_dlls;
-    struct array iat_hook_dlls;
-    bool remote_debugger;
-    const char *override_service;
-    bool override_urlslash_enabled;
-    bool override_urlslash_value;
+    struct options_launcher {
+        const char *config_path;
+    } launcher;
+
+    struct options_bootstrap {
+        const char *config_path;
+        const char *selector;
+    } bootstrap;
+
+    struct options_log {
+        enum core_log_bt_log_level *level;
+        const char *file_path;
+    } log;
+
+    struct options_eamuse {
+        const char *softid;
+        const char *pcbid;
+        const char *service_url;
+        bool *urlslash;
+    } eamuse;
+
+    struct options_hook {
+        struct array hook_dlls;
+        struct array before_hook_dlls;
+        struct array iat_hook_dlls;
+    } hook;
+
+    struct options_debug {
+        bool remote_debugger;
+        bool log_property_configs;
+    } debug;
 };
 
 void options_init(struct options *options);
