@@ -292,7 +292,7 @@ $(zipdir)/iidx-13.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-14-to-17.zip: \
-		build/bin/avs2_0-32/iidxhook3.dll \
+		build/bin/avs2_803-32/iidxhook3.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
