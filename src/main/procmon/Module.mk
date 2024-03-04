@@ -6,6 +6,7 @@ libs_procmon	:= \
 	util \
 
 src_procmon	:= \
+	dllmain.c \
 	file.c \
 	module.c \
 	procmon.c \

@@ -20,7 +20,7 @@
 #include "util/str.h"
 
 static bool _bootstrap_log_property_configs;
-static struct module_context _bootstrap_module_context;
+static struct module _bootstrap_module;
 
 static void _bootstrap_eamuse_ea3_ident_config_inject(
     struct property_node *node, const struct ea3_ident_config *ea3_ident_config)
@@ -263,30 +263,24 @@ void bootstrap_eamuse_init(
     log_misc("eamuse init done");
 }
 
-void bootstrap_module_init(
-    const struct bootstrap_module_config *module_config,
-    const struct array *iat_hook_dlls)
+void bootstrap_module_unresolved_init(const struct bootstrap_module_config *module_config)
 {
     log_assert(module_config);
-    log_assert(iat_hook_dlls);
 
-    log_info("module init");
+    log_info("module unresolved init");
 
-    if (iat_hook_dlls->nitems > 0) {
-        log_info(
-            "Load game DLL with IAT hooks (%d): %s",
-            (uint32_t) iat_hook_dlls->nitems,
-            module_config->file);
+    module_unresolved_load(module_config->file, &_bootstrap_module);
 
-        module_with_iat_hooks_init(
-            &_bootstrap_module_context, module_config->file, iat_hook_dlls);
-    } else {
-        log_info("Load game DLL: %s", module_config->file);
+    log_misc("module unresolved init done");
+}
 
-        module_init(&_bootstrap_module_context, module_config->file);
-    }
+void bootstrap_module_resolve_init()
+{
+    log_info("module resolve init");
 
-    log_misc("module init done");
+    module_resolve(_bootstrap_module);
+
+    log_misc("module resolve init done");
 }
 
 void bootstrap_module_game_init(
@@ -327,7 +321,7 @@ void bootstrap_module_game_fini()
 {
     log_info("module game fini");
 
-    module_fini(&_bootstrap_module_context);
+    module_free(&_bootstrap_module_context);
 }
 
 void bootstrap_avs_fini()

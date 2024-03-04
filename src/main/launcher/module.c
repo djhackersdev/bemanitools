@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "btapi/hook.h"
+
 #include "core/log.h"
 
 #include "hook/pe.h"
@@ -14,7 +16,12 @@
 
 #include "util/str.h"
 
-#define MM_ALLOCATION_GRANULARITY 0x10000
+struct module {
+    char path[MAX_PATH];
+    HMODULE module;
+    dll_entry_init_t init;
+    dll_entry_main_t main;
+};
 
 static bool _module_dependency_available(const char *lib)
 {
@@ -30,142 +37,28 @@ static bool _module_dependency_available(const char *lib)
     }
 }
 
-static bool
-module_replace_dll_iat(HMODULE hModule, const struct array *iat_hook_dlls)
+HMODULE _module_load(const char *path, bool resolve_references)
 {
-    log_assert(hModule);
-    log_assert(iat_hook_dlls);
+    HMODULE module;
+    LPSTR buffer;
+    DWORD err;
 
-    log_misc("replace dll iat: %p", hModule);
+    log_misc("Loading game module: %s", path);
 
-    if (iat_hook_dlls->nitems == 0)
-        return true;
-
-    PBYTE pbModule = (PBYTE) hModule;
-
-    // Find EXE base in process memory
-    IMAGE_DOS_HEADER *idh = (IMAGE_DOS_HEADER *) pbModule;
-    IMAGE_NT_HEADERS *inh = (IMAGE_NT_HEADERS *) (pbModule + idh->e_lfanew);
-
-    // Search through import table if it exists and replace the target DLL with
-    // our DLL filename
-    PIMAGE_SECTION_HEADER pRemoteSectionHeaders =
-        (PIMAGE_SECTION_HEADER) ((PBYTE) pbModule + sizeof(inh->Signature) +
-                                 sizeof(inh->FileHeader) +
-                                 inh->FileHeader.SizeOfOptionalHeader);
-    size_t total_size = inh->OptionalHeader.SizeOfHeaders;
-
-    for (DWORD n = 0; n < inh->FileHeader.NumberOfSections; ++n) {
-        IMAGE_SECTION_HEADER *header =
-            (IMAGE_SECTION_HEADER *) (pRemoteSectionHeaders + n);
-        size_t new_total_size =
-            header->VirtualAddress + header->Misc.VirtualSize;
-        if (new_total_size > total_size)
-            total_size = new_total_size;
-    }
-
-    void *remote_addr = NULL;
-    size_t remote_addr_ptr = 0;
-
-    for (size_t i = 0; i < 10000 && remote_addr == NULL; i++) {
-        remote_addr = VirtualAlloc(
-            pbModule + total_size + (MM_ALLOCATION_GRANULARITY * (i + 1)),
-            (MAX_PATH + 1) * iat_hook_dlls->nitems,
-            MEM_RESERVE | MEM_COMMIT,
-            PAGE_READWRITE);
-    }
-
-    log_assert(remote_addr != NULL);
-
-    if (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-            .VirtualAddress != 0) {
-        PIMAGE_IMPORT_DESCRIPTOR pImageImport =
-            (PIMAGE_IMPORT_DESCRIPTOR) (pbModule +
-                                        inh->OptionalHeader
-                                            .DataDirectory
-                                                [IMAGE_DIRECTORY_ENTRY_IMPORT]
-                                            .VirtualAddress);
-
-        DWORD size = 0;
-        while (inh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-                       .Size == 0 ||
-               size < inh->OptionalHeader
-                          .DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-                          .Size) {
-            IMAGE_IMPORT_DESCRIPTOR *ImageImport =
-                (IMAGE_IMPORT_DESCRIPTOR *) pImageImport;
-
-            if (ImageImport->Name == 0) {
-                break;
-            }
-
-            const char *name = (const char *) (pbModule + ImageImport->Name);
-
-            for (size_t i = 0; i < iat_hook_dlls->nitems; i++) {
-                const char *iat_hook_dll =
-                    *array_item(char *, iat_hook_dlls, i);
-
-                char *iat_hook_replacement = strstr(iat_hook_dll, "=");
-
-                if (!iat_hook_replacement)
-                    continue;
-
-                *iat_hook_replacement = '\0';
-
-                const char *expected_dll = iat_hook_dll;
-                const char *replacement_path_dll = iat_hook_replacement + 1;
-
-                if (strcmp(name, expected_dll) == 0) {
-                    pe_patch(
-                        (PBYTE) remote_addr + remote_addr_ptr,
-                        replacement_path_dll,
-                        strlen(replacement_path_dll));
-
-                    log_misc(
-                        "Replacing %s with %s", name, replacement_path_dll);
-
-                    DWORD val = (DWORD) ((PBYTE) remote_addr - pbModule);
-                    pe_patch(&ImageImport->Name, &val, sizeof(DWORD));
-                    pe_patch(pImageImport, &ImageImport, sizeof(ImageImport));
-
-                    remote_addr_ptr += strlen(replacement_path_dll) + 1;
-                }
-
-                *iat_hook_replacement = '=';
-            }
-
-            pImageImport++;
-            size += sizeof(IMAGE_IMPORT_DESCRIPTOR);
-        }
+    if (resolve_references) {
+        module = LoadLibraryA(path);
     } else {
-        log_misc("Couldn't find import table, can't hook DLL\n");
-        goto inject_fail;
+        module = LoadLibraryExA(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
     }
 
-    return true;
-
-inject_fail:
-    return false;
-}
-
-void module_init(struct module_context *module, const char *path)
-{
-    log_assert(module != NULL);
-    log_assert(path != NULL);
-
-    log_info("init: %s", path);
-
-    module->dll = LoadLibraryA(path);
-
-    if (module->dll == NULL) {
-        LPSTR buffer;
-        DWORD err = GetLastError();
+    if (module == NULL) {
+        err = GetLastError();
 
         FormatMessageA(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL,
-            err,
+            GetLastError(),
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             (LPSTR) &buffer,
             0,
@@ -198,80 +91,105 @@ void module_init(struct module_context *module, const char *path)
             }
         }
 
-        log_fatal("%s: Failed to load game DLL: %s", path, buffer);
+        log_fatal("%s: Failed to load game module: %s", path, buffer);
 
         LocalFree(buffer);
     }
 
-    module->path = str_dup(path);
+    log_misc("Loading game module done");
 
-    log_misc("init done");
+    return module;
 }
 
-void module_with_iat_hooks_init(
-    struct module_context *module,
+static void _module_api_resolve(struct module *module)
+{
+    log_assert(module);
+
+    module->init = (dll_entry_init_t) GetProcAddress(module->module, "dll_entry_init");
+
+    if (!module->init) {
+         log_fatal(
+            "%s (%p): 'dll_entry_init' not found. Is this a game DLL?", module->path, module->module);
+    }
+
+    module->main = (dll_entry_main_t) GetProcAddress(module->main, "dll_entry_main");
+
+    if (!module->main) {
+        log_fatal(
+            "%s (%p): dll_entry_main not found. Is this a game DLL?", module->path, module->module);
+    }
+}
+
+void module_load(const char *path, struct module *module)
+{
+    log_assert(path != NULL);
+    log_assert(module != NULL);
+
+    log_info("%s: load", path);
+
+    str_cpy(module->path, sizeof(module->path), path);
+    module->module = _module_load(path, true);
+
+    _module_api_resolve(module);
+
+    log_misc("%s (%p): loaded", module->path, module->module);
+}
+
+void module_unresolved_load(
     const char *path,
-    const struct array *iat_hook_dlls)
+    struct module *module)
 {
     log_assert(module != NULL);
     log_assert(path != NULL);
 
-    log_info("init iat hooks: %s", path);
+    log_info("%s: unresolved load", path);
 
-    module->dll = LoadLibraryExA(path, NULL, DONT_RESOLVE_DLL_REFERENCES);
+    str_cpy(module->path, sizeof(module->path), path);
+    module->module = _module_load(path, false);
+    _module_api_resolve(module);
 
-    if (module->dll == NULL) {
-        LPSTR buffer;
-        DWORD err = GetLastError();
+    log_misc("%s (%p): unresolved loaded", module->path, module->module);
 
-        FormatMessageA(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            err,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPSTR) &buffer,
-            0,
-            NULL);
+    return module->module;
+}
 
-        if (err == ERROR_MOD_NOT_FOUND) {
-            log_warning("%s is likely missing dependencies", path);
-            log_warning("Do you have vcredist/directx runtimes installed?");
-        }
+HMODULE module_handle_get(const struct module *module)
+{
+    log_assert(module);
 
-        log_fatal("%s: Failed to load game DLL: %s", path, buffer);
+    return module->module;
+}
 
-        LocalFree(buffer);
-    }
+void module_resolve(const struct module *module);
+{
+    log_assert(module);
 
-    // Add IAT hooks
-    module_replace_dll_iat(module->dll, iat_hook_dlls);
-
-    log_misc("Finished processing IAT hooks");
-
+    log_info("%s (%p) resolving", module->path, module->module);
     // Resolve all imports like a normally loaded DLL
-    pe_resolve_imports(module->dll);
+    pe_resolve_imports(module->module);
 
-    dll_entry_t orig_entry = pe_get_entry_point(module->dll);
+    dll_entry_t orig_entry = pe_get_entry_point(module->module);
+
+    log_misc("%s (%p): >>> DllMain");
+
     orig_entry(module->dll, DLL_PROCESS_ATTACH, NULL);
 
-    log_misc("Finished resolving imports");
+    log_misc("%s (%p): <<< DllMain");
 
-    module->path = str_dup(path);
+    log_misc("%s (%p) resolved", module->path, module->module);
 }
 
 void module_init_invoke(
-    const struct module_context *module,
+    const struct module *module,
     struct ea3_ident_config *ea3_ident_config,
     struct property_node *app_params_node)
 {
     char sidcode_short[17];
     char sidcode_long[21];
     char security_code[9];
-    dll_entry_init_t init;
     bool ok;
 
-    log_info("init invoke");
+    log_info("%s (%p): init invoke", module->path, module->module);
 
     /* Set up security env vars */
 
@@ -326,29 +244,16 @@ void module_init_invoke(
 
     std_setenv("/env/profile/soft_id_code", sidcode_long);
 
-    init = (void *) GetProcAddress(module->dll, "dll_entry_init");
-
-    if (init == NULL) {
-        log_fatal(
-            "%s: dll_entry_init not found. Is this a game DLL?", module->path);
-    }
-
     log_info("Invoking game init...");
 
-    struct property *prop =
-        property_util_cstring_load("<param><io>p3io</io></param>");
+    log_misc("%s (%p) >>> init", module->path, module->module);
 
-    struct property_node *prop_node = property_search(prop, NULL, "/param");
+    ok = module->init(sidcode_short, app_params_node);
 
-    property_util_log(prop);
-    property_util_node_log(prop_node);
-
-    ok = init(sidcode_short, prop_node);
+    log_misc("%s (%p) <<< init: %d", module->path, module->module, ok);
 
     if (!ok) {
         log_fatal("%s: dll_module_init() returned failure", module->path);
-    } else {
-        log_info("Game init done");
     }
 
     /* Back-propagate sidcode, as some games modify it during init */
@@ -381,48 +286,32 @@ void module_init_invoke(
 
     log_misc("back-propagated sidcode long: %s", sidcode_long);
 
-    log_misc("init invoke done");
+    log_misc("%s (%p): init invoked", module->path, module->module);
 }
 
-bool module_main_invoke(const struct module_context *module)
+bool module_main_invoke(const struct module *module)
 {
-    /* GCC warns if you call a variable "main" */
-    dll_entry_main_t main_;
     bool result;
 
     log_assert(module != NULL);
 
-    log_info("main invoke");
+    log_info("%s (%p): main invoke", module->path, module->module);
 
-    main_ = (void *) GetProcAddress(module->dll, "dll_entry_main");
+    log_misc("%s (%p) >>> main", module->path, module->module);
 
-    if (main_ == NULL) {
-        log_fatal(
-            "%s: dll_entry_main not found. Is this a game DLL?", module->path);
-    }
+    result = module->main();
 
-    log_info("Invoking game's main function...");
-
-    result = main_();
-
-    log_info("Main terminated, result: %d", result);
+    log_misc("%s (%p) <<< main: %d", module->path, module->module, result);
 
     return result;
 }
 
-void module_fini(struct module_context *module)
+void module_free(struct module *module)
 {
-    log_info("fini");
+    log_assert(module);
 
-    if (module == NULL) {
-        return;
-    }
+    log_misc("%s (%p): free", module->path, module->module);
 
-    free(module->path);
-
-    if (module->dll != NULL) {
-        FreeLibrary(module->dll);
-    }
-
-    log_misc("fini done");
+    FreeLibrary(module->module);
+    memset(module, 0, sizeof(struct module));
 }

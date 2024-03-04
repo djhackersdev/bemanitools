@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "avs-util/error.h"
+
 #include "core/log.h"
 
 #include "imports/avs.h"
@@ -18,12 +20,6 @@ PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, remote_debugger,
     "debug/remote_debugger", false)
 PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, log_property_configs,
     "debug/log_property_configs", false)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_file,
-    "debug/procmon/file", false)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_module,
-    "debug/procmon/module", false)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_thread,
-    "debug/procmon/thread", false)
 PSMAP_END
 // clang-format on
 
@@ -98,19 +94,21 @@ _launcher_config_layered_config_nodes_load(struct property_node *node)
     return merged_property;
 }
 
-static void _launcher_config_hook_dlls_parse(
+static void _launcher_config_iat_hook_dlls_parse(
     struct property_node *node,
     const char *node_path,
-    char dlls[LAUNCHER_CONFIG_MAX_HOOK_DLL][MAX_PATH])
+    struct launcher_hook_iat_config iat_hook_dlls[LAUNCHER_CONFIG_MAX_HOOKS])
 {
     int cnt;
     struct property_node *cur;
+    struct property_node *child;
+    avs_error error;
 
     cnt = 0;
     cur = property_search(NULL, node, node_path);
 
     while (cur) {
-        if (cnt >= LAUNCHER_CONFIG_MAX_HOOK_DLL) {
+        if (cnt >= LAUNCHER_CONFIG_MAX_HOOKS) {
             log_warning(
                 "Currently not supporting more than %d dlls, skipping "
                 "remaining",
@@ -118,7 +116,29 @@ static void _launcher_config_hook_dlls_parse(
             break;
         }
 
-        property_node_read(cur, PROPERTY_TYPE_STR, dlls[cnt], MAX_PATH);
+        child = property_search(NULL, cur, "source");
+
+        if (!child) {
+            log_fatal("Missing 'source' child node on iat hook property");
+        }
+
+        error = property_node_read(cur, PROPERTY_TYPE_STR, iat_hook_dlls[cnt].source, sizeof(iat_hook_dlls[cnt].source));
+
+        if (AVS_IS_ERROR(error)) {
+            log_fatal("Reading 'source' child node of iat hook property failed: %s", avs_util_error_str(error));
+        }
+
+        child = property_search(NULL, cur, "replace");
+
+        if (!child) {
+            log_fatal("Missing 'replace' child node on iat hook property");
+        }
+
+        error = property_node_read(cur, PROPERTY_TYPE_STR, iat_hook_dlls[cnt].replace, sizeof(iat_hook_dlls[cnt].replace));
+
+        if (AVS_IS_ERROR(error)) {
+            log_fatal("Reading 'replace' child node of iat hook property failed: %s", avs_util_error_str(error));
+        }
 
         cnt++;
         cur = property_node_traversal(cur, TRAVERSE_NEXT_SEARCH_RESULT);
@@ -152,17 +172,50 @@ static void _launcher_config_bootstrap_load(
     }
 }
 
-static void _launcher_config_hook_load(
-    struct property_node *node, struct launcher_hook_config *config)
+static void _launcher_config_hooks_load(
+    struct property_node *node, struct launcher_hooks_config *config)
 {
     log_assert(node);
     log_assert(config);
 
-    _launcher_config_hook_dlls_parse(node, "hook_dlls/dll", config->hook_dlls);
-    _launcher_config_hook_dlls_parse(
-        node, "before_hook_dlls/dll", config->before_hook_dlls);
-    _launcher_config_hook_dlls_parse(
-        node, "iat_hook_dlls/dll", config->iat_hook_dlls);
+    int cnt;
+    struct property_node *cur;
+    avs_error error;
+
+    cnt = 0;
+    cur = property_search(NULL, node, "hook");
+
+    while (cur) {
+        if (cnt >= LAUNCHER_CONFIG_MAX_HOOKS) {
+            log_warning(
+                "Currently not supporting more than %d hooks, skipping "
+                "remaining",
+                cnt);
+            break;
+        }
+        
+        error = property_node_read(cur, PROPERTY_TYPE_BOOL, &config->hook[cnt].enable);
+
+        if (AVS_IS_ERROR(error)) {
+            log_fatal("Reading 'enable' node of hook entry failed: %s", avs_util_error_str(error));
+        }
+
+        error = property_node_read(cur, PROPERTY_TYPE_STR, &config->hook[cnt].path);
+
+        if (AVS_IS_ERROR(error)) {
+            log_fatal("Reading 'path' node of hook entry failed: %s", avs_util_error_str(error));
+        }
+
+        config->hook[cnt].property = _launcher_config_layered_config_nodes_load(cur);        
+
+        // Default empty config
+        if (!config->hook[cnt].property) {
+            config->hook[cnt].property = property_util_cstring_load("<hook_conf version=\"1\"></hook_conf>");
+        }
+
+        cnt++;
+        cur = property_node_traversal(cur, TRAVERSE_NEXT_SEARCH_RESULT);
+    }
 }
 
 static void _launcher_config_debug_load(
@@ -189,18 +242,10 @@ void launcher_config_init(struct launcher_config *config)
 
     config->eamuse.property = NULL;
 
-    memset(config->hook.hook_dlls, 0, sizeof(config->hook.hook_dlls));
-    memset(
-        config->hook.before_hook_dlls,
-        0,
-        sizeof(config->hook.before_hook_dlls));
-    memset(config->hook.iat_hook_dlls, 0, sizeof(config->hook.iat_hook_dlls));
+    memset(config->hook.hooks, 0, sizeof(config->hook.hooks));
 
     config->debug.remote_debugger = false;
     config->debug.log_property_configs = false;
-    config->debug.procmon_file = false;
-    config->debug.procmon_module = false;
-    config->debug.procmon_thread = false;
 }
 
 void launcher_config_load(
@@ -248,6 +293,8 @@ void launcher_config_load(
 
     if (node) {
         config->avs.property = _launcher_config_layered_config_nodes_load(node);
+    } else {
+        config->avs.property = property_util_cstring_load("<config></config>");
     }
 
     node = property_search(NULL, root_node, "ea3_ident");
@@ -255,6 +302,8 @@ void launcher_config_load(
     if (node) {
         config->ea3_ident.property =
             _launcher_config_layered_config_nodes_load(node);
+    } else {
+        config->ea3_ident.property = property_util_cstring_load("<ea3_conf></ea3_conf>");
     }
 
     node = property_search(NULL, root_node, "eamuse");
@@ -262,18 +311,21 @@ void launcher_config_load(
     if (node) {
         config->eamuse.property =
             _launcher_config_layered_config_nodes_load(node);
+    } else {
+        config->eamuse.property = property_util_cstring_load("<ea3></ea3>");
     }
 
-    node = property_search(NULL, root_node, "hook");
+    node = property_search(NULL, root_node, "hooks");
 
     if (node) {
-        _launcher_config_hook_load(node, &config->hook);
+        _launcher_config_hooks_load(node, &config->hooks);
     }
+    // No defaults
 
     _launcher_config_debug_load(root_node, &config->debug);
 }
 
-bool launcher_config_add_hook_dll(
+bool launcher_config_hooks_hook_add(
     struct launcher_config *config, const char *path)
 {
     int i;
@@ -283,85 +335,36 @@ bool launcher_config_add_hook_dll(
 
     i = 0;
 
-    while (i < LAUNCHER_CONFIG_MAX_HOOK_DLL) {
-        if (strlen(config->hook.hook_dlls[i]) == 0) {
+    while (i < LAUNCHER_CONFIG_MAX_HOOKS) {
+        if (strlen(config->hooks.hook[i].path) == 0) {
             break;
         }
 
         i++;
     }
 
-    if (i >= LAUNCHER_CONFIG_MAX_HOOK_DLL) {
+    if (i >= LAUNCHER_CONFIG_MAX_HOOKS) {
         return false;
     }
 
-    str_cpy(config->hook.hook_dlls[i], sizeof(config->hook.hook_dlls[i]), path);
+    config->hooks.hook[i].enable = true;
+    str_cpy(config->hooks.hook[i].path, sizeof(config->hooks.hook[i].path), path);
+    config->hooks.hook[i].property = property_util_cstring_load("<hook_conf version=\"1\"></hook_conf>");
 
     return true;
 }
 
-bool launcher_config_add_before_hook_dll(
-    struct launcher_config *config, const char *path)
+bool launcher_config_hooks_available(const struct launcher_hooks_config *config)
 {
-    int i;
-
     log_assert(config);
-    log_assert(path);
 
-    i = 0;
-
-    while (i < LAUNCHER_CONFIG_MAX_HOOK_DLL) {
-        if (strlen(config->hook.before_hook_dlls[i]) == 0) {
-            break;
-        }
-
-        i++;
-    }
-
-    if (i >= LAUNCHER_CONFIG_MAX_HOOK_DLL) {
-        return false;
-    }
-
-    str_cpy(
-        config->hook.before_hook_dlls[i],
-        sizeof(config->hook.before_hook_dlls[i]),
-        path);
-
-    return true;
-}
-
-bool launcher_config_add_iat_hook_dll(
-    struct launcher_config *config, const char *path)
-{
-    int i;
-
-    log_assert(config);
-    log_assert(path);
-
-    i = 0;
-
-    while (i < LAUNCHER_CONFIG_MAX_HOOK_DLL) {
-        if (strlen(config->hook.iat_hook_dlls[i]) == 0) {
-            break;
-        }
-
-        i++;
-    }
-
-    if (i >= LAUNCHER_CONFIG_MAX_HOOK_DLL) {
-        return false;
-    }
-
-    str_cpy(
-        config->hook.iat_hook_dlls[i],
-        sizeof(config->hook.iat_hook_dlls[i]),
-        path);
-
-    return true;
+    return strlen(config->hook[0].path) > 0;
 }
 
 void launcher_config_fini(struct launcher_config *config)
 {
+    int i;
+
     log_assert(config);
 
     property_util_free(config->bootstrap.property);
@@ -376,5 +379,11 @@ void launcher_config_fini(struct launcher_config *config)
 
     if (config->eamuse.property) {
         property_util_free(config->eamuse.property);
+    }
+
+    for (i = 0; i < LAUNCHER_CONFIG_MAX_HOOKS; i++) {
+        if (config->hooks.hook[i].property) {
+            property_util_free(config->hooks.hook[i].property);
+        }
     }
 }

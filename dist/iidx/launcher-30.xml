@@ -53,15 +53,12 @@
   <eamuse>
     <config kind="file">bemanitools/ea3-service.xml</config>
   </eamuse>
-  <hook>
-    <hook_dlls>
-    </hook_dlls>
-    <before_hook_dlls>
-      <dll __type="str">iidxhook9.dll</dll>
-    </before_hook_dlls>
-    <iat_hook_dlls>
-    </iat_hook_dlls>
-  </hook>
+  <hooks>
+    <hook>
+      <path __type="str">bemanitools/iidxhook9.dll</path>
+      <config kind="file">bemanitools/iidxhook-30.xml</config>
+    </hook>
+  </hooks>
   <debug>
     <remote_debugger __type="bool">0</remote_debugger>
     <log_property_configs __type="bool">0</log_property_configs>

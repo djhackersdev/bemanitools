@@ -14,7 +14,6 @@
 #include "inject/debugger.h"
 
 #include "util/debug.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/proc.h"
 #include "util/str.h"

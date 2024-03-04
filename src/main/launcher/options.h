@@ -41,11 +41,9 @@ struct options {
         bool *urlslash;
     } eamuse;
 
-    struct options_hook {
-        struct array hook_dlls;
-        struct array before_hook_dlls;
-        struct array iat_hook_dlls;
-    } hook;
+    struct options_hooks {
+        struct array paths;
+    } hooks;
 
     struct options_debug {
         bool remote_debugger;

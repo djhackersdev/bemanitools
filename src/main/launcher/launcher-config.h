@@ -5,7 +5,7 @@
 
 #include "util/array.h"
 
-#define LAUNCHER_CONFIG_MAX_HOOK_DLL 16
+#define LAUNCHER_CONFIG_MAX_HOOKS 16
 
 struct launcher_config {
     uint32_t version;
@@ -27,11 +27,13 @@ struct launcher_config {
         struct property *property;
     } eamuse;
 
-    struct launcher_hook_config {
-        char hook_dlls[LAUNCHER_CONFIG_MAX_HOOK_DLL][MAX_PATH];
-        char before_hook_dlls[LAUNCHER_CONFIG_MAX_HOOK_DLL][MAX_PATH];
-        char iat_hook_dlls[LAUNCHER_CONFIG_MAX_HOOK_DLL][MAX_PATH];
-    } hook;
+    struct launcher_hooks_config {
+        struct launcher_hooks_hook_config {
+            bool enable;
+            char path[MAX_PATH];
+            struct property *property;
+        } hook[LAUNCHER_CONFIG_MAX_HOOKS];
+    } hooks;
 
     struct launcher_debug_config {
         bool remote_debugger;
@@ -47,12 +49,10 @@ void launcher_config_init(struct launcher_config *config);
 void launcher_config_load(
     struct property *property, struct launcher_config *config);
 
-bool launcher_config_add_hook_dll(
+bool launcher_config_hooks_hook_add(
     struct launcher_config *config, const char *path);
-bool launcher_config_add_before_hook_dll(
-    struct launcher_config *config, const char *path);
-bool launcher_config_add_iat_hook_dll(
-    struct launcher_config *config, const char *path);
+
+bool launcher_config_hooks_available(const struct launcher_hooks_config *config);
 
 void launcher_config_fini(struct launcher_config *config);
 

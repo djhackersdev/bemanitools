@@ -183,7 +183,6 @@ include src/main/popnhook-util/Module.mk
 include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
 include src/main/procmon/Module.mk
-include src/main/procmon-lib/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
@@ -192,6 +191,7 @@ include src/main/sdvxio-bio2/Module.mk
 include src/main/sdvxio-kfca/Module.mk
 include src/main/sdvxio/Module.mk
 include src/main/security/Module.mk
+include src/main/stacktrace/Module.mk
 include src/main/unicorntail/Module.mk
 include src/main/util/Module.mk
 include src/main/vefxio/Module.mk

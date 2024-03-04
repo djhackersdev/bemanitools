@@ -18,9 +18,8 @@ void bootstrap_eamuse_init(
     const struct bootstrap_eamuse_config *config,
     const struct ea3_ident_config *ea3_ident_config,
     struct property *override_property);
-void bootstrap_module_init(
-    const struct bootstrap_module_config *module_config,
-    const struct array *iat_hook_dlls);
+void bootstrap_module_unresolved_init(const struct bootstrap_module_config *module_config);
+void bootstrap_module_resolve_init();
 void bootstrap_module_game_init(
     const struct bootstrap_module_config *module_config,
     struct ea3_ident_config *ea3_ident_config);
