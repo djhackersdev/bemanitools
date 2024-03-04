@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="Shift-JIS"?>
-<launcher version="1">
+<launcher>
+  <version __type="u32">1</version>
   <bootstrap>
     <selector __type="str">bemanitools_local_fs</selector>
     <config kind="inline">

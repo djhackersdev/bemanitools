@@ -11,7 +11,7 @@
 // use the property api to iterate the data and parse it into your own custom configuration struct
 // it is advised to also validate all parameters
 // if no configuration was provided upon loading, the config_node contains an empty root node
-bool btapi_hook_main_init(HMODULE game_module, struct property_node *config_node);
+bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config);
 
 void btapi_hook_main_fini();
 

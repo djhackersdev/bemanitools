@@ -3,6 +3,6 @@
 
 #include "property.h"
 
-bool btapi_hook_before_avs_init(struct property_node *config);
+bool btapi_hook_before_avs_init(struct property_node *property_node_config);
 
 #endif

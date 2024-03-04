@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="Shift-JIS"?>
-<hook_conf version="1">
+<hook>
+    <version __type="u32">1</version>
     <io>
         <disable_card_reader_emu __type="bool">0</disable_card_reader_emu>
         <disable_bio2_emu __type="bool">0</disable_bio2_emu>
@@ -40,4 +41,4 @@
         <force_wasapi __type="bool">1</force_wasapi>
         <device_name __type="str">XONAR SOUND CARD(64)</device_name>
     </asio>
-</hook_conf>
+</hook>

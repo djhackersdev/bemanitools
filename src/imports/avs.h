@@ -223,12 +223,12 @@ void property_destroy(struct property *prop);
 avs_error property_get_error(struct property *prop);
 void property_clear_error(struct property *prop);
 
-int property_psmap_import(
+avs_error property_psmap_import(
     struct property *prop,
     struct property_node *root,
     void *dest,
     const struct property_psmap *psmap);
-int property_psmap_export(
+avs_error property_psmap_export(
     struct property *prop,
     struct property_node *root,
     const void *src,

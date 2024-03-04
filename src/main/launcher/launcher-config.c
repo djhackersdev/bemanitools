@@ -210,7 +210,7 @@ static void _launcher_config_hooks_load(
 
         // Default empty config
         if (!config->hook[cnt].property) {
-            config->hook[cnt].property = property_util_cstring_load("<hook_conf version=\"1\"></hook_conf>");
+            config->hook[cnt].property = property_util_cstring_load("<hook><version __type\"u32\">1</version></hook>");
         }
 
         cnt++;
@@ -264,22 +264,22 @@ void launcher_config_load(
         NODE_MISSING_FATAL("");
     }
 
-    error = property_node_refer(
-        NULL,
-        root_node,
-        "version@",
-        PROPERTY_TYPE_ATTR,
-        &config->version,
-        sizeof(uint32_t));
+    node = property_search(NULL, root_node, "version");
 
-    if (AVS_IS_ERROR(error)) {
-        log_fatal("Missing version attribute on root node");
+    if (!node) {
+        NODE_MISSING_FATAL("version");
     }
 
-    // if (config->version != 1) {
-    //     log_fatal("Unsupported version of launcher configuration: %d",
-    //     config->version);
-    // }
+    error = property_node_read(node, PROPERTY_TYPE_U32, &config->version, sizeof(uint32_t));
+
+    if (AVS_IS_ERROR(error)) {
+        log_fatal("Reading 'version' node failed: %s", avs_util_error_str(error));
+    }
+
+    if (config->version != 1) {
+        log_fatal("Unsupported version of launcher configuration: %d",
+            config->version);
+    }
 
     node = property_search(NULL, root_node, "bootstrap");
 
@@ -349,7 +349,7 @@ bool launcher_config_hooks_hook_add(
 
     config->hooks.hook[i].enable = true;
     str_cpy(config->hooks.hook[i].path, sizeof(config->hooks.hook[i].path), path);
-    config->hooks.hook[i].property = property_util_cstring_load("<hook_conf version=\"1\"></hook_conf>");
+    config->hooks.hook[i].property = property_util_cstring_load("<hook_conf><version __type=\"u32\">1</version></hook_conf>");
 
     return true;
 }
