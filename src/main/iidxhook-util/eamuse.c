@@ -76,11 +76,13 @@ my_connect(SOCKET s, const struct sockaddr *addr, int addrlen)
 
 static struct hostent FAR *STDCALL my_gethostbyname(const char *name)
 {
+    // IIDX 9-13 use the `services` domain (not `services.eamuse.konami.fun`).
+    if (strcmp(name, "services") != 0) {
+        return real_gethostbyname(name);
+    }
+
     char *tmp;
 
-    /* bugfix win10: don't just catch services.konami... because
-       win10 is doing some weird stuff and this call also contains
-       various IP addresses. Always return the server address */
     tmp = net_addr_to_str(&eamuse_server_addr_resolved);
     log_misc("my_gethostbyname: '%s' to ip %s", name, tmp);
     free(tmp);
