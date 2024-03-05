@@ -10,11 +10,6 @@
 
 #include "util/debug.h"
 
-#define EX_DESC(name)          \
-    case EXCEPTION_##name:     \
-        desc = " (" #name ")"; \
-        break
-
 #define log_exception(...) _debug_exception_msg("exception", __VA_ARGS__)
 
 static core_log_message_t _debug_exception_msg;

@@ -1,8 +1,10 @@
-libs		+= btapi
+libs		+= bt
 
-libs_btapi	:= \
+libs_bt	:= \
+	core \
+	hook \
 	util \
 
-src_btapi	:= \
+src_bt	:= \
 	hook.c \
 	hooks.c \

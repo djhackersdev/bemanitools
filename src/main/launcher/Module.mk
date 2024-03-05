@@ -11,6 +11,7 @@ deplibs_launcher := \
 
 libs_launcher   := \
     avs-util \
+    bt \
     core \
     hook \
     util \
@@ -24,7 +25,6 @@ src_launcher    := \
     ea3-ident-config.c \
     eamuse-config.c \
     eamuse.c \
-    hook.c \
     launcher-config.c \
     launcher.c \
     main.c \

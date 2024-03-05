@@ -1,18 +1,14 @@
-#define LOG_MODULE "procmon-hook"
+#define LOG_MODULE "exceptiontrance-hook"
 
 #include <windows.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "btapi/hook-core.h"
-#include "btapi/hook-main.h"
-
 #include "core/log.h"
 #include "core/thread.h"
 
-#include "procmon/config.h"
-#include "procmon/procmon.h"
+#include "exceptiontrace/exceptiontrace.h"
 
 void btapi_hook_core_thread_impl_set(
     btapi_thread_create_t create,
@@ -33,20 +29,12 @@ void btapi_hook_core_log_impl_set(
 
 bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config)
 {
-    struct procmon_config config;
-
-    log_assert(game_module);
-    log_assert(property_node_config);
-
-    procmon_config_init(&config);
-    procmon_config_load(property_node_config, &config);
-
-    procmon_init(&config);
+    exceptiontrace_init(core_log_fatal_impl_get());
 
     return true;
 }
 
 void btapi_hook_main_fini()
 {
-    procmon_fini();
+    // noop
 }

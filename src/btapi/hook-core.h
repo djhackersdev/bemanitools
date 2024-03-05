@@ -1,8 +1,18 @@
 #ifndef BTAPI_HOOK_CORE_H
-#define BTAPI_HOOK_CRE_H
+#define BTAPI_HOOK_CORE_H
 
 #include "log.h"
 #include "thread.h"
+
+typedef void (*btapi_hook_core_thread_impl_set_t)(
+    btapi_thread_create_t create,
+    btapi_thread_join_t join,
+    btapi_thread_destroy_t destroy);
+typedef void (*btapi_hook_core_log_impl_set_t)(
+    btapi_log_formatter_t misc,
+    btapi_log_formatter_t info,
+    btapi_log_formatter_t warning,
+    btapi_log_formatter_t fatal);
 
 // Remark: these can actually be called multiple times by the backend if the backend
 // implementation swapped

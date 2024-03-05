@@ -2,26 +2,16 @@
 
 #include <windows.h>
 
-#include "btapi/hook.h"
-
 #include "core/log.h"
 
 #include "hook/pe.h"
 
 #include "imports/avs.h"
-#include "imports/eapki.h"
 
 #include "launcher/module.h"
 #include "launcher/property-util.h"
 
 #include "util/str.h"
-
-struct module {
-    char path[MAX_PATH];
-    HMODULE module;
-    dll_entry_init_t init;
-    dll_entry_main_t main;
-};
 
 static bool _module_dependency_available(const char *lib)
 {
@@ -112,7 +102,7 @@ static void _module_api_resolve(struct module *module)
             "%s (%p): 'dll_entry_init' not found. Is this a game DLL?", module->path, module->module);
     }
 
-    module->main = (dll_entry_main_t) GetProcAddress(module->main, "dll_entry_main");
+    module->main = (dll_entry_main_t) GetProcAddress(module->module, "dll_entry_main");
 
     if (!module->main) {
         log_fatal(
@@ -149,8 +139,6 @@ void module_unresolved_load(
     _module_api_resolve(module);
 
     log_misc("%s (%p): unresolved loaded", module->path, module->module);
-
-    return module->module;
 }
 
 HMODULE module_handle_get(const struct module *module)
@@ -160,7 +148,7 @@ HMODULE module_handle_get(const struct module *module)
     return module->module;
 }
 
-void module_resolve(const struct module *module);
+void module_resolve(const struct module *module)
 {
     log_assert(module);
 
@@ -172,7 +160,7 @@ void module_resolve(const struct module *module);
 
     log_misc("%s (%p): >>> DllMain");
 
-    orig_entry(module->dll, DLL_PROCESS_ATTACH, NULL);
+    orig_entry(module->module, DLL_PROCESS_ATTACH, NULL);
 
     log_misc("%s (%p): <<< DllMain");
 

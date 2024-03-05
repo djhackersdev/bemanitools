@@ -6,6 +6,11 @@
 
 #include "core/log.h"
 
+#define EX_DESC(name)          \
+    case EXCEPTION_##name:     \
+        desc = " (" #name ")"; \
+        break
+
 const char *debug_exception_code_to_str(DWORD code)
 {
     const char *desc = "";

@@ -52,7 +52,7 @@ void bt_hooks_core_thread_impl_set_invoke()
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
         bt_hook_core_thread_impl_set_invoke(
-            _bt_hooks_hooks[i],
+            &_bt_hooks_hooks[i].hook,
             core_thread_create_impl_get(),
             core_thread_join_impl_get(),
             core_thread_destroy_impl_get());
@@ -69,7 +69,7 @@ void bt_hooks_core_log_impl_set_invoke()
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
         bt_hook_core_log_impl_set_invoke(
-            _bt_hooks_hooks[i],
+            &_bt_hooks_hooks[i].hook,
             core_log_misc_impl_get(),
             core_log_info_impl_get(),
             core_log_warning_impl_get(),
@@ -83,8 +83,6 @@ void bt_hooks_before_avs_init_invoke()
 {
     uint32_t i;
     bool result;
-    struct property *tmp_empty_config_property;
-    struct property_node *root_node;
 
     log_info("before_avs_init invoke");
 
@@ -92,7 +90,7 @@ void bt_hooks_before_avs_init_invoke()
         result = bt_hook_before_avs_init_invoke(&_bt_hooks_hooks[i].hook, _bt_hooks_hooks[i].node);
 
         if (!result) {
-            log_fatal("%s: before AVS initializing hook failed", bt_hook_path_get(_bt_hooks_hooks[i]));
+            log_fatal("%s: before AVS initializing hook failed", bt_hook_path_get(&_bt_hooks_hooks[i].hook));
         }
     }
 
@@ -107,7 +105,7 @@ void bt_hooks_iat_apply(HMODULE game_module)
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
         bt_hook_iat_apply(
-            &_bt_hooks_hooks[i],
+            &_bt_hooks_hooks[i].hook,
             game_module);
     }
 
@@ -118,8 +116,6 @@ void bt_hooks_main_init_invoke(HMODULE game_module)
 {
     uint32_t i;
     bool result;
-    struct property *tmp_empty_config_property;
-    struct property_node *root_node;
 
     log_assert(game_module);
 
@@ -129,7 +125,7 @@ void bt_hooks_main_init_invoke(HMODULE game_module)
         result = bt_hook_main_init_invoke(&_bt_hooks_hooks[i].hook, game_module, _bt_hooks_hooks[i].node);
 
         if (!result) {
-            log_fatal("%s: Initializing hook failed", bt_hook_path_get(_bt_hooks_hooks[i]));
+            log_fatal("%s: Initializing hook failed", bt_hook_path_get(&_bt_hooks_hooks[i].hook));
         }
     }
 
@@ -143,7 +139,7 @@ void bt_hooks_main_fini_invoke()
     log_info("fini invoke");
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
-        bt_hook_fini_invoke(&_bt_hooks_hooks[i].hook);
+        bt_hook_main_fini_invoke(&_bt_hooks_hooks[i].hook);
     }
 
     log_misc("fini invoke done");
@@ -156,8 +152,11 @@ void bt_hooks_fini()
     log_info("fini");
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
-        bt_hook_free(_bt_hooks_hooks[i]);
+        bt_hook_free(&_bt_hooks_hooks[i].hook);
     }
+
+    // property_node is just a reference to the property which is managed
+    // externally
 
     memset(_bt_hooks_hooks, 0, sizeof(_bt_hooks_hooks));
 

@@ -94,57 +94,6 @@ _launcher_config_layered_config_nodes_load(struct property_node *node)
     return merged_property;
 }
 
-static void _launcher_config_iat_hook_dlls_parse(
-    struct property_node *node,
-    const char *node_path,
-    struct launcher_hook_iat_config iat_hook_dlls[LAUNCHER_CONFIG_MAX_HOOKS])
-{
-    int cnt;
-    struct property_node *cur;
-    struct property_node *child;
-    avs_error error;
-
-    cnt = 0;
-    cur = property_search(NULL, node, node_path);
-
-    while (cur) {
-        if (cnt >= LAUNCHER_CONFIG_MAX_HOOKS) {
-            log_warning(
-                "Currently not supporting more than %d dlls, skipping "
-                "remaining",
-                cnt);
-            break;
-        }
-
-        child = property_search(NULL, cur, "source");
-
-        if (!child) {
-            log_fatal("Missing 'source' child node on iat hook property");
-        }
-
-        error = property_node_read(cur, PROPERTY_TYPE_STR, iat_hook_dlls[cnt].source, sizeof(iat_hook_dlls[cnt].source));
-
-        if (AVS_IS_ERROR(error)) {
-            log_fatal("Reading 'source' child node of iat hook property failed: %s", avs_util_error_str(error));
-        }
-
-        child = property_search(NULL, cur, "replace");
-
-        if (!child) {
-            log_fatal("Missing 'replace' child node on iat hook property");
-        }
-
-        error = property_node_read(cur, PROPERTY_TYPE_STR, iat_hook_dlls[cnt].replace, sizeof(iat_hook_dlls[cnt].replace));
-
-        if (AVS_IS_ERROR(error)) {
-            log_fatal("Reading 'replace' child node of iat hook property failed: %s", avs_util_error_str(error));
-        }
-
-        cnt++;
-        cur = property_node_traversal(cur, TRAVERSE_NEXT_SEARCH_RESULT);
-    }
-}
-
 static void _launcher_config_bootstrap_load(
     struct property_node *node, struct launcher_bootstrap_config *config)
 {
@@ -194,13 +143,13 @@ static void _launcher_config_hooks_load(
             break;
         }
         
-        error = property_node_read(cur, PROPERTY_TYPE_BOOL, &config->hook[cnt].enable);
+        error = property_node_read(cur, PROPERTY_TYPE_BOOL, &config->hook[cnt].enable, sizeof(config->hook[cnt].enable));
 
         if (AVS_IS_ERROR(error)) {
             log_fatal("Reading 'enable' node of hook entry failed: %s", avs_util_error_str(error));
         }
 
-        error = property_node_read(cur, PROPERTY_TYPE_STR, &config->hook[cnt].path);
+        error = property_node_read(cur, PROPERTY_TYPE_STR, &config->hook[cnt].path, sizeof(config->hook[cnt].path));
 
         if (AVS_IS_ERROR(error)) {
             log_fatal("Reading 'path' node of hook entry failed: %s", avs_util_error_str(error));
@@ -242,7 +191,7 @@ void launcher_config_init(struct launcher_config *config)
 
     config->eamuse.property = NULL;
 
-    memset(config->hook.hooks, 0, sizeof(config->hook.hooks));
+    memset(&config->hooks, 0, sizeof(config->hooks));
 
     config->debug.remote_debugger = false;
     config->debug.log_property_configs = false;

@@ -29,7 +29,6 @@
 #include "launcher/ea3-ident-config.h"
 #include "launcher/eamuse-config.h"
 #include "launcher/eamuse.h"
-#include "launcher/hook.h"
 #include "launcher/launcher-config.h"
 #include "launcher/module.h"
 #include "launcher/options.h"
@@ -172,7 +171,7 @@ static void _launcher_hook_config_options_override(
             log_warning(
                 "Adding override hook dll '%s' failed (max supported limit "
                 "exceeded), ignored",
-                dll);
+                path);
         }
     }
 }
@@ -206,7 +205,7 @@ static void _launcher_config_options_override(
     // parameters
     _launcher_bootstrap_config_options_override(
         &config->bootstrap, &options->bootstrap);
-    _launcher_hook_config_options_override(config, &options->hook);
+    _launcher_hook_config_options_override(config, &options->hooks);
     _launcher_debug_config_options_override(&config->debug, &options->debug);
 }
 
@@ -321,6 +320,7 @@ void _launcher_hooks_load(
         bool debug_log_property_configs)
 {
     int i;
+    struct property_node *root_node;
 
     log_assert(config);
 
@@ -332,9 +332,11 @@ void _launcher_hooks_load(
                 property_util_log(config->hook[i].property);
             }
 
-            bt_hooks_hook_load(config->hook[i].path, config->hook[i].property);
+            root_node = property_search(config->hook[i].property, NULL, "/");
+
+            bt_hooks_hook_load(config->hook[i].path, root_node);
         } else {
-            log_misc("Hook disabled: %s", config->hook[i].path)
+            log_misc("Hook disabled: %s", config->hook[i].path);
         }
     }
 }
@@ -451,7 +453,7 @@ void _launcher_init(
     bootstrap_log_init(&bootstrap_config->startup.log);
 
     bt_hooks_init();
-    _launcher_hooks_load(&launcher_config->hooks);
+    _launcher_hooks_load(&launcher_config->hooks, launcher_config->debug.log_property_configs);
 
     bt_hooks_core_thread_impl_set_invoke();
     bt_hooks_core_log_impl_set_invoke();
@@ -485,18 +487,19 @@ void _launcher_run(
     const struct bootstrap_config *bootstrap_config,
     struct ea3_ident_config *ea3_ident_config)
 {
+    HMODULE game_module;
+
     log_assert(launcher_config);
     log_assert(bootstrap_config);
     log_assert(ea3_ident_config);
 
-    bootstrap_module_unresolved_init(&launcher_config->bootstrap);
+    game_module = bootstrap_module_unresolved_init(&bootstrap_config->startup.module);
 
-    // TODO hmodule
-    bt_hooks_iat_apply(module);
+    bt_hooks_iat_apply(game_module);
 
     bootstrap_module_resolve_init();
 
-    bt_hooks_main_init_invoke(module);
+    bt_hooks_main_init_invoke(game_module);
 
     _launcher_dongle_stubs_init();
 

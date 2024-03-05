@@ -1,5 +1,5 @@
-#ifndef BEMANITOOLS_API_THREAD_H
-#define BEMANITOOLS_API_THREAD_H
+#ifndef BTAPI_THREAD_H
+#define BTAPI_THREAD_H
 
 #include <stdint.h>
 

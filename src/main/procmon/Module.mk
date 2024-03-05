@@ -9,6 +9,7 @@ src_procmon	:= \
 	config.c \
 	dllmain.c \
 	file.c \
+	hook.c \
 	module.c \
 	procmon.c \
 	thread.c \

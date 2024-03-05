@@ -223,7 +223,6 @@ int main(int argc, char **argv)
 
     os_version_log();
 
-    debug_init(core_log_fatal_impl_get());
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
     signal_register_shutdown_handler(signal_shutdown_handler);

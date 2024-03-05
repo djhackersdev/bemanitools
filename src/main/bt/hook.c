@@ -2,37 +2,15 @@
 
 #include <windows.h>
 
-#include "api-lib/util.h"
+#include "bt/hook.h"
 
-#include "util/log.h"
+#include "core/log.h"
+
+#include "hook/pe.h"
+
 #include "util/str.h"
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
-
-typedef void (*bt_hook_core_thread_impl_set_t)(
-    btapi_thread_create_t create,
-    btapi_thread_join_t join,
-    btapi_thread_destroy_t destroy);
-typedef void (*bt_hook_core_log_impl_set_t)(
-    btapi_log_formatter_t misc,
-    btapi_log_formatter_t info,
-    btapi_log_formatter_t warning,
-    btapi_log_formatter_t fatal);
-typedef bool (*bt_hook_before_avs_init_t)(struct property_node *config);
-typedef const char* (*btapi_hook_iat_dll_name_get_t)();
-typedef bool (*bt_hook_main_init_t)(HMODULE game_module, struct property_node *config);
-typedef void (*bt_hook_main_fini_t)();
-
-struct bt_hook {
-    char path[MAX_PATH];
-    HMODULE module;
-    btapi_hook_core_thread_impl_set_t core_thread_impl_set;
-    btapi_hook_core_log_impl_set_t core_log_impl_set;
-    bt_hook_before_avs_init_t before_avs_init;
-    btapi_hook_iat_dll_name_get_t iat_dll_name_get;
-    btapi_hook_main_init_t main_init;
-    btapi_hook_main_fini_t main_fini;
-};
 
 static void
 _bt_hook_module_dll_iat(HMODULE hModule, const char *source_dll, const char *iat_hook)
@@ -126,7 +104,7 @@ _bt_hook_module_dll_iat(HMODULE hModule, const char *source_dll, const char *iat
             size += sizeof(IMAGE_IMPORT_DESCRIPTOR);
         }
     } else {
-        log_fatal("Couldn't find import table, can't hook DLL: %s", iat_hook_path);
+        log_fatal("Couldn't find import table, can't hook DLL: %s", iat_hook);
     }
 }
 
@@ -171,15 +149,15 @@ HMODULE _bt_hook_library_load(const char *path, bool resolve_references)
     return module;
 }
 
-static void _bt_hook_btapi_resolve(struct btapi_hook *hook)
+static void _bt_hook_btapi_resolve(struct bt_hook *hook)
 {
     // All of these are optional
-    hook->core_thread_impl_set = GetProcAddress(hook->module, "btapi_hook_core_thread_impl_set");
-    hook->core_log_impl_set = GetProcAddress(hook->module, "btapi_hook_core_log_impl_set");
-    hook->before_avs_init = GetProcAddress(hook->module, "btapi_hook_before_avs_init");
-    hook->iat_dll_name_get = GetProcAddress(hook->module, "btapi_hook_iat_dll_name_get");
-    hook->main_init = GetProcAddress(hook->module, "btapi_hook_main_init");
-    hook->main_fini = GetProcAddress(hook->module, "btapi_hook_main_fini");
+    hook->core_thread_impl_set = (btapi_hook_core_thread_impl_set_t) GetProcAddress(hook->module, "btapi_hook_core_thread_impl_set");
+    hook->core_log_impl_set = (btapi_hook_core_log_impl_set_t) GetProcAddress(hook->module, "btapi_hook_core_log_impl_set");
+    hook->before_avs_init = (btapi_hook_before_avs_init_t) GetProcAddress(hook->module, "btapi_hook_before_avs_init");
+    hook->iat_dll_name_get = (btapi_hook_iat_dll_name_get_t) GetProcAddress(hook->module, "btapi_hook_iat_dll_name_get");
+    hook->main_init = (btapi_hook_main_init_t) GetProcAddress(hook->module, "btapi_hook_main_init");
+    hook->main_fini = (btapi_hook_main_fini_t) GetProcAddress(hook->module, "btapi_hook_main_fini");
 }
 
 void bt_hook_load(const char *path, struct bt_hook *hook)
@@ -194,27 +172,6 @@ void bt_hook_load(const char *path, struct bt_hook *hook)
     str_cpy(hook->path, sizeof(hook->path), path);
     hook->module = _bt_hook_library_load(path, true);
     _bt_hook_btapi_resolve(hook);
-
-    log_misc("%s (%p): loaded", hook->path, hook->module);
-}
-
-void bt_hook_iat_load(HMODULE module, const char *source_dll_path, 
-        const char *hook_iat_dll_path, struct bt_lib_hook *hook)
-{
-    log_assert(module != NULL);
-    log_assert(source_dll_path != NULL);
-    log_assert(hook_iat_dll_path != NULL);
-    log_assert(hook != NULL);
-
-    log_info("%s: load iat hook", hook_iat_dll_path);
-
-    memset(hook, 0, sizeof(*hook));
-
-    str_cpy(hook->path, sizeof(hook->path), hook_iat_dll_path);
-    hook->module = _bt_hook_library_load(hook_iat_dll_path, false);
-    _bt_hook_btapi_resolve(hook);
-
-    _bt_hook_module_dll_iat(module, source_dll_path, hook_iat_dll_path);
 
     log_misc("%s (%p): loaded", hook->path, hook->module);
 }
@@ -239,7 +196,7 @@ void bt_hook_core_thread_impl_set_invoke(
 
     log_misc("%s (%p): >>> core_thread_impl_set", hook->path, hook->module);
 
-    if (hook->thread_impl_set) {
+    if (hook->core_thread_impl_set) {
         hook->core_thread_impl_set(create, join, destroy);
     } else {
         log_warning("%s (%p): 'core_thread_impl_set' not implemented, ignore");
@@ -263,7 +220,7 @@ void bt_hook_core_log_impl_set_invoke(
 
     log_misc("%s (%p): >>> core_log_impl_set", hook->path, hook->module);
 
-    if (hook->log_impl_set) {
+    if (hook->core_log_impl_set) {
         hook->core_log_impl_set(misc, info, warning, fatal);
     } else {
         log_misc("%s (%p): 'core_log_impl_set' not implemented, ignore");
@@ -272,17 +229,18 @@ void bt_hook_core_log_impl_set_invoke(
     log_misc("%s (%p): <<< core_log_impl_set: %d", hook->path, hook->module);
 }
 
-bool bt_hook_before_avs_init_invoke(const struct bt_hook *hook, HMODULE game_module, struct property_node *config)
+bool bt_hook_before_avs_init_invoke(
+        const struct bt_hook *hook,
+        struct property_node *config)
 {
     bool result;
 
     log_assert(hook);
-    log_assert(game_module);
     log_assert(config);
 
     log_misc("%s (%p): >>> before_avs_init", hook->path, hook->module);
 
-    if (hook->init) {
+    if (hook->before_avs_init) {
         result = hook->before_avs_init(config);
     } else {
         log_misc("%s (%p): 'before_avs_init' not implemented, ignore");
@@ -324,7 +282,7 @@ bool bt_hook_main_init_invoke(const struct bt_hook *hook, HMODULE game_module, s
 
     log_misc("%s (%p): >>> main_init", hook->path, hook->module);
 
-    if (hook->init) {
+    if (hook->main_init) {
         result = hook->main_init(game_module, config);
     } else {
         log_misc("%s (%p): 'main_init' not implemented, ignore");
@@ -342,7 +300,7 @@ void bt_hook_main_fini_invoke(const struct bt_hook *hook)
 
     log_misc("%s (%p): >>> main_fini", hook->path, hook->module);
 
-    if (hook->fini) {
+    if (hook->main_fini) {
         hook->main_fini();
     } else {
         log_misc("%s (%p): 'main_fini' not implemented, ignore");
@@ -351,7 +309,7 @@ void bt_hook_main_fini_invoke(const struct bt_hook *hook)
     log_misc("%s (%p): <<< main_fini", hook->path, hook->module);
 }
 
-void bt_lib_hook_free(struct bt_lib_hook *hook)
+void bt_hook_free(struct bt_hook *hook)
 {
     log_assert(hook);
 

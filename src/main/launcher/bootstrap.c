@@ -263,7 +263,7 @@ void bootstrap_eamuse_init(
     log_misc("eamuse init done");
 }
 
-void bootstrap_module_unresolved_init(const struct bootstrap_module_config *module_config)
+HMODULE bootstrap_module_unresolved_init(const struct bootstrap_module_config *module_config)
 {
     log_assert(module_config);
 
@@ -272,13 +272,15 @@ void bootstrap_module_unresolved_init(const struct bootstrap_module_config *modu
     module_unresolved_load(module_config->file, &_bootstrap_module);
 
     log_misc("module unresolved init done");
+
+    return module_handle_get(&_bootstrap_module);
 }
 
 void bootstrap_module_resolve_init()
 {
     log_info("module resolve init");
 
-    module_resolve(_bootstrap_module);
+    module_resolve(&_bootstrap_module);
 
     log_misc("module resolve init done");
 }
@@ -305,7 +307,7 @@ void bootstrap_module_game_init(
         property_util_node_log(node);
     }
 
-    module_init_invoke(&_bootstrap_module_context, ea3_ident_config, node);
+    module_init_invoke(&_bootstrap_module, ea3_ident_config, node);
 
     log_misc("module game init done");
 }
@@ -314,14 +316,14 @@ void bootstrap_module_game_run()
 {
     log_info("module game run");
 
-    module_main_invoke(&_bootstrap_module_context);
+    module_main_invoke(&_bootstrap_module);
 }
 
 void bootstrap_module_game_fini()
 {
     log_info("module game fini");
 
-    module_free(&_bootstrap_module_context);
+    module_free(&_bootstrap_module);
 }
 
 void bootstrap_avs_fini()
