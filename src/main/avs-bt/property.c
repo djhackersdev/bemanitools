@@ -4,6 +4,10 @@
 
 // TODO get remaining ones and also implement them to complete the API 
 
+struct property {
+    avs_error error;
+};
+
 uint32_t property_read_query_memsize(
     avs_reader_t reader, uint32_t context, int unk0, int unk1)
 {
