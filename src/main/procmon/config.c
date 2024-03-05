@@ -39,20 +39,24 @@ void procmon_config_load(
         log_fatal("Missing 'version' node in configuration");
     }
 
-    error = property_node_read(node, PROPERTY_TYPE_U32, &config->version, sizeof(config->version));
+    error = property_node_read(
+        node, PROPERTY_TYPE_U32, &config->version, sizeof(config->version));
 
     if (AVS_IS_ERROR(error)) {
-        log_fatal("Reading 'version' node failed: %s", avs_util_error_str(error));
+        log_fatal(
+            "Reading 'version' node failed: %s", avs_util_error_str(error));
     }
 
     if (config->version != 1) {
         log_fatal("Unsupported configuration version: %d", config->version);
     }
 
-    error = property_psmap_import(NULL, property_node, config, procmon_config_psmap);
+    error = property_psmap_import(
+        NULL, property_node, config, procmon_config_psmap);
 
     if (AVS_IS_ERROR(error)) {
-        log_fatal("Importing config to psmap failed: %s", avs_util_error_str(error));
+        log_fatal(
+            "Importing config to psmap failed: %s", avs_util_error_str(error));
     }
 }
 

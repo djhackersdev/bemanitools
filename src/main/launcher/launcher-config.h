@@ -52,7 +52,8 @@ void launcher_config_load(
 bool launcher_config_hooks_hook_add(
     struct launcher_config *config, const char *path);
 
-bool launcher_config_hooks_available(const struct launcher_hooks_config *config);
+bool launcher_config_hooks_available(
+    const struct launcher_hooks_config *config);
 
 void launcher_config_fini(struct launcher_config *config);
 

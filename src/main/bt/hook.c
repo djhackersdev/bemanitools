@@ -12,14 +12,18 @@
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
 
-static void
-_bt_hook_module_dll_iat(HMODULE hModule, const char *source_dll, const char *iat_hook)
+static void _bt_hook_module_dll_iat(
+    HMODULE hModule, const char *source_dll, const char *iat_hook)
 {
     log_assert(hModule);
     log_assert(source_dll);
     log_assert(iat_hook);
 
-    log_misc("replace dll iat of module %p, %s -> %s", hModule, source_dll, iat_hook);
+    log_misc(
+        "replace dll iat of module %p, %s -> %s",
+        hModule,
+        source_dll,
+        iat_hook);
 
     PBYTE pbModule = (PBYTE) hModule;
 
@@ -89,8 +93,7 @@ _bt_hook_module_dll_iat(HMODULE hModule, const char *source_dll, const char *iat
                     replacement_path_dll,
                     strlen(replacement_path_dll));
 
-                log_misc(
-                    "Replacing %s with %s", name, replacement_path_dll);
+                log_misc("Replacing %s with %s", name, replacement_path_dll);
 
                 DWORD val = (DWORD) ((PBYTE) remote_addr - pbModule);
 
@@ -152,12 +155,19 @@ HMODULE _bt_hook_library_load(const char *path, bool resolve_references)
 static void _bt_hook_btapi_resolve(struct bt_hook *hook)
 {
     // All of these are optional
-    hook->core_thread_impl_set = (btapi_hook_core_thread_impl_set_t) GetProcAddress(hook->module, "btapi_hook_core_thread_impl_set");
-    hook->core_log_impl_set = (btapi_hook_core_log_impl_set_t) GetProcAddress(hook->module, "btapi_hook_core_log_impl_set");
-    hook->before_avs_init = (btapi_hook_before_avs_init_t) GetProcAddress(hook->module, "btapi_hook_before_avs_init");
-    hook->iat_dll_name_get = (btapi_hook_iat_dll_name_get_t) GetProcAddress(hook->module, "btapi_hook_iat_dll_name_get");
-    hook->main_init = (btapi_hook_main_init_t) GetProcAddress(hook->module, "btapi_hook_main_init");
-    hook->main_fini = (btapi_hook_main_fini_t) GetProcAddress(hook->module, "btapi_hook_main_fini");
+    hook->core_thread_impl_set =
+        (btapi_hook_core_thread_impl_set_t) GetProcAddress(
+            hook->module, "btapi_hook_core_thread_impl_set");
+    hook->core_log_impl_set = (btapi_hook_core_log_impl_set_t) GetProcAddress(
+        hook->module, "btapi_hook_core_log_impl_set");
+    hook->before_avs_init = (btapi_hook_before_avs_init_t) GetProcAddress(
+        hook->module, "btapi_hook_before_avs_init");
+    hook->iat_dll_name_get = (btapi_hook_iat_dll_name_get_t) GetProcAddress(
+        hook->module, "btapi_hook_iat_dll_name_get");
+    hook->main_init = (btapi_hook_main_init_t) GetProcAddress(
+        hook->module, "btapi_hook_main_init");
+    hook->main_fini = (btapi_hook_main_fini_t) GetProcAddress(
+        hook->module, "btapi_hook_main_fini");
 }
 
 void bt_hook_load(const char *path, struct bt_hook *hook)
@@ -230,8 +240,7 @@ void bt_hook_core_log_impl_set_invoke(
 }
 
 bool bt_hook_before_avs_init_invoke(
-        const struct bt_hook *hook,
-        struct property_node *config)
+    const struct bt_hook *hook, struct property_node *config)
 {
     bool result;
 
@@ -247,7 +256,8 @@ bool bt_hook_before_avs_init_invoke(
         result = true;
     }
 
-    log_misc("%s (%p): <<< before_avs_init: %d", hook->path, hook->module, result);
+    log_misc(
+        "%s (%p): <<< before_avs_init: %d", hook->path, hook->module, result);
 
     return result;
 }
@@ -268,11 +278,14 @@ void bt_hook_iat_apply(const struct bt_hook *hook, HMODULE game_module)
     } else {
         log_misc("%s (%p): 'iat_dll_name_get' not implemented, ignore");
     }
-    
+
     log_misc("%s (%p): <<< iat_dll_name_get: %d", hook->path, hook->module);
 }
 
-bool bt_hook_main_init_invoke(const struct bt_hook *hook, HMODULE game_module, struct property_node *config)
+bool bt_hook_main_init_invoke(
+    const struct bt_hook *hook,
+    HMODULE game_module,
+    struct property_node *config)
 {
     bool result;
 

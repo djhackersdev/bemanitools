@@ -363,7 +363,8 @@ static void analog_ui_handle_init_invert(HWND hwnd)
     ui = (struct analog_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
     if (mapper_get_analog_invert(ui->def->tag)) {
-        SendMessage(GetDlgItem(hwnd, IDC_ANALOG_INVERT), BM_SETCHECK, BST_CHECKED, 0);
+        SendMessage(
+            GetDlgItem(hwnd, IDC_ANALOG_INVERT), BM_SETCHECK, BST_CHECKED, 0);
     }
 }
 

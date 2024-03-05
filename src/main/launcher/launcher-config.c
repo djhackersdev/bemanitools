@@ -142,24 +142,38 @@ static void _launcher_config_hooks_load(
                 cnt);
             break;
         }
-        
-        error = property_node_read(cur, PROPERTY_TYPE_BOOL, &config->hook[cnt].enable, sizeof(config->hook[cnt].enable));
+
+        error = property_node_read(
+            cur,
+            PROPERTY_TYPE_BOOL,
+            &config->hook[cnt].enable,
+            sizeof(config->hook[cnt].enable));
 
         if (AVS_IS_ERROR(error)) {
-            log_fatal("Reading 'enable' node of hook entry failed: %s", avs_util_error_str(error));
+            log_fatal(
+                "Reading 'enable' node of hook entry failed: %s",
+                avs_util_error_str(error));
         }
 
-        error = property_node_read(cur, PROPERTY_TYPE_STR, &config->hook[cnt].path, sizeof(config->hook[cnt].path));
+        error = property_node_read(
+            cur,
+            PROPERTY_TYPE_STR,
+            &config->hook[cnt].path,
+            sizeof(config->hook[cnt].path));
 
         if (AVS_IS_ERROR(error)) {
-            log_fatal("Reading 'path' node of hook entry failed: %s", avs_util_error_str(error));
+            log_fatal(
+                "Reading 'path' node of hook entry failed: %s",
+                avs_util_error_str(error));
         }
 
-        config->hook[cnt].property = _launcher_config_layered_config_nodes_load(cur);        
+        config->hook[cnt].property =
+            _launcher_config_layered_config_nodes_load(cur);
 
         // Default empty config
         if (!config->hook[cnt].property) {
-            config->hook[cnt].property = property_util_cstring_load("<hook><version __type\"u32\">1</version></hook>");
+            config->hook[cnt].property = property_util_cstring_load(
+                "<hook><version __type\"u32\">1</version></hook>");
         }
 
         cnt++;
@@ -219,14 +233,17 @@ void launcher_config_load(
         NODE_MISSING_FATAL("version");
     }
 
-    error = property_node_read(node, PROPERTY_TYPE_U32, &config->version, sizeof(uint32_t));
+    error = property_node_read(
+        node, PROPERTY_TYPE_U32, &config->version, sizeof(uint32_t));
 
     if (AVS_IS_ERROR(error)) {
-        log_fatal("Reading 'version' node failed: %s", avs_util_error_str(error));
+        log_fatal(
+            "Reading 'version' node failed: %s", avs_util_error_str(error));
     }
 
     if (config->version != 1) {
-        log_fatal("Unsupported version of launcher configuration: %d",
+        log_fatal(
+            "Unsupported version of launcher configuration: %d",
             config->version);
     }
 
@@ -252,7 +269,8 @@ void launcher_config_load(
         config->ea3_ident.property =
             _launcher_config_layered_config_nodes_load(node);
     } else {
-        config->ea3_ident.property = property_util_cstring_load("<ea3_conf></ea3_conf>");
+        config->ea3_ident.property =
+            property_util_cstring_load("<ea3_conf></ea3_conf>");
     }
 
     node = property_search(NULL, root_node, "eamuse");
@@ -297,8 +315,10 @@ bool launcher_config_hooks_hook_add(
     }
 
     config->hooks.hook[i].enable = true;
-    str_cpy(config->hooks.hook[i].path, sizeof(config->hooks.hook[i].path), path);
-    config->hooks.hook[i].property = property_util_cstring_load("<hook_conf><version __type=\"u32\">1</version></hook_conf>");
+    str_cpy(
+        config->hooks.hook[i].path, sizeof(config->hooks.hook[i].path), path);
+    config->hooks.hook[i].property = property_util_cstring_load(
+        "<hook_conf><version __type=\"u32\">1</version></hook_conf>");
 
     return true;
 }

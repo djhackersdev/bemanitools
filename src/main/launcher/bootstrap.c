@@ -263,7 +263,8 @@ void bootstrap_eamuse_init(
     log_misc("eamuse init done");
 }
 
-HMODULE bootstrap_module_unresolved_init(const struct bootstrap_module_config *module_config)
+HMODULE bootstrap_module_unresolved_init(
+    const struct bootstrap_module_config *module_config)
 {
     log_assert(module_config);
 

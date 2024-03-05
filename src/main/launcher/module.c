@@ -95,18 +95,24 @@ static void _module_api_resolve(struct module *module)
 {
     log_assert(module);
 
-    module->init = (dll_entry_init_t) GetProcAddress(module->module, "dll_entry_init");
+    module->init =
+        (dll_entry_init_t) GetProcAddress(module->module, "dll_entry_init");
 
     if (!module->init) {
-         log_fatal(
-            "%s (%p): 'dll_entry_init' not found. Is this a game DLL?", module->path, module->module);
+        log_fatal(
+            "%s (%p): 'dll_entry_init' not found. Is this a game DLL?",
+            module->path,
+            module->module);
     }
 
-    module->main = (dll_entry_main_t) GetProcAddress(module->module, "dll_entry_main");
+    module->main =
+        (dll_entry_main_t) GetProcAddress(module->module, "dll_entry_main");
 
     if (!module->main) {
         log_fatal(
-            "%s (%p): dll_entry_main not found. Is this a game DLL?", module->path, module->module);
+            "%s (%p): dll_entry_main not found. Is this a game DLL?",
+            module->path,
+            module->module);
     }
 }
 
@@ -125,9 +131,7 @@ void module_load(const char *path, struct module *module)
     log_misc("%s (%p): loaded", module->path, module->module);
 }
 
-void module_unresolved_load(
-    const char *path,
-    struct module *module)
+void module_unresolved_load(const char *path, struct module *module)
 {
     log_assert(module != NULL);
     log_assert(path != NULL);

@@ -87,10 +87,13 @@ void bt_hooks_before_avs_init_invoke()
     log_info("before_avs_init invoke");
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
-        result = bt_hook_before_avs_init_invoke(&_bt_hooks_hooks[i].hook, _bt_hooks_hooks[i].node);
+        result = bt_hook_before_avs_init_invoke(
+            &_bt_hooks_hooks[i].hook, _bt_hooks_hooks[i].node);
 
         if (!result) {
-            log_fatal("%s: before AVS initializing hook failed", bt_hook_path_get(&_bt_hooks_hooks[i].hook));
+            log_fatal(
+                "%s: before AVS initializing hook failed",
+                bt_hook_path_get(&_bt_hooks_hooks[i].hook));
         }
     }
 
@@ -104,9 +107,7 @@ void bt_hooks_iat_apply(HMODULE game_module)
     log_info("Applying iat hook patches");
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
-        bt_hook_iat_apply(
-            &_bt_hooks_hooks[i].hook,
-            game_module);
+        bt_hook_iat_apply(&_bt_hooks_hooks[i].hook, game_module);
     }
 
     log_misc("Applying iat hook patches done");
@@ -122,10 +123,13 @@ void bt_hooks_main_init_invoke(HMODULE game_module)
     log_info("main_init invoke");
 
     for (i = 0; i < _bt_hooks_hooks_count; i++) {
-        result = bt_hook_main_init_invoke(&_bt_hooks_hooks[i].hook, game_module, _bt_hooks_hooks[i].node);
+        result = bt_hook_main_init_invoke(
+            &_bt_hooks_hooks[i].hook, game_module, _bt_hooks_hooks[i].node);
 
         if (!result) {
-            log_fatal("%s: Initializing hook failed", bt_hook_path_get(&_bt_hooks_hooks[i].hook));
+            log_fatal(
+                "%s: Initializing hook failed",
+                bt_hook_path_get(&_bt_hooks_hooks[i].hook));
         }
     }
 

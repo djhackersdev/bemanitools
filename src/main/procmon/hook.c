@@ -31,7 +31,8 @@ void btapi_hook_core_log_impl_set(
     core_log_impl_set(misc, info, warning, fatal);
 }
 
-bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config)
+bool btapi_hook_main_init(
+    HMODULE game_module, struct property_node *property_node_config)
 {
     struct procmon_config config;
 

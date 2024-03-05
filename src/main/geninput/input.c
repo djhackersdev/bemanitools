@@ -38,7 +38,7 @@ static FILE *mapper_config_open(const char *game_type, const char *mode)
             f = fopen_appdata("DJHACKERS", path, mode);
         }
     }
-    
+
     return f;
 }
 

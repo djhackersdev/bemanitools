@@ -14,9 +14,7 @@ struct module {
 };
 
 void module_load(const char *path, struct module *module);
-void module_unresolved_load(
-    const char *path,
-    struct module *module);
+void module_unresolved_load(const char *path, struct module *module);
 HMODULE module_handle_get(const struct module *module);
 void module_resolve(const struct module *module);
 void module_init_invoke(

@@ -27,7 +27,8 @@ void btapi_hook_core_log_impl_set(
     core_log_impl_set(misc, info, warning, fatal);
 }
 
-bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config)
+bool btapi_hook_main_init(
+    HMODULE game_module, struct property_node *property_node_config)
 {
     exceptiontrace_init(core_log_fatal_impl_get());
 

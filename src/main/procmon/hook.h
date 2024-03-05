@@ -13,7 +13,8 @@ void btapi_hook_core_log_impl_set(
     btapi_log_formatter_t info,
     btapi_log_formatter_t warning,
     btapi_log_formatter_t fatal);
-bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config);
+bool btapi_hook_main_init(
+    HMODULE game_module, struct property_node *property_node_config);
 void btapi_hook_main_fini();
 
 #endif

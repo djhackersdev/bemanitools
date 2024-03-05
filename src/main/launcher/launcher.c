@@ -316,8 +316,7 @@ static void _launcher_bootstrap_log_config_verify(
 }
 
 void _launcher_hooks_load(
-        const struct launcher_hooks_config *config,
-        bool debug_log_property_configs)
+    const struct launcher_hooks_config *config, bool debug_log_property_configs)
 {
     int i;
     struct property_node *root_node;
@@ -453,7 +452,8 @@ void _launcher_init(
     bootstrap_log_init(&bootstrap_config->startup.log);
 
     bt_hooks_init();
-    _launcher_hooks_load(&launcher_config->hooks, launcher_config->debug.log_property_configs);
+    _launcher_hooks_load(
+        &launcher_config->hooks, launcher_config->debug.log_property_configs);
 
     bt_hooks_core_thread_impl_set_invoke();
     bt_hooks_core_log_impl_set_invoke();
@@ -493,7 +493,8 @@ void _launcher_run(
     log_assert(bootstrap_config);
     log_assert(ea3_ident_config);
 
-    game_module = bootstrap_module_unresolved_init(&bootstrap_config->startup.module);
+    game_module =
+        bootstrap_module_unresolved_init(&bootstrap_config->startup.module);
 
     bt_hooks_iat_apply(game_module);
 
