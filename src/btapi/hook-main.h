@@ -3,9 +3,9 @@
 
 #include <windows.h>
 
-#include "property.h"
+#include "btapi/config.h"
 
-typedef bool (*btapi_hook_main_init_t)(HMODULE game_module, struct property_node *property_node_config);
+typedef bool (*btapi_hook_main_init_t)(HMODULE game_module, const btapi_config_t *config);
 typedef void (*btapi_hook_main_fini_t)();
 
 // game module reference, either the exe or dll. allow for further targeted hooking/patching
@@ -14,7 +14,7 @@ typedef void (*btapi_hook_main_fini_t)();
 // use the property api to iterate the data and parse it into your own custom configuration struct
 // it is advised to also validate all parameters
 // if no configuration was provided upon loading, the config_node contains an empty root node
-bool btapi_hook_main_init(HMODULE game_module, struct property_node *property_node_config);
+bool btapi_hook_main_init(HMODULE game_module, const btapi_config_t *config);
 
 void btapi_hook_main_fini();
 

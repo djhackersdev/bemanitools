@@ -1,10 +1,10 @@
 #ifndef BTAPI_HOOK_BEFORE_AVS_H
 #define BTAPI_HOOK_BEFORE_AVS_H
 
-#include "property.h"
+#include "btapi/config.h"
 
-typedef bool (*btapi_hook_before_avs_init_t)(struct property_node *property_node_config);
+typedef bool (*btapi_hook_before_avs_init_t)(const btapi_config_t *config);
 
-bool btapi_hook_before_avs_init(struct property_node *property_node_config);
+bool btapi_hook_before_avs_init(const btapi_config_t *config);
 
 #endif
