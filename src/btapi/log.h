@@ -3,14 +3,6 @@
 
 #include <stdint.h>
 
-#ifdef __GNUC__
-/* Bemanitools is compiled with GCC (MinGW, specifically) as of version 5 */
-#define LOG_CHECK_FMT __attribute__((format(printf, 2, 3)))
-#else
-/* Compile it out for MSVC plebs */
-#define LOG_CHECK_FMT
-#endif
-
 /* An AVS-style logger function. Comes in four flavors: misc, info, warning,
    and fatal, with increasing severity. Fatal loggers do not return, they
    abort the running process after writing their message to the log.
@@ -25,7 +17,12 @@
    from libavs, which has its own printf implementation (including a number of
    proprietary extensions), so don't use any overly exotic formats. */
 
-typedef void (*btapi_log_formatter_t)(const char *module, const char *fmt, ...)
-    LOG_CHECK_FMT;
+// typedef void (*btapi_log_formatter_t)(const char *module, const char *fmt, ...)
+//     LOG_CHECK_FMT;
+
+void btapi_log_misc(const char *module, const char *fmt, ...);
+void btapi_log_info(const char *module, const char *fmt, ...);
+void btapi_log_warning(const char *module, const char *fmt, ...);
+void btapi_log_fatal(const char *module, const char *fmt, ...);
 
 #endif

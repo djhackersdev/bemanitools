@@ -12,9 +12,13 @@
    this restriction will cause the process to crash. This is a limitation of
    libavs itself, not Bemanitools. */
 
-typedef int (*btapi_thread_create_t)(
-    int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority);
-typedef void (*btapi_thread_join_t)(int thread_id, int *result);
-typedef void (*btapi_thread_destroy_t)(int thread_id);
+// typedef int (*btapi_thread_create_t)(
+//     int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority);
+// typedef void (*btapi_thread_join_t)(int thread_id, int *result);
+// typedef void (*btapi_thread_destroy_t)(int thread_id);
+
+int btapi_thread_create(int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority);
+void btapi_thread_join(int thread_id, int *result);
+void btapi_thread_destroy(int thread_id);
 
 #endif

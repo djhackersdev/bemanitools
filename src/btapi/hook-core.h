@@ -16,6 +16,8 @@ typedef void (*btapi_hook_core_log_impl_set_t)(
 
 // Remark: these can actually be called multiple times by the backend if the backend
 // implementation swapped
+
+// TODO turn these into vtables
 void btapi_hook_core_thread_impl_set(
     btapi_thread_create_t create,
     btapi_thread_join_t join,
