@@ -2,6 +2,7 @@
 #define CORE_LOG_BT_H
 
 #include "core/log-sink.h"
+#include "core/log.h"
 
 /**
  * Log API implementation for games/applications without AVS
@@ -45,25 +46,7 @@ void core_log_bt_level_set(enum core_log_bt_log_level level);
  */
 void core_log_bt_fini();
 
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_fatal(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_warning(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_info(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_misc(const char *module, const char *fmt, ...);
+void core_log_bt_impl_get(core_log_impl_t *impl);
 
 /**
  * Allow AVS to by-pass the core log API/engine.

@@ -1,16 +1,16 @@
-#include "avs-util/error.h"
+#include "avs/error.h"
 
 #include "util/defs.h"
 
-struct avs_util_avs_error_str {
+struct avs_avs_error_str {
     avs_error error;
     const char *msg;
 };
 
-static const char *avs_util_error_unknown = "unknown error";
+static const char *_avs_error_unknown = "unknown error";
 
 // Source: https://github.com/spicetools/spicetools
-static const struct avs_util_avs_error_str AVS_UTIL_ERRORS[] = {
+static const struct avs_avs_error_str _avs_errors[] = {
     {0x80092000, "invalid type"},
     {0x80092001, "type cannot use as array"},
     {0x80092002, "invalid"},
@@ -85,20 +85,20 @@ static const struct avs_util_avs_error_str AVS_UTIL_ERRORS[] = {
     {0x80092280, "finger-print differs"},
     {0x800922C0, "operation is not supported"}};
 
-const char *avs_util_error_str(avs_error error)
+const char *avs_error_str(avs_error error)
 {
     int i;
 
-    for (i = 0; i < lengthof(AVS_UTIL_ERRORS); i++) {
-        if (error == AVS_UTIL_ERRORS[i].error) {
-            return AVS_UTIL_ERRORS[i].msg;
+    for (i = 0; i < lengthof(_avs_errors); i++) {
+        if (error == _avs_errors[i].error) {
+            return _avs_errors[i].msg;
         }
     }
 
-    return avs_util_error_unknown;
+    return _avs_error_unknown;
 }
 
-const char *avs_util_property_error_get_and_clear(struct property *prop)
+const char *avs_property_error_get_and_clear(struct property *prop)
 {
     avs_error error;
 

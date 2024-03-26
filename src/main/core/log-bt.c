@@ -9,6 +9,10 @@
 #include "util/mem.h"
 #include "util/str.h"
 
+/* 64k so we can log data dumps of rs232 without crashing */
+#define CORE_LOG_MSG_SIZE_MAX 65536
+#define CORE_LOG_TIMESTAMP_SIZE_MAX 64
+
 static enum core_log_bt_log_level _core_log_bt_log_level;
 static struct core_log_sink *_core_log_bt_sink;
 
@@ -20,10 +24,9 @@ static void _core_log_bt_vformat_write(
 {
     static const char chars[] = "FFWIM";
 
-    char timestamp[64];
-    /* 64k so we can log data dumps of rs232 without crashing */
-    char msg[65536];
-    char line[65536];
+    char timestamp[CORE_LOG_TIMESTAMP_SIZE_MAX];
+    char msg[CORE_LOG_MSG_SIZE_MAX];
+    char line[CORE_LOG_MSG_SIZE_MAX];
     int result;
 
     time_t curtime;
@@ -49,6 +52,36 @@ static void _core_log_bt_vformat_write(
         msg);
 
     _core_log_bt_sink->write(_core_log_bt_sink->ctx, line, result);
+}
+
+static void _core_log_bt_log_misc(const char *module, const char *fmt, va_list args)
+{
+    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_MISC) {
+        _core_log_bt_vformat_write(CORE_LOG_BT_LOG_LEVEL_MISC, module, fmt, args);
+    }
+}
+
+static void _core_log_bt_log_info(const char *module, const char *fmt, va_list args)
+{
+    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_INFO) {
+        _core_log_bt_vformat_write(CORE_LOG_BT_LOG_LEVEL_INFO, module, fmt, args);
+    }
+}
+
+static void _core_log_bt_log_warning(const char *module, const char *fmt, va_list args)
+{
+    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_WARNING) {
+        _core_log_bt_vformat_write(
+            CORE_LOG_BT_LOG_LEVEL_WARNING, module, fmt, args);
+    }
+}
+
+static void _core_log_bt_log_fatal(const char *module, const char *fmt, va_list args)
+{
+    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_FATAL) {
+        _core_log_bt_vformat_write(
+            CORE_LOG_BT_LOG_LEVEL_FATAL, module, fmt, args);
+    }
 }
 
 void core_log_bt_init(const struct core_log_sink *sink)
@@ -77,50 +110,16 @@ void core_log_bt_fini()
     free(_core_log_bt_sink);
 }
 
-void core_log_bt_log_fatal(const char *module, const char *fmt, ...)
+void core_log_bt_impl_get(core_log_impl_t *impl)
 {
-    va_list ap;
-
-    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_FATAL) {
-        va_start(ap, fmt);
-        _core_log_bt_vformat_write(
-            CORE_LOG_BT_LOG_LEVEL_FATAL, module, fmt, ap);
-        va_end(ap);
+    if (impl == NULL) {
+        abort();
     }
-}
 
-void core_log_bt_log_warning(const char *module, const char *fmt, ...)
-{
-    va_list ap;
-
-    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_WARNING) {
-        va_start(ap, fmt);
-        _core_log_bt_vformat_write(
-            CORE_LOG_BT_LOG_LEVEL_WARNING, module, fmt, ap);
-        va_end(ap);
-    }
-}
-
-void core_log_bt_log_info(const char *module, const char *fmt, ...)
-{
-    va_list ap;
-
-    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_INFO) {
-        va_start(ap, fmt);
-        _core_log_bt_vformat_write(CORE_LOG_BT_LOG_LEVEL_INFO, module, fmt, ap);
-        va_end(ap);
-    }
-}
-
-void core_log_bt_log_misc(const char *module, const char *fmt, ...)
-{
-    va_list ap;
-
-    if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_MISC) {
-        va_start(ap, fmt);
-        _core_log_bt_vformat_write(CORE_LOG_BT_LOG_LEVEL_MISC, module, fmt, ap);
-        va_end(ap);
-    }
+    impl->misc = _core_log_bt_log_misc;
+    impl->info = _core_log_bt_log_info;
+    impl->warning = _core_log_bt_log_warning;
+    impl->fatal = _core_log_bt_log_fatal;
 }
 
 void core_log_bt_direct_sink_write(const char *chars, size_t nchars)

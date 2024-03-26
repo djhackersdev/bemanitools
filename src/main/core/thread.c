@@ -3,76 +3,81 @@
 #include "core/log.h"
 #include "core/thread.h"
 
-core_thread_create_t core_thread_create_impl;
-core_thread_join_t core_thread_join_impl;
-core_thread_destroy_t core_thread_destroy_impl;
-
-int core_thread_create(
-    int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority)
-{
-    log_assert(core_thread_create_impl);
-
-    return core_thread_create_impl(proc, ctx, stack_sz, priority);
-}
-
-void core_thread_join(int thread_id, int *result)
-{
-    log_assert(core_thread_join_impl);
-
-    core_thread_join_impl(thread_id, result);
-}
-
-void core_thread_destroy(int thread_id)
-{
-    log_assert(core_thread_destroy_impl);
-
-    core_thread_destroy_impl(thread_id);
-}
-
-void core_thread_impl_set(
-    core_thread_create_t create,
-    core_thread_join_t join,
-    core_thread_destroy_t destroy)
-{
-    if (create == NULL || join == NULL || destroy == NULL) {
-        abort();
+#define CORE_THREAD_ASSERT_IMPLEMENTED(func, name) \
+    while (0) { \
+        if (!func) { \
+            log_fatal("Function %s not implemented", STRINGIFY(name)); \
+        } \
     }
 
-    core_thread_create_impl = create;
-    core_thread_join_impl = join;
-    core_thread_destroy_impl = destroy;
-}
+static core_thread_impl_t _core_thread_impl;
 
-void core_thread_impl_assign(core_thread_impl_set_t impl_set)
+void core_thread_impl_set(const core_thread_impl_t *impl)
 {
-    if (core_thread_create_impl == NULL || core_thread_join_impl == NULL ||
-        core_thread_destroy_impl == NULL) {
-        abort();
+    log_assert(impl);
+
+    if (_core_thread_impl.create) {
+        log_warning("Re-initialize");
     }
 
-    impl_set(
-        core_thread_create_impl,
-        core_thread_join_impl,
-        core_thread_destroy_impl);
+    CORE_THREAD_ASSERT_IMPLEMENTED(impl->create, create);
+    CORE_THREAD_ASSERT_IMPLEMENTED(impl->join, join);
+    CORE_THREAD_ASSERT_IMPLEMENTED(impl->destroy, destroy);
+
+    memcpy(_core_thread_impl, impl, sizeof(core_thread_impl_t));
 }
 
-core_thread_create_t core_thread_create_impl_get()
+const core_thread_impl_t *core_thread_impl_get()
 {
-    log_assert(core_thread_create_impl);
+    log_assert(_core_thread_impl.create);
 
-    return core_thread_create_impl;
+    return &_core_thread_impl;
 }
 
-core_thread_join_t core_thread_join_impl_get()
+const char *core_thread_result_to_str(core_thread_result_t result)
 {
-    log_assert(core_thread_join_impl);
-
-    return core_thread_join_impl;
+    switch (result) {
+        case CORE_THREAD_RESULT_SUCCESS:
+            return "Success";
+        case CORE_THREAD_RESULT_ERROR_INTERNAL:
+            return "Internal";
+        default:
+            return "Undefined error";
+    }
 }
 
-core_thread_destroy_t core_thread_destroy_impl_get()
+void core_thread_fatal_on_error(core_thread_result_t result)
 {
-    log_assert(core_thread_destroy_impl);
+    switch (result) {
+        case CORE_THREAD_RESULT_SUCCESS:
+            return;
+        case CORE_THREAD_RESULT_ERROR_INTERNAL:
+        default:
+            log_fatal("Operation on thread failed: %s", core_thread_result_to_str(result));
+    }
+}
 
-    return core_thread_destroy_impl;
+core_thread_result_t core_thread_create(
+    int (*proc)(void *), void *ctx, uint32_t stack_sz, unsigned int priority, core_thread_id_t *thread_id)
+{
+    log_assert(_core_thread_impl.create);
+    log_assert(proc);
+    log_assert(stack_sz > 0);
+    log_assert(thread_id);
+
+    return _core_thread_impl.create(proc, ctx, stack_sz, priority, thread_id);
+}
+
+core_thread_result_t core_thread_join(core_thread_id_t thread_id, int *result)
+{
+    log_assert(_core_thread_impl.create);
+
+    return _core_thread_impl.join(thread_id, result);
+}
+
+core_thread_result_t core_thread_destroy(core_thread_id_t thread_id)
+{
+    log_assert(_core_thread_impl.create);
+
+    return _core_thread_impl.destroy(thread_id);
 }

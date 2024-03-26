@@ -254,7 +254,7 @@ int property_node_refer(
     enum property_type type,
     void *bytes,
     uint32_t nbytes);
-void property_node_remove(struct property_node *node);
+avs_error property_node_remove(struct property_node *node);
 enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);

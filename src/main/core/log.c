@@ -2,73 +2,92 @@
 
 #include "core/log.h"
 
-core_log_message_t _core_log_misc_impl;
-core_log_message_t _core_log_info_impl;
-core_log_message_t _core_log_warning_impl;
-core_log_message_t _core_log_fatal_impl;
-
-void core_log_impl_set(
-    core_log_message_t misc,
-    core_log_message_t info,
-    core_log_message_t warning,
-    core_log_message_t fatal)
-{
-    if (misc == NULL || info == NULL || warning == NULL || fatal == NULL) {
-        abort();
+#define CORE_LOG_ASSERT_IMPLEMENTED(func, name) \
+    while (0) { \
+        if (!func) { \
+            log_fatal("Function %s not implemented", STRINGIFY(name)); \
+        } \
     }
 
-    _core_log_misc_impl = misc;
-    _core_log_info_impl = info;
-    _core_log_warning_impl = warning;
-    _core_log_fatal_impl = fatal;
+static core_log_impl_t _core_log_impl;
+
+void core_log_impl_set(const core_log_impl_t *impl)
+{
+    log_assert(impl);
+
+    if (_core_log_impl.misc) {
+        log_warning("Re-initialize");
+    }
+
+    CORE_LOG_ASSERT_IMPLEMENTED(impl->misc, misc);
+    CORE_LOG_ASSERT_IMPLEMENTED(impl->info, info);
+    CORE_LOG_ASSERT_IMPLEMENTED(impl->warning, warning);
+    CORE_LOG_ASSERT_IMPLEMENTED(impl->fatal, fatal);
+
+    memcpy(_core_log_impl, impl, sizeof(core_log_impl_t));
 }
 
-void core_log_impl_assign(core_log_impl_set_t impl_set)
+const core_log_impl_t *core_log_impl_get()
 {
-    if (_core_log_misc_impl == NULL || _core_log_info_impl == NULL ||
-        _core_log_warning_impl == NULL || _core_log_fatal_impl == NULL) {
-        abort();
-    }
+    log_assert(_core_log_impl.misc);
 
-    impl_set(
-        _core_log_misc_impl,
-        _core_log_info_impl,
-        _core_log_warning_impl,
-        _core_log_fatal_impl);
+    return &_core_log_impl;
 }
 
-core_log_message_t core_log_misc_impl_get()
+void core_log_misc(const char *module, const char *fmt, ...)
 {
-    if (_core_log_misc_impl == NULL) {
-        abort();
-    }
+    va_list args;
 
-    return _core_log_misc_impl;
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    va_start(args, fmt);
+
+    _core_log_impl.misc(module, fmt, args);
+
+    va_end(args);
 }
 
-core_log_message_t core_log_info_impl_get()
+void core_log_info(const char *module, const char *fmt, ...)
 {
-    if (_core_log_info_impl == NULL) {
-        abort();
-    }
+    va_list args;
 
-    return _core_log_info_impl;
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    va_start(args, fmt);
+
+    _core_log_impl.info(module, fmt, args);
+
+    va_end(args);
 }
 
-core_log_message_t core_log_warning_impl_get()
+void core_log_warning(const char *module, const char *fmt, ...)
 {
-    if (_core_log_warning_impl == NULL) {
-        abort();
-    }
+    va_list args;
 
-    return _core_log_warning_impl;
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    va_start(args, fmt);
+
+    _core_log_impl.warning(module, fmt, args);
+
+    va_end(args);
 }
 
-core_log_message_t core_log_fatal_impl_get()
+void core_log_fatal(const char *module, const char *fmt, ...)
 {
-    if (_core_log_fatal_impl == NULL) {
-        abort();
-    }
+    va_list args;
 
-    return _core_log_fatal_impl;
+    // don't assert arguments because log_assert depends on fatal -> avoid recursion
+
+    va_start(args, fmt);
+
+    _core_log_impl.fatal(module, fmt, args);
+
+    va_end(args);
 }

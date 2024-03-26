@@ -1,6 +1,7 @@
 #ifndef CORE_LOG_H
 #define CORE_LOG_H
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -35,7 +36,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_misc(...) _core_log_misc_impl(LOG_MODULE, __VA_ARGS__)
+#define log_misc(...) core_log_misc(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on info level
@@ -50,7 +51,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_info(...) _core_log_info_impl(LOG_MODULE, __VA_ARGS__)
+#define log_info(...) core_log_info(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on warning level
@@ -65,7 +66,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_warning(...) _core_log_warning_impl(LOG_MODULE, __VA_ARGS__)
+#define log_warning(...) core_log_warning(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on fatal level
@@ -84,7 +85,7 @@
  */
 #define log_fatal(...)                                 \
     do {                                               \
-        _core_log_fatal_impl(LOG_MODULE, __VA_ARGS__); \
+        core_log_fatal(LOG_MODULE, __VA_ARGS__); \
         abort();                                       \
     } while (0)
 
@@ -101,7 +102,7 @@
 #define log_assert(x)                   \
     do {                                \
         if (!(x)) {                     \
-            _core_log_fatal_impl(       \
+            core_log_fatal(       \
                 "assert",               \
                 "%s:%d: function `%s'", \
                 __FILE__,               \
@@ -124,74 +125,23 @@
 #define log_exception_handler(...) \
     _core_log_fatal_impl("exception", __VA_ARGS__)
 
-typedef void (*core_log_message_t)(const char *module, const char *fmt, ...);
+typedef void (*core_log_message_t)(const char *module, const char *fmt, va_list args);
 
-typedef void (*core_log_impl_set_t)(
-    core_log_message_t misc,
-    core_log_message_t info,
-    core_log_message_t warning,
-    core_log_message_t fatal);
+struct core_log_impl {
+    core_log_message_t misc;
+    core_log_message_t info;
+    core_log_message_t warning;
+    core_log_message_t fatal;
+};
 
-/**
- * Configure the log API implementations
- *
- * Advised to do this as early in your application/library module as possible
- * as calls to the getter functions below will return the currently configured
- * implementations.
- *
- * @param misc Pointer to a function implementing logging on misc level
- * @param info Pointer to a function implementing logging on info level
- * @param warning Pointer to a function implementing logging on warning level
- * @param fatal Pointer to a function implementing logging on fatal level
- */
-void core_log_impl_set(
-    core_log_message_t misc,
-    core_log_message_t info,
-    core_log_message_t warning,
-    core_log_message_t fatal);
+typedef struct core_log_impl core_log_impl_t;
 
-/**
- * Supporting function to inject/assign the currently set implementation
- * with the given setter function.
- *
- * @param impl_set Setter function to call with the currently configured log
- *        function implementations
- */
-void core_log_impl_assign(core_log_impl_set_t impl_set);
+void core_log_impl_set(const core_log_impl_t *impl);
+const core_log_impl_t *core_log_impl_get();
 
-/**
- * Get the currently configured implementation of the misc level log function
- *
- * @return Pointer to the currently configured implementation of the function
- */
-core_log_message_t core_log_misc_impl_get();
-
-/**
- * Get the currently configured implementation of the info level log function
- *
- * @return Pointer to the currently configured implementation of the function
- */
-core_log_message_t core_log_info_impl_get();
-
-/**
- * Get the currently configured implementation of the warning level log function
- *
- * @return Pointer to the currently configured implementation of the function
- */
-core_log_message_t core_log_warning_impl_get();
-
-/**
- * Get the currently configured implementation of the fatal level log function
- *
- * @return Pointer to the currently configured implementation of the function
- */
-core_log_message_t core_log_fatal_impl_get();
-
-// Do not use these directly.
-// These are only here to allow usage in the macros above.
-extern core_log_message_t _core_log_misc_impl;
-extern core_log_message_t _core_log_info_impl;
-extern core_log_message_t _core_log_warning_impl;
-extern core_log_message_t _core_log_fatal_impl;
+void core_log_misc(const char *module, const char *fmt, ...);
+void core_log_info(const char *module, const char *fmt, ...);
+void core_log_warning(const char *module, const char *fmt, ...);
+void core_log_fatal(const char *module, const char *fmt, ...);
 
 #endif
