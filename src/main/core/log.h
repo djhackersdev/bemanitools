@@ -127,14 +127,12 @@
 
 typedef void (*core_log_message_t)(const char *module, const char *fmt, va_list args);
 
-struct core_log_impl {
+typedef struct core_log_impl {
     core_log_message_t misc;
     core_log_message_t info;
     core_log_message_t warning;
     core_log_message_t fatal;
-};
-
-typedef struct core_log_impl core_log_impl_t;
+} core_log_impl_t;
 
 void core_log_impl_set(const core_log_impl_t *impl);
 const core_log_impl_t *core_log_impl_get();
@@ -143,5 +141,10 @@ void core_log_misc(const char *module, const char *fmt, ...);
 void core_log_info(const char *module, const char *fmt, ...);
 void core_log_warning(const char *module, const char *fmt, ...);
 void core_log_fatal(const char *module, const char *fmt, ...);
+
+void core_log_misc_va(const char *module, const char *fmt, va_list args);
+void core_log_info_va(const char *module, const char *fmt, va_list args);
+void core_log_warning_va(const char *module, const char *fmt, va_list args);
+void core_log_fatal_va(const char *module, const char *fmt, va_list args);
 
 #endif

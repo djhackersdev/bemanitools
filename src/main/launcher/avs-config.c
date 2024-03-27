@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "avs-util/error.h"
+#include "avs/error.h"
 
 #include "core/log.h"
 

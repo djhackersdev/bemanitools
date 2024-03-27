@@ -12,7 +12,7 @@ deplibs_iidxhook9   := \
     avs \
 
 libs_iidxhook9      := \
-	avs-util \
+	avs \
     core \
     iidxhook-util \
     acioemu \

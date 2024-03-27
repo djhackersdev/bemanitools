@@ -1,12 +1,12 @@
-#ifndef BTAPI_HOOK_MAIN_H
-#define BTAPI_HOOK_MAIN_H
+#ifndef BT_HOOK_MAIN_H
+#define BT_HOOK_MAIN_H
 
 #include <windows.h>
 
-#include "btapi/config.h"
+#include "core/config.h"
 
-typedef bool (*btapi_hook_main_init_t)(HMODULE game_module, const btapi_config_t *config);
-typedef void (*btapi_hook_main_fini_t)();
+typedef bool (*bt_hook_main_init_t)(HMODULE game_module, const bt_core_config_t *config);
+typedef void (*bt_hook_main_fini_t)();
 
 // game module reference, either the exe or dll. allow for further targeted hooking/patching
 // remark: you can't own the memory of the property_node config. whatever you need form that, make sure to copy the data and not just reference it.
@@ -14,8 +14,8 @@ typedef void (*btapi_hook_main_fini_t)();
 // use the property api to iterate the data and parse it into your own custom configuration struct
 // it is advised to also validate all parameters
 // if no configuration was provided upon loading, the config_node contains an empty root node
-bool btapi_hook_main_init(HMODULE game_module, const btapi_config_t *config);
+bool bt_hook_main_init(HMODULE game_module, const bt_core_config_t *config);
 
-void btapi_hook_main_fini();
+void bt_hook_main_fini();
 
 #endif

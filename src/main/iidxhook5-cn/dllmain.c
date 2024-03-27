@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "avs-util/core-interop.h"
+#include "avs/core-interop.h"
 
 #include "bemanitools/iidxio.h"
 

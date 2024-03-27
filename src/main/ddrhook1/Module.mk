@@ -7,7 +7,7 @@ deplibs_ddrhook1	:= \
 	avs \
 
 libs_ddrhook1		:= \
-	avs-util \
+	avs \
 	core \
 	acioemu \
 	cconfig \

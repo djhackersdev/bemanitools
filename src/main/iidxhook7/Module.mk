@@ -8,7 +8,7 @@ deplibs_iidxhook7   := \
     avs \
 
 libs_iidxhook7      := \
-	avs-util \
+	avs \
     core \
     iidxhook-d3d9 \
     iidxhook-util \

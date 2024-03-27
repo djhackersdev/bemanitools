@@ -8,7 +8,7 @@ ldflags_jbhook3   := \
     -liphlpapi \
 
 libs_jbhook3       := \
-    avs-util \
+    avs \
     core \
     acioemu \
     eamio \

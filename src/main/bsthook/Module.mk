@@ -4,7 +4,7 @@ deplibs_bsthook	:= \
 	avs \
 
 libs_bsthook		:= \
-	avs-util \
+    avs \
 	core \
 	acioemu \
 	bstio \

@@ -10,7 +10,7 @@ deplibs_launcher := \
     avs-ea3 \
 
 libs_launcher   := \
-    avs-util \
+    avs \
     bt \
     core \
     hook \

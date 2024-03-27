@@ -1,6 +1,6 @@
 #define LOG_MODULE "procmon-config"
 
-#include "avs-util/error.h"
+#include "avs/error.h"
 
 #include "core/log.h"
 

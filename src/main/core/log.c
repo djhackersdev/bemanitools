@@ -91,3 +91,37 @@ void core_log_fatal(const char *module, const char *fmt, ...)
 
     va_end(args);
 }
+
+void core_log_misc_va(const char *module, const char *fmt, va_list args)
+{
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    _core_log_impl.misc(module, fmt, args);
+}
+
+void core_log_info_va(const char *module, const char *fmt, va_list args)
+{
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    _core_log_impl.info(module, fmt, args);
+}
+
+void core_log_warning_va(const char *module, const char *fmt, va_list args)
+{
+    log_assert(_core_log_impl.misc);
+    log_assert(module);
+    log_assert(fmt);
+
+    _core_log_impl.warning(module, fmt, args);
+}
+
+void core_log_fatal_va(const char *module, const char *fmt, va_list args)
+{
+    // don't assert arguments because log_assert depends on fatal -> avoid recursion
+
+    _core_log_impl.fatal(module, fmt, args);
+}

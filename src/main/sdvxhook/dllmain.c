@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "avs-util/core-interop.h"
+#include "avs/core-interop.h"
 
 #include "bemanitools/eamio.h"
 #include "bemanitools/sdvxio.h"

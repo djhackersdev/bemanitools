@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "avs-util/core-interop.h"
+#include "avs/core-interop.h"
 
 #include "bemanitools/bstio.h"
 #include "bemanitools/eamio.h"

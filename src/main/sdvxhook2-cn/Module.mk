@@ -12,7 +12,7 @@ deplibs_sdvxhook2-cn   := \
     avs \
 
 libs_sdvxhook2-cn      := \
-    avs-util \
+    avs \
     core \
     acioemu \
     camhook \

@@ -8,7 +8,7 @@ deplibs_iidxhook5-cn   := \
     avs \
 
 libs_iidxhook5-cn      := \
-	avs-util \
+	avs \
     core \
     iidxhook-util \
     ezusb-emu \
