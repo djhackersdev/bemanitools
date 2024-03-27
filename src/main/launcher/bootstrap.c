@@ -98,8 +98,8 @@ void bootstrap_init(bool log_property_configs)
 
 void bootstrap_log_init(const struct bootstrap_log_config *config)
 {
-    struct core_log_sink sinks[2];
-    struct core_log_sink sink_composed;
+    core_log_sink_t sinks[2];
+    core_log_sink_t sink_composed;
     enum core_log_bt_log_level level;
 
     log_assert(config);

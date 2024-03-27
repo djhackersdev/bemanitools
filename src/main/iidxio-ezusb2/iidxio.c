@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/iidxio.h"
+#include "btapi/io/iidxio.h"
 
 #include "ezusb/util.h"
 #include "ezusb2/ezusb2.h"

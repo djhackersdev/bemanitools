@@ -9,13 +9,13 @@ static bool _procmon_file_monitor_enabled;
 static bool _procmon_module_monitor_enabled;
 static bool _procmon_thread_monitor_enabled;
 
-void procmon_init(const struct procmon_config *config)
+void procmon_init(const procmon_config_t *config)
 {
     log_assert(config);
 
-    _procmon_file_monitor_enabled = config->file_monitor_enable;
-    _procmon_module_monitor_enabled = config->module_monitor_enable;
-    _procmon_thread_monitor_enabled = config->thread_monitor_enable;
+    _procmon_file_monitor_enabled = config->file_enable;
+    _procmon_module_monitor_enabled = config->module_enable;
+    _procmon_thread_monitor_enabled = config->thread_enable;
 
     if (_procmon_file_monitor_enabled) {
         procmon_file_init();

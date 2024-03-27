@@ -1,5 +1,5 @@
-#ifndef BT_CORE_LOG_H
-#define BT_CORE_LOG_H
+#ifndef BTAPI_CORE_LOG_H
+#define BTAPI_CORE_LOG_H
 
 typedef void (*bt_core_log_message_t)(const char *module, const char *fmt, ...);
 

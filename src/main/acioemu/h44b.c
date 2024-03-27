@@ -11,7 +11,7 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/jbio.h"
+#include "btapi/io/jbio.h"
 
 #include "util/hex.h"
 

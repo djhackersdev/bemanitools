@@ -5,7 +5,7 @@
 
 #include <windows.h>
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"

@@ -3,21 +3,15 @@
 
 #include <stdint.h>
 
-#include "imports/avs.h"
+#include "btsdk/core/config.h"
 
-struct procmon_config {
-    uint32_t version;
-
-    bool file_monitor_enable;
-    bool module_monitor_enable;
-    bool thread_monitor_enable;
-};
-
-void procmon_config_init(struct procmon_config *config);
+typedef struct procmon_config {
+    bool file_enable;
+    bool module_enable;
+    bool thread_enable;
+} procmon_config_t;
 
 void procmon_config_load(
-    struct property_node *property_node, struct procmon_config *config);
-
-void procmon_config_fini(struct procmon_config *config);
+    const bt_core_config_t *config, procmon_config_t *config);
 
 #endif

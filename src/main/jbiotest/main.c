@@ -5,7 +5,7 @@
 
 #include <windows.h>
 
-#include "bemanitools/jbio.h"
+#include "btapi/io/jbio.h"
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"

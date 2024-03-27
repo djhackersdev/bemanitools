@@ -1,5 +1,5 @@
-#ifndef BT_HOOK_PRE_AVS_H
-#define BT_HOOK_PRE_AVS_H
+#ifndef BTAPI_HOOK_PRE_AVS_H
+#define BTAPI_HOOK_PRE_AVS_H
 
 #include "core/config.h"
 

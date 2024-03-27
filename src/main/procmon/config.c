@@ -1,68 +1,35 @@
 #define LOG_MODULE "procmon-config"
 
-#include "avs/error.h"
-
 #include "core/log.h"
 
 #include "procmon/config.h"
 
-// clang-format off
-PSMAP_BEGIN(procmon_config_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct procmon_config, file_monitor_enable,
-    "procmon/file_monitor_enable", false)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct procmon_config, module_monitor_enable,
-    "procmon/module_monitor_enable", false)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct procmon_config, thread_monitor_enable,
-    "procmon/thread_monitor_enable", false)
-PSMAP_END
-// clang-format on
-
-void procmon_config_init(struct procmon_config *config)
+static void _procmon_config_init_default(procmon_config_t *config)
 {
-    log_assert(config);
-
-    memset(config, 0, sizeof(struct procmon_config));
+    config->file_enable = false;
+    config->module_enable = false;
+    config->thread_enable = false;
 }
 
 void procmon_config_load(
-    struct property_node *property_node, struct procmon_config *config)
+        const bt_core_config_t *config, procmon_config_t *config)
 {
-    avs_error error;
-    struct property_node *node;
+    uint32_t version;
 
-    log_assert(property_node);
+    log_assert(config);
     log_assert(config);
 
-    node = property_search(NULL, property_node, "procmon/version");
+    _procmon_config_init_default(config);
 
-    if (!node) {
-        log_fatal("Missing 'version' node in configuration");
+    version = 0;
+
+    bt_core_config_u32_get(config, "/version", &config->version);
+    
+    if (version != 1) {
+        log_fatal("Unsupported configuration version: %d", version);
     }
-
-    error = property_node_read(
-        node, PROPERTY_TYPE_U32, &config->version, sizeof(config->version));
-
-    if (AVS_IS_ERROR(error)) {
-        log_fatal(
-            "Reading 'version' node failed: %s", avs_util_error_str(error));
-    }
-
-    if (config->version != 1) {
-        log_fatal("Unsupported configuration version: %d", config->version);
-    }
-
-    error = property_psmap_import(
-        NULL, property_node, config, procmon_config_psmap);
-
-    if (AVS_IS_ERROR(error)) {
-        log_fatal(
-            "Importing config to psmap failed: %s", avs_util_error_str(error));
-    }
-}
-
-void procmon_config_fini(struct procmon_config *config)
-{
-    log_assert(config);
-
-    memset(config, 0, sizeof(struct procmon_config));
+    
+    bt_core_config_bool_get(config, "/file/enable", &config->file_enable);
+    bt_core_config_bool_get(config, "/module/enable", &config->module_enable);
+    bt_core_config_bool_get(config, "/thread/enable", &config->thread_enable);
 }

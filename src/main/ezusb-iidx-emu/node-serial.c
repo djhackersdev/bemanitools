@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 #include "core/log.h"
 #include "core/thread.h"

@@ -1,5 +1,5 @@
-#ifndef BT_CORE_CONFIG_H
-#define BT_CORE_CONFIG_H
+#ifndef BTAPI_CORE_CONFIG_H
+#define BTAPI_CORE_CONFIG_H
 
 #include <stdbool.h>
 #include <stdint.h>

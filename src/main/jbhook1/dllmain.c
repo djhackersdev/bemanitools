@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/jbio.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/jbio.h"
 
 #include "cconfig/cconfig-hook.h"
 

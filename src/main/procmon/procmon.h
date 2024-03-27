@@ -3,7 +3,7 @@
 
 #include "procmon/config.h"
 
-void procmon_init(const struct procmon_config *config);
+void procmon_init(const procmon_config_t *config);
 
 void procmon_fini();
 

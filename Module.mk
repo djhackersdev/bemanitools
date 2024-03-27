@@ -85,11 +85,13 @@ avsvers_64      := 1700 1603 1601 1509 1508
 
 imps            += avs avs-ea3
 
+include src/btsdk/Module.mk
 include src/main/aciodrv/Module.mk
 include src/main/aciodrv-proc/Module.mk
 include src/main/acioemu/Module.mk
 include src/main/aciomgr/Module.mk
 include src/main/aciotest/Module.mk
+include src/main/api/Module.mk
 include src/main/asio/Module.mk
 include src/main/avs/Module.mk
 include src/main/bio2drv/Module.mk
@@ -97,7 +99,6 @@ include src/main/bio2emu-iidx/Module.mk
 include src/main/bio2emu/Module.mk
 include src/main/bsthook/Module.mk
 include src/main/bstio/Module.mk
-include src/main/bt/Module.mk
 include src/main/camhook/Module.mk
 include src/main/cconfig/Module.mk
 include src/main/config/Module.mk

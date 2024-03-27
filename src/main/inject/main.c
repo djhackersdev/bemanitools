@@ -52,9 +52,9 @@ static void _inject_log_header()
 void _inject_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    struct core_log_sink sinks[2];
-    struct core_log_sink sink_composed;
-    struct core_log_sink sink_mutex;
+    core_log_sink_t sinks[2];
+    core_log_sink_t sink_composed;
+    core_log_sink_t sink_mutex;
 
     core_log_bt_ext_impl_set();
 

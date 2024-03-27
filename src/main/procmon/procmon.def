@@ -2,7 +2,8 @@ LIBRARY procmon
 
 EXPORTS
     DllMain@12 @1 NONAME
-    btapi_hook_core_thread_impl_set
-    btapi_hook_core_log_impl_set
-    btapi_hook_main_init
-    btapi_hook_main_fini
+    bt_hook_core_thread_impl_set
+    bt_hook_core_log_impl_set
+    bt_hook_core_config_impl_set
+    bt_hook_main_init
+    bt_hook_main_fini

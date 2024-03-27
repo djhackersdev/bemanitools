@@ -36,7 +36,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_misc(...) core_log_misc(LOG_MODULE, __VA_ARGS__)
+#define log_misc(...) _core_log_impl.misc(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on info level
@@ -51,7 +51,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_info(...) core_log_info(LOG_MODULE, __VA_ARGS__)
+#define log_info(...) _core_log_impl.info(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on warning level
@@ -66,7 +66,7 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
-#define log_warning(...) core_log_warning(LOG_MODULE, __VA_ARGS__)
+#define log_warning(...) _core_log_impl.warning(LOG_MODULE, __VA_ARGS__)
 
 /**
  * Log a message on fatal level
@@ -85,7 +85,7 @@
  */
 #define log_fatal(...)                                 \
     do {                                               \
-        core_log_fatal(LOG_MODULE, __VA_ARGS__); \
+        _core_log_impl.fatal(LOG_MODULE, __VA_ARGS__); \
         abort();                                       \
     } while (0)
 
@@ -102,7 +102,7 @@
 #define log_assert(x)                   \
     do {                                \
         if (!(x)) {                     \
-            core_log_fatal(       \
+            _core_log_impl.fatal(       \
                 "assert",               \
                 "%s:%d: function `%s'", \
                 __FILE__,               \
@@ -123,9 +123,9 @@
  *            printf format string
  */
 #define log_exception_handler(...) \
-    _core_log_fatal_impl("exception", __VA_ARGS__)
+    _core_log_impl.fatal("exception", __VA_ARGS__)
 
-typedef void (*core_log_message_t)(const char *module, const char *fmt, va_list args);
+typedef void (*core_log_message_t)(const char *module, const char *fmt, ...);
 
 typedef struct core_log_impl {
     core_log_message_t misc;
@@ -137,14 +137,8 @@ typedef struct core_log_impl {
 void core_log_impl_set(const core_log_impl_t *impl);
 const core_log_impl_t *core_log_impl_get();
 
-void core_log_misc(const char *module, const char *fmt, ...);
-void core_log_info(const char *module, const char *fmt, ...);
-void core_log_warning(const char *module, const char *fmt, ...);
-void core_log_fatal(const char *module, const char *fmt, ...);
-
-void core_log_misc_va(const char *module, const char *fmt, va_list args);
-void core_log_info_va(const char *module, const char *fmt, va_list args);
-void core_log_warning_va(const char *module, const char *fmt, va_list args);
-void core_log_fatal_va(const char *module, const char *fmt, va_list args);
+// Do not use this directly. This is required to work around requiring the interface to use
+// var args. Use the macros above to invoke the logging functions
+extern core_log_impl_t _core_log_impl;
 
 #endif

@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/iidxio.h"
+#include "btapi/io/glue.h"
+#include "btapi/io/iidxio.h"
 
 #include "cconfig/cconfig-main.h"
 

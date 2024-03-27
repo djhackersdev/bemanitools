@@ -7,8 +7,8 @@
 
 #include "avs/core-interop.h"
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/jbio.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/jbio.h"
 
 #include "core/log.h"
 #include "core/thread.h"

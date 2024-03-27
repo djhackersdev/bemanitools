@@ -14,7 +14,7 @@
 #define CORE_LOG_TIMESTAMP_SIZE_MAX 64
 
 static enum core_log_bt_log_level _core_log_bt_log_level;
-static struct core_log_sink *_core_log_bt_sink;
+static core_log_sink_t *_core_log_bt_sink;
 
 static void _core_log_bt_vformat_write(
     enum core_log_bt_log_level level,
@@ -84,14 +84,14 @@ static void _core_log_bt_log_fatal(const char *module, const char *fmt, va_list 
     }
 }
 
-void core_log_bt_init(const struct core_log_sink *sink)
+void core_log_bt_init(const core_log_sink_t *sink)
 {
     if (sink == NULL) {
         abort();
     }
 
-    _core_log_bt_sink = xmalloc(sizeof(struct core_log_sink));
-    memcpy(_core_log_bt_sink, sink, sizeof(struct core_log_sink));
+    _core_log_bt_sink = xmalloc(sizeof(core_log_sink_t));
+    memcpy(_core_log_bt_sink, sink, sizeof(core_log_sink_t));
 
     _core_log_bt_log_level = CORE_LOG_BT_LOG_LEVEL_OFF;
 }

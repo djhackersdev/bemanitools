@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/jbio.h"
+#include "btapi/io/jbio.h"
 
 #include "core/log.h"
 

@@ -13,7 +13,7 @@ static void _core_log_sink_file_close(void *ctx)
     // TODO
 }
 
-void core_log_sink_async_open(struct core_log_sink *sink)
+void core_log_sink_async_open(core_log_sink_t *sink)
 {
     // TODO
 

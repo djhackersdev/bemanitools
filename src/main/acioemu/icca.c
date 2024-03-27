@@ -12,7 +12,7 @@
 #include "acioemu/emu.h"
 #include "acioemu/icca.h"
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 #include "util/crc.h"
 #include "util/time.h"

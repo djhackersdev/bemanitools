@@ -17,9 +17,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/iidxio.h"
-#include "bemanitools/input.h"
-#include "bemanitools/vefxio.h"
+#include "btapi/io/iidxio.h"
+#include "btapi/io/input.h"
+#include "btapi/io/vefxio.h"
 
 #define MSEC_PER_NOTCH 8
 

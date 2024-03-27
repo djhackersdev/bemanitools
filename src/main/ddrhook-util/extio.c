@@ -12,7 +12,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "bemanitools/ddrio.h"
+#include "btapi/io/ddrio.h"
 
 #include "core/log.h"
 

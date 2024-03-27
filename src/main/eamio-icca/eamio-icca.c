@@ -12,7 +12,7 @@
 #include "aciodrv/icca.h"
 #include "aciomgr/manager.h"
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 #include "core/log.h"
 

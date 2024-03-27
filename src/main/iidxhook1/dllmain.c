@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/iidxio.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/iidxio.h"
 
 #include "cconfig/cconfig-hook.h"
 

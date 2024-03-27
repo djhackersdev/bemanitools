@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/popnio.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/popnio.h"
 
 #include "cconfig/cconfig-hook.h"
 

@@ -9,7 +9,7 @@
         } \
     }
 
-static core_log_impl_t _core_log_impl;
+core_log_impl_t _core_log_impl;
 
 void core_log_impl_set(const core_log_impl_t *impl)
 {
@@ -32,96 +32,4 @@ const core_log_impl_t *core_log_impl_get()
     log_assert(_core_log_impl.misc);
 
     return &_core_log_impl;
-}
-
-void core_log_misc(const char *module, const char *fmt, ...)
-{
-    va_list args;
-
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    va_start(args, fmt);
-
-    _core_log_impl.misc(module, fmt, args);
-
-    va_end(args);
-}
-
-void core_log_info(const char *module, const char *fmt, ...)
-{
-    va_list args;
-
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    va_start(args, fmt);
-
-    _core_log_impl.info(module, fmt, args);
-
-    va_end(args);
-}
-
-void core_log_warning(const char *module, const char *fmt, ...)
-{
-    va_list args;
-
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    va_start(args, fmt);
-
-    _core_log_impl.warning(module, fmt, args);
-
-    va_end(args);
-}
-
-void core_log_fatal(const char *module, const char *fmt, ...)
-{
-    va_list args;
-
-    // don't assert arguments because log_assert depends on fatal -> avoid recursion
-
-    va_start(args, fmt);
-
-    _core_log_impl.fatal(module, fmt, args);
-
-    va_end(args);
-}
-
-void core_log_misc_va(const char *module, const char *fmt, va_list args)
-{
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    _core_log_impl.misc(module, fmt, args);
-}
-
-void core_log_info_va(const char *module, const char *fmt, va_list args)
-{
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    _core_log_impl.info(module, fmt, args);
-}
-
-void core_log_warning_va(const char *module, const char *fmt, va_list args)
-{
-    log_assert(_core_log_impl.misc);
-    log_assert(module);
-    log_assert(fmt);
-
-    _core_log_impl.warning(module, fmt, args);
-}
-
-void core_log_fatal_va(const char *module, const char *fmt, va_list args)
-{
-    // don't assert arguments because log_assert depends on fatal -> avoid recursion
-
-    _core_log_impl.fatal(module, fmt, args);
 }

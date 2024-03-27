@@ -1,5 +1,5 @@
-#ifndef BT_HOOK_MAIN_H
-#define BT_HOOK_MAIN_H
+#ifndef BTAPI_HOOK_MAIN_H
+#define BTAPI_HOOK_MAIN_H
 
 #include <windows.h>
 

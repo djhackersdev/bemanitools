@@ -2,25 +2,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "bemanitools/bstio.h"
-#include "bemanitools/glue.h"
-#include "bemanitools/input.h"
+#include "btapi/io/bstio.h"
+#include "btapi/io/input.h"
 
 static uint8_t bst_io_gpio_sys;
 
 void bst_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+    bt_core_log_message_t misc,
+    bt_core_log_message_t info,
+    bt_core_log_message_t warning,
+    bt_core_log_message_t fatal)
 {
     input_set_loggers(misc, info, warning, fatal);
 }
 
 bool bst_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+    bt_core_thread_create_impl_t thread_create,
+    bt_core_thread_join_impl_t thread_join,
+    bt_core_thread_destroy_impl_t thread_destroy)
 {
     input_init(thread_create, thread_join, thread_destroy);
     mapper_config_load("bst");

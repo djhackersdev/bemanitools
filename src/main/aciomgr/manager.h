@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "bemanitools/glue.h"
+#include "btapi/io/glue.h"
 
 #define ACIOMGR_NODE_PRODUCT_CODE_LEN 4
 

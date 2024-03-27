@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "bemanitools/input.h"
-#include "bemanitools/popnio.h"
+#include "btapi/io/input.h"
+#include "btapi/io/popnio.h"
 
 void popn_io_set_loggers(
     log_formatter_t misc,

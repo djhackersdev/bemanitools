@@ -3,8 +3,8 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 
-#include "bemanitools/ddrio.h"
-#include "bemanitools/input.h"
+#include "btapi/io/ddrio.h"
+#include "btapi/io/input.h"
 
 #include "core/log.h"
 

@@ -6,7 +6,7 @@
 
 #include "util/mem.h"
 
-struct core_log_sink_std_ctx {
+core_log_sink_t_std_ctx {
     HANDLE handle;
     bool color;
 };
@@ -79,7 +79,7 @@ _core_log_sink_std_write(void *ctx_, const char *chars, size_t nchars)
 {
     static const size_t timestamp_len = strlen("[----/--/-- --:--:--]");
 
-    struct core_log_sink_std_ctx *ctx;
+    core_log_sink_t_std_ctx *ctx;
 
     char color;
     size_t color_len;
@@ -89,7 +89,7 @@ _core_log_sink_std_write(void *ctx_, const char *chars, size_t nchars)
     DWORD written;
     DWORD write_pos;
 
-    ctx = (struct core_log_sink_std_ctx *) ctx_;
+    ctx = (core_log_sink_t_std_ctx *) ctx_;
 
     if (ctx->color) {
         write_pos = 0;
@@ -155,20 +155,20 @@ _core_log_sink_std_write(void *ctx_, const char *chars, size_t nchars)
 
 static void _core_log_sink_std_close(void *ctx_)
 {
-    struct core_log_sink_std_ctx *ctx;
+    core_log_sink_t_std_ctx *ctx;
 
-    ctx = (struct core_log_sink_std_ctx *) ctx_;
+    ctx = (core_log_sink_t_std_ctx *) ctx_;
 
     // Remark: Don't close the ctx->handle, see win API docs
 
     free(ctx);
 }
 
-void core_log_sink_std_out_open(bool color, struct core_log_sink *sink)
+void core_log_sink_std_out_open(bool color, core_log_sink_t *sink)
 {
-    struct core_log_sink_std_ctx *ctx;
+    core_log_sink_t_std_ctx *ctx;
 
-    ctx = xmalloc(sizeof(struct core_log_sink_std_ctx));
+    ctx = xmalloc(sizeof(core_log_sink_t_std_ctx));
 
     ctx->handle = GetStdHandle(STD_OUTPUT_HANDLE);
     ctx->color = color;
@@ -178,11 +178,11 @@ void core_log_sink_std_out_open(bool color, struct core_log_sink *sink)
     sink->close = _core_log_sink_std_close;
 }
 
-void core_log_sink_std_err_open(bool color, struct core_log_sink *sink)
+void core_log_sink_std_err_open(bool color, core_log_sink_t *sink)
 {
-    struct core_log_sink_std_ctx *ctx;
+    core_log_sink_t_std_ctx *ctx;
 
-    ctx = xmalloc(sizeof(struct core_log_sink_std_ctx));
+    ctx = xmalloc(sizeof(core_log_sink_t_std_ctx));
 
     ctx->handle = GetStdHandle(STD_ERROR_HANDLE);
     ctx->color = color;

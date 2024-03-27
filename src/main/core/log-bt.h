@@ -29,7 +29,7 @@ enum core_log_bt_log_level {
  * @param sink Pointer to a log sink implementation. The caller owns the memory
  *             of this.
  */
-void core_log_bt_init(const struct core_log_sink *sink);
+void core_log_bt_init(const core_log_sink_t *sink);
 
 /**
  * Set the current logging level. This can be changed at any given time, e.g.

@@ -309,7 +309,7 @@ const core_config_impl_t *core_config_property_node_impl_get()
     return &_core_config_property_impl;
 }
 
-void core_config_property_node_init(struct core_property_node *node, core_config_property_node_t **config)
+void core_config_property_node_init(core_config_property_node_t *node, core_config_property_node_t **config)
 {
     log_assert(node);
     log_assert(config);

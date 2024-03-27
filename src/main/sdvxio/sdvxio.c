@@ -2,9 +2,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/input.h"
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/glue.h"
+#include "btapi/io/input.h"
+#include "btapi/io/sdvxio.h"
 
 static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;

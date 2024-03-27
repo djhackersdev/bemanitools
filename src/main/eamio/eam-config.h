@@ -1,7 +1,7 @@
 #ifndef EAMIO_CONFIG_H
 #define EAMIO_CONFIG_H
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 struct eam_io_config_api {
     void (*config_save)(void);

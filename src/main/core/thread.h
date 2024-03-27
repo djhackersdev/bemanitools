@@ -13,11 +13,10 @@
  * in the bootstrapping process.
  */
 
-enum core_thread_result {
+typedef enum core_thread_result {
     CORE_THREAD_RESULT_SUCCESS = 0,
     CORE_THREAD_RESULT_ERROR_INTERNAL = 1,
-};
-typedef enum core_thread_result core_thread_result_t;
+} core_thread_result_t;
 
 typedef int core_thread_id_t;
 
@@ -26,13 +25,11 @@ typedef core_thread_result_t (*core_thread_create_impl_t)(
 typedef core_thread_result_t (*core_thread_join_impl_t)(core_thread_id_t thread_id, int *result);
 typedef core_thread_result_t (*core_thread_destroy_impl_t)(core_thread_id_t thread_id);
 
-struct core_thread_impl {
+typedef struct core_thread_impl {
     core_thread_create_impl_t create;
     core_thread_join_impl_t join;
     core_thread_destroy_impl_t destroy;
-};
-
-typedef struct core_thread_impl core_thread_impl_t;
+} core_thread_impl_t;
 
 void core_thread_impl_set(const core_thread_impl_t *impl);
 const core_thread_impl_t *core_thread_impl_get();

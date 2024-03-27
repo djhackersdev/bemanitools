@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/iidxio.h"
+#include "btapi/io/iidxio.h"
 
 #include "ezusb/ezusb.h"
 #include "ezusb/ezusbsys2.h"

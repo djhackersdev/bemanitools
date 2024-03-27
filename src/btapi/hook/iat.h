@@ -1,5 +1,5 @@
-#ifndef BT_HOOK_IAT_H
-#define BT_HOOK_IAT_H
+#ifndef BTAPI_HOOK_IAT_H
+#define BTAPI_HOOK_IAT_H
 
 typedef const char *(*bt_hook_iat_dll_name_get_t)();
 

@@ -1,5 +1,6 @@
 #include <inttypes.h>
 
+#include "avs/error.h"
 #include "avs/property-internal.h"
 #include "avs/property-node.h"
 
@@ -66,7 +67,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRId8, cur_path, value_s8);
                 }
@@ -81,7 +82,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRId16, cur_path, value_s16);
                 }
@@ -96,7 +97,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRId32, cur_path, value_s32);
                 }
@@ -111,7 +112,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRId64, cur_path, value_s64);
                 }
@@ -126,7 +127,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRIu8, cur_path, value_u8);
                 }
@@ -141,7 +142,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRIu16, cur_path, value_u16);
                 }
@@ -156,7 +157,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRIu32, cur_path, value_u32);
                 }
@@ -171,7 +172,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %" PRIu64, cur_path, value_u64);
                 }
@@ -186,7 +187,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %s", cur_path, value_str);
                 }
@@ -204,7 +205,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s: %d", cur_path, value_bool);
                 }
@@ -223,7 +224,7 @@ static void _avs_property_node_log_rec(
                     log_impl(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 } else {
                     log_impl("%s@: %s", cur_path, value_str);
                 }
@@ -237,7 +238,7 @@ static void _avs_property_node_log_rec(
                     property_node_traversal(parent_node, TRAVERSE_FIRST_ATTR);
 
                 while (child_node) {
-                    property_util_log_node_tree_rec(child_node, cur_path);
+                    _avs_property_node_log_rec(child_node, cur_path, log_impl);
 
                     child_node = property_node_traversal(
                         child_node, TRAVERSE_NEXT_SIBLING);
@@ -253,7 +254,7 @@ static void _avs_property_node_log_rec(
                     log_fatal(
                         "%s, property read failed: %s",
                         cur_path,
-                        avs_util_error_str(error));
+                        avs_error_str(error));
                 }
 
                 log_impl("%s: %s", cur_path, value_str);
@@ -262,7 +263,7 @@ static void _avs_property_node_log_rec(
                     property_node_traversal(parent_node, TRAVERSE_FIRST_ATTR);
 
                 while (child_node) {
-                    property_util_log_node_tree_rec(child_node, cur_path);
+                    _avs_property_node_log_rec(child_node, cur_path, log_impl);
 
                     child_node = property_node_traversal(
                         child_node, TRAVERSE_NEXT_SIBLING);
@@ -276,7 +277,7 @@ static void _avs_property_node_log_rec(
         }
     } else {
         while (child_node) {
-            property_util_log_node_tree_rec(child_node, cur_path);
+            _avs_property_node_log_rec(child_node, cur_path, log_impl);
 
             child_node =
                 property_node_traversal(child_node, TRAVERSE_NEXT_SIBLING);
@@ -284,7 +285,7 @@ static void _avs_property_node_log_rec(
     }
 }
 
-static void avs_property_node_log(const core_property_node_t *node_, core_log_message_t log_impl)
+static void _avs_property_node_log(const core_property_node_t *node_, core_log_message_t log_impl)
 {
     avs_property_internal_node_t *node;
 
@@ -293,7 +294,7 @@ static void avs_property_node_log(const core_property_node_t *node_, core_log_me
     _avs_property_node_log_rec(node->node, "", log_impl);
 }
 
-static core_property_node_result_t avs_property_node_name_get(const core_property_node_t *node_, char *name, size_t len)
+static core_property_node_result_t _avs_property_node_name_get(const core_property_node_t *node_, char *name, size_t len)
 {
     avs_property_internal_node_t *node;
 
@@ -304,7 +305,7 @@ static core_property_node_result_t avs_property_node_name_get(const core_propert
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t avs_property_node_size(const core_property_node_t *node_, size_t *size)
+static core_property_node_result_t _avs_property_node_size(const core_property_node_t *node_, size_t *size)
 {
     avs_property_internal_node_t *node;
     avs_error error;
@@ -322,7 +323,7 @@ static core_property_node_result_t avs_property_node_size(const core_property_no
     // Hence, using that size only, allocating another buffer for a copy
     // of this might fail or copying the data will fail because the buffer
     // is too small
-    error = property_query_size(node->property);
+    error = property_query_size(node->property->property);
 
     if (AVS_IS_ERROR(error)) {
         return CORE_PROPERTY_RESULT_ERROR_INTERNAL;
@@ -339,7 +340,7 @@ static core_property_node_result_t avs_property_node_size(const core_property_no
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t avs_property_node_search(const core_property_node_t *node_, const char *path, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_search(const core_property_node_t *node_, const char *path, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *node;
     avs_property_internal_node_t *node_out;
@@ -363,7 +364,7 @@ static core_property_node_result_t avs_property_node_search(const core_property_
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t avs_property_node_next_result_search(const core_property_node_t *node_, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_next_result_search(const core_property_node_t *node_, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *node;
     avs_property_internal_node_t *node_out;
@@ -387,7 +388,7 @@ static core_property_node_result_t avs_property_node_next_result_search(const co
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t avs_property_node_child_get(const core_property_node_t *node_, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_child_get(const core_property_node_t *node_, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *node;
     avs_property_internal_node_t *node_out;
@@ -411,7 +412,7 @@ static core_property_node_result_t avs_property_node_child_get(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_next_sibling_get(const core_property_node_t *node_, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_next_sibling_get(const core_property_node_t *node_, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *node;
     avs_property_internal_node_t *node_out;
@@ -435,7 +436,7 @@ static core_property_node_result_t core_property_node_next_sibling_get(const cor
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_void_create(const core_property_node_t *parent_node_, const char *key, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_void_create(const core_property_node_t *parent_node_, const char *key, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -444,7 +445,7 @@ static core_property_node_result_t core_property_node_void_create(const core_pro
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_VOID, key);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_VOID, key);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -458,7 +459,7 @@ static core_property_node_result_t core_property_node_void_create(const core_pro
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s8_create(const core_property_node_t *parent_node_, const char *key, int8_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_s8_create(const core_property_node_t *parent_node_, const char *key, int8_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -467,7 +468,7 @@ static core_property_node_result_t core_property_node_s8_create(const core_prope
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_S8, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_S8, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -481,7 +482,7 @@ static core_property_node_result_t core_property_node_s8_create(const core_prope
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u8_create(const core_property_node_t *parent_node_, const char *key, uint8_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_u8_create(const core_property_node_t *parent_node_, const char *key, uint8_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -490,7 +491,7 @@ static core_property_node_result_t core_property_node_u8_create(const core_prope
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_U8, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_U8, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -504,7 +505,7 @@ static core_property_node_result_t core_property_node_u8_create(const core_prope
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s16_create(const core_property_node_t *parent_node_, const char *key, int16_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_s16_create(const core_property_node_t *parent_node_, const char *key, int16_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -513,7 +514,7 @@ static core_property_node_result_t core_property_node_s16_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_S16, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_S16, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -527,7 +528,7 @@ static core_property_node_result_t core_property_node_s16_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u16_create(const core_property_node_t *parent_node_, const char *key, uint16_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_u16_create(const core_property_node_t *parent_node_, const char *key, uint16_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -536,7 +537,7 @@ static core_property_node_result_t core_property_node_u16_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_U16, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_U16, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -550,7 +551,7 @@ static core_property_node_result_t core_property_node_u16_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s32_create(const core_property_node_t *parent_node_, const char *key, int32_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_s32_create(const core_property_node_t *parent_node_, const char *key, int32_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -559,7 +560,7 @@ static core_property_node_result_t core_property_node_s32_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_S32, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_S32, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -573,7 +574,7 @@ static core_property_node_result_t core_property_node_s32_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u32_create(const core_property_node_t *parent_node_, const char *key, uint32_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_u32_create(const core_property_node_t *parent_node_, const char *key, uint32_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -582,7 +583,7 @@ static core_property_node_result_t core_property_node_u32_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_U32, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_U32, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -596,7 +597,7 @@ static core_property_node_result_t core_property_node_u32_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s64_create(const core_property_node_t *parent_node_, const char *key, int64_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_s64_create(const core_property_node_t *parent_node_, const char *key, int64_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -605,7 +606,7 @@ static core_property_node_result_t core_property_node_s64_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_S64, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_S64, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -619,7 +620,7 @@ static core_property_node_result_t core_property_node_s64_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u64_create(const core_property_node_t *parent_node_, const char *key, uint64_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_u64_create(const core_property_node_t *parent_node_, const char *key, uint64_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -628,7 +629,7 @@ static core_property_node_result_t core_property_node_u64_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_U64, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_U64, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -642,7 +643,7 @@ static core_property_node_result_t core_property_node_u64_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_bin_create(const core_property_node_t *parent_node_, const char *key, void *data, size_t len, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_bin_create(const core_property_node_t *parent_node_, const char *key, void *data, size_t len, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -651,7 +652,7 @@ static core_property_node_result_t core_property_node_bin_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_BIN, key, data, len);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_BIN, key, data, len);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -665,7 +666,7 @@ static core_property_node_result_t core_property_node_bin_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_str_create(const core_property_node_t *parent_node_, const char *key, const char *value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_str_create(const core_property_node_t *parent_node_, const char *key, const char *value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -674,7 +675,7 @@ static core_property_node_result_t core_property_node_str_create(const core_prop
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_STR, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_STR, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -688,7 +689,7 @@ static core_property_node_result_t core_property_node_str_create(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_ipv4_create(const core_property_node_t *parent_node_, const char *key, uint32_t value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_ipv4_create(const core_property_node_t *parent_node_, const char *key, uint32_t value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -697,7 +698,7 @@ static core_property_node_result_t core_property_node_ipv4_create(const core_pro
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_IP4, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_IP4, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -711,7 +712,7 @@ static core_property_node_result_t core_property_node_ipv4_create(const core_pro
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_float_create(const core_property_node_t *parent_node_, const char *key, float value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_float_create(const core_property_node_t *parent_node_, const char *key, float value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -720,7 +721,7 @@ static core_property_node_result_t core_property_node_float_create(const core_pr
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_FLOAT, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_FLOAT, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -734,7 +735,7 @@ static core_property_node_result_t core_property_node_float_create(const core_pr
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_double_create(const core_property_node_t *parent_node_, const char *key, double value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_double_create(const core_property_node_t *parent_node_, const char *key, double value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -743,7 +744,7 @@ static core_property_node_result_t core_property_node_double_create(const core_p
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_DOUBLE, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_DOUBLE, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -757,7 +758,7 @@ static core_property_node_result_t core_property_node_double_create(const core_p
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_attr_create(const core_property_node_t *parent_node_, const char *key, const char *value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_attr_create(const core_property_node_t *parent_node_, const char *key, const char *value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -766,7 +767,7 @@ static core_property_node_result_t core_property_node_attr_create(const core_pro
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_ATTR, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_ATTR, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -780,7 +781,7 @@ static core_property_node_result_t core_property_node_attr_create(const core_pro
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_bool_create(const core_property_node_t *parent_node_, const char *key, bool value, core_property_node_t **node_out_)
+static core_property_node_result_t _avs_property_node_bool_create(const core_property_node_t *parent_node_, const char *key, bool value, core_property_node_t **node_out_)
 {
     avs_property_internal_node_t *parent_node;
     avs_property_internal_node_t *node_out;
@@ -789,7 +790,7 @@ static core_property_node_result_t core_property_node_bool_create(const core_pro
     parent_node = (avs_property_internal_node_t*) parent_node_;
     node_out = (avs_property_internal_node_t*) node_out_;
 
-    tmp = property_node_create(parent_node->property, parent_node->node, PROPERTY_TYPE_BOOL, key, value);
+    tmp = property_node_create(parent_node->property->property, parent_node->node, PROPERTY_TYPE_BOOL, key, value);
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -803,7 +804,7 @@ static core_property_node_result_t core_property_node_bool_create(const core_pro
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s8_read(const core_property_node_t *parent_node_, int8_t *value)
+static core_property_node_result_t _avs_property_node_s8_read(const core_property_node_t *parent_node_, int8_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -819,7 +820,7 @@ static core_property_node_result_t core_property_node_s8_read(const core_propert
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u8_read(const core_property_node_t *parent_node_,  uint8_t *value)
+static core_property_node_result_t _avs_property_node_u8_read(const core_property_node_t *parent_node_,  uint8_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -835,7 +836,7 @@ static core_property_node_result_t core_property_node_u8_read(const core_propert
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s16_read(const core_property_node_t *parent_node_, int16_t *value)
+static core_property_node_result_t _avs_property_node_s16_read(const core_property_node_t *parent_node_, int16_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -851,7 +852,7 @@ static core_property_node_result_t core_property_node_s16_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u16_read(const core_property_node_t *parent_node_, uint16_t *value)
+static core_property_node_result_t _avs_property_node_u16_read(const core_property_node_t *parent_node_, uint16_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -867,7 +868,7 @@ static core_property_node_result_t core_property_node_u16_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s32_read(const core_property_node_t *parent_node_, int32_t *value)
+static core_property_node_result_t _avs_property_node_s32_read(const core_property_node_t *parent_node_, int32_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -883,7 +884,7 @@ static core_property_node_result_t core_property_node_s32_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u32_read(const core_property_node_t *parent_node_, uint32_t *value)
+static core_property_node_result_t _avs_property_node_u32_read(const core_property_node_t *parent_node_, uint32_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -899,7 +900,7 @@ static core_property_node_result_t core_property_node_u32_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_s64_read(const core_property_node_t *parent_node_, int64_t *value)
+static core_property_node_result_t _avs_property_node_s64_read(const core_property_node_t *parent_node_, int64_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -915,7 +916,7 @@ static core_property_node_result_t core_property_node_s64_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_u64_read(const core_property_node_t *parent_node_, uint64_t *value)
+static core_property_node_result_t _avs_property_node_u64_read(const core_property_node_t *parent_node_, uint64_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -931,7 +932,7 @@ static core_property_node_result_t core_property_node_u64_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_bin_read(const core_property_node_t *parent_node_, void *value, size_t len)
+static core_property_node_result_t _avs_property_node_bin_read(const core_property_node_t *parent_node_, void *value, size_t len)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -947,7 +948,7 @@ static core_property_node_result_t core_property_node_bin_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_str_read(const core_property_node_t *parent_node_, char *value, size_t len)
+static core_property_node_result_t _avs_property_node_str_read(const core_property_node_t *parent_node_, char *value, size_t len)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -963,7 +964,7 @@ static core_property_node_result_t core_property_node_str_read(const core_proper
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_ipv4_read(const core_property_node_t *parent_node_, uint32_t *value)
+static core_property_node_result_t _avs_property_node_ipv4_read(const core_property_node_t *parent_node_, uint32_t *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -979,7 +980,7 @@ static core_property_node_result_t core_property_node_ipv4_read(const core_prope
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_float_read(const core_property_node_t *parent_node_, float *value)
+static core_property_node_result_t _avs_property_node_float_read(const core_property_node_t *parent_node_, float *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -995,7 +996,7 @@ static core_property_node_result_t core_property_node_float_read(const core_prop
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_double_read(const core_property_node_t *parent_node_, double *value)
+static core_property_node_result_t _avs_property_node_double_read(const core_property_node_t *parent_node_, double *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -1011,7 +1012,7 @@ static core_property_node_result_t core_property_node_double_read(const core_pro
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_attr_read(const core_property_node_t *parent_node_, char *value, size_t len)
+static core_property_node_result_t _avs_property_node_attr_read(const core_property_node_t *parent_node_, char *value, size_t len)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -1027,7 +1028,7 @@ static core_property_node_result_t core_property_node_attr_read(const core_prope
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_bool_read(const core_property_node_t *parent_node_, bool *value)
+static core_property_node_result_t _avs_property_node_bool_read(const core_property_node_t *parent_node_, bool *value)
 {
     avs_property_internal_node_t *parent_node;
     avs_error error;
@@ -1043,7 +1044,7 @@ static core_property_node_result_t core_property_node_bool_read(const core_prope
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-static core_property_node_result_t core_property_node_remove(const core_property_node_t *node_)
+static core_property_node_result_t _avs_property_node_remove(const core_property_node_t *node_)
 {
     avs_property_internal_node_t *node;
     avs_error error;
@@ -1059,7 +1060,7 @@ static core_property_node_result_t core_property_node_remove(const core_property
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-core_property_node_result_t core_property_node_copy(core_property_node_t *dst_node_, const core_property_node_t *src_node_)
+static core_property_node_result_t _avs_property_node_copy(core_property_node_t *dst_node_, const core_property_node_t *src_node_)
 {
     avs_property_internal_node_t *dst_node;
     avs_property_internal_node_t *src_node;
@@ -1069,9 +1070,55 @@ core_property_node_result_t core_property_node_copy(core_property_node_t *dst_no
 
     // TODO check if src fits into destination?
 
-    if (!property_node_clone(dst_node->property, dst_node->node, src_node->node, true)) {
+    if (!property_node_clone(dst_node->property->property, dst_node->node, src_node->node, true)) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
     } else {
         return CORE_PROPERTY_NODE_RESULT_SUCCESS;
     }
+}
+
+void avs_property_node_impl_get(core_property_node_impl_t *impl)
+{
+    log_assert(impl);
+
+    impl->log = _avs_property_node_log;
+    impl->name_get = _avs_property_node_name_get;
+    impl->size = _avs_property_node_size;
+    impl->search = _avs_property_node_search;
+    impl->next_result_search = _avs_property_node_next_result_search;
+    impl->child_get = _avs_property_node_child_get;
+    impl->next_sibling_get = _avs_property_node_next_sibling_get;
+    impl->void_create = _avs_property_node_void_create;
+    impl->s8_create = _avs_property_node_s8_create;
+    impl->u8_create = _avs_property_node_u8_create;
+    impl->s16_create = _avs_property_node_s16_create;
+    impl->u16_create = _avs_property_node_u16_create;
+    impl->s32_create = _avs_property_node_s32_create;
+    impl->u32_create = _avs_property_node_u32_create;
+    impl->s64_create = _avs_property_node_s64_create;
+    impl->u64_create = _avs_property_node_u64_create;
+    impl->bin_create = _avs_property_node_bin_create;
+    impl->str_create = _avs_property_node_str_create;
+    impl->ipv4_create = _avs_property_node_ipv4_create;
+    impl->float_create = _avs_property_node_float_create;
+    impl->double_create = _avs_property_node_double_create;
+    impl->attr_create = _avs_property_node_attr_create;
+    impl->bool_create = _avs_property_node_bool_create;
+    impl->s8_read = _avs_property_node_s8_read;
+    impl->u8_read = _avs_property_node_u8_read;
+    impl->s16_read = _avs_property_node_s16_read;
+    impl->u16_read = _avs_property_node_u16_read;
+    impl->s32_read = _avs_property_node_s32_read;
+    impl->u32_read = _avs_property_node_u32_read;
+    impl->s64_read = _avs_property_node_s64_read;
+    impl->u64_read = _avs_property_node_u64_read;
+    impl->bin_read = _avs_property_node_bin_read;
+    impl->str_read = _avs_property_node_str_read;
+    impl->ipv4_read = _avs_property_node_ipv4_read;
+    impl->float_read = _avs_property_node_float_read;
+    impl->double_read = _avs_property_node_double_read;
+    impl->attr_read = _avs_property_node_attr_read;
+    impl->bool_read = _avs_property_node_bool_read;
+    impl->remove = _avs_property_node_remove;
+    impl->copy = _avs_property_node_copy;
 }

@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/input.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/input.h"
 
 #include "core/log.h"
 #include "core/thread.h"

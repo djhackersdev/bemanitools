@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/ddrio.h"
+#include "btapi/io/ddrio.h"
 
 #include "ddrhook-util/p3io.h"
 

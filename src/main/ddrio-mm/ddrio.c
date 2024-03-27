@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/ddrio.h"
+#include "btapi/io/ddrio.h"
 
 #include "core/log.h"
 

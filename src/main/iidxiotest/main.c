@@ -5,7 +5,7 @@
 
 #include <windows.h>
 
-#include "bemanitools/iidxio.h"
+#include "btapi/io/iidxio.h"
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"

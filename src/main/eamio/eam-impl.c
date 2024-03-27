@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bemanitools/eamio.h"
+#include "btapi/io/eamio.h"
 
 #include "core/log.h"
 

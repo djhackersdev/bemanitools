@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/glue.h"
+#include "btapi/io/sdvxio.h"
 
 #include "cconfig/cconfig-main.h"
 

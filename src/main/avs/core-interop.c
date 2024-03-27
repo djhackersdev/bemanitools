@@ -1,5 +1,7 @@
+#include "avs/log.h"
 #include "avs/property-node.h"
 #include "avs/property.h"
+#include "avs/thread.h"
 
 #include "core/log.h"
 #include "core/property-node.h"
@@ -10,8 +12,10 @@
 
 void avs_core_interop_log_avs_impl_set()
 {
-    core_log_impl_set(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    core_log_impl_t impl;
+    
+    avs_log_impl_get(&impl);
+    core_log_impl_set(&impl);
 }
 
 void avs_core_interop_property_impl_set()
@@ -28,6 +32,8 @@ void avs_core_interop_property_impl_set()
 
 void avs_core_interop_thread_avs_impl_set()
 {
-    core_thread_impl_set(
-        avs_thread_create, avs_thread_join, avs_thread_destroy);
+    core_thread_impl_t impl;
+    
+    avs_thread_impl_get(&impl);
+    core_thread_impl_set(&impl);
 }

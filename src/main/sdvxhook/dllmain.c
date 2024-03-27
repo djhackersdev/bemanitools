@@ -5,8 +5,8 @@
 
 #include "avs/core-interop.h"
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/eamio.h"
+#include "btapi/io/sdvxio.h"
 
 #include "core/log.h"
 #include "core/thread.h"

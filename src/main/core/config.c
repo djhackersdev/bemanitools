@@ -3,6 +3,13 @@
 #include "core/config.h"
 #include "core/log.h"
 
+#define CORE_CONFIG_ASSERT_IMPLEMENTED(func, name) \
+    while (0) { \
+        if (!func) { \
+            log_fatal("Function %s not implemented", STRINGIFY(name)); \
+        } \
+    }
+
 static core_config_impl_t *_core_config_impl;
 
 void core_config_impl_set(const core_config_impl_t *impl)
@@ -13,7 +20,21 @@ void core_config_impl_set(const core_config_impl_t *impl)
         log_warning("Re-initialize");
     }
 
-    _core_config_impl = impl;
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->s8_get, s8_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->u8_get, u8_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->s16_get, s16_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->u16_get, u16_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->s32_get, s32_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->u32_get, u32_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->s64_get, s64_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->u64_get, u64_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->float_get, float_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->double_get, double_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->bool_get, bool_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->bin_get, bin_get);
+    CORE_CONFIG_ASSERT_IMPLEMENTED(impl->str_get, str_get);
+
+    memcpy(_bt_core_config_impl, impl, sizeof(core_config_impl_t));
 }
 
 const core_config_impl_t *core_config_impl_get()

@@ -12,7 +12,7 @@
 #include "acioemu/emu.h"
 #include "util/math.h"
 
-#include "bemanitools/iidxio.h"
+#include "btapi/io/iidxio.h"
 
 static int get_default_slider_valid(size_t idx);
 static void bio2_emu_bi2a_cmd_send_version(

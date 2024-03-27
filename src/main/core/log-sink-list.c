@@ -8,18 +8,18 @@
 
 #define MAX_SINKS 8
 
-struct core_log_sink_list {
-    struct core_log_sink entries[MAX_SINKS];
+core_log_sink_t_list {
+    core_log_sink_t entries[MAX_SINKS];
     uint8_t num;
 };
 
 static void
 _core_log_sink_list_write(void *ctx, const char *chars, size_t nchars)
 {
-    struct core_log_sink_list *sink_list;
+    core_log_sink_t_list *sink_list;
     int i;
 
-    sink_list = (struct core_log_sink_list *) ctx;
+    sink_list = (core_log_sink_t_list *) ctx;
 
     for (i = 0; i < sink_list->num; i++) {
         sink_list->entries[i].write(sink_list->entries[i].ctx, chars, nchars);
@@ -28,10 +28,10 @@ _core_log_sink_list_write(void *ctx, const char *chars, size_t nchars)
 
 static void _core_log_sink_list_close(void *ctx)
 {
-    struct core_log_sink_list *sink_list;
+    core_log_sink_t_list *sink_list;
     int i;
 
-    sink_list = (struct core_log_sink_list *) ctx;
+    sink_list = (core_log_sink_t_list *) ctx;
 
     for (i = 0; i < sink_list->num; i++) {
         sink_list->entries[i].close(sink_list->entries[i].ctx);
@@ -41,16 +41,16 @@ static void _core_log_sink_list_close(void *ctx)
 }
 
 void core_log_sink_list_open(
-    const struct core_log_sink *entry, uint8_t num, struct core_log_sink *sink)
+    const core_log_sink_t *entry, uint8_t num, core_log_sink_t *sink)
 {
-    struct core_log_sink_list *sink_list;
+    core_log_sink_t_list *sink_list;
     int i;
 
     if (num > MAX_SINKS) {
         abort();
     }
 
-    sink_list = xmalloc(sizeof(struct core_log_sink_list));
+    sink_list = xmalloc(sizeof(core_log_sink_t_list));
 
     for (i = 0; i < num; i++) {
         sink_list->entries[i].ctx = entry[i].ctx;

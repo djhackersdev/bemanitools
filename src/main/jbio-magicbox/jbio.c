@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-#include "bemanitools/jbio.h"
+#include "btapi/io/jbio.h"
 #include "imports/ch341.h"
 #include "util/defs.h"
 

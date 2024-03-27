@@ -64,7 +64,7 @@ void core_log_sink_file_open(
     bool append,
     bool rotate,
     uint8_t max_rotations,
-    struct core_log_sink *sink)
+    core_log_sink_t *sink)
 {
     FILE *file;
 

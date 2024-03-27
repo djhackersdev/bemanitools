@@ -7,7 +7,7 @@
 
 #include "ViGEm/Client.h"
 
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/sdvxio.h"
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"

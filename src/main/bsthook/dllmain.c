@@ -4,11 +4,11 @@
 
 #include "avs/core-interop.h"
 
-#include "bemanitools/bstio.h"
-#include "bemanitools/eamio.h"
+#include "btsdk/core/log.h"
+#include "btsdk/core/thread.h"
 
-#include "core/log.h"
-#include "core/thread.h"
+#include "btapi/io/bstio.h"
+#include "btapi/io/eamio.h"
 
 #include "hook/iohook.h"
 
@@ -37,23 +37,25 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("Starting up BeatStream IO backend");
 
-    core_log_impl_assign(bst_io_set_loggers);
+    // TODO use btsdk once migrated
+    bst_io_set_loggers(_bt_core_log_impl.misc, _bt_core_log_impl.info, _bt_core_log_impl.warning, _bt_core_log_impl.fatal);
 
     ok = bst_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+        bt_core_thread_create,
+        bt_core_thread_join,
+        bt_core_thread_destroy);
 
     if (!ok) {
         goto bst_io_fail;
     }
 
-    core_log_impl_assign(eam_io_set_loggers);
+    // TODO use btsdk once migrated
+    eam_io_set_loggers(_bt_core_log_impl.misc, _bt_core_log_impl.info, _bt_core_log_impl.warning, _bt_core_log_impl.fatal);
 
     ok = eam_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+        bt_core_thread_create,
+        bt_core_thread_join,
+        bt_core_thread_destroy);
 
     if (!ok) {
         goto eam_io_fail;
@@ -99,9 +101,10 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         return TRUE;
     }
 
+    // TODO use btsdk once migrated
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    // avs_core_interop_log_avs_impl_set();
+    // avs_core_interop_thread_avs_impl_set();
 
     args_recover(&argc, &argv);
 

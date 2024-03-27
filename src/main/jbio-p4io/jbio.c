@@ -7,7 +7,7 @@
 
 #include "aciomgr/manager.h"
 
-#include "bemanitools/jbio.h"
+#include "btapi/io/jbio.h"
 
 #include "cconfig/cconfig-main.h"
 

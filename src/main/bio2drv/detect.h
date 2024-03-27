@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "bemanitools/glue.h"
+#include "btapi/io/glue.h"
 
 enum bio2drv_detect_mode {
     DETECT_DEVICEDESC = 0x1, // look for serial devices containing BIO2(VIDEO)

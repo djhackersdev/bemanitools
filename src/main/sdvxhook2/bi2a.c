@@ -10,7 +10,7 @@
 #include "bio2emu/emu.h"
 #include "sdvxhook2/bi2a.h"
 
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/sdvxio.h"
 
 static void bio2_emu_bi2a_cmd_send_version(
     struct ac_io_emu *emu, const struct ac_io_message *req);

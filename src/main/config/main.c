@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     wchar_t text[1024];
     int max_light;
     size_t i;
-    struct core_log_sink sink;
+    core_log_sink_t sink;
 
     inst = GetModuleHandle(NULL);
 

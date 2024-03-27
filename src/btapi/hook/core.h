@@ -1,5 +1,5 @@
-#ifndef BT_HOOK_CORE_H
-#define BT_HOOK_CORE_H
+#ifndef BTAPI_HOOK_CORE_H
+#define BTAPI_HOOK_CORE_H
 
 #include "core/config.h"
 #include "core/log.h"

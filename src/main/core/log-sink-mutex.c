@@ -6,17 +6,17 @@
 
 #include "util/mem.h"
 
-struct core_log_sink_mutex_ctx {
-    struct core_log_sink *child;
+core_log_sink_t_mutex_ctx {
+    core_log_sink_t *child;
     HANDLE mutex;
 };
 
 static void
 _core_log_sink_mutex_write(void *ctx_, const char *chars, size_t nchars)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_t_mutex_ctx *ctx;
 
-    ctx = (struct core_log_sink_mutex_ctx *) ctx_;
+    ctx = (core_log_sink_t_mutex_ctx *) ctx_;
 
     WaitForSingleObject(ctx->mutex, INFINITE);
 
@@ -27,9 +27,9 @@ _core_log_sink_mutex_write(void *ctx_, const char *chars, size_t nchars)
 
 static void _core_log_sink_mutex_close(void *ctx_)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_t_mutex_ctx *ctx;
 
-    ctx = (struct core_log_sink_mutex_ctx *) ctx_;
+    ctx = (core_log_sink_t_mutex_ctx *) ctx_;
 
     CloseHandle(ctx->mutex);
 
@@ -38,13 +38,13 @@ static void _core_log_sink_mutex_close(void *ctx_)
 }
 
 void core_log_sink_mutex_open(
-    const struct core_log_sink *child_sink, struct core_log_sink *sink)
+    const core_log_sink_t *child_sink, core_log_sink_t *sink)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_t_mutex_ctx *ctx;
 
-    ctx = xmalloc(sizeof(struct core_log_sink_mutex_ctx));
+    ctx = xmalloc(sizeof(core_log_sink_t_mutex_ctx));
 
-    memcpy(ctx->child, child_sink, sizeof(struct core_log_sink));
+    memcpy(ctx->child, child_sink, sizeof(core_log_sink_t));
     ctx->mutex = CreateMutex(NULL, FALSE, NULL);
 
     sink->ctx = ctx;

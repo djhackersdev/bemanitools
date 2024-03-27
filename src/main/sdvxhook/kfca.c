@@ -7,7 +7,7 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/sdvxio.h"
+#include "btapi/io/sdvxio.h"
 
 #include "core/log.h"
 

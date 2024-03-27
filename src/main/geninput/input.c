@@ -4,8 +4,10 @@
 
 #include <windows.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/input.h"
+#include "btapi/core/log.h"
+#include "btapi/core/thread.h"
+
+#include "btapi/io/input.h"
 
 #include "core/log.h"
 #include "core/thread.h"
@@ -43,12 +45,13 @@ static FILE *mapper_config_open(const char *game_type, const char *mode)
 }
 
 void input_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+    bt_core_log_message_t misc,
+    bt_core_log_message_t info,
+    bt_core_log_message_t warning,
+    bt_core_log_message_t fatal)
 {
-    core_log_impl_set(misc, info, warning, fatal);
+    // TODO need to switch APIs entirely to avoid stupid and difficult duct-taping to keep something compatible that i don't want/need to be compatible anymore
+    bt_core_log_impl_set(misc, info, warning, fatal);
 }
 
 void input_init(

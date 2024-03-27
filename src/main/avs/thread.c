@@ -1,5 +1,7 @@
 #include "avs/thread.h"
 
+#include "core/log.h"
+
 #include "imports/avs.h"
 
 static core_thread_result_t _avs_thread_create(

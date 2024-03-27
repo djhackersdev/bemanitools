@@ -13,7 +13,7 @@
 
 int main(int argc, char **argv)
 {
-    struct core_log_sink log_sink;
+    core_log_sink_t log_sink;
     HRESULT hr;
     const char *port;
     HANDLE handle;

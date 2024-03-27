@@ -4,8 +4,8 @@
 
 #include "avs/core-interop.h"
 
-#include "bemanitools/ddrio.h"
-#include "bemanitools/eamio.h"
+#include "btapi/io/ddrio.h"
+#include "btapi/io/eamio.h"
 
 #include "core/log.h"
 #include "core/thread.h"

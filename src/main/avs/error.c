@@ -105,5 +105,5 @@ const char *avs_property_error_get_and_clear(struct property *prop)
     error = property_get_error(prop);
     property_clear_error(prop);
 
-    return avs_util_error_str(error);
+    return avs_error_str(error);
 }

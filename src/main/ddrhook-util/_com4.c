@@ -17,7 +17,7 @@
 #include "acioemu/hdxs.h"
 #include "acioemu/icca.h"
 
-#include "bemanitools/ddrio.h"
+#include "btapi/io/ddrio.h"
 
 #include "core/log.h"
 

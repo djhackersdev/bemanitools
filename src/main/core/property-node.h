@@ -14,15 +14,13 @@
 // Guestimate, should be long enough, I hope?
 #define CORE_PROPERTY_NODE_PATH_LEN_MAX 4096
 
-struct core_property_node;
 typedef struct core_property_node core_property_node_t;
 
-enum core_property_node_result {
+typedef enum core_property_node_result {
     CORE_PROPERTY_NODE_RESULT_SUCCESS = 0,
     CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL = 1,
     CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND = 2,
-};
-typedef enum core_property_node_result core_property_node_result_t;
+} core_property_node_result_t;
 
 typedef void (*core_property_node_log_t)(const core_property_node_t *node, core_log_message_t log_impl);
 typedef core_property_node_result_t (*core_property_node_name_get_t)(const core_property_node_t *node, char *name, size_t len);
@@ -65,7 +63,7 @@ typedef core_property_node_result_t (*core_property_node_bool_read_t)(const core
 typedef core_property_node_result_t (*core_property_node_remove_t)(const core_property_node_t *node);
 typedef core_property_node_result_t (*core_property_node_copy_t)(core_property_node_t *dst_node, const core_property_node_t *src_node);
 
-struct core_property_node_impl {
+typedef struct core_property_node_impl {
     core_property_node_log_t log;
     core_property_node_name_get_t name_get;
     core_property_node_size_t size;
@@ -106,8 +104,7 @@ struct core_property_node_impl {
     core_property_node_bool_read_t bool_read;
     core_property_node_remove_t remove;
     core_property_node_copy_t copy;
-};
-typedef struct core_property_node_impl core_property_node_impl_t;
+} core_property_node_impl_t;
 
 void core_property_node_impl_set(const core_property_node_impl_t *impl);
 const core_property_node_impl_t *core_property_node_impl_get();

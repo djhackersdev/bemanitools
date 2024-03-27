@@ -1,5 +1,5 @@
-#ifndef BT_CORE_THREAD_H
-#define BT_CORE_THREAD_H
+#ifndef BTAPI_CORE_THREAD_H
+#define BTAPI_CORE_THREAD_H
 
 #include <stdint.h>
 

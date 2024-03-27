@@ -7,7 +7,7 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/bstio.h"
+#include "btapi/io/bstio.h"
 
 #include "util/defs.h"
 

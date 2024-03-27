@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/input.h"
+#include "btapi/io/input.h"
 
 #include "geninput/mapper.h"
 

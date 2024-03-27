@@ -1,5 +1,5 @@
-#ifndef BT_IO_BST_H
-#define BT_IO_BST_H
+#ifndef BTAPI_IO_BST_H
+#define BTAPI_IO_BST_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -15,13 +15,9 @@ typedef void (*bt_io_bst_fini_t)();
 typedef bool (*bt_io_bst_input_read_t)();
 typedef uint8_t (*bt_io_bst_input_get_t)();
 
-typedef struct bt_io_bst_impl {
-    bt_io_bst_init_t init;
-    bt_io_bst_fini_t fini;
-    bt_io_bst_input_read_t input_read;
-    bt_io_bst_input_get_t input_get;
-} bt_io_bst_impl_t;
-
-void bt_io_bst_impl_init(bt_io_bst_impl_t *impl);
+bool bt_io_bst_init();
+void bt_io_bst_fini();
+bool bt_io_bst_input_read();
+uint8_t bt_io_bst_input_get();
 
 #endif

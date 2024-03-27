@@ -13,7 +13,7 @@ static void _core_log_sink_null_close(void *ctx)
     // noop
 }
 
-void core_log_sink_null_open(struct core_log_sink *sink)
+void core_log_sink_null_open(core_log_sink_t *sink)
 {
     sink->ctx = NULL;
     sink->write = _core_log_sink_null_write;
