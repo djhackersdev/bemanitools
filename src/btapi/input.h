@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef void (*bt_input_init_t)();
+typedef bool (*bt_input_init_t)();
 typedef void (*bt_input_fini_t)();
 typedef bool (*bt_input_mapper_config_load_t)(const char *game_type);
 typedef uint8_t (*bt_input_mapper_analog_read_t)(uint8_t analog);
@@ -32,7 +32,7 @@ typedef void (*bt_input_mapper_light_write_t)(uint8_t light, uint8_t intensity);
    game_type parameter, otherwise you will not receive any input, and any
    attempts to set a light output level will have no effect. */
 
-void bt_input_init();
+bool bt_input_init();
 
 /* Shut down the generic input subsystem. After calling this function, no
    geninput functions other than input_set_loggers() or input_init() may be
