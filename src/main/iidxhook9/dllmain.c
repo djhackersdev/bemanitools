@@ -26,6 +26,7 @@
 #include "bio2emu-iidx/bi2a.h"
 
 #include "iidxhook9/config-io.h"
+#include "iidxhook9/fs-hook.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -159,6 +160,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         } else {
             memfile_hook_add_fd("d:\\\\001rom.txt", ABSOLUTE_MATCH, "LDJ", 3);
         }
+
+        // redirect F:\ drive to vfs (used for video recording)
+        iidxhook9_fs_hooks_init();
     }
 
     rs232_hook_init();
