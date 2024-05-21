@@ -3,9 +3,11 @@
 
 #include "camhook/config-cam.h"
 
+// unused to control which camhook version is being used
+// defaults to CAMHOOK_VERSION_OLD
 enum camhook_version {
-    CAMHOOK_OLD,
-    CAMHOOK_NEW,
+    CAMHOOK_VERSION_OLD,
+    CAMHOOK_VERSION_NEW,
 };
 
 void camhook_set_version(enum camhook_version version);

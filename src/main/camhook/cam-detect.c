@@ -247,7 +247,7 @@ bool convert_path_to_fakesym(const char *path, wchar_t *sym, char *extra_o)
     return true;
 }
 
-void fill_cam_struct(struct CameraData *data, const char *devid)
+void fill_cam_struct(struct camera_data *data, const char *devid)
 {
     char buffer[CAMERA_DATA_STRING_SIZE];
 
@@ -295,6 +295,21 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
 
     log_info("dev path: %s", data->deviceInstancePath);
 
+    char* vid_str = strstr(data->deviceInstancePath, "VID_");
+    char* pid_str = strstr(data->deviceInstancePath, "PID_");
+
+    if (!vid_str || !pid_str) {
+        log_info("Could not parse VID/PID in %s", data->deviceInstancePath);
+        return;
+    }
+
+    data->vid = strtol(vid_str + 4, NULL, 16);
+    data->pid = strtol(pid_str + 4, NULL, 16);
+
+    log_info("vid: %04x", data->vid);
+    log_info("pid: %04x", data->pid);
+
+
     // locate device nodes
     DEVINST dnDevInst;
     DEVINST parentDev;
@@ -324,52 +339,64 @@ void fill_cam_struct(struct CameraData *data, const char *devid)
 
     ULONG szAddr;
     ULONG szDesc;
+    ULONG szDriverKey;
 
     szAddr = 4;
-    szDesc = CAMERA_DATA_STRING_SIZE;
     cmret = CM_Get_DevNode_Registry_PropertyA(
         dnDevInst, CM_DRP_ADDRESS, NULL, &data->address, &szAddr, 0);
 
     if (cmret != CR_SUCCESS) {
         log_info(
-            "CM_Get_DevNode_Registry_PropertyA fail: %s",
+            "CM_Get_DevNode_Registry_PropertyA CM_DRP_ADDRESS fail: %s",
             data->deviceInstancePath);
         return;
     }
 
+    szDesc = CAMERA_DATA_STRING_SIZE;
     cmret = CM_Get_DevNode_Registry_PropertyA(
         dnDevInst, CM_DRP_DEVICEDESC, NULL, &data->name, &szDesc, 0);
 
     if (cmret != CR_SUCCESS) {
         log_info(
-            "CM_Get_DevNode_Registry_PropertyA fail: %s",
+            "CM_Get_DevNode_Registry_PropertyA CM_DRP_DEVICEDESC fail: %s",
             data->deviceInstancePath);
         return;
     }
 
     szAddr = 4;
-    szDesc = CAMERA_DATA_STRING_SIZE;
     cmret = CM_Get_DevNode_Registry_PropertyA(
         parentDev, CM_DRP_ADDRESS, NULL, &data->parent_address, &szAddr, 0);
 
     if (cmret != CR_SUCCESS) {
         log_info(
-            "CM_Get_DevNode_Registry_PropertyA parent fail: %s",
+            "CM_Get_DevNode_Registry_PropertyA CM_DRP_ADDRESS parent fail: %s",
             data->deviceInstancePath);
         return;
     }
 
+    szDesc = CAMERA_DATA_STRING_SIZE;
     cmret = CM_Get_DevNode_Registry_PropertyA(
         parentDev, CM_DRP_DEVICEDESC, NULL, &data->parent_name, &szDesc, 0);
 
     if (cmret != CR_SUCCESS) {
         log_info(
-            "CM_Get_DevNode_Registry_PropertyA parent fail: %s",
+            "CM_Get_DevNode_Registry_PropertyA CM_DRP_DEVICEDESC parent fail: %s",
+            data->deviceInstancePath);
+        return;
+    }
+
+    szDriverKey = CAMERA_DATA_STRING_SIZE;
+    cmret = CM_Get_DevNode_Registry_PropertyA(
+        parentDev, CM_DRP_DRIVER, NULL, &data->parent_driverKey, &szDriverKey, 0);
+
+    if (cmret != CR_SUCCESS) {
+        log_info(
+            "CM_Get_DevNode_Registry_PropertyA CM_DRP_DRIVER parent fail: %s",
             data->deviceInstancePath);
         return;
     }
 
     log_info("Found %s @ %d", data->name, data->address);
-    log_info("Parent %s @ %d", data->parent_name, data->parent_address);
+    log_info("Parent %s @ %d %s", data->parent_name, data->parent_address, data->parent_driverKey);
     data->setup = true;
 }
