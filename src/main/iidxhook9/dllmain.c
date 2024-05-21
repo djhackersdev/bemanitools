@@ -68,7 +68,7 @@ static bool load_configs()
     config = cconfig_init();
 
     iidxhook9_config_io_init(config);
-    camhook_config_cam_init(config, 2);
+    camhook_config_cam_init(config, 2, true);
 
     d3d9exhook_config_gfx_init(config);
 
@@ -84,7 +84,7 @@ static bool load_configs()
     }
 
     iidxhook9_config_io_get(&iidxhook9_config_io, config);
-    camhook_config_cam_get(&config_cam, config, 2);
+    camhook_config_cam_get(&config_cam, config, 2, true);
 
     d3d9exhook_config_gfx_get(&config_gfx, config);
 
@@ -188,6 +188,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     // camera hooks
     if (!config_cam.disable_emu) {
+        camhook_set_version(CAMHOOK_VERSION_NEW);
         camhook_init(&config_cam);
     }
 
