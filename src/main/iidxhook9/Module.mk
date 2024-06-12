@@ -11,8 +11,10 @@ ldflags_iidxhook9   := \
 deplibs_iidxhook9   := \
     avs \
 
+avslibs_iidxhook9 := \
+    avs-ext \
+
 libs_iidxhook9      := \
-	avs-util \
     core \
     iidxhook-util \
     acioemu \
@@ -22,12 +24,14 @@ libs_iidxhook9      := \
     camhook \
     d3d9exhook \
     dinput \
-    iidxio \
     hook \
     hooklib \
     cconfig \
+    iface \
+    iface-io \
+    iface-core \
+    module \
     util \
-    eamio \
 
 src_iidxhook9       := \
     config-io.c \

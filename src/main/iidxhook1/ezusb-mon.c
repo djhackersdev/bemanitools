@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "iidxhook1/ezusb-mon.h"
 

@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "core/log.h"
-
 #include "geninput/hid-report-in.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 

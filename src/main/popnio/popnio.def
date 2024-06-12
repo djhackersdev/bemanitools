@@ -1,12 +1,17 @@
 LIBRARY popnio
 
 EXPORTS
-    popn_io_get_buttons
-    popn_io_set_top_lights
-    popn_io_set_side_lights
-    popn_io_set_button_lights
-    popn_io_set_coin_blocker_light
-    popn_io_set_coin_counter_light
-    popn_io_fini
-    popn_io_init
-    popn_io_set_loggers
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_core_thread_api_set
+    bt_module_io_popn_api_get
+
+    ; Direct API
+    bt_io_popn_init
+    bt_io_popn_fini
+    bt_io_popn_buttons_get
+    bt_io_popn_top_lights_set
+    bt_io_popn_side_lights_set
+    bt_io_popn_button_lights_set
+    bt_io_popn_coin_blocker_light_set
+    bt_io_popn_coin_counter_light_set

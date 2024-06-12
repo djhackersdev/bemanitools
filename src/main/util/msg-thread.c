@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "core/log.h"
-#include "core/thread.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 #include "util/msg-thread.h"
 
@@ -14,7 +14,7 @@ static bool msg_thread_step(HWND hwnd);
 
 static const char msg_wndclass_name[] = "msg-thread";
 
-static int msg_thread_id;
+static bt_core_thread_id_t msg_thread_id;
 static HANDLE msg_thread_ready;
 static HANDLE msg_thread_stop;
 static HWND msg_window;
@@ -101,9 +101,14 @@ static bool msg_thread_step(HWND hwnd)
 
 void msg_thread_init(HINSTANCE inst)
 {
+    bt_core_thread_result_t result;
+
     msg_thread_ready = CreateEvent(NULL, TRUE, FALSE, NULL);
     msg_thread_stop = CreateEvent(NULL, TRUE, FALSE, NULL);
-    msg_thread_id = core_thread_create(msg_thread_proc, inst, 0x4000, 0);
+    result =
+        bt_core_thread_create(msg_thread_proc, inst, 0x4000, 0, &msg_thread_id);
+
+    bt_core_thread_fatal_on_error(result);
 
     WaitForSingleObject(msg_thread_ready, INFINITE);
     CloseHandle(msg_thread_ready);
@@ -111,10 +116,15 @@ void msg_thread_init(HINSTANCE inst)
 
 void msg_thread_fini(void)
 {
+    bt_core_thread_result_t result;
+
     SetEvent(msg_thread_stop);
 
-    core_thread_join(msg_thread_id, NULL);
-    core_thread_destroy(msg_thread_id);
+    result = bt_core_thread_join(msg_thread_id, NULL);
+    bt_core_thread_fatal_on_error(result);
+
+    result = bt_core_thread_destroy(msg_thread_id);
+    bt_core_thread_fatal_on_error(result);
 
     CloseHandle(msg_thread_stop);
 }

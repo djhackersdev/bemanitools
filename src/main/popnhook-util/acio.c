@@ -15,10 +15,10 @@
 #include "acioemu/emu.h"
 #include "acioemu/icca.h"
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
+
+#include "iface-core/log.h"
 
 #include "popnhook-util/acio.h"
 

@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "p4io/cmd.h"
 

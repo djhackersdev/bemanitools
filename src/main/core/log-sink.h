@@ -36,10 +36,10 @@ typedef void (*core_log_sink_close_t)(void *ctx);
  * to operate, e.g. a file handle, additional buffers etc. Make sure these
  * resources are cleaned up upon closing the sink.
  */
-struct core_log_sink {
+typedef struct core_log_sink {
     void *ctx;
     core_log_sink_write_t write;
     core_log_sink_close_t close;
-};
+} core_log_sink_t;
 
 #endif

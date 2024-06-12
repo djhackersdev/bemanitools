@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "p3io/cmd.h"
 #include "p3io/frame.h"

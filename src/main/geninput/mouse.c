@@ -12,10 +12,10 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "geninput/hid.h"
 #include "geninput/mouse.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/mem.h"

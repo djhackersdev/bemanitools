@@ -12,13 +12,13 @@
 #include <hidsdi.h>
 // clang-format on
 
-#include "core/log.h"
-
 #include "geninput/hid-generic-strings.h"
 #include "geninput/hid-generic.h"
 #include "geninput/hid-meta-in.h"
 #include "geninput/hid-meta-out.h"
 #include "geninput/hid.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/mem.h"

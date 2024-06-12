@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "security/rp-util.h"
 #include "security/rp2.h"

@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/log.h"
-
 #include "extiodrv/extio.h"
+
+#include "iface-core/log.h"
 
 #include "p3io/ddr.h"
 #include "p3iodrv/ddr.h"

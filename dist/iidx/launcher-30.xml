@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="Shift-JIS"?>
-<launcher version="1">
+<launcher>
+  <version __type="u32">1</version>
   <bootstrap>
     <selector __type="str">bemanitools_local_fs</selector>
     <config kind="inline">
@@ -53,15 +54,16 @@
   <eamuse>
     <config kind="file">bemanitools/ea3-service.xml</config>
   </eamuse>
-  <hook>
-    <hook_dlls>
-    </hook_dlls>
-    <before_hook_dlls>
-      <dll __type="str">iidxhook9.dll</dll>
-    </before_hook_dlls>
-    <iat_hook_dlls>
-    </iat_hook_dlls>
-  </hook>
+  <hooks>
+    <pre_avs>
+      <enable __type="bool">1</enable>
+      <path __type="str">iidxhook9.dll</path>
+      <config kind="inline">
+        <hook>
+        </hook>
+      </config>
+    </pre_avs>
+  </hooks>
   <debug>
     <remote_debugger __type="bool">0</remote_debugger>
     <log_property_configs __type="bool">0</log_property_configs>

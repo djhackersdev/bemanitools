@@ -139,13 +139,14 @@ libs		:=
 
 avsdlls		:=
 avsexes		:=
+avslibs     :=
 
 testdlls    :=
 testexes    :=
 
 include Module.mk
 
-modules		:= $(dlls) $(exes) $(libs) $(avsdlls) $(avsexes) $(testdlls) $(testexes)
+modules		:= $(dlls) $(exes) $(libs) $(avsdlls) $(avsexes) $(avslibs) $(testdlls) $(testexes)
 
 #
 # $1: Bitness
@@ -200,6 +201,7 @@ $$(bindir_$1_$2):
 $$(eval $$(foreach imp,$(imps),$$(call t_import,$1,$2,$$(imp))))
 $$(eval $$(foreach dll,$(avsdlls),$$(call t_linkdll,$1,$2,$$(dll))))
 $$(eval $$(foreach exe,$(avsexes),$$(call t_linkexe,$1,$2,$$(exe))))
+$$(eval $$(foreach lib,$(avslibs),$$(call t_archive,$1,$2,$$(lib))))
 
 endef
 
@@ -209,6 +211,7 @@ define t_compile
 
 depdir_$1_$2_$3	:= $(depdir)/$$(subdir_$1_$2)/$3
 abslib_$1_$2_$3	:= $$(libs_$3:%=$$(bindir_$1_indep)/lib%.a)
+avslib_$1_$2_$3 := $$(avslibs_$3:%=$$(bindir_$1_$2)/lib%.a)
 absdpl_$1_$2_$3	:= $$(deplibs_$3:%=$$(bindir_$1_$2)/lib%.a)
 objdir_$1_$2_$3	:= $(objdir)/$$(subdir_$1_$2)/$3
 obj_$1_$2_$3	:=	$$(src_$3:%.c=$$(objdir_$1_$2_$3)/%.o) \
@@ -260,6 +263,7 @@ dll_$1_$2_$3	:= $$(bindir_$1_$2)/$3.dll
 implib_$1_$2_$3	:= $$(bindir_$1_$2)/lib$3.a
 
 $$(dll_$1_$2_$3) $$(implib_$1_$2_$3):	$$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) \
+					$$(avslib_$1_$2_$3) \
 					$$(absdpl_$1_$2_$3) \
 					$$(srcdir_$3)/$3.def | $$(bindir_$1_$2)
 	$(V)echo ... $$(dll_$1_$2_$3)
@@ -278,7 +282,7 @@ $(t_compile)
 
 exe_$1_$2_$3	:= $$(bindir_$1_$2)/$3.exe
 
-$$(exe_$1_$2_$3): $$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) $$(absdpl_$1_$2_$3) \
+$$(exe_$1_$2_$3): $$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) $$(avslib_$1_$2_$3) $$(absdpl_$1_$2_$3) \
 		| $$(bindir_$1_$2)
 	$(V)echo ... $$@
 	$(V)$$(toolchain_$1)gcc -o $$@ $$^ $$(ldflags_$3)

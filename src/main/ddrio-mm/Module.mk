@@ -8,6 +8,7 @@ libs_ddrio-mm	:= \
 	core \
 	mm \
 	util \
+	iface-core \
 
 src_ddrio-mm	:= \
 	ddrio.c \

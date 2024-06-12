@@ -1,6 +1,6 @@
 #define LOG_MODULE "util-iobuf"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 #include "util/iobuf.h"

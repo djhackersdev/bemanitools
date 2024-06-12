@@ -14,7 +14,7 @@
 #include "acioemu/emu.h"
 #include "acioemu/pipe.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/iohook.h"
 

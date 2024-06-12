@@ -10,6 +10,7 @@ libs_util-net-test    := \
     core \
     test \
     util \
+    iface-core \
 
 src_util-net-test     := \
     util-net-test.c \

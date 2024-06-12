@@ -9,9 +9,11 @@ src_jbio-p4io          := \
     jbio.c \
 
 libs_jbio-p4io      := \
-    core \
     aciodrv \
-    aciomgr \
     cconfig \
     p4iodrv \
     util \
+    iface \
+    module \
+    iface-core \
+    iface-acio \

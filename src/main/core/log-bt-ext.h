@@ -5,12 +5,6 @@
 #include <stdint.h>
 
 /**
- * Set the current thread API implementation to use the bemanitools log
- * implementation
- */
-void core_log_bt_ext_impl_set();
-
-/**
  * Helper to setup the bemanitools log implementation with a stdout sink.
  */
 void core_log_bt_ext_init_with_stdout();
@@ -54,6 +48,9 @@ void core_log_bt_ext_init_with_file(
  * @param max_rotations Max number of rotations for the log files
  */
 void core_log_bt_ext_init_with_stdout_and_file(
+    const char *path, bool append, bool rotate, uint8_t max_rotations);
+
+void core_log_bt_ext_init_with_stderr_and_file(
     const char *path, bool append, bool rotate, uint8_t max_rotations);
 
 #endif

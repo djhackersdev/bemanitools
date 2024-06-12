@@ -12,6 +12,6 @@
  *
  * @param sink Pointer to allocated memory that receives the opened sink
  */
-void core_log_sink_null_open(struct core_log_sink *sink);
+void core_log_sink_null_open(core_log_sink_t *sink);
 
 #endif

@@ -10,9 +10,10 @@
 #include <string.h>
 
 #include "acioemu/emu.h"
-#include "util/math.h"
 
-#include "bemanitools/iidxio.h"
+#include "iface-io/iidx.h"
+
+#include "util/math.h"
 
 static int get_default_slider_valid(size_t idx);
 static void bio2_emu_bi2a_cmd_send_version(
@@ -178,7 +179,7 @@ static void bio2_emu_bi2a_send_status(
 
 static int16_t tt_mult_delta(size_t tt_no)
 {
-    int16_t current_tt = iidx_io_ep2_get_turntable(tt_no);
+    int16_t current_tt = bt_io_iidx_ep2_turntable_get(tt_no);
     int16_t delta = get_wrapped_delta_s16(current_tt, tt_last[tt_no], 256);
 
     tt_last[tt_no] = current_tt;
@@ -233,17 +234,17 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
         }
     }
 
-    iidx_io_ep1_set_deck_lights(packed_lights.deck_lights);
-    iidx_io_ep1_set_panel_lights(packed_lights.panel_lights);
-    iidx_io_ep1_set_top_lamps(packed_lights.top_lamps);
-    iidx_io_ep1_set_top_neons(req_bi2a->NEONLAMP.l_state);
+    bt_io_iidx_ep1_deck_lights_set(packed_lights.deck_lights);
+    bt_io_iidx_ep1_panel_lights_set(packed_lights.panel_lights);
+    bt_io_iidx_ep1_top_lamps_set(packed_lights.top_lamps);
+    bt_io_iidx_ep1_top_neons_set(req_bi2a->NEONLAMP.l_state);
 
-    if (!iidx_io_ep1_send()) {
+    if (!bt_io_iidx_ep1_send()) {
         log_warning("BIO2: iidx_io_ep1_send error");
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
 
-    if (!iidx_io_ep3_write_16seg((const char *) req_bi2a->SEG16)) {
+    if (!bt_io_iidx_ep3_16seg_send((const char *) req_bi2a->SEG16)) {
         log_warning("BIO2: iidx_io_ep3_write_16seg error");
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
@@ -256,7 +257,7 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
         Sleep(1);
     }
 
-    if (!iidx_io_ep2_recv()) {
+    if (!bt_io_iidx_ep2_recv()) {
         log_warning("BIO2: iidx_io_ep2_recv error");
         return bio2_emu_bi2a_send_status(emu, req, 0);
     }
@@ -268,52 +269,52 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
         body->TURNTABLE1 = tt_accum[0];
         body->TURNTABLE2 = tt_accum[1];
     } else {
-        body->TURNTABLE1 = iidx_io_ep2_get_turntable(0);
-        body->TURNTABLE2 = iidx_io_ep2_get_turntable(1);
+        body->TURNTABLE1 = bt_io_iidx_ep2_turntable_get(0);
+        body->TURNTABLE2 = bt_io_iidx_ep2_turntable_get(1);
     }
 
     body->SLIDER1.s_val = get_default_slider_valid(0) ?
         default_sliders[0] :
-        iidx_io_ep2_get_slider(0);
+        bt_io_iidx_ep2_slider_get(0);
     body->SLIDER2.s_val = get_default_slider_valid(1) ?
         default_sliders[1] :
-        iidx_io_ep2_get_slider(1);
+        bt_io_iidx_ep2_slider_get(1);
     body->SLIDER3.s_val = get_default_slider_valid(2) ?
         default_sliders[2] :
-        iidx_io_ep2_get_slider(2);
+        bt_io_iidx_ep2_slider_get(2);
     body->SLIDER4.s_val = get_default_slider_valid(3) ?
         default_sliders[3] :
-        iidx_io_ep2_get_slider(3);
+        bt_io_iidx_ep2_slider_get(3);
     body->SLIDER5.s_val = get_default_slider_valid(4) ?
         default_sliders[4] :
-        iidx_io_ep2_get_slider(4);
+        bt_io_iidx_ep2_slider_get(4);
 
-    input_keys = iidx_io_ep2_get_keys();
-    input_sys = iidx_io_ep2_get_sys();
-    input_panel = iidx_io_ep2_get_panel();
-    body->P1SW1.b_val = (input_keys >> IIDX_IO_KEY_P1_1) & 1;
-    body->P1SW2.b_val = (input_keys >> IIDX_IO_KEY_P1_2) & 1;
-    body->P1SW3.b_val = (input_keys >> IIDX_IO_KEY_P1_3) & 1;
-    body->P1SW4.b_val = (input_keys >> IIDX_IO_KEY_P1_4) & 1;
-    body->P1SW5.b_val = (input_keys >> IIDX_IO_KEY_P1_5) & 1;
-    body->P1SW6.b_val = (input_keys >> IIDX_IO_KEY_P1_6) & 1;
-    body->P1SW7.b_val = (input_keys >> IIDX_IO_KEY_P1_7) & 1;
-    body->P2SW1.b_val = (input_keys >> IIDX_IO_KEY_P2_1) & 1;
-    body->P2SW2.b_val = (input_keys >> IIDX_IO_KEY_P2_2) & 1;
-    body->P2SW3.b_val = (input_keys >> IIDX_IO_KEY_P2_3) & 1;
-    body->P2SW4.b_val = (input_keys >> IIDX_IO_KEY_P2_4) & 1;
-    body->P2SW5.b_val = (input_keys >> IIDX_IO_KEY_P2_5) & 1;
-    body->P2SW6.b_val = (input_keys >> IIDX_IO_KEY_P2_6) & 1;
-    body->P2SW7.b_val = (input_keys >> IIDX_IO_KEY_P2_7) & 1;
+    input_keys = bt_io_iidx_ep2_keys_get();
+    input_sys = bt_io_iidx_ep2_sys_get();
+    input_panel = bt_io_iidx_ep2_panel_get();
+    body->P1SW1.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_1) & 1;
+    body->P1SW2.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_2) & 1;
+    body->P1SW3.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_3) & 1;
+    body->P1SW4.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_4) & 1;
+    body->P1SW5.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_5) & 1;
+    body->P1SW6.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_6) & 1;
+    body->P1SW7.b_val = (input_keys >> BT_IO_IIDX_KEY_P1_7) & 1;
+    body->P2SW1.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_1) & 1;
+    body->P2SW2.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_2) & 1;
+    body->P2SW3.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_3) & 1;
+    body->P2SW4.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_4) & 1;
+    body->P2SW5.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_5) & 1;
+    body->P2SW6.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_6) & 1;
+    body->P2SW7.b_val = (input_keys >> BT_IO_IIDX_KEY_P2_7) & 1;
 
-    body->PANEL.y_start1 = (input_panel >> IIDX_IO_PANEL_P1_START) & 1;
-    body->PANEL.y_start2 = (input_panel >> IIDX_IO_PANEL_P2_START) & 1;
-    body->PANEL.y_vefx = (input_panel >> IIDX_IO_PANEL_VEFX) & 1;
-    body->PANEL.y_effect = (input_panel >> IIDX_IO_PANEL_EFFECT) & 1;
+    body->PANEL.y_start1 = (input_panel >> BT_IO_IIDX_PANEL_P1_START) & 1;
+    body->PANEL.y_start2 = (input_panel >> BT_IO_IIDX_PANEL_P2_START) & 1;
+    body->PANEL.y_vefx = (input_panel >> BT_IO_IIDX_PANEL_VEFX) & 1;
+    body->PANEL.y_effect = (input_panel >> BT_IO_IIDX_PANEL_EFFECT) & 1;
 
-    body->SYSTEM.v_test = (input_sys >> IIDX_IO_SYS_TEST) & 1;
-    body->SYSTEM.v_service = (input_sys >> IIDX_IO_SYS_SERVICE) & 1;
-    body->SYSTEM.v_coin = (input_sys >> IIDX_IO_SYS_COIN) & 1;
+    body->SYSTEM.v_test = (input_sys >> BT_IO_IIDX_SYS_TEST) & 1;
+    body->SYSTEM.v_service = (input_sys >> BT_IO_IIDX_SYS_SERVICE) & 1;
+    body->SYSTEM.v_coin = (input_sys >> BT_IO_IIDX_SYS_COIN) & 1;
 
     if (body->SYSTEM.v_coin) {
         if (!coin_latch) {

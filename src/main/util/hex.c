@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 

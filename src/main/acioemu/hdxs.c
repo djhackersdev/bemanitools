@@ -6,7 +6,7 @@
 #include "acioemu/emu.h"
 #include "acioemu/hdxs.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 static void ac_io_emu_hdxs_cmd_send_version(
     struct ac_io_emu_hdxs *hdxs, const struct ac_io_message *req);

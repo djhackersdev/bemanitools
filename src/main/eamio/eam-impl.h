@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/eamio.h"
+#include "api/io/eam.h"
 
 #include "geninput/hid-mgr.h"
 

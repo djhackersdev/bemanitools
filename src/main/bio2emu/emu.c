@@ -14,13 +14,13 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
 
 #include "bio2emu/emu.h"
 #include "bio2emu/setupapi.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 

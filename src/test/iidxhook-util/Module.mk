@@ -12,6 +12,7 @@ libs_iidxhook-util-config-eamuse-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook-util-config-eamuse-test     := \
     iidxhook-util-config-eamuse-test.c \
@@ -29,6 +30,7 @@ libs_iidxhook-util-config-gfx-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook-util-config-gfx-test     := \
     iidxhook-util-config-gfx-test.c \
@@ -46,6 +48,7 @@ libs_iidxhook-util-config-misc-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook-util-config-misc-test     := \
     iidxhook-util-config-misc-test.c \
@@ -63,6 +66,7 @@ libs_iidxhook-util-config-sec-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook-util-config-sec-test     := \
     iidxhook-util-config-sec-test.c \

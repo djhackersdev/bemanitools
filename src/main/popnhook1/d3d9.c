@@ -5,11 +5,11 @@
 
 #include <stdbool.h>
 
-#include "core/log.h"
-
 #include "hook/com-proxy.h"
 #include "hook/pe.h"
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "popnhook1/d3d9.h"
 

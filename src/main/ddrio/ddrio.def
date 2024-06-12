@@ -1,11 +1,16 @@
 LIBRARY ddrio
 
 EXPORTS
-    ddr_io_set_loggers
-    ddr_io_fini
-    ddr_io_init
-    ddr_io_read_pad
-    ddr_io_set_lights_extio
-    ddr_io_set_lights_p3io
-    ddr_io_set_lights_hdxs_panel
-    ddr_io_set_lights_hdxs_rgb
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_core_thread_api_set
+    bt_module_io_ddr_api_get
+
+    ; Direct API
+    bt_io_ddr_init
+    bt_io_ddr_fini
+    bt_io_ddr_pad_read
+    bt_io_ddr_extio_lights_set
+    bt_io_ddr_p3io_lights_set
+    bt_io_ddr_hdxs_lights_panel_set
+    bt_io_ddr_hdxs_lights_rgb_set

@@ -4,10 +4,10 @@
 #include <setupapi.h>
 // clang-format on
 
-#include "core/log.h"
-
 #include "ezusb/ezusb.h"
 #include "ezusb/ezusbsys2.h"
+
+#include "iface-core/log.h"
 
 #include "util/str.h"
 

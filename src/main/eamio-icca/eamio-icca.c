@@ -10,40 +10,46 @@
 
 #include "aciodrv/device.h"
 #include "aciodrv/icca.h"
-#include "aciomgr/manager.h"
 
-#include "bemanitools/eamio.h"
-
-#include "core/log.h"
+#include "api/core/log.h"
 
 #include "cconfig/cconfig-main.h"
+
 #include "eamio-icca/config-icc.h"
+
+#include "iface-acio/mgr.h"
+#include "iface-core/log.h"
+
+#include "module/acio-mgr.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/eam.h"
 
 #define IDLE_RESPONSES_BETWEEN_FELICA_POLLS 5
 #define NUMBER_OF_EMULATED_READERS 2
 #define INVALID_NODE_ID -1
 
 static const uint8_t eam_io_keypad_mappings[16] = {
-    EAM_IO_KEYPAD_DECIMAL,
-    EAM_IO_KEYPAD_3,
-    EAM_IO_KEYPAD_6,
-    EAM_IO_KEYPAD_9,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_DECIMAL,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_3,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_6,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_9,
     0xFF,
     0xFF,
     0xFF,
     0xFF,
-    EAM_IO_KEYPAD_0,
-    EAM_IO_KEYPAD_1,
-    EAM_IO_KEYPAD_4,
-    EAM_IO_KEYPAD_7,
-    EAM_IO_KEYPAD_00,
-    EAM_IO_KEYPAD_2,
-    EAM_IO_KEYPAD_5,
-    EAM_IO_KEYPAD_8};
+    BT_IO_EAM_KEYPAD_SCAN_CODE_0,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_1,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_4,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_7,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_00,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_2,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_5,
+    BT_IO_EAM_KEYPAD_SCAN_CODE_8};
 
 static struct ac_io_icca_state eam_io_icca_state[NUMBER_OF_EMULATED_READERS];
 
-static struct aciomgr_port_dispatcher *acio_manager_ctx;
+static bt_acio_mgr_port_dispatcher_t *acio_manager_ctx;
 
 static int32_t icca_node_id[NUMBER_OF_EMULATED_READERS];
 
@@ -52,38 +58,37 @@ static bool icca_is_slotted[NUMBER_OF_EMULATED_READERS];
 static int32_t icca_poll_counter[NUMBER_OF_EMULATED_READERS];
 static uint8_t icca_last_nonbusy_state[NUMBER_OF_EMULATED_READERS];
 
-void eam_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    aciomgr_set_loggers(misc, info, warning, fatal);
+static module_acio_mgr_t *_icca_module_acio_mgr;
 
-    core_log_impl_set(misc, info, warning, fatal);
+static void _bt_io_eam_icca_acio_mgr_init(module_acio_mgr_t **module)
+{
+    bt_acio_mgr_api_t api;
+
+    module_acio_mgr_load("acio-mgr.dll", module);
+    module_acio_mgr_api_get(*module, &api);
+    bt_acio_mgr_api_set(&api);
 }
 
 // all of these are referred to internally as ICCA
 static bool check_if_icca(int node_id)
 {
-    char product[ACIOMGR_NODE_PRODUCT_CODE_LEN];
-    aciomgr_get_node_product_ident(acio_manager_ctx, node_id, product);
+    char product[BT_ACIO_MGR_NODE_PRODUCT_CODE_LEN];
+    bt_acio_mgr_node_product_ident_get(acio_manager_ctx, node_id, product);
 
-    if (!memcmp(product, "ICCA", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
+    if (!memcmp(product, "ICCA", BT_ACIO_MGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
-    if (!memcmp(product, "ICCB", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
+    if (!memcmp(product, "ICCB", BT_ACIO_MGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
-    if (!memcmp(product, "ICCC", ACIOMGR_NODE_PRODUCT_CODE_LEN)) {
+    if (!memcmp(product, "ICCC", BT_ACIO_MGR_NODE_PRODUCT_CODE_LEN)) {
         return true;
     }
 
     return false;
 }
 
-bool eam_io_init(
-    thread_create_t create, thread_join_t join, thread_destroy_t destroy)
+bool bt_io_eam_init()
 {
     struct cconfig *config;
     struct icc_config config_icc;
@@ -104,23 +109,27 @@ bool eam_io_init(
         exit(EXIT_FAILURE);
     }
 
+    _bt_io_eam_icca_acio_mgr_init(&_icca_module_acio_mgr);
+
     eamio_icca_config_icc_get(&config_icc, config);
 
     cconfig_finit(config);
 
-    acio_manager_ctx = aciomgr_port_init(config_icc.port, config_icc.baud);
+    acio_manager_ctx = bt_acio_mgr_port_init(config_icc.port, config_icc.baud);
 
     if (acio_manager_ctx == NULL) {
         log_warning("Opening acio device on %s failed", config_icc.port);
         return false;
     }
 
-    struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
+    bt_acio_drv_device_ctx_t *device =
+        bt_acio_mgr_port_checkout(acio_manager_ctx);
 
     for (uint8_t i = 0; i < NUMBER_OF_EMULATED_READERS; i++) {
         icca_node_id[i] = INVALID_NODE_ID;
 
-        for (uint8_t nid = 0; nid < aciomgr_get_node_count(acio_manager_ctx);
+        for (uint8_t nid = 0;
+             nid < bt_acio_mgr_node_count_get(acio_manager_ctx);
              ++nid) {
             if (check_if_icca(nid)) {
                 bool existing_reader = false;
@@ -160,16 +169,19 @@ bool eam_io_init(
         return false;
     }
 
-    aciomgr_port_checkin(acio_manager_ctx);
+    bt_acio_mgr_port_checkin(acio_manager_ctx);
     return true;
 }
 
-void eam_io_fini(void)
+void bt_io_eam_fini(void)
 {
-    aciomgr_port_fini(acio_manager_ctx);
+    bt_acio_mgr_port_fini(acio_manager_ctx);
+
+    bt_acio_mgr_api_clear();
+    module_acio_mgr_free(&_icca_module_acio_mgr);
 }
 
-uint16_t eam_io_get_keypad_state(uint8_t unit_no)
+uint16_t bt_io_eam_keypad_state_get(uint8_t unit_no)
 {
     uint16_t keypad_result = 0;
 
@@ -184,18 +196,18 @@ uint16_t eam_io_get_keypad_state(uint8_t unit_no)
     return keypad_result;
 }
 
-uint8_t eam_io_get_sensor_state(uint8_t unit_no)
+uint8_t bt_io_eam_sensor_state_get(uint8_t unit_no)
 {
     uint8_t sensors = 0;
 
     if (icca_is_slotted[unit_no]) {
         if ((eam_io_icca_state[unit_no].sensor_state &
              AC_IO_ICCA_SENSOR_MASK_BACK_ON) > 0) {
-            sensors |= (1 << EAM_IO_SENSOR_BACK);
+            sensors |= (1 << BT_IO_EAM_SENSOR_STATE_BACK);
         }
         if ((eam_io_icca_state[unit_no].sensor_state &
              AC_IO_ICCA_SENSOR_MASK_FRONT_ON) > 0) {
-            sensors |= (1 << EAM_IO_SENSOR_FRONT);
+            sensors |= (1 << BT_IO_EAM_SENSOR_STATE_FRONT);
         }
     } else {
         // wavepass readers always report (EAM_IO_SENSOR_BACK +
@@ -205,8 +217,8 @@ uint8_t eam_io_get_sensor_state(uint8_t unit_no)
         // reader so the emulation takes card of it
         if (eam_io_icca_state[unit_no].status_code ==
             AC_IO_ICCA_STATUS_GOT_UID) {
-            sensors |= (1 << EAM_IO_SENSOR_BACK);
-            sensors |= (1 << EAM_IO_SENSOR_FRONT);
+            sensors |= (1 << BT_IO_EAM_SENSOR_STATE_BACK);
+            sensors |= (1 << BT_IO_EAM_SENSOR_STATE_FRONT);
         }
 
         // continue reporting last state during busy
@@ -221,17 +233,17 @@ uint8_t eam_io_get_sensor_state(uint8_t unit_no)
     return sensors;
 }
 
-uint8_t eam_io_read_card(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
+uint8_t bt_io_eam_card_read(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 {
     memcpy(card_id, eam_io_icca_state[unit_no].uid, nbytes);
     if (card_id[0] == 0xe0 && card_id[1] == 0x04) {
-        return EAM_IO_CARD_ISO15696;
+        return BT_IO_EAM_READ_CARD_RESULT_ISO15696;
     } else {
-        return EAM_IO_CARD_FELICA;
+        return BT_IO_EAM_READ_CARD_RESULT_FELICA;
     }
 }
 
-bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
+bool bt_io_eam_card_slot_cmd_send(uint8_t unit_no, uint8_t cmd)
 {
     // this node is not setup, just return "success""
     if (icca_node_id[unit_no] == INVALID_NODE_ID) {
@@ -243,32 +255,33 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
         return true;
     }
 
-    struct aciodrv_device_ctx *device = aciomgr_port_checkout(acio_manager_ctx);
+    struct aciodrv_device_ctx *device =
+        bt_acio_mgr_port_checkout(acio_manager_ctx);
 
     bool response = false;
     switch (cmd) {
-        case EAM_IO_CARD_SLOT_CMD_CLOSE:
+        case BT_IO_EAM_CARD_SLOT_CMD_CLOSE:
             response = aciodrv_icca_set_state(
                 device,
                 icca_node_id[unit_no],
                 AC_IO_ICCA_SLOT_STATE_CLOSE,
                 NULL);
 
-        case EAM_IO_CARD_SLOT_CMD_OPEN:
+        case BT_IO_EAM_CARD_SLOT_CMD_OPEN:
             response = aciodrv_icca_set_state(
                 device,
                 icca_node_id[unit_no],
                 AC_IO_ICCA_SLOT_STATE_OPEN,
                 NULL);
 
-        case EAM_IO_CARD_SLOT_CMD_EJECT:
+        case BT_IO_EAM_CARD_SLOT_CMD_EJECT:
             response = aciodrv_icca_set_state(
                 device,
                 icca_node_id[unit_no],
                 AC_IO_ICCA_SLOT_STATE_EJECT,
                 NULL);
 
-        case EAM_IO_CARD_SLOT_CMD_READ:
+        case BT_IO_EAM_CARD_SLOT_CMD_READ:
             response =
                 aciodrv_icca_read_card(device, icca_node_id[unit_no], NULL) &&
                 aciodrv_icca_get_state(
@@ -277,12 +290,12 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
         default:
             break;
     }
-    aciomgr_port_checkin(acio_manager_ctx);
+    bt_acio_mgr_port_checkin(acio_manager_ctx);
 
     return response;
 }
 
-bool eam_io_poll(uint8_t unit_no)
+bool bt_io_eam_poll(uint8_t unit_no)
 {
     // this node is not setup, just return "success""
     if (icca_node_id[unit_no] == INVALID_NODE_ID) {
@@ -290,10 +303,10 @@ bool eam_io_poll(uint8_t unit_no)
     }
 
     bool response = aciodrv_icca_get_state(
-        aciomgr_port_checkout(acio_manager_ctx),
+        bt_acio_mgr_port_checkout(acio_manager_ctx),
         icca_node_id[unit_no],
         &eam_io_icca_state[unit_no]);
-    aciomgr_port_checkin(acio_manager_ctx);
+    bt_acio_mgr_port_checkin(acio_manager_ctx);
 
     if (response && !icca_is_slotted[unit_no]) {
         // we handle wavepass a bit differently to handle polling felica
@@ -308,8 +321,9 @@ bool eam_io_poll(uint8_t unit_no)
         // the last AC_IO_ICCA_STATUS_BUSY_NEW message
         if (icca_poll_counter[unit_no] >= IDLE_RESPONSES_BETWEEN_FELICA_POLLS) {
             response = aciodrv_icca_poll_felica(
-                aciomgr_port_checkout(acio_manager_ctx), icca_node_id[unit_no]);
-            aciomgr_port_checkin(acio_manager_ctx);
+                bt_acio_mgr_port_checkout(acio_manager_ctx),
+                icca_node_id[unit_no]);
+            bt_acio_mgr_port_checkin(acio_manager_ctx);
 
             icca_poll_counter[unit_no] = 0;
         }
@@ -318,9 +332,28 @@ bool eam_io_poll(uint8_t unit_no)
     return response;
 }
 
-const struct eam_io_config_api *eam_io_get_config_api(void)
+const bt_io_eam_config_api_t *bt_io_eam_config_api_get(void)
 {
     return NULL;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_eam_api_get(bt_io_eam_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_eam_init;
+    api->v1.fini = bt_io_eam_fini;
+    api->v1.keypad_state_get = bt_io_eam_keypad_state_get;
+    api->v1.sensor_state_get = bt_io_eam_sensor_state_get;
+    api->v1.card_read = bt_io_eam_card_read;
+    api->v1.card_slot_cmd_send = bt_io_eam_card_slot_cmd_send;
+    api->v1.poll = bt_io_eam_poll;
+    api->v1.config_api_get = bt_io_eam_config_api_get;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)

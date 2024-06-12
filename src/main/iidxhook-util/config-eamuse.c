@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
-
 #include "iidxhook-util/config-eamuse.h"
+
+#include "iface-core/log.h"
 
 #include "security/mcode.h"
 

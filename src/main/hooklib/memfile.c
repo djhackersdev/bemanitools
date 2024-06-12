@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <windows.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/hr.h"
 #include "hook/iohook.h"

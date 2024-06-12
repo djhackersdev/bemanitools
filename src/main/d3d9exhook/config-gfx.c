@@ -4,9 +4,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
-
 #include "d3d9exhook/config-gfx.h"
+
+#include "iface-core/log.h"
 
 #define D3D9EXHOOK_CONFIG_GFX_FRAMED_KEY "gfx.framed"
 #define D3D9EXHOOK_CONFIG_GFX_WINDOWED_KEY "gfx.windowed"

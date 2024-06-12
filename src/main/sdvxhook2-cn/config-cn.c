@@ -1,6 +1,6 @@
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "sdvxhook2-cn/config-cn.h"
 

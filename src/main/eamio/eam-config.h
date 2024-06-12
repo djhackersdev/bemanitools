@@ -1,9 +1,9 @@
 #ifndef EAMIO_CONFIG_H
 #define EAMIO_CONFIG_H
 
-#include "bemanitools/eamio.h"
+#include "api/io/eam.h"
 
-struct eam_io_config_api {
+struct bt_io_eam_config_api {
     void (*config_save)(void);
     bool (*get_autogen)(void);
     void (*set_autogen)(bool autogen);

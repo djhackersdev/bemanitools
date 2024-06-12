@@ -10,7 +10,7 @@
 #include <setupapi.h>
 // clang-format on
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "p4io/cmd.h"
 #include "p4io/guid.h"

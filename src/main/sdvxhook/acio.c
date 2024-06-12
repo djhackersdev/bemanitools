@@ -15,9 +15,9 @@
 #include "acioemu/emu.h"
 #include "acioemu/icca.h"
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 

@@ -1,11 +1,15 @@
 #include <stdlib.h>
 
+#include "core/boot.h"
+
 #include "launcher/launcher.h"
 #include "launcher/options.h"
 
 int main(int argc, const char **argv)
 {
     struct options options;
+
+    core_boot("launcher");
 
     options_init(&options);
 

@@ -5,17 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/eamio.h"
-#include "bemanitools/iidxio.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "cconfig/cconfig-hook.h"
 
+#include "core/boot.h"
+
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
-#include "core/thread.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
@@ -24,6 +22,12 @@
 #include "hooklib/memfile.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/iidx.h"
 
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/log-server.h"
@@ -43,6 +47,9 @@
 #include "dinput/dinput.h"
 
 #include "imports/avs.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "util/cmdline.h"
 #include "util/str.h"
@@ -65,6 +72,29 @@ static struct bio2emu_port bio2_emu = {
     .wport = L"COM4",
     .dispatcher = bio2_emu_bi2a_dispatch_request,
 };
+
+static module_io_t *iidxhook_module_io_iidx;
+static module_io_t *iidxhook_module_io_eam;
+
+static void _iidxhook9_io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
+}
+
+static void _iidxhook9_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
 
 static bool load_configs()
 {
@@ -103,9 +133,10 @@ static bool load_configs()
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
-    // log_server_init is required due to IO occuring in a non avs_thread
+    // log_server_init is required due to IO occurring in a non avs_thread
     log_server_init();
 
     log_info("-------------------------------------------------------------");
@@ -132,12 +163,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up IIDXIO.DLL */
     if (!iidxhook9_config_io.disable_bio2_emu) {
         log_info("Starting IIDX IO backend");
-        core_log_impl_assign(iidx_io_set_loggers);
 
-        if (!iidx_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        _iidxhook9_io_iidx_init(&iidxhook_module_io_iidx);
+
+        if (!bt_io_iidx_init()) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     }
@@ -145,12 +174,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up EAMIO.DLL */
     if (!iidxhook9_config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        core_log_impl_assign(eam_io_set_loggers);
 
-        if (!eam_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        _iidxhook9_io_eam_init(&iidxhook_module_io_eam);
+
+        if (!bt_io_eam_init()) {
             log_fatal("Initializing card reader backend failed");
         }
     }
@@ -223,12 +250,18 @@ static bool my_dll_entry_main(void)
 
     if (!iidxhook9_config_io.disable_card_reader_emu) {
         log_misc("Shutting down card reader backend");
-        eam_io_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&iidxhook_module_io_eam);
     }
 
     if (!iidxhook9_config_io.disable_bio2_emu) {
         log_misc("Shutting down IIDX IO backend");
-        iidx_io_fini();
+        bt_io_iidx_fini();
+
+        bt_io_iidx_api_clear();
+        module_io_free(&iidxhook_module_io_iidx);
     }
 
     if (!iidxhook9_config_io.disable_file_hooks) {
@@ -277,11 +310,13 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         goto end;
     }
 
+    core_boot("iidxhook9");
+
     if (avs_is_active()) {
         // if AVS is loaded, we're likely too late to be a prehook
         // so we warn the user
         // and switch the current logging context to AVS so it shows up in logs
-        avs_util_core_interop_log_avs_impl_set();
+        avs_ext_log_core_api_set();
 
         log_warning("iidxhook9 is designed to be used as a prehook");
         log_warning("please ensure that it is being loaded with -B");
@@ -290,7 +325,7 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         // we can't log to external in DllMain (AVS) as we're a prehook
         // later during my_dll_entry_init, log_server_init is called
         // which sets swaps the main log write to that instead
-        core_log_bt_ext_impl_set();
+        core_log_bt_ext_init_with_stderr();
     }
 
     pre_hook();

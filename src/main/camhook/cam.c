@@ -17,10 +17,10 @@
 
 #include "camhook/cam.h"
 
-#include "core/log.h"
-
 #include "hook/com-proxy.h"
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/str.h"

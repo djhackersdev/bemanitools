@@ -11,19 +11,23 @@ ldflags_sdvxhook2   := \
 deplibs_sdvxhook2   := \
     avs \
 
+avslibs_sdvxhook2 := \
+    avs-ext \
+
 libs_sdvxhook2      := \
-    avs-util \
     core \
     acioemu \
     bio2emu \
     camhook \
     d3d9exhook \
-    sdvxio \
     hook \
     hooklib \
     cconfig \
     util \
-    eamio \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_sdvxhook2       := \
     acio.c \

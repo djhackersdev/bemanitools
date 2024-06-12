@@ -3,6 +3,7 @@ dlls		    += iidxhook1
 ldflags_iidxhook1   := \
     -lws2_32 \
     -liphlpapi \
+    -lpsapi \
 
 libs_iidxhook1      := \
     core \
@@ -11,14 +12,16 @@ libs_iidxhook1      := \
     ezusb-iidx-16seg-emu \
     ezusb-iidx-emu \
     security \
-    eamio \
     acioemu \
     hook \
     hooklib \
-    iidxio \
     cconfig \
-    util \
+    module \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    util \
 
 src_iidxhook1       := \
     config-iidxhook1.c \

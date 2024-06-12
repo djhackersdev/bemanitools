@@ -9,6 +9,7 @@ libs_ezusb2-popn-shim      := \
     hook \
     hooklib \
     util \
+    iface-core \
 
 src_ezusb2-popn-shim       := \
     dllmain.c \

@@ -6,9 +6,10 @@
 #include <usb100.h>
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
+
 #include "p4io/cmd.h"
 #include "p4io/ioctl.h"
 #include "util/hex.h"

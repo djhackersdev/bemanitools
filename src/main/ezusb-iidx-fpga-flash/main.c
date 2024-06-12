@@ -5,7 +5,9 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
 
 #include "ezusb-iidx/fpga.h"
 #include "ezusb/ezusb.h"
@@ -27,8 +29,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    core_log_bt_ext_impl_set();
+    core_log_bt_core_api_set();
+
     core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     log_info("Opening ezusb '%s'...", EZUSB_DEVICE_PATH);
 

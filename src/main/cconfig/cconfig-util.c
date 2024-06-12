@@ -5,7 +5,7 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 #include "util/mem.h"
@@ -221,7 +221,7 @@ void cconfig_util_set_data(
     free(str);
 }
 
-void cconfig_util_log(struct cconfig *config, core_log_message_t log_message)
+void cconfig_util_log(struct cconfig *config, bt_core_log_message_t log_message)
 {
     for (uint32_t i = 0; i < config->nentries; i++) {
         log_message(

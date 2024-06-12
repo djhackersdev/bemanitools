@@ -9,8 +9,6 @@
 
 #include <string.h>
 
-#include "core/log.h"
-
 #include "ezusb/ezusbsys2.h"
 #include "ezusb/util.h"
 
@@ -21,6 +19,8 @@
 #include "ezusb-emu/util.h"
 
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 

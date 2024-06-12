@@ -3,8 +3,10 @@ avsdlls			+= ddrhook2
 deplibs_ddrhook2	:= \
 	avs \
 
+avslibs_ddrhook2 := \
+    avs-ext \
+
 libs_ddrhook2		:= \
-	avs-util \
 	core \
 	acioemu \
 	ddrhook-util \
@@ -13,9 +15,10 @@ libs_ddrhook2		:= \
 	hook \
 	hooklib \
 	util \
-	eamio \
-	ddrio \
 	security \
+	iface-core \
+	iface-io \
+	module \
 
 src_ddrhook2		:= \
 	dllmain.c \

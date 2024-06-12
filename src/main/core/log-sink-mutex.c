@@ -1,50 +1,59 @@
+#define LOG_MODULE "core-log-sink-mutex"
+
 #include <windows.h>
 
 #include <stdlib.h>
 
 #include "core/log-sink.h"
 
+#include "iface-core/log.h"
+
 #include "util/mem.h"
 
-struct core_log_sink_mutex_ctx {
-    struct core_log_sink *child;
+typedef struct core_log_sink_mutex {
+    core_log_sink_t child;
     HANDLE mutex;
-};
+} core_log_sink_mutex_t;
 
 static void
 _core_log_sink_mutex_write(void *ctx_, const char *chars, size_t nchars)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_mutex_t *ctx;
 
-    ctx = (struct core_log_sink_mutex_ctx *) ctx_;
+    ctx = (core_log_sink_mutex_t *) ctx_;
 
     WaitForSingleObject(ctx->mutex, INFINITE);
 
-    ctx->child->write(ctx->child->ctx, chars, nchars);
+    ctx->child.write(ctx->child.ctx, chars, nchars);
 
     ReleaseMutex(ctx->mutex);
 }
 
 static void _core_log_sink_mutex_close(void *ctx_)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_mutex_t *ctx;
 
-    ctx = (struct core_log_sink_mutex_ctx *) ctx_;
+    ctx = (core_log_sink_mutex_t *) ctx_;
 
     CloseHandle(ctx->mutex);
 
-    ctx->child->close(ctx->child->ctx);
+    ctx->child.close(ctx->child.ctx);
     free(ctx);
 }
 
 void core_log_sink_mutex_open(
-    const struct core_log_sink *child_sink, struct core_log_sink *sink)
+    const core_log_sink_t *child_sink, core_log_sink_t *sink)
 {
-    struct core_log_sink_mutex_ctx *ctx;
+    core_log_sink_mutex_t *ctx;
 
-    ctx = xmalloc(sizeof(struct core_log_sink_mutex_ctx));
+    log_assert(child_sink);
+    log_assert(sink);
 
-    memcpy(ctx->child, child_sink, sizeof(struct core_log_sink));
+    log_misc("Open");
+
+    ctx = xmalloc(sizeof(core_log_sink_mutex_t));
+
+    memcpy(&ctx->child, child_sink, sizeof(core_log_sink_t));
     ctx->mutex = CreateMutex(NULL, FALSE, NULL);
 
     sink->ctx = ctx;

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <windows.h>
 
-#include "imports/avs.h"
+#include "core/property.h"
 
 // should be enough for a while
 #define DEFAULT_FILE_MAX 16
@@ -55,7 +55,7 @@ struct bootstrap_startup_config {
     struct bootstrap_module_config {
         char file[64];
         char load_type[64];
-        struct property *app_config;
+        core_property_t *app_config;
     } module;
 
     struct bootstrap_dlm_config {
@@ -132,7 +132,7 @@ struct bootstrap_config {
 void bootstrap_config_init(struct bootstrap_config *config);
 
 void bootstrap_config_load(
-    struct property *property,
+    const core_property_t *property,
     const char *profile,
     struct bootstrap_config *config);
 

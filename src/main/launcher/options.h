@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "core/log-bt.h"
-#include "core/log.h"
 
 #include "launcher/bootstrap-config.h"
 
@@ -30,7 +29,7 @@ struct options {
     } bootstrap;
 
     struct options_log {
-        enum core_log_bt_log_level *level;
+        enum core_log_bt_log_level level;
         const char *file_path;
     } log;
 
@@ -41,11 +40,9 @@ struct options {
         bool *urlslash;
     } eamuse;
 
-    struct options_hook {
-        struct array hook_dlls;
-        struct array before_hook_dlls;
-        struct array iat_hook_dlls;
-    } hook;
+    struct options_hooks {
+        struct array paths;
+    } hooks;
 
     struct options_debug {
         bool remote_debugger;

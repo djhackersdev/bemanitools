@@ -15,9 +15,9 @@ void options_init(struct options *options)
 {
     memset(options, 0, sizeof(struct options));
 
-    array_init(&options->hook.hook_dlls);
-    array_init(&options->hook.before_hook_dlls);
-    array_init(&options->hook.iat_hook_dlls);
+    array_init(&options->hooks.paths);
+
+    options->log.level = CORE_LOG_BT_LOG_LEVEL_INFO;
 }
 
 bool options_read_cmdline(struct options *options, int argc, const char **argv)
@@ -29,7 +29,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
-                case 'T':
+                case 'B':
                     if (i + 1 >= argc) {
                         return false;
                     }
@@ -70,35 +70,10 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    *array_append(const char *, &options->hook.hook_dlls) =
+                    *array_append(const char *, &options->hooks.paths) =
                         argv[++i];
 
                     break;
-
-                case 'B':
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    *array_append(
-                        const char *, &options->hook.before_hook_dlls) =
-                        argv[++i];
-
-                    break;
-
-                case 'I': {
-                    if (i + 1 >= argc) {
-                        return false;
-                    }
-
-                    const char *dll = argv[++i];
-                    log_assert(strstr(dll, "=") != NULL);
-
-                    *array_append(const char *, &options->hook.iat_hook_dlls) =
-                        dll;
-
-                    break;
-                }
 
                 case 'L':
                     if (i + 1 >= argc) {
@@ -112,9 +87,7 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                         return false;
                     }
 
-                    options->log.level =
-                        xmalloc(sizeof(enum core_log_bt_log_level));
-                    *(options->log.level) = (enum core_log_bt_log_level) tmp;
+                    options->log.level = (enum core_log_bt_log_level) tmp;
 
                     break;
 
@@ -192,7 +165,7 @@ void options_print_usage(void)
         "configuration file:\n"
         "\n"
         "  Bootstrap\n"
-        "       -T [filename]   Bootstrap configuration file\n"
+        "       -B [filename]   Bootstrap configuration file\n"
         "       -Z [selector]   Bootstrap selector used in configuration\n"
         "\n"
         "  Eamuse\n"
@@ -203,11 +176,6 @@ void options_print_usage(void)
         "\n"
         "  Hook\n"
         "       -H [filename]   Load hook DLL (can be specified multiple "
-        "times)\n"
-        "       -B [filename]   Load pre-hook DLL loaded before avs boot "
-        "(can be specified multiple times)\n"
-        "       -I [filename]   Load pre-hook DLL that overrides IAT reference "
-        "before execution (can be specified multiple times)\n"
         "\n"
         "  Logging\n"
         "       -L [0/1/2/3]    Log level for both console and file with "
@@ -226,13 +194,7 @@ void options_print_usage(void)
 
 void options_fini(struct options *options)
 {
-    array_fini(&options->hook.hook_dlls);
-    array_fini(&options->hook.before_hook_dlls);
-    array_fini(&options->hook.iat_hook_dlls);
-
-    if (options->log.level) {
-        free(options->log.level);
-    }
+    array_fini(&options->hooks.paths);
 
     if (options->eamuse.urlslash) {
         free(options->eamuse.urlslash);

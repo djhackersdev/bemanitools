@@ -1,6 +1,6 @@
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "iidxhook1/config-iidxhook1.h"
 

@@ -1,7 +1,9 @@
 #ifndef CORE_LOG_BT_H
 #define CORE_LOG_BT_H
 
-#include "core/log-sink.h"
+#include "api/core/log.h"
+
+#include "main/core/log-sink.h"
 
 /**
  * Log API implementation for games/applications without AVS
@@ -14,6 +16,12 @@ enum core_log_bt_log_level {
     CORE_LOG_BT_LOG_LEVEL_INFO = 3,
     CORE_LOG_BT_LOG_LEVEL_MISC = 4,
 };
+
+void core_log_bt_core_api_get(bt_core_log_api_t *api);
+
+// Note: this logger requires a minimal logger to be set-up beforehand
+// (log-mini)
+void core_log_bt_core_api_set();
 
 /**
  * Initialize the logging backend
@@ -28,7 +36,10 @@ enum core_log_bt_log_level {
  * @param sink Pointer to a log sink implementation. The caller owns the memory
  *             of this.
  */
-void core_log_bt_init(const struct core_log_sink *sink);
+void core_log_bt_init(const core_log_sink_t *sink);
+
+// special version to use when switching loggers
+void core_log_bt_reinit(const core_log_sink_t *sink);
 
 /**
  * Set the current logging level. This can be changed at any given time, e.g.
@@ -44,26 +55,6 @@ void core_log_bt_level_set(enum core_log_bt_log_level level);
  * Ensure to call this on application exit and cleanup.
  */
 void core_log_bt_fini();
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_fatal(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_warning(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_info(const char *module, const char *fmt, ...);
-
-/**
- * Implementation of the log API.
- */
-void core_log_bt_log_misc(const char *module, const char *fmt, ...);
 
 /**
  * Allow AVS to by-pass the core log API/engine.

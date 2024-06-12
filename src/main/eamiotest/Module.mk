@@ -2,8 +2,10 @@ exes            += eamiotest
 
 libs_eamiotest     := \
     core \
-    eamio \
     util \
+    module \
+    iface-core \
+    iface-io \
 
 src_eamiotest      := \
     main.c \

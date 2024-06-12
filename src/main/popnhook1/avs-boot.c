@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 

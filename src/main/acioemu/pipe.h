@@ -7,7 +7,7 @@
 
 #include "acio/acio.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/iobuf.h"
 #include "util/list.h"

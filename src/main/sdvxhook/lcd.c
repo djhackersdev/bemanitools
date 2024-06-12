@@ -12,9 +12,9 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "sdvxhook/lcd.h"
 

@@ -12,9 +12,13 @@ ldflags_vigem-iidxio  := \
 libs_vigem-iidxio     := \
     core \
     cconfig \
-    iidxio \
     util \
     vigemstub \
+    module \
+    ezusb \
+    iface \
+    iface-io \
+    iface-core \
 
 src_vigem-iidxio      := \
     cab-16seg-sequencer.c \

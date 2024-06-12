@@ -2,7 +2,7 @@
 
 #include "extio.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 // static uint8_t _extiodrv_extio_sensor_read_mode_map[5] = {
 //     1, // all

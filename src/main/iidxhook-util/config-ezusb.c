@@ -3,9 +3,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
-
 #include "iidxhook-util/config-ezusb.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 

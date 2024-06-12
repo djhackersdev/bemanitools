@@ -2,7 +2,7 @@
 
 #include "cconfig/cconfig.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 #include "util/str.h"

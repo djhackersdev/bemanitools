@@ -2,124 +2,135 @@
 
 #include <stdlib.h>
 
-#include "core/log.h"
+#include "avs-ext/property-ext.h"
 
-#include "imports/avs.h"
+#include "core/property-node-ext.h"
+
+#include "iface-core/log.h"
 
 #include "launcher/ea3-ident-config.h"
 #include "launcher/eamuse-config.h"
-#include "launcher/property-util.h"
+
+#include "util/str.h"
 
 #define EAMUSE_CONFIG_ROOT_NODE "/ea3"
 
-struct property *eamuse_config_avs_load(const char *path)
+core_property_t *eamuse_config_avs_load(const char *path)
 {
-    struct property *property;
+    core_property_t *property;
+    core_property_node_t node;
 
     log_assert(path);
 
     log_misc("Loading from avs path: %s", path);
 
-    property = property_util_avs_fs_load(path);
+    avs_ext_property_ext_avs_file_load(path, &property);
 
     // Check if root node exists, call already errors if not
-    eamuse_config_root_get(property);
+    eamuse_config_root_get(property, &node);
 
     return property;
 }
 
-struct property_node *eamuse_config_root_get(struct property *property)
+void eamuse_config_root_get(
+    core_property_t *property, core_property_node_t *node)
 {
-    struct property_node *node;
+    core_property_node_result_t result;
+    char node_name[128];
 
     log_assert(property);
+    log_assert(node);
 
-    node = property_search(property, 0, EAMUSE_CONFIG_ROOT_NODE);
+    result = core_property_root_node_get(property, node);
+    core_property_node_fatal_on_error(result);
 
-    if (node == NULL) {
+    result = core_property_node_name_get(node, node_name, sizeof(node_name));
+    core_property_node_fatal_on_error(result);
+
+    if (!str_eq(node_name, "ea3")) {
         log_fatal("Root node " EAMUSE_CONFIG_ROOT_NODE
                   " in eamuse config missing");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
-
-    return node;
 }
 
-void eamuse_config_id_softid_set(struct property_node *node, const char *value)
+void eamuse_config_id_softid_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "id/softid", value);
+    core_property_node_ext_str_replace(node, "id/softid", value);
 }
 
-void eamuse_config_id_hardid_set(struct property_node *node, const char *value)
+void eamuse_config_id_hardid_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "id/hardid", value);
+    core_property_node_ext_str_replace(node, "id/hardid", value);
 }
 
-void eamuse_config_id_pcbid_set(struct property_node *node, const char *value)
+void eamuse_config_id_pcbid_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "id/pcbid", value);
+    core_property_node_ext_str_replace(node, "id/pcbid", value);
 }
 
-void eamuse_config_soft_model_set(struct property_node *node, const char *value)
+void eamuse_config_soft_model_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "soft/model", value);
+    core_property_node_ext_str_replace(node, "soft/model", value);
 }
 
-void eamuse_config_soft_dest_set(struct property_node *node, const char *value)
+void eamuse_config_soft_dest_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "soft/dest", value);
+    core_property_node_ext_str_replace(node, "soft/dest", value);
 }
 
-void eamuse_config_soft_spec_set(struct property_node *node, const char *value)
+void eamuse_config_soft_spec_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "soft/spec", value);
+    core_property_node_ext_str_replace(node, "soft/spec", value);
 }
 
-void eamuse_config_soft_rev_set(struct property_node *node, const char *value)
+void eamuse_config_soft_rev_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "soft/rev", value);
+    core_property_node_ext_str_replace(node, "soft/rev", value);
 }
 
-void eamuse_config_soft_ext_set(struct property_node *node, const char *value)
+void eamuse_config_soft_ext_set(core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "soft/ext", value);
+    core_property_node_ext_str_replace(node, "soft/ext", value);
 }
 
-void eamuse_config_network_url_slash_set(struct property_node *node, bool value)
+void eamuse_config_network_url_slash_set(core_property_node_t *node, bool value)
 {
     log_assert(node);
 
-    property_util_node_bool_replace(NULL, node, "network/url_slash", value);
+    core_property_node_ext_bool_replace(node, "network/url_slash", value);
 }
 
 void eamuse_config_network_service_url_set(
-    struct property_node *node, const char *value)
+    core_property_node_t *node, const char *value)
 {
     log_assert(node);
     log_assert(value);
 
-    property_util_node_str_replace(NULL, node, "network/services", value);
+    core_property_node_ext_str_replace(node, "network/services", value);
 }

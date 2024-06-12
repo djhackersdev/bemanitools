@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/crypto.h"
 #include "util/mem.h"

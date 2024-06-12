@@ -7,7 +7,7 @@
 
 #include "aciodrv/port.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 #include "util/mem.h"

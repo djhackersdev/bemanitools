@@ -5,20 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/eamio.h"
-#include "bemanitools/sdvxio.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "cconfig/cconfig-hook.h"
-
-#include "core/log.h"
-#include "core/thread.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/sdvx.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "sdvxhook2-cn/acio.h"
 #include "sdvxhook2-cn/config-cn.h"
@@ -43,6 +46,18 @@
 struct sdvxhook2_cn_config config_cn;
 struct camhook_config_cam config_cam;
 struct d3d9exhook_config_gfx config_gfx;
+
+static module_io_t *_sdvxhook2_cn_module_io_sdvx;
+
+static void _sdvxhook2_cn_io_sdvx_init(module_io_t **module)
+{
+    bt_io_sdvx_api_t api;
+
+    module_io_ext_load_and_init(
+        "sdvxio.dll", "bt_module_io_sdvx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_sdvx_api_set(&api);
+}
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
@@ -78,12 +93,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up sdvxio.DLL */
     if (!config_cn.disable_io_emu) {
         log_info("Starting sdvx IO backend");
-        core_log_impl_assign(sdvx_io_set_loggers);
 
-        if (!sdvx_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        _sdvxhook2_cn_io_sdvx_init(&_sdvxhook2_cn_module_io_sdvx);
+
+        if (!bt_io_sdvx_init()) {
             log_fatal("Initializing sdvx IO backend failed");
         }
     }
@@ -123,7 +136,11 @@ static bool my_dll_entry_main(void)
 
     if (!config_cn.disable_io_emu) {
         log_misc("Shutting down sdvx IO backend");
-        sdvx_io_fini();
+
+        bt_io_sdvx_fini();
+
+        bt_io_sdvx_api_clear();
+        module_io_free(&_sdvxhook2_cn_module_io_sdvx);
     }
 
     return result;
@@ -139,8 +156,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     }
 
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

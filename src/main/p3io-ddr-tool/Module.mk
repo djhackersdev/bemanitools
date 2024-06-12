@@ -11,6 +11,7 @@ libs_p3io-ddr-tool     := \
     p3io \
     hook \
     util \
+    iface-core \
 
 src_p3io-ddr-tool      := \
     main.c \

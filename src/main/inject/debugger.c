@@ -9,12 +9,12 @@
 #include <stdlib.h>
 
 #include "core/log-bt.h"
-#include "core/log.h"
+
+#include "iface-core/log.h"
 
 #include "inject/debugger.h"
 
 #include "util/debug.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/proc.h"
 #include "util/str.h"
@@ -226,6 +226,10 @@ static bool debugger_create_process(
         // didn't understand the documentation properly or it and various blog
         // posts I read are not explaining things well enough or are even wrong.
         flags |= DEBUG_PROCESS;
+
+        log_info("Local debugger enabled");
+    } else {
+        log_info("Local debugger disabled, no log output from remote process");
     }
 
     log_misc("Creating remote process %s...", app_name);

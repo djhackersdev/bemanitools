@@ -7,14 +7,17 @@
 
 #include <ViGEm/Client.h>
 
-#include "bemanitools/iidxio.h"
-
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
-#include "core/thread-crt-ext.h"
 #include "core/thread-crt.h"
-#include "core/thread.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/iidx.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "util/math.h"
 #include "util/time.h"
@@ -27,6 +30,8 @@
 
 #define JOYSTICKS_NUM 3
 #define TURNTABLE_NUM 2
+
+static module_io_t *_module_io_iidx;
 
 static uint8_t _tt_last_raw[TURNTABLE_NUM];
 static int32_t _tt_state_for_analog[TURNTABLE_NUM];
@@ -200,72 +205,82 @@ static void _handle_turntable(
 static void _handle_buttons_14keys(uint16_t keys, XUSB_REPORT *state)
 {
     state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_1, XUSB_GAMEPAD_A);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P1_1, XUSB_GAMEPAD_A);
     state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_2, XUSB_GAMEPAD_B);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P1_2, XUSB_GAMEPAD_B);
     state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_3, XUSB_GAMEPAD_X);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P1_3, XUSB_GAMEPAD_X);
     state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_4, XUSB_GAMEPAD_Y);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P1_4, XUSB_GAMEPAD_Y);
+    state[0].wButtons |= _check_assign_key(
+        keys, BT_IO_IIDX_KEY_P1_5, XUSB_GAMEPAD_LEFT_SHOULDER);
+    state[0].wButtons |= _check_assign_key(
+        keys, BT_IO_IIDX_KEY_P1_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
     state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_5, XUSB_GAMEPAD_LEFT_SHOULDER);
-    state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
-    state[0].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P1_7, XUSB_GAMEPAD_BACK);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P1_7, XUSB_GAMEPAD_BACK);
 
     state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_1, XUSB_GAMEPAD_A);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P2_1, XUSB_GAMEPAD_A);
     state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_2, XUSB_GAMEPAD_B);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P2_2, XUSB_GAMEPAD_B);
     state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_3, XUSB_GAMEPAD_X);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P2_3, XUSB_GAMEPAD_X);
     state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_4, XUSB_GAMEPAD_Y);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P2_4, XUSB_GAMEPAD_Y);
+    state[1].wButtons |= _check_assign_key(
+        keys, BT_IO_IIDX_KEY_P2_5, XUSB_GAMEPAD_LEFT_SHOULDER);
+    state[1].wButtons |= _check_assign_key(
+        keys, BT_IO_IIDX_KEY_P2_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
     state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_5, XUSB_GAMEPAD_LEFT_SHOULDER);
-    state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_6, XUSB_GAMEPAD_RIGHT_SHOULDER);
-    state[1].wButtons |=
-        _check_assign_key(keys, IIDX_IO_KEY_P2_7, XUSB_GAMEPAD_BACK);
+        _check_assign_key(keys, BT_IO_IIDX_KEY_P2_7, XUSB_GAMEPAD_BACK);
 }
 
 static void _handle_buttons_panel(uint8_t panel, XUSB_REPORT *state)
 {
     state[0].wButtons |= _check_assign_key(
-        panel, IIDX_IO_PANEL_LIGHT_P1_START, XUSB_GAMEPAD_START);
+        panel, BT_IO_IIDX_PANEL_LIGHT_P1_START, XUSB_GAMEPAD_START);
     state[1].wButtons |= _check_assign_key(
-        panel, IIDX_IO_PANEL_LIGHT_P2_START, XUSB_GAMEPAD_START);
+        panel, BT_IO_IIDX_PANEL_LIGHT_P2_START, XUSB_GAMEPAD_START);
 
     state[2].wButtons |=
-        _check_assign_key(panel, IIDX_IO_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_B);
+        _check_assign_key(panel, BT_IO_IIDX_PANEL_LIGHT_VEFX, XUSB_GAMEPAD_B);
     state[2].wButtons |=
-        _check_assign_key(panel, IIDX_IO_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_A);
+        _check_assign_key(panel, BT_IO_IIDX_PANEL_LIGHT_EFFECT, XUSB_GAMEPAD_A);
 }
 
 static void _handle_buttons_system(uint8_t system, XUSB_REPORT *state)
 {
     state[2].wButtons |=
-        _check_assign_key(system, IIDX_IO_SYS_TEST, XUSB_GAMEPAD_X);
+        _check_assign_key(system, BT_IO_IIDX_SYS_TEST, XUSB_GAMEPAD_X);
     state[2].wButtons |=
-        _check_assign_key(system, IIDX_IO_SYS_SERVICE, XUSB_GAMEPAD_Y);
+        _check_assign_key(system, BT_IO_IIDX_SYS_SERVICE, XUSB_GAMEPAD_Y);
     state[2].wButtons |=
-        _check_assign_key(system, IIDX_IO_SYS_COIN, XUSB_GAMEPAD_START);
+        _check_assign_key(system, BT_IO_IIDX_SYS_COIN, XUSB_GAMEPAD_START);
 }
 
 static void _all_lights_off()
 {
-    iidx_io_ep1_set_deck_lights(0);
-    iidx_io_ep1_set_panel_lights(0);
-    iidx_io_ep1_set_top_lamps(0);
-    iidx_io_ep1_set_top_neons(false);
-    iidx_io_ep3_write_16seg("         ");
+    bt_io_iidx_ep1_deck_lights_set(0);
+    bt_io_iidx_ep1_panel_lights_set(0);
+    bt_io_iidx_ep1_top_lamps_set(0);
+    bt_io_iidx_ep1_top_neons_set(false);
+    bt_io_iidx_ep3_16seg_send("         ");
+}
+
+static void _io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
 }
 
 int main(int argc, char **argv)
 {
-    core_thread_crt_ext_impl_set();
-    core_log_bt_ext_impl_set();
+    core_thread_crt_core_api_set();
+    core_log_bt_core_api_set();
 
     core_log_bt_ext_init_with_stdout();
 
@@ -275,12 +290,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    core_log_impl_assign(iidx_io_set_loggers);
+    _io_iidx_init(&_module_io_iidx);
 
-    if (!iidx_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get())) {
+    if (!bt_io_iidx_init()) {
         log_warning("Initializing iidxio failed");
         return -1;
     }
@@ -290,7 +302,10 @@ int main(int argc, char **argv)
     if (!client) {
         log_warning("VIGEM client failed to connect");
 
-        iidx_io_fini();
+        bt_io_iidx_fini();
+
+        bt_io_iidx_api_clear();
+        module_io_free(&_module_io_iidx);
 
         return -1;
     }
@@ -310,7 +325,11 @@ int main(int argc, char **argv)
     }
 
     if (failed) {
-        iidx_io_fini();
+        bt_io_iidx_fini();
+
+        bt_io_iidx_api_clear();
+        module_io_free(&_module_io_iidx);
+
         return -1;
     }
 
@@ -336,16 +355,16 @@ int main(int argc, char **argv)
             memset(&state[i], 0, sizeof(state[i]));
         }
 
-        if (!iidx_io_ep2_recv()) {
+        if (!bt_io_iidx_ep2_recv()) {
             log_warning("iidxio receiving failed");
             break;
         }
 
         // Keys/buttons
 
-        uint16_t keys = iidx_io_ep2_get_keys();
-        uint8_t panel = iidx_io_ep2_get_panel();
-        uint8_t system = iidx_io_ep2_get_sys();
+        uint16_t keys = bt_io_iidx_ep2_keys_get();
+        uint8_t panel = bt_io_iidx_ep2_panel_get();
+        uint8_t system = bt_io_iidx_ep2_sys_get();
 
         _handle_buttons_14keys(keys, state);
         _handle_buttons_panel(panel, state);
@@ -356,7 +375,7 @@ int main(int argc, char **argv)
         uint8_t turntable[TURNTABLE_NUM];
 
         for (uint8_t i = 0; i < TURNTABLE_NUM; i++) {
-            turntable[i] = iidx_io_ep2_get_turntable(i);
+            turntable[i] = bt_io_iidx_ep2_turntable_get(i);
         }
 
         _handle_turntable(&config, turntable, state);
@@ -372,8 +391,8 @@ int main(int argc, char **argv)
         // Light related outputs
 
         if (config.cab_light.enable_keylight) {
-            iidx_io_ep1_set_deck_lights(keys);
-            iidx_io_ep1_set_panel_lights(panel);
+            bt_io_iidx_ep1_deck_lights_set(keys);
+            bt_io_iidx_ep1_panel_lights_set(panel);
         }
 
         if (config.cab_light.light_mode != LIGHT_SEQ_MODE_OFF) {
@@ -386,24 +405,24 @@ int main(int argc, char **argv)
             vigem_iidxio_cab_light_sequencer_update(
                 keys, turntable[0], turntable[1], &neon, &spots);
 
-            iidx_io_ep1_set_top_neons(neon);
-            iidx_io_ep1_set_top_lamps(spots);
+            bt_io_iidx_ep1_top_neons_set(neon);
+            bt_io_iidx_ep1_top_lamps_set(spots);
         }
 
         if (config.cab_light.text_16seg[0] != '\0') {
             char buffer_16seg[9];
 
             vigem_iidxio_cab_16seg_sequencer_update(buffer_16seg);
-            iidx_io_ep3_write_16seg(buffer_16seg);
+            bt_io_iidx_ep3_16seg_send(buffer_16seg);
         }
 
-        if (!iidx_io_ep1_send()) {
+        if (!bt_io_iidx_ep1_send()) {
             log_warning("iidxio sending failed");
             break;
         }
 
-        if (_check_key(system, IIDX_IO_SYS_TEST) &&
-            _check_key(system, IIDX_IO_SYS_SERVICE)) {
+        if (_check_key(system, BT_IO_IIDX_SYS_TEST) &&
+            _check_key(system, BT_IO_IIDX_SYS_SERVICE)) {
             log_info("Test + service pressed, exiting...");
             loop = false;
         }
@@ -423,7 +442,10 @@ int main(int argc, char **argv)
 
     _all_lights_off();
 
-    iidx_io_fini();
+    bt_io_iidx_fini();
+
+    bt_io_iidx_api_clear();
+    module_io_free(&_module_io_iidx);
 
     return 0;
 }

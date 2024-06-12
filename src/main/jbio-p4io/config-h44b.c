@@ -1,6 +1,6 @@
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "jbio-p4io/config-h44b.h"
 

@@ -6,7 +6,7 @@
 #include <ntdef.h>
 #include <ntstatus.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/table.h"
 

@@ -7,16 +7,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "avs-ext/property-node.h"
+#include "avs-ext/property.h"
+
+#include "core/config-property-node.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-file.h"
 #include "core/log-sink-list.h"
 #include "core/log-sink-std.h"
-#include "core/log.h"
+#include "core/thread-crt.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 #include "imports/avs-ea3.h"
 #include "imports/avs.h"
 
+#include "launcher/app.h"
 #include "launcher/avs-config.h"
 #include "launcher/avs.h"
 #include "launcher/bootstrap-config.h"
@@ -25,15 +33,11 @@
 #include "launcher/ea3-ident-config.h"
 #include "launcher/eamuse-config.h"
 #include "launcher/eamuse.h"
-#include "launcher/hook.h"
+#include "launcher/hooks.h"
 #include "launcher/launcher-config.h"
-#include "launcher/module.h"
 #include "launcher/options.h"
-#include "launcher/property-util.h"
 #include "launcher/stubs.h"
 #include "launcher/version.h"
-
-#include "procmon-lib/procmon.h"
 
 #include "util/debug.h"
 #include "util/defs.h"
@@ -58,15 +62,14 @@ static void _launcher_log_header()
         "launcher build date %s, gitrev %s",
         launcher_build_date,
         launcher_gitrev);
+    log_info("Linked AVS version %s", launcher_linked_avs_version);
 }
 
 void _launcher_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    struct core_log_sink sinks[2];
-    struct core_log_sink sink_composed;
-
-    core_log_bt_ext_impl_set();
+    core_log_sink_t sinks[2];
+    core_log_sink_t sink_composed;
 
     if (log_file_path) {
         core_log_sink_std_out_open(true, &sinks[0]);
@@ -77,6 +80,9 @@ void _launcher_log_init(
     }
 
     core_log_bt_init(&sink_composed);
+
+    core_log_bt_core_api_set();
+
     core_log_bt_level_set(level);
 }
 
@@ -119,6 +125,8 @@ static void _launcher_bootstrap_config_options_override(
     struct launcher_bootstrap_config *config,
     const struct options_bootstrap *options)
 {
+    core_property_result_t result;
+
     log_assert(config);
     log_assert(options);
 
@@ -127,8 +135,10 @@ static void _launcher_bootstrap_config_options_override(
             "Command line override bootstrap configuration from file: %s",
             options->config_path);
 
-        property_util_free(config->property);
-        config->property = property_util_load(options->config_path);
+        core_property_free(&config->property);
+        result =
+            core_property_file_load(options->config_path, &config->property);
+        core_property_node_fatal_on_error(result);
     }
 
     if (options->selector) {
@@ -155,44 +165,22 @@ static void _launcher_ea3_ident_config_options_override(
 }
 
 static void _launcher_hook_config_options_override(
-    struct launcher_config *config, const struct options_hook *options)
+    struct launcher_config *config, const struct options_hooks *options)
 {
     size_t i;
-    const char *dll;
+    const char *path;
 
     log_assert(config);
     log_assert(options);
 
-    for (i = 0; i < options->hook_dlls.nitems; i++) {
-        dll = *array_item(const char *, &options->hook_dlls, i);
+    for (i = 0; i < options->paths.nitems; i++) {
+        path = *array_item(const char *, &options->paths, i);
 
-        if (!launcher_config_add_hook_dll(config, dll)) {
+        if (!launcher_config_hooks_hook_add(config, path)) {
             log_warning(
                 "Adding override hook dll '%s' failed (max supported limit "
                 "exceeded), ignored",
-                dll);
-        }
-    }
-
-    for (i = 0; i < options->before_hook_dlls.nitems; i++) {
-        dll = *array_item(const char *, &options->before_hook_dlls, i);
-
-        if (!launcher_config_add_before_hook_dll(config, dll)) {
-            log_warning(
-                "Adding override before hook dll '%s' failed (max supported "
-                "limit exceeded), ignored",
-                dll);
-        }
-    }
-
-    for (i = 0; i < options->iat_hook_dlls.nitems; i++) {
-        dll = *array_item(const char *, &options->iat_hook_dlls, i);
-
-        if (!launcher_config_add_iat_hook_dll(config, dll)) {
-            log_warning(
-                "Adding override iat hook dll '%s' failed (max supported limit "
-                "exceeded), ignored",
-                dll);
+                path);
         }
     }
 }
@@ -226,7 +214,7 @@ static void _launcher_config_options_override(
     // parameters
     _launcher_bootstrap_config_options_override(
         &config->bootstrap, &options->bootstrap);
-    _launcher_hook_config_options_override(config, &options->hook);
+    _launcher_hook_config_options_override(config, &options->hooks);
     _launcher_debug_config_options_override(&config->debug, &options->debug);
 }
 
@@ -236,16 +224,16 @@ _launcher_config_full_resolved_log(const struct launcher_config *config)
     if (config->debug.log_property_configs) {
         log_misc("launcher-config resolved properties");
         log_misc("bootstrap-config");
-        property_util_log(config->bootstrap.property);
+        core_property_log(config->bootstrap.property, log_misc_func);
 
         log_misc("avs-config");
-        property_util_log(config->avs.property);
+        core_property_log(config->avs.property, log_misc_func);
 
         log_misc("ea3-ident-config");
-        property_util_log(config->ea3_ident.property);
+        core_property_log(config->ea3_ident.property, log_misc_func);
 
         log_misc("eamuse-config");
-        property_util_log(config->eamuse.property);
+        core_property_log(config->eamuse.property, log_misc_func);
     }
 }
 
@@ -261,32 +249,6 @@ _launcher_remote_debugger_trap(const struct launcher_debug_config *config)
 
     if (config->remote_debugger) {
         debug_remote_debugger_trap();
-    }
-}
-
-static void _launcher_procmon_init(
-    const struct launcher_debug_config *config,
-    struct procmon *procmon)
-{
-    procmon_init(procmon);
-
-    if (procmon_available()) {
-        procmon_load(procmon);
-
-        procmon->set_loggers(log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-        procmon->init();
-
-        if (config->procmon_file) {
-            procmon->file_mon_enable();
-        }
-
-        if (config->procmon_module) {
-            procmon->module_mon_enable();
-        }
-
-        if (config->procmon_thread) {
-            procmon->thread_mon_enable();
-        }
     }
 }
 
@@ -310,9 +272,9 @@ static void _launcher_bootstrap_log_config_options_override(
 
     if (options->level) {
         log_misc(
-            "Command line override bootstrap log level: %d", *(options->level));
+            "Command line override bootstrap log level: %d", options->level);
 
-        switch (*(options->level)) {
+        switch (options->level) {
             case CORE_LOG_BT_LOG_LEVEL_OFF:
                 str_cpy(config->level, sizeof(config->level), "disable");
                 break;
@@ -362,18 +324,32 @@ static void _launcher_bootstrap_log_config_verify(
     }
 }
 
-static void
-_launcher_before_hook_dlls_load(const struct launcher_hook_config *config)
+void _launcher_hooks_load(
+    const struct launcher_hook_config *config, bool debug_log_property_configs)
 {
     int i;
+    core_property_node_t root_node;
+    core_property_result_t result_prop;
 
     log_assert(config);
 
-    log_misc("Loading before hook dlls...");
+    for (i = 0; i < LAUNCHER_CONFIG_MAX_HOOKS; i++) {
+        if (launcher_config_hooks_hook_available(&config->hook[i])) {
+            if (config->hook[i].enable) {
+                if (debug_log_property_configs) {
+                    log_misc("Property hook config: %s", config->hook[i].path);
 
-    for (i = 0; i < LAUNCHER_CONFIG_MAX_HOOK_DLL; i++) {
-        if (strlen(config->before_hook_dlls[i]) > 0) {
-            hook_load_dll(config->before_hook_dlls[i]);
+                    core_property_log(config->hook[i].property, log_misc_func);
+                }
+
+                result_prop = core_property_root_node_get(
+                    config->hook[i].property, &root_node);
+                core_property_fatal_on_error(result_prop);
+
+                hooks_hook_load(config->hook[i].path, &root_node);
+            } else {
+                log_misc("Hook disabled: %s", config->hook[i].path);
+            }
         }
     }
 }
@@ -392,7 +368,7 @@ static void _launcher_ea3_ident_config_load(
     if (log_property_configs) {
         log_misc("Property ea3-ident-config");
 
-        property_util_log(launcher_config->property);
+        core_property_log(launcher_config->property, log_misc_func);
     }
 
     if (!ea3_ident_config_hardid_is_defined(config)) {
@@ -400,45 +376,6 @@ static void _launcher_ea3_ident_config_load(
             "No no hardid defined in ea3-ident-config, derive from ethernet");
 
         ea3_ident_config_hardid_from_ethernet_set(config);
-    }
-}
-
-static void _launcher_bootstrap_module_init(
-    const struct bootstrap_module_config *module_config,
-    const struct launcher_hook_config *hook_config)
-{
-    int i;
-    struct array iat_hook_dlls;
-
-    log_assert(module_config);
-    log_assert(hook_config);
-
-    array_init(&iat_hook_dlls);
-
-    for (i = 0; i < LAUNCHER_CONFIG_MAX_HOOK_DLL; i++) {
-        if (strlen(hook_config->before_hook_dlls[i]) > 0) {
-            *array_append(const char *, &iat_hook_dlls) =
-                (const char *) &hook_config->before_hook_dlls[i];
-        }
-    }
-
-    bootstrap_module_init(module_config, &iat_hook_dlls);
-
-    array_fini(&iat_hook_dlls);
-}
-
-static void _launcher_hook_dlls_load(const struct launcher_hook_config *config)
-{
-    int i;
-
-    log_assert(config);
-
-    log_misc("Loading hook dlls...");
-
-    for (i = 0; i < LAUNCHER_CONFIG_MAX_HOOK_DLL; i++) {
-        if (strlen(config->hook_dlls[i]) > 0) {
-            hook_load_dll(config->hook_dlls[i]);
-        }
     }
 }
 
@@ -457,17 +394,17 @@ static void _launcher_debugger_break()
 
 void _launcher_log_reinit()
 {
-    core_log_bt_ext_impl_set();
+    core_log_bt_core_api_set();
 }
 
 void _launcher_init(
     const struct options *options,
     struct launcher_config *launcher_config,
     struct bootstrap_config *bootstrap_config,
-    struct ea3_ident_config *ea3_ident_config,
-    struct procmon *procmon)
+    struct ea3_ident_config *ea3_ident_config)
 {
-    struct property *launcher_property;
+    core_property_t *launcher_property;
+    core_property_result_t result;
 
     log_assert(options);
     log_assert(launcher_config);
@@ -476,8 +413,22 @@ void _launcher_init(
 
     // Early logging pre AVS setup depend entirely on command args
     // We don't even have the bootstrap configuration loaded at this point
-    _launcher_log_init(options->log.file_path, *(options->log.level));
+    _launcher_log_init(options->log.file_path, options->log.level);
     _launcher_log_header();
+
+    core_thread_crt_core_api_set();
+
+    // TODO make this configurable, e.g. command line args/env vars?
+    core_property_trace_log_enable(true);
+    core_property_node_trace_log_enable(true);
+
+    // This is already available without AVS being actually booted
+    // and we need this to read our configuration files
+    avs_ext_property_core_api_set();
+    avs_ext_property_node_core_api_set();
+
+    // Run our configuration API always through the property API
+    core_config_property_node_core_api_set();
 
     signal_exception_handler_init(_launcher_signal_shutdown_handler);
     signal_register_shutdown_handler(&_launcher_signal_shutdown_handler);
@@ -498,17 +449,20 @@ void _launcher_init(
             "Loading launcher configuration from file: %s",
             options->launcher.config_path);
 
-        launcher_property = property_util_load(options->launcher.config_path);
+        result = core_property_file_load(
+            options->launcher.config_path, &launcher_property);
+        core_property_fatal_on_error(result);
+
         launcher_config_load(launcher_property, launcher_config);
 
         _launcher_config_options_override(launcher_config, options);
 
         if (launcher_config->debug.log_property_configs) {
             log_misc("launcher-config");
-            property_util_log(launcher_property);
+            core_property_log(launcher_property, log_misc_func);
         }
 
-        property_util_free(launcher_property);
+        core_property_free(&launcher_property);
     } else {
         _launcher_config_options_override(launcher_config, options);
     }
@@ -520,8 +474,6 @@ void _launcher_init(
 
     _launcher_remote_debugger_trap(&launcher_config->debug);
 
-    _launcher_procmon_init(&launcher_config->debug, procmon);
-
     _launcher_bootstrap_config_load(
         &launcher_config->bootstrap, bootstrap_config);
     _launcher_bootstrap_log_config_options_override(
@@ -531,12 +483,26 @@ void _launcher_init(
     bootstrap_init(launcher_config->debug.log_property_configs);
     bootstrap_log_init(&bootstrap_config->startup.log);
 
-    _launcher_before_hook_dlls_load(&launcher_config->hook);
+    hooks_init();
+    _launcher_hooks_load(
+        &launcher_config->hook, launcher_config->debug.log_property_configs);
+
+    hooks_core_log_api_set();
+    hooks_core_thread_api_set();
+    hooks_core_config_api_set();
+
+    hooks_pre_avs_init();
 
     bootstrap_avs_init(
         &bootstrap_config->startup.boot,
         &bootstrap_config->startup.log,
         launcher_config->avs.property);
+
+    // Set APIs again because these have changed with AVS being initialized
+    hooks_core_log_api_set();
+    hooks_core_thread_api_set();
+    hooks_core_config_api_set();
+
     bootstrap_default_files_create(&bootstrap_config->startup.default_file);
 
     _launcher_ea3_ident_config_load(
@@ -556,50 +522,53 @@ void _launcher_run(
     const struct bootstrap_config *bootstrap_config,
     struct ea3_ident_config *ea3_ident_config)
 {
+    HMODULE game_module;
+
     log_assert(launcher_config);
     log_assert(bootstrap_config);
     log_assert(ea3_ident_config);
 
-    _launcher_bootstrap_module_init(
-        &bootstrap_config->startup.module, &launcher_config->hook);
+    game_module =
+        bootstrap_app_unresolved_init(&bootstrap_config->startup.module);
 
-    _launcher_hook_dlls_load(&launcher_config->hook);
+    hooks_iat_apply(game_module);
+
+    bootstrap_app_resolve_init();
 
     _launcher_dongle_stubs_init();
 
     _launcher_debugger_break();
 
-    bootstrap_module_game_init(
-        &bootstrap_config->startup.module, ea3_ident_config);
+    hooks_main_init(game_module);
+
+    bootstrap_app_init(&bootstrap_config->startup.module, ea3_ident_config);
 
     bootstrap_eamuse_init(
         &bootstrap_config->startup.eamuse,
         ea3_ident_config,
         launcher_config->eamuse.property);
 
-    bootstrap_module_game_run();
+    bootstrap_app_run();
+
+    hooks_main_fini();
 }
 
 void _launcher_fini(
     struct launcher_config *launcher_config,
-    const struct bootstrap_config *bootstrap_config,
-    struct procmon *procmon)
+    const struct bootstrap_config *bootstrap_config)
 {
     log_assert(launcher_config);
     log_assert(bootstrap_config);
-    log_assert(procmon);
 
     bootstrap_eamuse_fini(&bootstrap_config->startup.eamuse);
+
+    bootstrap_app_fini();
+
+    hooks_fini();
 
     bootstrap_avs_fini();
 
     _launcher_log_reinit();
-
-    bootstrap_module_game_fini();
-
-    if (procmon->module != NULL) {
-        procmon_free(procmon);
-    }
 
     launcher_config_fini(launcher_config);
 
@@ -613,14 +582,13 @@ void launcher_main(const struct options *options)
     struct launcher_config launcher_config;
     struct bootstrap_config bootstrap_config;
     struct ea3_ident_config ea3_ident_config;
-    struct procmon procmon;
 
     log_assert(options);
 
     _launcher_init(
-        options, &launcher_config, &bootstrap_config, &ea3_ident_config, &procmon);
+        options, &launcher_config, &bootstrap_config, &ea3_ident_config);
 
     _launcher_run(&launcher_config, &bootstrap_config, &ea3_ident_config);
 
-    _launcher_fini(&launcher_config, &bootstrap_config, &procmon);
+    _launcher_fini(&launcher_config, &bootstrap_config);
 }

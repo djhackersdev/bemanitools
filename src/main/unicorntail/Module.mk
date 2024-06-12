@@ -3,6 +3,9 @@ avsdlls			+= unicorntail
 deplibs_unicorntail	:= \
 	avs \
 
+avslibs_unicorntail := \
+    avs-ext \
+
 libs_unicorntail	:= \
 	core \
 	p3io \
@@ -10,6 +13,7 @@ libs_unicorntail	:= \
 	hook \
 	hooklib \
 	util \
+	iface-core \
 
 src_unicorntail		:= \
 	dllmain.c \

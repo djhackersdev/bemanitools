@@ -6,6 +6,7 @@ ldflags_mm    := \
 
 libs_mm       := \
     util \
+    iface-core \
 
 src_mm        := \
     mm.c \

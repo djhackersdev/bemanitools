@@ -3,11 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
 
 #include "imports/avs.h"
+
+#include "iface-core/log.h"
 
 #include "iidxhook5/ifs-snd-redir.h"
 

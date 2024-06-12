@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/input.h"
-
 #include "geninput/mapper.h"
 
 void mapper_config_save(const char *game_type);

@@ -8,6 +8,7 @@ libs_iidxhook-config-iidxhook1-test     := \
     iidxhook1 \
     test \
     util \
+    iface-core \
 
 src_iidxhook-config-iidxhook1-test     := \
     iidxhook-config-iidxhook1-test.c \
@@ -24,6 +25,7 @@ libs_iidxhook-config-iidxhook2-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook-config-iidxhook2-test     := \
     iidxhook-config-iidxhook2-test.c \

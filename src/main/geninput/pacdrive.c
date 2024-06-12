@@ -11,11 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "geninput/hid.h"
 #include "geninput/io-thread.h"
 #include "geninput/pacdrive.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/mem.h"

@@ -15,7 +15,7 @@
 #include "config/schema.h"
 #include "config/usages.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "geninput/input-config.h"
 #include "geninput/mapper.h"

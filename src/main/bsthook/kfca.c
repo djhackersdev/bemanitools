@@ -7,7 +7,7 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/bstio.h"
+#include "iface-io/bst.h"
 
 #include "util/defs.h"
 
@@ -122,7 +122,7 @@ static void kfca_poll(const struct ac_io_message *req)
     struct ac_io_message resp;
     struct ac_io_kfca_poll_in *pin;
 
-    bst_io_read_input();
+    bt_io_bst_input_read();
 
     pin = &resp.cmd.kfca_poll_in;
 
@@ -133,7 +133,7 @@ static void kfca_poll(const struct ac_io_message *req)
 
     memset(pin, 0, sizeof(*pin));
 
-    pin->gpio_sys = ac_io_u16(bst_io_get_input());
+    pin->gpio_sys = ac_io_u16(bt_io_bst_input_get());
 
     ac_io_emu_response_push(kfca_ac_io_emu, &resp, 0);
 }

@@ -1,5 +1,3 @@
-#include "core/log.h"
-
 #include "ddrhook2/master.h"
 
 #include "ddrhook-util/dinput.h"
@@ -8,6 +6,8 @@
 #include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "p3ioemu/devmgr.h"
 

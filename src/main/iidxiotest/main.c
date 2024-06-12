@@ -1,18 +1,18 @@
+#include <windows.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <windows.h>
-
-#include "bemanitools/iidxio.h"
-
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
-#include "core/thread-crt-ext.h"
-#include "core/thread-crt.h"
-#include "core/thread.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
+#include "iface-io/iidx.h"
+
+#include "module/io-ext.h"
 
 static uint8_t _fix_top_lamps_order(uint8_t top_lamps)
 {
@@ -20,38 +20,55 @@ static uint8_t _fix_top_lamps_order(uint8_t top_lamps)
 
     out = 0;
 
-    out |= ((1 << 0) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_RED) : 0;
-    out |= ((1 << 1) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_YELLOW) : 0;
-    out |= ((1 << 2) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_GREEN) : 0;
-    out |= ((1 << 3) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_LEFT_BLUE) : 0;
-
-    out |= ((1 << 4) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_BLUE) : 0;
-    out |= ((1 << 5) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_GREEN) : 0;
+    out |= ((1 << 0) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_LEFT_RED) : 0;
     out |=
-        ((1 << 6) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW) : 0;
-    out |= ((1 << 7) & top_lamps) > 0 ? (1 << IIDX_IO_TOP_LAMP_RIGHT_RED) : 0;
+        ((1 << 1) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_LEFT_YELLOW) : 0;
+    out |=
+        ((1 << 2) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_LEFT_GREEN) : 0;
+    out |=
+        ((1 << 3) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_LEFT_BLUE) : 0;
+
+    out |=
+        ((1 << 4) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_BLUE) : 0;
+    out |=
+        ((1 << 5) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_GREEN) : 0;
+    out |= ((1 << 6) & top_lamps) > 0 ?
+        (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_YELLOW) :
+        0;
+    out |=
+        ((1 << 7) & top_lamps) > 0 ? (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_RED) : 0;
 
     return out;
 }
 
 static void _all_lights_off_shutdown()
 {
-    iidx_io_ep1_set_deck_lights(0);
-    iidx_io_ep1_set_panel_lights(0);
-    iidx_io_ep1_set_top_lamps(0);
-    iidx_io_ep1_set_top_neons(false);
+    bt_io_iidx_ep1_deck_lights_set(0);
+    bt_io_iidx_ep1_panel_lights_set(0);
+    bt_io_iidx_ep1_top_lamps_set(0);
+    bt_io_iidx_ep1_top_neons_set(false);
 
     // Depending on the IO, pushing the state to the actual outputs, e.g. lights
     // on/off can be a bit finicky. Do a few times to "enforce" the state
     for (uint8_t i = 0; i < 3; i++) {
-        iidx_io_ep1_send();
+        bt_io_iidx_ep1_send();
         // Required to handle iidxio-ezusb specific quirks with flushing 16seg
         // text
-        iidx_io_ep2_recv();
-        iidx_io_ep3_write_16seg("         ");
+        bt_io_iidx_ep2_recv();
+        bt_io_iidx_ep3_16seg_send("         ");
 
         Sleep(10);
     }
+}
+
+static void _iidxiotest_io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
 }
 
 /**
@@ -59,24 +76,32 @@ static void _all_lights_off_shutdown()
  */
 int main(int argc, char **argv)
 {
-    core_thread_crt_ext_impl_set();
-    core_log_bt_ext_impl_set();
+    module_io_t *module_io_iidx;
 
-    core_log_bt_ext_init_with_stdout();
+    core_log_bt_core_api_set();
 
-    core_log_impl_assign(iidx_io_set_loggers);
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
-    if (!iidx_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get())) {
+    _iidxiotest_io_iidx_init(&module_io_iidx);
+
+    if (!bt_io_iidx_init()) {
         printf("Initializing iidxio failed\n");
+
+        bt_io_iidx_api_clear();
+        module_io_free(&module_io_iidx);
+
         return -1;
     }
 
     printf(">>> Initializing iidxio successful, press enter to continue <<<\n");
 
     if (getchar() != '\n') {
+        bt_io_iidx_fini();
+
+        bt_io_iidx_api_clear();
+        module_io_free(&module_io_iidx);
+
         return 0;
     }
 
@@ -98,19 +123,25 @@ int main(int argc, char **argv)
     uint8_t cnt = 0;
     bool all_on = false;
     while (loop) {
-        if (!iidx_io_ep2_recv()) {
+        if (!bt_io_iidx_ep2_recv()) {
             printf("ERROR: Receive ep2 failed\n");
+
+            bt_io_iidx_fini();
+
+            bt_io_iidx_api_clear();
+            module_io_free(&module_io_iidx);
+
             return -2;
         }
 
         /* get inputs */
-        input_sys = iidx_io_ep2_get_sys();
-        input_panel = iidx_io_ep2_get_panel();
-        input_keys = iidx_io_ep2_get_keys();
-        turn_table[0] = iidx_io_ep2_get_turntable(0);
-        turn_table[1] = iidx_io_ep2_get_turntable(1);
+        input_sys = bt_io_iidx_ep2_sys_get();
+        input_panel = bt_io_iidx_ep2_panel_get();
+        input_keys = bt_io_iidx_ep2_keys_get();
+        turn_table[0] = bt_io_iidx_ep2_turntable_get(0);
+        turn_table[1] = bt_io_iidx_ep2_turntable_get(1);
         for (uint8_t i = 0; i < 5; ++i) {
-            slider[i] = iidx_io_ep2_get_slider(i);
+            slider[i] = bt_io_iidx_ep2_slider_get(i);
         }
 
         system("cls");
@@ -155,38 +186,38 @@ int main(int argc, char **argv)
             text_16seg[6],
             text_16seg[7],
             text_16seg[8],
-            (input_panel >> IIDX_IO_PANEL_EFFECT) & 1,
-            (input_sys >> IIDX_IO_SYS_TEST) & 1,
+            (input_panel >> BT_IO_IIDX_PANEL_EFFECT) & 1,
+            (input_sys >> BT_IO_IIDX_SYS_TEST) & 1,
 
-            (input_panel >> IIDX_IO_PANEL_P1_START) & 1,
+            (input_panel >> BT_IO_IIDX_PANEL_P1_START) & 1,
             slider[0],
             slider[1],
             slider[2],
             slider[3],
             slider[4],
-            (input_panel >> IIDX_IO_PANEL_P2_START) & 1,
+            (input_panel >> BT_IO_IIDX_PANEL_P2_START) & 1,
 
-            (input_panel >> IIDX_IO_PANEL_VEFX) & 1,
-            (input_sys >> IIDX_IO_SYS_SERVICE) & 1,
+            (input_panel >> BT_IO_IIDX_PANEL_VEFX) & 1,
+            (input_sys >> BT_IO_IIDX_SYS_SERVICE) & 1,
 
             turn_table[0],
-            (input_keys >> IIDX_IO_KEY_P1_2) & 1,
-            (input_keys >> IIDX_IO_KEY_P1_4) & 1,
-            (input_keys >> IIDX_IO_KEY_P1_6) & 1,
-            (input_sys >> IIDX_IO_SYS_COIN),
-            (input_keys >> IIDX_IO_KEY_P2_2) & 1,
-            (input_keys >> IIDX_IO_KEY_P2_4) & 1,
-            (input_keys >> IIDX_IO_KEY_P2_6) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_2) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_4) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_6) & 1,
+            (input_sys >> BT_IO_IIDX_SYS_COIN),
+            (input_keys >> BT_IO_IIDX_KEY_P2_2) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P2_4) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P2_6) & 1,
             turn_table[1],
-            (input_keys >> IIDX_IO_KEY_P1_1) & 1,
-            (input_keys >> IIDX_IO_KEY_P1_3) & 1,
-            (input_keys >> IIDX_IO_KEY_P1_5) & 1,
-            (input_keys >> IIDX_IO_KEY_P1_7) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_1) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_3) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_5) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P1_7) & 1,
 
-            (input_keys >> IIDX_IO_KEY_P2_1) & 1,
-            (input_keys >> IIDX_IO_KEY_P2_3) & 1,
-            (input_keys >> IIDX_IO_KEY_P2_5) & 1,
-            (input_keys >> IIDX_IO_KEY_P2_7) & 1);
+            (input_keys >> BT_IO_IIDX_KEY_P2_1) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P2_3) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P2_5) & 1,
+            (input_keys >> BT_IO_IIDX_KEY_P2_7) & 1);
 
         /* set outputs */
         if (all_on) {
@@ -197,10 +228,10 @@ int main(int argc, char **argv)
             memset(text_16seg, '*', 9);
         }
 
-        iidx_io_ep1_set_deck_lights(deck_lights);
-        iidx_io_ep1_set_panel_lights(panel_lights);
-        iidx_io_ep1_set_top_lamps(_fix_top_lamps_order(top_lamps));
-        iidx_io_ep1_set_top_neons(top_neons);
+        bt_io_iidx_ep1_deck_lights_set(deck_lights);
+        bt_io_iidx_ep1_panel_lights_set(panel_lights);
+        bt_io_iidx_ep1_top_lamps_set(_fix_top_lamps_order(top_lamps));
+        bt_io_iidx_ep1_top_neons_set(top_neons);
 
         /* light up keys when pressed */
         if (!all_on) {
@@ -218,13 +249,25 @@ int main(int argc, char **argv)
             }
         }
 
-        if (!iidx_io_ep1_send()) {
+        if (!bt_io_iidx_ep1_send()) {
             printf("ERROR: Sending ep1 failed\n");
+
+            bt_io_iidx_fini();
+
+            bt_io_iidx_api_clear();
+            module_io_free(&module_io_iidx);
+
             return -4;
         }
 
-        if (!iidx_io_ep3_write_16seg(text_16seg)) {
+        if (!bt_io_iidx_ep3_16seg_send(text_16seg)) {
             printf("ERROR: Sending ep3 failed\n");
+
+            bt_io_iidx_fini();
+
+            bt_io_iidx_api_clear();
+            module_io_free(&module_io_iidx);
+
             return -3;
         }
 
@@ -324,7 +367,10 @@ int main(int argc, char **argv)
 
     _all_lights_off_shutdown();
 
-    iidx_io_fini();
+    bt_io_iidx_fini();
+
+    bt_io_iidx_api_clear();
+    module_io_free(&module_io_iidx);
 
     return 0;
 }

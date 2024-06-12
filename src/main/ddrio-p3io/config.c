@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "ddrio-p3io/config.h"
 
-#include "config.h"
+#include "iface-core/log.h"
 
 #define DDRIO_P3IO_CONFIG_EXTIO_PORT_KEY "ddrio.p3io.extio_port"
 

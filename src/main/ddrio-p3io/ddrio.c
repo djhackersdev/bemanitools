@@ -6,20 +6,20 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/ddrio.h"
-
 #include "cconfig/cconfig-main.h"
 
-#include "core/log.h"
-#include "core/thread.h"
+#include "ddrio-p3io/config.h"
 
 #include "extiodrv/device.h"
 #include "extiodrv/extio.h"
 
+#include "iface-core/log.h"
+
 #include "p3iodrv/ddr.h"
 #include "p3iodrv/device.h"
 
-#include "config.h"
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/ddr.h"
 
 static struct ddrio_p3io_config _ddr_io_p3io_config;
 static HANDLE _ddr_io_p3io_handle;
@@ -249,15 +249,6 @@ static HRESULT _ddr_io_flush_and_reset(HANDLE p3io_handle, HANDLE extio_handle)
     return hr;
 }
 
-void ddr_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    core_log_impl_set(misc, info, warning, fatal);
-}
-
 static void _ddr_io_config_init(struct ddrio_p3io_config *config_ddrio_p3io)
 {
     struct cconfig *config;
@@ -283,10 +274,7 @@ static void _ddr_io_config_init(struct ddrio_p3io_config *config_ddrio_p3io)
     cconfig_finit(config);
 }
 
-bool ddr_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+bool bt_io_ddr_init()
 {
     HRESULT hr;
 
@@ -313,7 +301,7 @@ bool ddr_io_init(
     return true;
 }
 
-uint32_t ddr_io_read_pad(void)
+uint32_t bt_io_ddr_pad_read(void)
 {
     HRESULT hr;
     struct p3io_ddr_jamma jamma;
@@ -328,23 +316,29 @@ uint32_t ddr_io_read_pad(void)
     return _byteswap_ulong(*((uint32_t *) &jamma));
 }
 
-void ddr_io_set_lights_extio(uint32_t extio_lights)
+void bt_io_ddr_extio_lights_set(uint32_t extio_lights)
 {
     HRESULT hr;
     struct extiodrv_extio_pad_lights pad_lights[EXTIO_PAD_LIGHT_MAX_PLAYERS];
     bool neons;
 
-    pad_lights[0].up = (extio_lights & (1 << LIGHT_P1_UP)) > 0;
-    pad_lights[0].down = (extio_lights & (1 << LIGHT_P1_DOWN)) > 0;
-    pad_lights[0].left = (extio_lights & (1 << LIGHT_P1_LEFT)) > 0;
-    pad_lights[0].right = (extio_lights & (1 << LIGHT_P1_RIGHT)) > 0;
+    pad_lights[0].up = (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P1_UP)) > 0;
+    pad_lights[0].down =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P1_DOWN)) > 0;
+    pad_lights[0].left =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P1_LEFT)) > 0;
+    pad_lights[0].right =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P1_RIGHT)) > 0;
 
-    pad_lights[1].up = (extio_lights & (1 << LIGHT_P2_UP)) > 0;
-    pad_lights[1].down = (extio_lights & (1 << LIGHT_P2_DOWN)) > 0;
-    pad_lights[1].left = (extio_lights & (1 << LIGHT_P2_LEFT)) > 0;
-    pad_lights[1].right = (extio_lights & (1 << LIGHT_P2_RIGHT)) > 0;
+    pad_lights[1].up = (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P2_UP)) > 0;
+    pad_lights[1].down =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P2_DOWN)) > 0;
+    pad_lights[1].left =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P2_LEFT)) > 0;
+    pad_lights[1].right =
+        (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_P2_RIGHT)) > 0;
 
-    neons = (extio_lights & (1 << LIGHT_NEONS)) > 0;
+    neons = (extio_lights & (1 << BT_IO_DDR_EXTIO_LIGHT_NEONS)) > 0;
 
     hr = extiodrv_extio_transfer(
         _ddr_io_extio_handle,
@@ -357,24 +351,24 @@ void ddr_io_set_lights_extio(uint32_t extio_lights)
     }
 }
 
-void ddr_io_set_lights_p3io(uint32_t p3io_lights)
+void bt_io_ddr_p3io_lights_set(uint32_t p3io_lights)
 {
     HRESULT hr;
     struct p3io_ddr_output output;
 
     output.cabinet.top_p1_lower =
-        (p3io_lights & (1 << LIGHT_P1_LOWER_LAMP)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P1_LOWER_LAMP)) > 0 ? 1 : 0;
     output.cabinet.top_p1_upper =
-        (p3io_lights & (1 << LIGHT_P1_UPPER_LAMP)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P1_UPPER_LAMP)) > 0 ? 1 : 0;
     output.cabinet.top_p2_lower =
-        (p3io_lights & (1 << LIGHT_P2_LOWER_LAMP)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P2_LOWER_LAMP)) > 0 ? 1 : 0;
     output.cabinet.top_p2_upper =
-        (p3io_lights & (1 << LIGHT_P2_UPPER_LAMP)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P2_UPPER_LAMP)) > 0 ? 1 : 0;
 
     output.cabinet.p1_menu_buttons =
-        (p3io_lights & (1 << LIGHT_P1_MENU)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P1_MENU)) > 0 ? 1 : 0;
     output.cabinet.p2_menu_buttons =
-        (p3io_lights & (1 << LIGHT_P2_MENU)) > 0 ? 1 : 0;
+        (p3io_lights & (1 << BT_IO_DDR_P3IO_LIGHT_P2_MENU)) > 0 ? 1 : 0;
 
     hr = p3iodrv_ddr_set_outputs(_ddr_io_p3io_handle, &output);
 
@@ -383,14 +377,14 @@ void ddr_io_set_lights_p3io(uint32_t p3io_lights)
     }
 }
 
-void ddr_io_set_lights_hdxs_panel(uint32_t lights)
+void bt_io_ddr_hdxs_lights_panel_set(uint32_t lights)
 {
     // Unused
 
     (void) lights;
 }
 
-void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+void bt_io_ddr_hdxs_lights_rgb_set(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
 {
     // Unused
 
@@ -400,7 +394,7 @@ void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
     (void) b;
 }
 
-void ddr_io_fini(void)
+void bt_io_ddr_fini(void)
 {
     HRESULT hr;
 
@@ -424,4 +418,22 @@ void ddr_io_fini(void)
         log_warning("Closing EXTIO failed: %lX", hr);
         // continue
     }
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_ddr_init;
+    api->v1.fini = bt_io_ddr_fini;
+    api->v1.pad_read = bt_io_ddr_pad_read;
+    api->v1.extio_lights_set = bt_io_ddr_extio_lights_set;
+    api->v1.p3io_lights_set = bt_io_ddr_p3io_lights_set;
+    api->v1.hdxs_lights_panel_set = bt_io_ddr_hdxs_lights_panel_set;
+    api->v1.hdxs_lights_rgb_set = bt_io_ddr_hdxs_lights_rgb_set;
 }

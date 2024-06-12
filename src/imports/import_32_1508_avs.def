@@ -6,8 +6,8 @@ EXPORTS
     avs_fs_lseek @59 NONAME
     avs_fs_lseek64 @60 NONAME
     avs_fs_lstat @79 NONAME
-    avs_fs_open @58 NONAME
-    avs_fs_read @61 NONAME
+    avs_fs_open @58 NONAME == XCd229cc000090
+    avs_fs_read @61 NONAME == XCd229cc00010d
     avs_fs_copy @81 NONAME
     avs_fs_opendir @72 NONAME == XCd229cc0000f0
     avs_fs_readdir @73 NONAME == XCd229cc0000bb
@@ -26,8 +26,8 @@ EXPORTS
     property_desc_to_buffer @129 NONAME
     property_destroy @128 NONAME
     property_insert_read @131 NONAME
-    property_clear_error @573 NONAME
-    property_get_error @573 NONAME
+    property_clear_error @140 NONAME == XCd229cc00014b
+    property_get_error @141 NONAME == XCd229cc0000b5
     property_node_create @145 NONAME
     property_node_name @150 NONAME
     property_node_read @154 NONAME == XCd229cc0000f3
@@ -41,7 +41,7 @@ EXPORTS
     property_query_size @142 NONAME == XCd229cc000032
     property_psmap_export @162 NONAME
     property_psmap_import @161 NONAME
-    property_read_query_memsize @159 NONAME
+    property_read_query_memsize @159 NONAME == XCd229cc0000ff
     property_search @144 NONAME
     std_getenv @207 NONAME
     std_setenv @208 NONAME

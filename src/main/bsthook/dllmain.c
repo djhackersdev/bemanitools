@@ -2,13 +2,18 @@
 
 #include <stdbool.h>
 
-#include "avs-util/core-interop.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
-#include "bemanitools/bstio.h"
-#include "bemanitools/eamio.h"
+#include "bsthook/acio.h"
+#include "bsthook/gfx.h"
+#include "bsthook/settings.h"
 
-#include "core/log.h"
-#include "core/thread.h"
+#include "iface-core/config.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface-io/bst.h"
+#include "iface-io/eam.h"
 
 #include "hook/iohook.h"
 
@@ -17,15 +22,36 @@
 
 #include "imports/avs.h"
 
-#include "bsthook/acio.h"
-#include "bsthook/gfx.h"
-#include "bsthook/settings.h"
+#include "module/io-ext.h"
 
 #include "util/cmdline.h"
 #include "util/defs.h"
 
+static module_io_t *_bsthook_module_io_bst;
+static module_io_t *_bsthook_module_io_eam;
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *config);
 static bool my_dll_entry_main(void);
+
+static void _bsthook_io_bst_init(module_io_t **module)
+{
+    bt_io_bst_api_t api;
+
+    module_io_ext_load_and_init(
+        "bstio.dll", "bt_module_io_bst_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_bst_api_set(&api);
+}
+
+static void _bsthook_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 {
@@ -33,41 +59,37 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("--- Begin bsthook dll_entry_init ---");
 
-    ac_io_bus_init();
-
     log_info("Starting up BeatStream IO backend");
 
-    core_log_impl_assign(bst_io_set_loggers);
+    _bsthook_io_bst_init(&_bsthook_module_io_bst);
 
-    ok = bst_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+    ok = bt_io_bst_init();
 
     if (!ok) {
         goto bst_io_fail;
     }
 
-    core_log_impl_assign(eam_io_set_loggers);
+    _bsthook_io_eam_init(&_bsthook_module_io_eam);
 
-    ok = eam_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+    ok = bt_io_eam_init();
 
     if (!ok) {
         goto eam_io_fail;
     }
+
+    ac_io_bus_init();
 
     log_info("---  End  bsthook dll_entry_init ---");
 
     return app_hook_invoke_init(sidcode, config);
 
 eam_io_fail:
-    bst_io_fini();
+    bt_io_bst_fini();
+
+    bt_io_bst_api_clear();
+    module_io_free(&_bsthook_module_io_bst);
 
 bst_io_fail:
-    ac_io_bus_fini();
 
     return false;
 }
@@ -79,10 +101,16 @@ static bool my_dll_entry_main(void)
     result = app_hook_invoke_main();
 
     log_info("Shutting down card reader backend");
-    eam_io_fini();
+    bt_io_eam_fini();
 
-    log_info("Shutting down SDVX IO backend");
-    bst_io_fini();
+    bt_io_eam_api_clear();
+    module_io_free(&_bsthook_module_io_eam);
+
+    log_info("Shutting down BeatStream IO backend");
+    bt_io_bst_fini();
+
+    bt_io_bst_api_clear();
+    module_io_free(&_bsthook_module_io_bst);
 
     ac_io_bus_fini();
 
@@ -100,8 +128,8 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     }
 
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     args_recover(&argc, &argv);
 

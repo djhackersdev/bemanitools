@@ -1,28 +1,28 @@
+#define LOG_MODULE "iidxio-ezusb2"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/iidxio.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
 
 #include "ezusb/util.h"
 #include "ezusb2/ezusb2.h"
 
 #include "ezusb2-iidx/ezusb2-iidx.h"
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/io/iidx.h"
+
 #include "util/fs.h"
 #include "util/time.h"
 
 #define EZUSB2_FIND_TIMEOUT_MS 10000
-
-#define log_misc(...) iidx_io_log_misc("iidxio-ezusb2", __VA_ARGS__)
-#define log_info(...) iidx_io_log_info("iidxio-ezusb2", __VA_ARGS__)
-#define log_warning(...) iidx_io_log_warning("iidxio-ezusb2", __VA_ARGS__)
-#define log_fatal(...) iidx_io_log_fatal("iidxio-ezusb2", __VA_ARGS__)
-
-static log_formatter_t iidx_io_log_misc;
-static log_formatter_t iidx_io_log_info;
-static log_formatter_t iidx_io_log_warning;
-static log_formatter_t iidx_io_log_fatal;
 
 static HANDLE iidx_io_ezusb2_handle;
 
@@ -30,22 +30,7 @@ static struct ezusb2_iidx_msg_interrupt_read_packet iidx_io_ezusb2_read_packet;
 static struct ezusb2_iidx_msg_interrupt_write_packet
     iidx_io_ezusb2_write_packet;
 
-void iidx_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    iidx_io_log_misc = misc;
-    iidx_io_log_info = info;
-    iidx_io_log_warning = warning;
-    iidx_io_log_fatal = fatal;
-}
-
-bool iidx_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+bool bt_io_iidx_init()
 {
     struct ezusb_ident ident;
     char *device_path;
@@ -100,37 +85,33 @@ bool iidx_io_init(
     }
 }
 
-void iidx_io_fini(void)
+void bt_io_iidx_fini(void)
 {
     ezusb2_close(iidx_io_ezusb2_handle);
     iidx_io_ezusb2_handle = INVALID_HANDLE_VALUE;
 }
 
-/* Total number of light bits is 33. That's slightly annoying. So, we pack
-   the neons bit into an unused start btns light. The entire 32-bit word is
-   then sent to geninput for output light mapping. */
-
-void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
+void bt_io_iidx_ep1_deck_lights_set(uint16_t deck_lights)
 {
     iidx_io_ezusb2_write_packet.deck_lights = deck_lights;
 }
 
-void iidx_io_ep1_set_panel_lights(uint8_t panel_lights)
+void bt_io_iidx_ep1_panel_lights_set(uint8_t panel_lights)
 {
     iidx_io_ezusb2_write_packet.panel_lights = panel_lights;
 }
 
-void iidx_io_ep1_set_top_lamps(uint8_t top_lamps)
+void bt_io_iidx_ep1_top_lamps_set(uint8_t top_lamps)
 {
     iidx_io_ezusb2_write_packet.top_lamps = top_lamps;
 }
 
-void iidx_io_ep1_set_top_neons(bool top_neons)
+void bt_io_iidx_ep1_top_neons_set(bool top_neons)
 {
     iidx_io_ezusb2_write_packet.top_neons = top_neons ? 1 : 0;
 }
 
-bool iidx_io_ep1_send(void)
+bool bt_io_iidx_ep1_send(void)
 {
     if (!ezusb2_iidx_interrupt_write(
             iidx_io_ezusb2_handle, &iidx_io_ezusb2_write_packet)) {
@@ -141,7 +122,7 @@ bool iidx_io_ep1_send(void)
     }
 }
 
-bool iidx_io_ep2_recv(void)
+bool bt_io_iidx_ep2_recv(void)
 {
     if (!ezusb2_iidx_interrupt_read(
             iidx_io_ezusb2_handle, &iidx_io_ezusb2_read_packet)) {
@@ -152,7 +133,7 @@ bool iidx_io_ep2_recv(void)
     }
 }
 
-uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
+uint8_t bt_io_iidx_ep2_turntable_get(uint8_t player_no)
 {
     switch (player_no) {
         case 0:
@@ -164,7 +145,7 @@ uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
     }
 }
 
-uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
+uint8_t bt_io_iidx_ep2_slider_get(uint8_t slider_no)
 {
     switch (slider_no) {
         case 0:
@@ -182,25 +163,55 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
     }
 }
 
-uint8_t iidx_io_ep2_get_sys(void)
+uint8_t bt_io_iidx_ep2_sys_get(void)
 {
     return (((~iidx_io_ezusb2_read_packet.inverted_pad) >> 4) & 0x03) |
         ((((~iidx_io_ezusb2_read_packet.inverted_pad) >> 30) & 1) << 2);
 }
 
-uint8_t iidx_io_ep2_get_panel(void)
+uint8_t bt_io_iidx_ep2_panel_get(void)
 {
     return ((~iidx_io_ezusb2_read_packet.inverted_pad) >> 0) & 0x0F;
 }
 
-uint16_t iidx_io_ep2_get_keys(void)
+uint16_t bt_io_iidx_ep2_keys_get(void)
 {
     return ((~iidx_io_ezusb2_read_packet.inverted_pad) >> 16) & 0x3FFF;
 }
 
-bool iidx_io_ep3_write_16seg(const char *text)
+bool bt_io_iidx_ep3_16seg_send(const char *text)
 {
     /* 16seg writing to device done in ep2 */
     memcpy(iidx_io_ezusb2_write_packet.seg16, text, 9);
     return true;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_io_iidx_api_get(bt_io_iidx_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_iidx_init;
+    api->v1.fini = bt_io_iidx_fini;
+    api->v1.ep1_deck_lights_set = bt_io_iidx_ep1_deck_lights_set;
+    api->v1.ep1_panel_lights_set = bt_io_iidx_ep1_panel_lights_set;
+    api->v1.ep1_top_lamps_set = bt_io_iidx_ep1_top_lamps_set;
+    api->v1.ep1_top_neons_set = bt_io_iidx_ep1_top_neons_set;
+    api->v1.ep1_send = bt_io_iidx_ep1_send;
+    api->v1.ep2_recv = bt_io_iidx_ep2_recv;
+    api->v1.ep2_turntable_get = bt_io_iidx_ep2_turntable_get;
+    api->v1.ep2_slider_get = bt_io_iidx_ep2_slider_get;
+    api->v1.ep2_sys_get = bt_io_iidx_ep2_sys_get;
+    api->v1.ep2_panel_get = bt_io_iidx_ep2_panel_get;
+    api->v1.ep2_keys_get = bt_io_iidx_ep2_keys_get;
+    api->v1.ep3_16seg_send = bt_io_iidx_ep3_16seg_send;
 }

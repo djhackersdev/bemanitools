@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/os.h"
 #include "util/str.h"

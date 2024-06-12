@@ -5,13 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/eamio.h"
-#include "bemanitools/jbio.h"
-
-#include "core/log.h"
-#include "core/thread.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "hook/iohook.h"
 #include "hook/table.h"
@@ -20,6 +15,12 @@
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/jb.h"
 
 #include "imports/avs.h"
 
@@ -30,6 +31,9 @@
 #include "jbhook-util/eamuse.h"
 #include "jbhook-util/p4io.h"
 
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "p4ioemu/device.h"
 #include "p4ioemu/setupapi.h"
 
@@ -38,6 +42,27 @@
 #include "util/defs.h"
 
 static struct options options;
+static module_io_t *jbhook_module_io_jb;
+static module_io_t *jbhook_module_io_eam;
+
+static void _jbhook3_io_jb_init(module_io_t **module)
+{
+    bt_io_jb_api_t api;
+
+    module_io_ext_load_and_init("jbio.dll", "bt_module_io_jb_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_jb_api_set(&api);
+}
+
+static void _jbhook3_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
 
 static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
@@ -65,12 +90,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
 
-        core_log_impl_assign(jb_io_set_loggers);
+        _jbhook3_io_jb_init(&jbhook_module_io_jb);
 
-        jb_io_ok = jb_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get());
+        jb_io_ok = bt_io_jb_init();
 
         if (!jb_io_ok) {
             goto fail;
@@ -83,12 +105,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_cardemu) {
         log_info("Starting up card reader backend");
 
-        core_log_impl_assign(eam_io_set_loggers);
+        _jbhook3_io_eam_init(&jbhook_module_io_eam);
 
-        eam_io_ok = eam_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get());
+        eam_io_ok = bt_io_eam_init();
 
         if (!eam_io_ok) {
             goto fail;
@@ -107,11 +126,17 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
 fail:
     if (eam_io_ok) {
-        eam_io_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&jbhook_module_io_eam);
     }
 
     if (jb_io_ok) {
-        jb_io_fini();
+        bt_io_jb_fini();
+
+        bt_io_jb_api_clear();
+        module_io_free(&jbhook_module_io_jb);
     }
 
     return false;
@@ -123,18 +148,25 @@ static bool my_dll_entry_main(void)
 
     result = app_hook_invoke_main();
 
-    log_info("Shutting down card reader backend");
-    eam_io_fini();
-
-    log_info("Shutting down Jubeat IO backend");
-    jb_io_fini();
-
     if (!options.disable_cardemu) {
+        log_info("Shutting down card reader backend");
+
         jbhook_util_ac_io_port_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&jbhook_module_io_eam);
     }
 
     if (!options.disable_p4ioemu) {
+        log_info("Shutting down Jubeat IO backend");
+
         p4ioemu_fini();
+
+        bt_io_jb_fini();
+
+        bt_io_jb_api_clear();
+        module_io_free(&jbhook_module_io_jb);
     }
 
     options_fini(&options);
@@ -149,8 +181,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
     }
 
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     options_init_from_cmdline(&options);
 

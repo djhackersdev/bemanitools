@@ -9,12 +9,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "core/log.h"
+#include "d3d9exhook/d3d9ex.h"
 
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "d3d9exhook/d3d9ex.h"
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/str.h"

@@ -10,10 +10,10 @@
 
 #include <stdio.h>
 
-#include "core/log.h"
-
 #include "hook/com-proxy.h"
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "sdvxhook2/power.h"
 

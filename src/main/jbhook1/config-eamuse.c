@@ -2,7 +2,7 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "jbhook1/config-eamuse.h"
 

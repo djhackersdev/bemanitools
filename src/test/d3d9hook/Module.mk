@@ -9,6 +9,7 @@ libs_d3d9hook     := \
     hook \
     test \
     util \
+    iface-core \
 
 src_d3d9hook     := \
     dllmain.c \
@@ -27,6 +28,7 @@ libs_d3d9hook-test     := \
     test \
     util \
     core \
+    iface-core \
 
 src_d3d9hook-test      := \
     main.c \

@@ -1,10 +1,10 @@
 #define LOG_MODULE "ezusb-iidx"
 
-#include "core/log.h"
-
 #include "ezusb-iidx/ezusb-iidx.h"
 
 #include "ezusb/ezusbsys2.h"
+
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 #include "util/time.h"

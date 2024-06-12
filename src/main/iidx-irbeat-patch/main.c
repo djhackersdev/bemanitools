@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+
+#include "iface-core/log.h"
+
 #include "util/fs.h"
 
 static const uint32_t offset_size_data_area = 4;
@@ -169,6 +174,11 @@ int main(int argc, char **argv)
             stderr, "Usage: %s <version> <irbeat> <settings.bin>\n", argv[0]);
         return -1;
     }
+
+    core_log_bt_core_api_set();
+
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     version = atoi(argv[1]);
     irbeat = atoi(argv[2]);

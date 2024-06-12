@@ -6,14 +6,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "avs-ext/error.h"
+#include "avs-ext/log.h"
+#include "avs-ext/property-node.h"
+
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/property-node.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
 #include "launcher/avs.h"
-#include "launcher/property-util.h"
 
 #include "util/codepage.h"
 #include "util/fs.h"
@@ -98,13 +103,12 @@ static void _avs_switch_log_engine()
     // Switch the logging backend now that AVS is booted to use a single logging
     // engine which avoids concurrency issues as AVS runs it's own async logger
     // thread
-    core_log_impl_set(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    avs_ext_log_core_api_set();
 
     log_misc("Switched logging engine to AVS");
 }
 
-void avs_fs_assert_root_device_exists(struct property_node *node)
+void avs_fs_assert_root_device_exists(const core_property_node_t *node)
 {
     char root_device_path[PATH_MAX];
     char cwd_path[PATH_MAX];
@@ -121,7 +125,7 @@ void avs_fs_assert_root_device_exists(struct property_node *node)
     }
 }
 
-void avs_fs_mountpoints_fs_dirs_create(struct property_node *node)
+void avs_fs_mountpoints_fs_dirs_create(const core_property_node_t *node)
 {
     struct avs_config_vfs_mounttable mounttable;
     uint8_t i;
@@ -151,8 +155,12 @@ void avs_fs_mountpoints_fs_dirs_create(struct property_node *node)
 }
 
 void avs_init(
-    struct property_node *node, uint32_t avs_heap_size, uint32_t std_heap_size)
+    const core_property_node_t *node,
+    uint32_t avs_heap_size,
+    uint32_t std_heap_size)
 {
+    struct property_node *avs_node;
+
     log_assert(node);
     log_assert(avs_heap_size > 0);
     // Modern games don't have a separate std heap anymore
@@ -188,9 +196,11 @@ void avs_init(
 
     log_info("Calling avs_boot");
 
+    avs_node = avs_ext_property_node_avs_property_node_get(node);
+
 #ifdef AVS_HAS_STD_HEAP
     avs_boot(
-        node,
+        avs_node,
         std_heap,
         std_heap_size,
         avs_heap,
@@ -200,7 +210,7 @@ void avs_init(
 #else
     /* AVS v2.16.xx and I suppose onward uses a unified heap */
     avs_boot(
-        node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
+        avs_node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
 #endif
 
     _avs_switch_log_engine();
@@ -211,32 +221,47 @@ void avs_init(
 void avs_fs_file_copy(const char *src, const char *dst)
 {
     struct avs_stat st;
+    avs_error error;
 
     log_assert(src);
     log_assert(dst);
 
     log_misc("Copying %s to %s...", src, dst);
 
-    if (!avs_fs_lstat(src, &st)) {
-        log_fatal("File source %s does not exist or is not accessible", src);
+    error = avs_fs_lstat(src, &st);
+
+    if (AVS_IS_ERROR(error)) {
+        log_fatal(
+            "File source %s does not exist or is not accessible: %s",
+            src,
+            avs_ext_error_str(error));
     }
 
-    if (avs_fs_copy(src, dst) < 0) {
-        log_fatal("Failed copying file %s to %s", src, dst);
+    error = avs_fs_copy(src, dst);
+
+    if (AVS_IS_ERROR(error)) {
+        log_fatal(
+            "Failed copying file %s to %s: %s",
+            src,
+            dst,
+            avs_ext_error_str(error));
     }
 }
 
 void avs_fs_dir_log(const char *path)
 {
     const char *name;
+    avs_desc dir;
 
     log_assert(path);
 
-    avs_desc dir = avs_fs_opendir(path);
+    dir = avs_fs_opendir(path);
 
-    if (dir < 0) {
+    if (AVS_IS_ERROR(dir)) {
         log_warning(
-            "Opening avs dir %s failed, skipping logging contents", path);
+            "Opening avs dir %s failed, skipping logging contents: %s",
+            path,
+            avs_ext_error_str(dir));
     }
 
     log_misc("Contents of %s:", path);

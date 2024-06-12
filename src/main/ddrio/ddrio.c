@@ -1,32 +1,53 @@
+#define LOG_MODULE "ddrio"
+
 #include <windows.h>
 
-#include "imports/avs.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
 
-#include "bemanitools/input.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface/input.h"
 
-#include "core/log.h"
+#include "module/input.h"
 
-void ddr_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+#include "main/module/input-ext.h"
+#include "main/module/input.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/input.h"
+#include "sdk/module/io/ddr.h"
+
+static module_input_t *_ddr_io_module_input;
+
+bool bt_io_ddr_init()
 {
-    input_set_loggers(misc, info, warning, fatal);
+    bool result;
+    bt_input_api_t input_api;
+
+    module_input_ext_load_and_init("geninput.dll", &_ddr_io_module_input);
+    module_input_api_get(_ddr_io_module_input, &input_api);
+    bt_input_api_set(&input_api);
+
+    result = bt_input_init();
+
+    if (!result) {
+        return false;
+    }
+
+    return bt_input_mapper_config_load("ddr");
 }
 
-bool ddr_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+void bt_io_ddr_fini()
 {
-    input_init(thread_create, thread_join, thread_destroy);
-    mapper_config_load("ddr");
+    bt_input_fini();
 
-    return true;
+    bt_input_api_clear();
+    module_input_free(&_ddr_io_module_input);
 }
 
-uint32_t ddr_io_read_pad(void)
+uint32_t bt_io_ddr_pad_read(void)
 {
     /* Sleep first: input is timestamped immediately AFTER the ioctl returns.
 
@@ -36,47 +57,65 @@ uint32_t ddr_io_read_pad(void)
 
     Sleep(1);
 
-    return (uint32_t) mapper_update();
+    return (uint32_t) bt_input_mapper_update();
 }
 
-void ddr_io_set_lights_extio(uint32_t lights)
+void bt_io_ddr_extio_lights_set(uint32_t lights)
 {
     uint8_t i;
 
     for (i = 0x0E; i <= 0x1E; i++) {
-        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, lights & (1 << i) ? 255 : 0);
     }
 }
 
-void ddr_io_set_lights_p3io(uint32_t lights)
+void bt_io_ddr_p3io_lights_set(uint32_t lights)
 {
     uint8_t i;
 
     for (i = 0x00; i <= 0x07; i++) {
-        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, lights & (1 << i) ? 255 : 0);
     }
 }
 
-void ddr_io_set_lights_hdxs_panel(uint32_t lights)
+void bt_io_ddr_hdxs_lights_panel_set(uint32_t lights)
 {
     uint8_t i;
 
     for (i = 0x08; i <= 0x0D; i++) {
-        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, lights & (1 << i) ? 255 : 0);
     }
 }
 
-void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+void bt_io_ddr_hdxs_lights_rgb_set(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
 {
     if (idx < 4) {
         uint8_t base = 0x20 + idx * 3;
-        mapper_write_light(base + 0, r);
-        mapper_write_light(base + 1, g);
-        mapper_write_light(base + 2, b);
+        bt_input_mapper_light_write(base + 0, r);
+        bt_input_mapper_light_write(base + 1, g);
+        bt_input_mapper_light_write(base + 2, b);
     }
 }
 
-void ddr_io_fini(void)
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
-    input_fini();
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_ddr_init;
+    api->v1.fini = bt_io_ddr_fini;
+    api->v1.pad_read = bt_io_ddr_pad_read;
+    api->v1.extio_lights_set = bt_io_ddr_extio_lights_set;
+    api->v1.p3io_lights_set = bt_io_ddr_p3io_lights_set;
+    api->v1.hdxs_lights_panel_set = bt_io_ddr_hdxs_lights_panel_set;
+    api->v1.hdxs_lights_rgb_set = bt_io_ddr_hdxs_lights_rgb_set;
 }

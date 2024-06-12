@@ -3,6 +3,58 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 6.0.0-alpha.1
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+First cut after massive refactoring with most critical and fundamental changes implemented.
+We need to start somewhere, and this might be as good as anything else, so we can get started
+with testing, bug fixing and iterating for the next releases.
+
+The following list is non-exhaustive, does not guarantee anything does work, yet, and is supposed
+to give a high level idea of what all of this is about. Updated documentation will reflect all of
+this at some later point in time in more detail.
+
+* A common "core" now abstracts logging, thread, property and configuration infrastructure and
+  provides a common interface. This is used by bemanitools internally as well as all tools, hooks
+  and APIs provided and don't depend on the game, version of the game or AVS version available
+  anymore
+* New bemanitools (public) API
+  * Versioned API allowing for handling incremental API changes as well as breaking changes by
+    providing a new/different version when necessary
+  * Unified interfaces for bemanitools core API, i.e. logging, threads, configuration
+  * SDK with examples (TBD)
+  * Dogfooding approach: Bemanitools uses its own (public) API to implement and provide fundamental
+    features like configurable keyboard implementations for IO or hooks for different games and
+    versions
+* All bemanitools hooks and IO libraries have been or are about to be re-worked to use the new APIs
+* New hook API allows for more fine grained runtime control when stages of the hook are to be
+  executed, i.e. pre AVS, before main game, iat hooking instead of relying purely on DllMain
+  (which is still a compatible option though)
+* launcher as a replacement for bootstrap: Bring it significantly closer to the original bootstrap
+  by supporting completely vanilla data and bootstrap.xml configurations to run the games. Note
+  that bemanitools does not include any code or means to run DRM'd data, only decrypted
+* inject is also being reworked to use as much of the same "infrastructure" as launcher to provide
+  a more seamless bootstrapping process for games that keeps pre-eapki data as vanilla as possible
+
+### What works
+
+* inject: Basic functionality, launches games iidx 09 to 17 with iidxhook1 to iidxhook4
+* launcher: Basic functionality, launches games iidx 09 to 17 with iidxhook5 to iidxhook7
+* iidxhook1: Boots, reaching in-game with keyboard inputs working
+* iidxhook2: Boots, reaching in-game with keyboard inputs working
+* iidxhook3: Boots, reaching in-game with keyboard inputs working
+* iidxhook4: Boots, reaching in-game with keyboard inputs working
+* iidxhook5: Boots, reaching in-game with keyboard inputs working
+* iidxhook6: Boots, reaching in-game with keyboard inputs working
+* iidxhook7: Boots, reaching in-game with keyboard inputs working
+
+### What's broken
+
+Since everything else is untested, consider it (very) broken
+
 ## 5.49
 
 ### Features

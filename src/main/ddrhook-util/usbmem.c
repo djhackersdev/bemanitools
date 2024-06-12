@@ -9,12 +9,13 @@
 // clang-format on
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "util/crc.h"
 #include "util/fs.h"

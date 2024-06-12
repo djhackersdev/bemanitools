@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include "core/log.h"
-
 #include "geninput/hotplug.h"
 #include "geninput/ri.h"
+
+#include "iface-core/log.h"
 
 #include "util/msg-thread.h"
 

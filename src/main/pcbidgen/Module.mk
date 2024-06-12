@@ -2,8 +2,9 @@ exes            += pcbidgen
 
 libs_pcbidgen     := \
     security \
-    util \
     core \
+    iface-core \
+    util \
 
 src_pcbidgen     := \
     main.c \

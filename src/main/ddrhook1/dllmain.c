@@ -2,19 +2,15 @@
 
 #include <stdbool.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/ddrio.h"
-#include "bemanitools/eamio.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "cconfig/cconfig-hook.h"
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-debug.h"
-#include "core/log.h"
 #include "core/thread-crt.h"
-#include "core/thread.h"
 
 #include "ddrhook-util/_com4.h"
 #include "ddrhook-util/extio.h"
@@ -38,7 +34,16 @@
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/ddr.h"
+#include "iface-io/eam.h"
+
 #include "imports/avs.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "p3ioemu/emu.h"
 
@@ -67,6 +72,9 @@ static DWORD(STDCALL *real_GetModuleFileNameA)(
 
 static bool ddrhook1_init_check = false;
 
+static module_io_t *_ddrhook1_module_io_ddr;
+static module_io_t *_ddrhook1_module_io_eam;
+
 static const struct hook_symbol init_hook_syms[] = {
     {
         .name = "GetModuleFileNameA",
@@ -75,13 +83,24 @@ static const struct hook_symbol init_hook_syms[] = {
     },
 };
 
-static void _ddrhook1_log_init()
+static void _ddrhook1_io_ddr_init(module_io_t **module)
 {
-    core_log_bt_ext_impl_set();
-    core_log_bt_ext_init_with_debug();
+    bt_io_ddr_api_t api;
 
-    // TODO change log level support
-    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+    module_io_ext_load_and_init(
+        "ddrio.dll", "bt_module_io_ddr_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_ddr_api_set(&api);
+}
+
+static void _ddrhook1_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
 }
 
 static DWORD STDCALL
@@ -171,12 +190,9 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
 
     log_info("Initializing DDR IO backend");
 
-    core_log_impl_assign(ddr_io_set_loggers);
+    _ddrhook1_io_ddr_init(&_ddrhook1_module_io_ddr);
 
-    ok = ddr_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+    ok = bt_io_ddr_init();
 
     if (!ok) {
         log_fatal("Couldn't initialize DDR IO backend");
@@ -186,12 +202,9 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
     if (config_ddrhook1.use_com4_emu) {
         log_info("Initializing card reader backend");
 
-        core_log_impl_assign(eam_io_set_loggers);
+        _ddrhook1_io_eam_init(&_ddrhook1_module_io_eam);
 
-        ok = eam_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get());
+        ok = bt_io_eam_init();
 
         if (!ok) {
             log_fatal("Couldn't initialize card reader backend");
@@ -209,11 +222,8 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         // Use AVS APIs
-        avs_util_core_interop_thread_avs_impl_set();
-
-        // TODO init debug logging but with avs available? why not use avs
-        // logging?
-        _ddrhook1_log_init();
+        avs_ext_log_core_api_set();
+        avs_ext_thread_core_api_set();
 
         hook_table_apply(
             NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));

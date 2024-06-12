@@ -6,6 +6,8 @@
 
 #include "acioemu/emu.h"
 
+#include "api/io/eam.h"
+
 enum ac_io_emu_icca_version {
     v150 = 0x5,
     v160 = 0x6,
@@ -20,6 +22,7 @@ enum ac_io_emu_icca_version {
 struct ac_io_emu_icca {
     struct ac_io_emu *emu;
     uint8_t unit_no;
+
     bool fault;
     bool engaged;
     uint8_t last_sensor;

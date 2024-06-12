@@ -7,9 +7,9 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "launcher/stubs.h"
 
@@ -30,7 +30,7 @@ struct stub {
     void *proc;
 };
 
-typedef void (*bt_get_fucked_t)(uint32_t /* even in 64-bit */ context);
+typedef void(__cdecl *bt_get_fucked_t)(void *context);
 
 static HMODULE STDCALL my_GetModuleHandleA(const char *name);
 static HMODULE STDCALL my_GetModuleHandleW(const wchar_t *name);
@@ -39,7 +39,7 @@ static void *STDCALL my_GetProcAddress(HMODULE dll, const char *name);
 static void bt_get_ikey_status(struct ikey_status *ik);
 
 #if AVS_VERSION >= 1509
-static void bt_get_fucked(bt_get_fucked_t callback, uint32_t ctx);
+static void bt_get_fucked(bt_get_fucked_t callback, void *ctx);
 #endif
 
 static void bt_fcheck_init(void);
@@ -140,10 +140,15 @@ static void bt_get_ikey_status(struct ikey_status *ik)
 }
 
 #if AVS_VERSION >= 1509
-static void bt_get_fucked(bt_get_fucked_t callback, uint32_t ctx)
+static void bt_get_fucked(bt_get_fucked_t callback, void *ctx)
 {
     log_info(">>> k_bt0002");
-    callback(ctx);
+
+    if (callback != NULL) {
+        log_misc("callback(%p): %p", callback, ctx);
+        callback(ctx);
+    }
+
     log_info("<<< k_bt0002");
 }
 #endif

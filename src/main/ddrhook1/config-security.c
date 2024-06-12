@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
-
 #include "ddrhook1/config-security.h"
+
+#include "iface-core/log.h"
 
 #include "security/mcode.h"
 

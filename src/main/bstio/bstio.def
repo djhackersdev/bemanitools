@@ -1,8 +1,13 @@
 LIBRARY bstio
 
 EXPORTS
-    bst_io_fini
-    bst_io_get_input
-    bst_io_init
-    bst_io_read_input
-    bst_io_set_loggers
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_core_thread_api_set
+    bt_module_io_bst_api_get
+
+    ; Direct API
+    bt_io_bst_init
+    bt_io_bst_fini
+    bt_io_bst_input_read
+    bt_io_bst_input_get

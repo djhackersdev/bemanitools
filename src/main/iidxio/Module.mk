@@ -4,8 +4,11 @@ ldflags_iidxio      := \
     -lwinmm
 
 libs_iidxio         := \
-    geninput \
-    vefxio \
+    iface \
+    module \
+    iface-io \
+    iface-core \
+    util \
 
 src_iidxio          := \
     iidxio.c \

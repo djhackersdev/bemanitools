@@ -2,12 +2,12 @@
 
 #include <stdint.h>
 
-#include "core/log.h"
-
 #include "ddrhook-util/gfx.h"
 
 #include "hook/pe.h"
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/str.h"

@@ -1,5 +1,5 @@
 dlls            += eamio
-libs_eamio      := core geninput util
+libs_eamio      := iface-core iface core geninput util module
 src_eamio       := \
     eam-api.c \
     eam-impl.c \

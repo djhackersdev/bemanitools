@@ -6,7 +6,9 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
 
 #include "util/cmdline.h"
 #include "util/fs.h"
@@ -290,8 +292,11 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
         patched = false;
 
-        core_log_bt_ext_impl_set();
-        core_log_bt_ext_init_with_file("mempatch.log", false, false, 0);
+        core_log_bt_core_api_set();
+
+        core_log_bt_ext_init_with_stderr_and_file(
+            "mempatch.log", false, false, 0);
+        core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
         args_recover(&argc, &argv);
 

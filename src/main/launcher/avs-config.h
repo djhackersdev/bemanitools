@@ -3,7 +3,8 @@
 
 #include "core/log-bt.h"
 
-#include "imports/avs.h"
+#include "core/property-node.h"
+#include "core/property.h"
 
 #include "launcher/bootstrap-config.h"
 
@@ -20,38 +21,40 @@ struct avs_config_vfs_mounttable {
     uint8_t num_entries;
 };
 
-struct property *avs_config_load(const char *filepath);
-struct property_node *avs_config_root_get(struct property *property);
-struct property *
-avs_config_property_merge(struct property *parent, struct property *source);
+core_property_t *avs_config_load(const char *filepath);
+void avs_config_root_get(
+    const core_property_t *property, core_property_node_t *node);
+core_property_t *avs_config_property_merge(
+    const core_property_t *parent, const core_property_t *source);
 
 void avs_config_fs_root_device_get(
-    struct property_node *node, char *buffer, size_t size);
+    const core_property_node_t *node, char *buffer, size_t size);
 
-void avs_config_mode_product_set(struct property_node *node, bool enable);
-void avs_config_net_raw_set(struct property_node *node, bool enable);
-void avs_config_net_eaudp_set(struct property_node *node, bool enable);
-void avs_config_sntp_ea_set(struct property_node *node, bool on);
-void avs_config_log_level_set(struct property_node *node, const char *level);
-void avs_config_log_name_set(struct property_node *node, const char *name);
-void avs_config_log_file_set(struct property_node *node, const char *file);
-void avs_config_log_buffer_size_set(struct property_node *node, uint32_t size);
+void avs_config_mode_product_set(core_property_node_t *node, bool enable);
+void avs_config_net_raw_set(core_property_node_t *node, bool enable);
+void avs_config_net_eaudp_set(core_property_node_t *node, bool enable);
+void avs_config_sntp_ea_set(core_property_node_t *node, bool on);
+void avs_config_log_level_set(core_property_node_t *node, const char *level);
+void avs_config_log_name_set(core_property_node_t *node, const char *name);
+void avs_config_log_file_set(core_property_node_t *node, const char *file);
+void avs_config_log_buffer_size_set(core_property_node_t *node, uint32_t size);
 void avs_config_log_output_delay_set(
-    struct property_node *node, uint16_t delay_ms);
-void avs_config_log_enable_console_set(struct property_node *node, bool enable);
-void avs_config_log_enable_sci_set(struct property_node *node, bool enable);
-void avs_config_log_enable_net_set(struct property_node *node, bool enable);
-void avs_config_log_enable_file_set(struct property_node *node, bool enable);
-void avs_config_log_rotate_set(struct property_node *node, bool rotate);
-void avs_config_log_append_set(struct property_node *node, bool append);
-void avs_config_log_count_set(struct property_node *node, uint16_t count);
+    core_property_node_t *node, uint16_t delay_ms);
+void avs_config_log_enable_console_set(core_property_node_t *node, bool enable);
+void avs_config_log_enable_sci_set(core_property_node_t *node, bool enable);
+void avs_config_log_enable_net_set(core_property_node_t *node, bool enable);
+void avs_config_log_enable_file_set(core_property_node_t *node, bool enable);
+void avs_config_log_rotate_set(core_property_node_t *node, bool rotate);
+void avs_config_log_append_set(core_property_node_t *node, bool append);
+void avs_config_log_count_set(core_property_node_t *node, uint16_t count);
 
 void avs_config_set_log_level(
-    struct property_node *node, enum core_log_bt_log_level loglevel);
+    core_property_node_t *node, enum core_log_bt_log_level loglevel);
 void avs_config_local_fs_path_dev_nvram_and_raw_set(
-    struct property_node *node, const char *dev_nvram_raw_path);
+    core_property_node_t *node, const char *dev_nvram_raw_path);
 
 void avs_config_vfs_mounttable_get(
-    struct property_node *node, struct avs_config_vfs_mounttable *mounttable);
+    const core_property_node_t *node,
+    struct avs_config_vfs_mounttable *mounttable);
 
 #endif

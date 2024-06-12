@@ -7,6 +7,7 @@ libs_security-id-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-id-test     := \
     security-id-test.c \
@@ -22,6 +23,7 @@ libs_security-mcode-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-mcode-test     := \
     security-mcode-test.c \
@@ -37,6 +39,7 @@ libs_security-util-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-util-test     := \
     security-util-test.c \
@@ -52,6 +55,7 @@ libs_security-rp-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-rp-test     := \
     security-rp-test.c \
@@ -67,6 +71,7 @@ libs_security-rp2-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-rp2-test     := \
     security-rp2-test.c \
@@ -82,6 +87,7 @@ libs_security-rp3-test     := \
     security \
     test \
     util \
+    iface-core \
 
 src_security-rp3-test     := \
     security-rp3-test.c \

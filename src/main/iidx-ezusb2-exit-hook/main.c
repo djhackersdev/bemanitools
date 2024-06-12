@@ -7,6 +7,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+
 #include "ezusb2/cyioctl.h"
 
 #include "ezusb2-iidx/msg.h"
@@ -136,6 +140,11 @@ static BOOL STDCALL my_DeviceIoControl(
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
+        core_log_bt_core_api_set();
+
+        core_log_bt_ext_init_with_stderr();
+        core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+
         hook_table_apply(
             NULL, "kernel32.dll", exit_hook_syms, lengthof(exit_hook_syms));
     }

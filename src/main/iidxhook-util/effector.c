@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "iidxhook-util/effector.h"
 

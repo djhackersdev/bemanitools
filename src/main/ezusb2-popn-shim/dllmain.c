@@ -4,14 +4,14 @@
 
 #include <setupapi.h>
 
-#include "core/log.h"
-
 #include "ezusb2-emu/desc.h"
 #include "ezusb2-emu/device.h"
 
 #include "hook/pe.h"
 
 #include "hooklib/setupapi.h"
+
+#include "iface-core/log.h"
 
 #include "ezusb2-popn-shim/proxy.h"
 
