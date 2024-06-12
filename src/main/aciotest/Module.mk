@@ -6,6 +6,7 @@ libs_aciotest     := \
     aciodrv \
     aciodrv-proc \
     util \
+    iface-core
 
 src_aciotest      := \
     icca.c \

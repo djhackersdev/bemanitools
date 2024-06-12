@@ -7,6 +7,7 @@ libs_cconfig-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_cconfig-test     := \
     cconfig-test.c \
@@ -22,6 +23,7 @@ libs_cconfig-util-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_cconfig-util-test     := \
     cconfig-util-test.c \
@@ -37,6 +39,7 @@ libs_cconfig-cmd-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_cconfig-cmd-test     := \
     cconfig-cmd-test.c \

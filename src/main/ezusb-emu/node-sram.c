@@ -2,11 +2,11 @@
 
 #include <string.h>
 
-#include "core/log.h"
-
 #include "ezusb-emu/conf.h"
 #include "ezusb-emu/node-sram.h"
 #include "ezusb-iidx/sram-cmd.h"
+
+#include "iface-core/log.h"
 
 #include "util/fs.h"
 

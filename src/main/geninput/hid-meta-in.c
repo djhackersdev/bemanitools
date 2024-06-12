@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "geninput/hid-meta-in.h"
 #include "geninput/hid-report-in.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 

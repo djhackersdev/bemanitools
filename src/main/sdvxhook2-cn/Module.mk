@@ -11,17 +11,22 @@ ldflags_sdvxhook2-cn   := \
 deplibs_sdvxhook2-cn   := \
     avs \
 
+avslibs_sdvxhook2-cn:= \
+    avs-ext \
+
 libs_sdvxhook2-cn      := \
-    avs-util \
     core \
     acioemu \
     camhook \
     d3d9exhook \
-    sdvxio \
     hook \
     hooklib \
     cconfig \
     util \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_sdvxhook2-cn       := \
     acio.c \

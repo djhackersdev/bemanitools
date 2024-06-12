@@ -8,19 +8,18 @@
 
 #include "aciodrv/h44b.h"
 
-#include "aciomgr/manager.h"
-
-#include "core/log.h"
+#include "iface-acio/mgr.h"
+#include "iface-core/log.h"
 
 static int16_t h44b_node_id;
 
 static atomic_bool running;
 
-static struct aciomgr_port_dispatcher *acio_manager_ctx;
+static bt_acio_mgr_port_dispatcher_t *acio_manager_ctx;
 
 bool jb_io_h44b_init(const char *port, int32_t baud)
 {
-    acio_manager_ctx = aciomgr_port_init(port, baud);
+    acio_manager_ctx = bt_acio_mgr_port_init(port, baud);
 
     if (acio_manager_ctx == NULL) {
         log_info("Opening acio device on [%s] failed", port);
@@ -29,14 +28,14 @@ bool jb_io_h44b_init(const char *port, int32_t baud)
 
     log_info("Opening acio device successful");
 
-    uint8_t node_count = aciomgr_get_node_count(acio_manager_ctx);
+    uint8_t node_count = bt_acio_mgr_node_count_get(acio_manager_ctx);
     log_info("Enumerated %d nodes", node_count);
 
     h44b_node_id = -1;
 
     for (uint8_t i = 0; i < node_count; i++) {
         char product[4];
-        aciomgr_get_node_product_ident(acio_manager_ctx, i, product);
+        bt_acio_mgr_node_product_ident_get(acio_manager_ctx, i, product);
         log_info(
             "> %d: %c%c%c%c",
             i,
@@ -57,8 +56,8 @@ bool jb_io_h44b_init(const char *port, int32_t baud)
         log_warning("Using H44B on node: %d", h44b_node_id);
 
         bool init_result = aciodrv_h44b_init(
-            aciomgr_port_checkout(acio_manager_ctx), h44b_node_id);
-        aciomgr_port_checkin(acio_manager_ctx);
+            bt_acio_mgr_port_checkout(acio_manager_ctx), h44b_node_id);
+        bt_acio_mgr_port_checkin(acio_manager_ctx);
 
         if (!init_result) {
             log_warning("Unable to start H44B on node: %d", h44b_node_id);
@@ -76,7 +75,7 @@ bool jb_io_h44b_init(const char *port, int32_t baud)
 
 bool jb_io_h44b_fini(void)
 {
-    aciomgr_port_fini(acio_manager_ctx);
+    bt_acio_mgr_port_fini(acio_manager_ctx);
 
     return true;
 }
@@ -88,8 +87,8 @@ bool jb_io_h44b_write_lights(struct ac_io_h44b_output *lights)
     }
 
     bool amp_result = aciodrv_h44b_lights(
-        aciomgr_port_checkout(acio_manager_ctx), h44b_node_id, lights);
-    aciomgr_port_checkin(acio_manager_ctx);
+        bt_acio_mgr_port_checkout(acio_manager_ctx), h44b_node_id, lights);
+    bt_acio_mgr_port_checkin(acio_manager_ctx);
 
     if (!amp_result) {
         return false;

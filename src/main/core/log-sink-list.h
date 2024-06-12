@@ -19,6 +19,6 @@
  * @param sink Pointer to allocated memory that receives the opened sink
  */
 void core_log_sink_list_open(
-    const struct core_log_sink *entry, uint8_t num, struct core_log_sink *sink);
+    const core_log_sink_t *entry, uint8_t num, core_log_sink_t *sink);
 
 #endif

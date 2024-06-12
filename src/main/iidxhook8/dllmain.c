@@ -5,15 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/eamio.h"
-#include "bemanitools/iidxio.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "cconfig/cconfig-hook.h"
 
-#include "core/log.h"
-#include "core/thread.h"
+#include "core/boot.h"
 
 #include "hook/d3d9.h"
 
@@ -22,6 +19,12 @@
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/iidx.h"
 
 #include "iidxhook-d3d9/bb-scale-hd.h"
 
@@ -39,6 +42,9 @@
 
 #include "imports/avs.h"
 
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "util/str.h"
 
 #define IIDXHOOK8_INFO_HEADER             \
@@ -51,6 +57,29 @@ static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_d3d9_bb_scale_hd_d3d9_irp_handler,
     iidxhook_util_d3d9_irp_handler,
 };
+
+static module_io_t *iidxhook_module_io_iidx;
+static module_io_t *iidxhook_module_io_eam;
+
+static void _iidxhook8_io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
+}
+
+static void _iidxhook8_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
 
 static void
 iidxhook8_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
@@ -134,12 +163,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up IIDXIO.DLL */
     if (!iidxhook8_config_io.disable_bio2_emu) {
         log_info("Starting IIDX IO backend");
-        core_log_impl_assign(iidx_io_set_loggers);
 
-        if (!iidx_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        _iidxhook8_io_iidx_init(&iidxhook_module_io_iidx);
+
+        if (!bt_io_iidx_init()) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     }
@@ -147,12 +174,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     /* Start up EAMIO.DLL */
     if (!iidxhook8_config_io.disable_card_reader_emu) {
         log_misc("Initializing card reader backend");
-        core_log_impl_assign(eam_io_set_loggers);
 
-        if (!eam_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        _iidxhook8_io_eam_init(&iidxhook_module_io_eam);
+
+        if (!bt_io_eam_init()) {
             log_fatal("Initializing card reader backend failed");
         }
     }
@@ -200,12 +225,18 @@ static bool my_dll_entry_main(void)
 
     if (!iidxhook8_config_io.disable_card_reader_emu) {
         log_misc("Shutting down card reader backend");
-        eam_io_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&iidxhook_module_io_eam);
     }
 
     if (!iidxhook8_config_io.disable_bio2_emu) {
         log_misc("Shutting down IIDX IO backend");
-        iidx_io_fini();
+        bt_io_iidx_fini();
+
+        bt_io_iidx_api_clear();
+        module_io_free(&iidxhook_module_io_iidx);
     }
 
     log_server_fini();
@@ -222,9 +253,11 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         goto end;
     }
 
+    core_boot("iidxhook8");
+
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

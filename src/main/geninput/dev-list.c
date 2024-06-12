@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "geninput/dev-list.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 

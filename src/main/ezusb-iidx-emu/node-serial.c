@@ -2,14 +2,13 @@
 
 #include <windows.h>
 
-#include "bemanitools/eamio.h"
-
-#include "core/log.h"
-#include "core/thread.h"
-
 #include "ezusb-iidx-emu/card-mag.c"
 #include "ezusb-iidx-emu/node-serial.h"
 #include "ezusb-iidx/serial-cmd.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface-io/eam.h"
 
 #include "security/mcode.h"
 
@@ -228,7 +227,7 @@ struct ezusb_iidx_emu_node_serial_emulation_state {
 /* ------------------------------------------------------------------------- */
 
 static const char
-    ezusb_iidx_emu_node_serial_eamio_mapping[EAM_IO_KEYPAD_COUNT] = {
+    ezusb_iidx_emu_node_serial_eamio_mapping[BT_IO_EAM_KEYPAD_COUNT] = {
         '0', '1', '4', '7', 'O', '2', '5', '8', 'E', '3', '6', '9'};
 
 static const uint8_t HEADER_BYTE = 0xAA;
@@ -268,6 +267,8 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx);
 
 void ezusb_iidx_emu_node_serial_init(void)
 {
+    bt_core_thread_result_t result;
+
     ezusb_iidx_emu_node_serial_read_buf_busy = false;
     ezusb_iidx_emu_node_serial_write_buf_busy = false;
     memset(
@@ -293,8 +294,13 @@ void ezusb_iidx_emu_node_serial_init(void)
             &ezusb_iidx_emu_node_serial_emulation_state[i].card_cs);
     }
 
-    ezusb_iidx_emu_node_serial_emu_thread = core_thread_create(
-        ezusb_iidx_emu_node_serial_emu_thread_proc, NULL, 0x4000, 0);
+    result = bt_core_thread_create(
+        ezusb_iidx_emu_node_serial_emu_thread_proc,
+        NULL,
+        0x4000,
+        0,
+        &ezusb_iidx_emu_node_serial_emu_thread);
+    bt_core_thread_fatal_on_error(result);
 }
 
 uint8_t ezusb_iidx_emu_node_serial_process_cmd(
@@ -1253,15 +1259,15 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
     uint16_t keyboard_state_prev[2] = {0, 0};
     while (true) {
         for (uint8_t node = 0; node < 2; node++) {
-            if (!eam_io_poll(node)) {
+            if (!bt_io_eam_poll(node)) {
                 log_warning("Polling eamio, node %d failed", node);
                 continue;
             }
 
             /* read card slot sensors */
 
-            uint8_t sensors = eam_io_get_sensor_state(node);
-            if (sensors & (1 << EAM_IO_SENSOR_FRONT)) {
+            uint8_t sensors = bt_io_eam_sensor_state_get(node);
+            if (sensors & (1 << BT_IO_EAM_SENSOR_STATE_FRONT)) {
                 ezusb_iidx_emu_node_serial_emulation_state[node]
                     .card_slot_sensor_front = true;
             } else {
@@ -1269,7 +1275,7 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
                     .card_slot_sensor_front = false;
             }
 
-            if (sensors & (1 << EAM_IO_SENSOR_BACK)) {
+            if (sensors & (1 << BT_IO_EAM_SENSOR_STATE_BACK)) {
                 ezusb_iidx_emu_node_serial_emulation_state[node]
                     .card_slot_sensor_back = true;
             } else {
@@ -1279,7 +1285,7 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
 
             /* handle keypad */
 
-            uint16_t keypad = eam_io_get_keypad_state(node);
+            uint16_t keypad = bt_io_eam_keypad_state_get(node);
             uint16_t keypad_rise = ~keyboard_state_prev[node] & keypad;
 
             for (uint8_t i = 0;
@@ -1297,11 +1303,13 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
             switch (ezusb_iidx_emu_node_serial_emulation_state[node]
                         .ezusb_iidx_emu_node_serial_card_slot_state) {
                 case EMU_CARD_SLOT_STATE_CLOSE:
-                    eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_CLOSE);
+                    bt_io_eam_card_slot_cmd_send(
+                        node, BT_IO_EAM_CARD_SLOT_CMD_CLOSE);
                     break;
 
                 case EMU_CARD_SLOT_STATE_EJECT:
-                    eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_EJECT);
+                    bt_io_eam_card_slot_cmd_send(
+                        node, BT_IO_EAM_CARD_SLOT_CMD_EJECT);
 
                     EnterCriticalSection(
                         &ezusb_iidx_emu_node_serial_emulation_state[node]
@@ -1320,11 +1328,13 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
                     break;
 
                 case EMU_CARD_SLOT_STATE_OPEN:
-                    eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_OPEN);
+                    bt_io_eam_card_slot_cmd_send(
+                        node, BT_IO_EAM_CARD_SLOT_CMD_OPEN);
                     break;
 
                 case EMU_CARD_SLOT_STATE_READ:
-                    eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_READ);
+                    bt_io_eam_card_slot_cmd_send(
+                        node, BT_IO_EAM_CARD_SLOT_CMD_READ);
 
                     /* read once */
                     if (ezusb_iidx_emu_node_serial_emulation_state[node]
@@ -1333,7 +1343,7 @@ static int ezusb_iidx_emu_node_serial_emu_thread_proc(void *ctx)
                             &ezusb_iidx_emu_node_serial_emulation_state[node]
                                  .card_cs);
 
-                        if (!eam_io_read_card(
+                        if (!bt_io_eam_card_read(
                                 node,
                                 ezusb_iidx_emu_node_serial_emulation_state[node]
                                     .card_id,

@@ -8,6 +8,7 @@ libs_ezusb-iidx-fpga-flash     := \
     ezusb \
     ezusb-iidx \
     util \
+    iface-core \
 
 src_ezusb-iidx-fpga-flash      := \
     main.c \

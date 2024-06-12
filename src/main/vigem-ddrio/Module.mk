@@ -12,9 +12,11 @@ ldflags_vigem-ddrio  := \
 libs_vigem-ddrio     := \
     core \
     cconfig \
-    ddrio \
     util \
     vigemstub \
+    module \
+    iface-io \
+    iface-core \
 
 src_vigem-ddrio      := \
     main.c \

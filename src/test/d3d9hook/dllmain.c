@@ -4,7 +4,9 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
 
 #include "hook/d3d9.h"
 
@@ -300,8 +302,10 @@ static HRESULT my_d3d9_handler(struct hook_d3d9_irp *irp)
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        core_log_bt_ext_init_with_debug();
+        core_log_bt_core_api_set();
+
         core_log_bt_ext_init_with_stderr();
+        core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
         debug_print("Initializing d3d9 hook module...\n");
 

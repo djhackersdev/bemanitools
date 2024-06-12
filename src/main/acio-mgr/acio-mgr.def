@@ -1,0 +1,20 @@
+LIBRARY acio-mgr
+
+EXPORTS
+   ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_acio_mgr_api_get
+
+    ; Not exporting as these are called in DllMain
+    ; bt_acio_mgr_init
+    ; bt_acio_mgr_fini
+    DllMain@12 @1 NONAME
+    
+    ; Direct API
+    bt_acio_mgr_port_init
+    bt_acio_mgr_port_fini
+    bt_acio_mgr_node_count_get
+    bt_acio_mgr_node_product_ident_get
+    bt_acio_mgr_port_packet_submit
+    bt_acio_mgr_port_checkout
+    bt_acio_mgr_port_checkin

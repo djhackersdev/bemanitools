@@ -1,18 +1,18 @@
+#include <windows.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <windows.h>
-
-#include "bemanitools/jbio.h"
-
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
-#include "core/thread-crt-ext.h"
-#include "core/thread-crt.h"
-#include "core/thread.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
+#include "iface-io/jb.h"
+
+#include "module/io-ext.h"
 
 typedef struct {
     uint8_t r, g, b;
@@ -22,29 +22,46 @@ enum jbio_light_mode { LIGHTS_OFF, LIGHTS_ON, LIGHTS_INPUT };
 
 #define IS_BIT_SET(var, bit) ((((var) >> (bit)) & 1) > 0)
 
+static void _jbiotest_io_jb_init(module_io_t **module)
+{
+    bt_io_jb_api_t api;
+
+    module_io_ext_load_and_init("jbio.dll", "bt_module_io_jb_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_jb_api_set(&api);
+}
+
 /**
  * Tool to test your implementations of jbio.
  */
 int main(int argc, char **argv)
 {
-    core_thread_crt_ext_impl_set();
-    core_log_bt_ext_impl_set();
+    module_io_t *module_io_jb;
 
-    core_log_bt_ext_init_with_stdout();
+    core_log_bt_core_api_set();
 
-    core_log_impl_assign(jb_io_set_loggers);
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
-    if (!jb_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get())) {
+    _jbiotest_io_jb_init(&module_io_jb);
+
+    if (!bt_io_jb_init()) {
         printf("Initializing jbio failed\n");
+
+        bt_io_jb_api_clear();
+        module_io_free(&module_io_jb);
+
         return -1;
     }
 
     printf(">>> Initializing jbio successful, press enter to continue <<<\n");
 
     if (getchar() != '\n') {
+        bt_io_jb_fini();
+
+        bt_io_jb_api_clear();
+        module_io_free(&module_io_jb);
+
         return 0;
     }
 
@@ -58,15 +75,21 @@ int main(int argc, char **argv)
     bool loop = true;
     uint16_t cnt = 0;
     enum jbio_light_mode light_mode = LIGHTS_OFF;
-    enum jb_io_panel_mode panel_mode = JB_IO_PANEL_MODE_ALL;
+    bt_io_jb_panel_mode_t panel_mode = BT_IO_JB_PANEL_MODE_ALL;
 
     bool panel_corners_animate = false;
     char *all_text;
     char top_left, top_right, bottom_left, bottom_right;
 
     while (loop) {
-        if (!jb_io_read_inputs()) {
+        if (!bt_io_jb_inputs_read()) {
             printf("ERROR: Input read fail\n");
+
+            bt_io_jb_fini();
+
+            bt_io_jb_api_clear();
+            module_io_free(&module_io_jb);
+
             return -2;
         }
 
@@ -75,37 +98,37 @@ int main(int argc, char **argv)
             panel_mode %= 5;
 
             // skip the all state
-            if (panel_mode == JB_IO_PANEL_MODE_ALL) {
+            if (panel_mode == BT_IO_JB_PANEL_MODE_ALL) {
                 panel_mode++;
             }
 
-            jb_io_set_panel_mode(panel_mode);
+            bt_io_jb_panel_mode_set(panel_mode);
         }
 
         all_text = "   ";
         top_left = top_right = bottom_left = bottom_right = ' ';
         switch (panel_mode) {
-            case JB_IO_PANEL_MODE_ALL:
+            case BT_IO_JB_PANEL_MODE_ALL:
                 all_text = "ALL";
                 top_left = top_right = bottom_left = bottom_right = '*';
                 break;
-            case JB_IO_PANEL_MODE_TOP_LEFT:
+            case BT_IO_JB_PANEL_MODE_TOP_LEFT:
                 top_left = '*';
                 break;
-            case JB_IO_PANEL_MODE_TOP_RIGHT:
+            case BT_IO_JB_PANEL_MODE_TOP_RIGHT:
                 top_right = '*';
                 break;
-            case JB_IO_PANEL_MODE_BOTTOM_LEFT:
+            case BT_IO_JB_PANEL_MODE_BOTTOM_LEFT:
                 bottom_left = '*';
                 break;
-            case JB_IO_PANEL_MODE_BOTTOM_RIGHT:
+            case BT_IO_JB_PANEL_MODE_BOTTOM_RIGHT:
                 bottom_right = '*';
                 break;
         }
 
         /* get inputs */
-        input_sys = jb_io_get_sys_inputs();
-        input_panel = jb_io_get_panel_inputs();
+        input_sys = bt_io_jb_sys_inputs_get();
+        input_panel = bt_io_jb_panel_inputs_get();
 
         system("cls");
         printf(
@@ -138,54 +161,54 @@ int main(int argc, char **argv)
             "          `---`---`---`---`\n",
             cnt,
 
-            lights[JB_IO_RGB_LED_TOP].r,
-            lights[JB_IO_RGB_LED_TOP].g,
-            lights[JB_IO_RGB_LED_TOP].b,
-            lights[JB_IO_RGB_LED_FRONT].r,
-            lights[JB_IO_RGB_LED_FRONT].g,
-            lights[JB_IO_RGB_LED_FRONT].b,
-            lights[JB_IO_RGB_LED_LEFT].r,
-            lights[JB_IO_RGB_LED_RIGHT].r,
-            lights[JB_IO_RGB_LED_LEFT].g,
-            lights[JB_IO_RGB_LED_RIGHT].g,
-            lights[JB_IO_RGB_LED_LEFT].b,
-            lights[JB_IO_RGB_LED_TITLE].r,
-            lights[JB_IO_RGB_LED_TITLE].g,
-            lights[JB_IO_RGB_LED_TITLE].b,
-            lights[JB_IO_RGB_LED_RIGHT].b,
-            lights[JB_IO_RGB_LED_WOOFER].r,
-            lights[JB_IO_RGB_LED_WOOFER].g,
-            lights[JB_IO_RGB_LED_WOOFER].b,
+            lights[BT_IO_JB_RGB_LED_TOP].r,
+            lights[BT_IO_JB_RGB_LED_TOP].g,
+            lights[BT_IO_JB_RGB_LED_TOP].b,
+            lights[BT_IO_JB_RGB_LED_FRONT].r,
+            lights[BT_IO_JB_RGB_LED_FRONT].g,
+            lights[BT_IO_JB_RGB_LED_FRONT].b,
+            lights[BT_IO_JB_RGB_LED_LEFT].r,
+            lights[BT_IO_JB_RGB_LED_RIGHT].r,
+            lights[BT_IO_JB_RGB_LED_LEFT].g,
+            lights[BT_IO_JB_RGB_LED_RIGHT].g,
+            lights[BT_IO_JB_RGB_LED_LEFT].b,
+            lights[BT_IO_JB_RGB_LED_TITLE].r,
+            lights[BT_IO_JB_RGB_LED_TITLE].g,
+            lights[BT_IO_JB_RGB_LED_TITLE].b,
+            lights[BT_IO_JB_RGB_LED_RIGHT].b,
+            lights[BT_IO_JB_RGB_LED_WOOFER].r,
+            lights[BT_IO_JB_RGB_LED_WOOFER].g,
+            lights[BT_IO_JB_RGB_LED_WOOFER].b,
 
-            IS_BIT_SET(input_sys, JB_IO_SYS_TEST),
-            IS_BIT_SET(input_sys, JB_IO_SYS_SERVICE),
-            IS_BIT_SET(input_sys, JB_IO_SYS_COIN),
+            IS_BIT_SET(input_sys, BT_IO_JB_SYS_TEST),
+            IS_BIT_SET(input_sys, BT_IO_JB_SYS_SERVICE),
+            IS_BIT_SET(input_sys, BT_IO_JB_SYS_COIN),
 
-            IS_BIT_SET(input_panel, JB_IO_PANEL_01),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_02),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_03),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_04),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_05),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_06),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_07),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_08),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_01),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_02),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_03),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_04),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_05),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_06),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_07),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_08),
 
             top_left,
             top_right,
             all_text,
 
-            IS_BIT_SET(input_panel, JB_IO_PANEL_09),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_10),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_11),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_12),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_09),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_10),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_11),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_12),
 
             bottom_left,
             bottom_right,
 
-            IS_BIT_SET(input_panel, JB_IO_PANEL_13),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_14),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_15),
-            IS_BIT_SET(input_panel, JB_IO_PANEL_16));
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_13),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_14),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_15),
+            IS_BIT_SET(input_panel, BT_IO_JB_PANEL_16));
 
         /* set outputs */
         switch (light_mode) {
@@ -214,11 +237,17 @@ int main(int argc, char **argv)
         }
 
         for (int i = 0; i < 6; i++) {
-            jb_io_set_rgb_led(i, lights[i].r, lights[i].g, lights[i].b);
+            bt_io_jb_rgb_led_set(i, lights[i].r, lights[i].g, lights[i].b);
         }
 
-        if (!jb_io_write_lights()) {
+        if (!bt_io_jb_lights_write()) {
             printf("ERROR: Writing outputs failed\n");
+
+            bt_io_jb_fini();
+
+            bt_io_jb_api_clear();
+            module_io_free(&module_io_jb);
+
             return -4;
         }
 
@@ -245,10 +274,10 @@ int main(int argc, char **argv)
                 case '1': {
                     /* one last update to turn off the lights */
                     for (int i = 0; i < 6; i++) {
-                        jb_io_set_rgb_led(i, 0, 0, 0);
+                        bt_io_jb_rgb_led_set(i, 0, 0, 0);
                     }
 
-                    if (!jb_io_write_lights()) {
+                    if (!bt_io_jb_lights_write()) {
                         printf("ERROR: Writing outputs failed\n");
                         return -4;
                     }
@@ -275,8 +304,8 @@ int main(int argc, char **argv)
                 case '5': {
                     panel_corners_animate = !panel_corners_animate;
                     if (!panel_corners_animate) {
-                        panel_mode = JB_IO_PANEL_MODE_ALL;
-                        jb_io_set_panel_mode(panel_mode);
+                        panel_mode = BT_IO_JB_PANEL_MODE_ALL;
+                        bt_io_jb_panel_mode_set(panel_mode);
                     }
                     break;
                 }
@@ -289,7 +318,11 @@ int main(int argc, char **argv)
     }
 
     system("cls");
-    jb_io_fini();
+
+    bt_io_jb_fini();
+
+    bt_io_jb_api_clear();
+    module_io_free(&module_io_jb);
 
     return 0;
 }

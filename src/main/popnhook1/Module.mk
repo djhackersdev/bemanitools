@@ -17,13 +17,15 @@ libs_popnhook1		:= \
     acioemu \
     hook \
     hooklib \
-    eamio \
-    popnio \
     cconfig \
     util \
     ezusb \
     security \
     popnhook-util \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_popnhook1		:= \
     avs-boot.c \

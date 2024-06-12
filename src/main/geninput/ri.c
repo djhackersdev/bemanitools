@@ -1,12 +1,12 @@
 #include <stdlib.h>
 
-#include "core/log.h"
-
 #include "geninput/hid-mgr.h"
 #include "geninput/hid.h"
 #include "geninput/kbd.h"
 #include "geninput/mouse.h"
 #include "geninput/ri.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/mem.h"

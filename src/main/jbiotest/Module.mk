@@ -2,8 +2,10 @@ exes            += jbiotest \
 
 libs_jbiotest     := \
     core \
-    jbio \
     util \
+    module \
+    iface-core \
+    iface-io \
 
 src_jbiotest      := \
     main.c \

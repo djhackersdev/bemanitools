@@ -7,11 +7,11 @@
 #include <stdbool.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "ddrhook-util/monitor.h"
 
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/str.h"

@@ -9,6 +9,10 @@ libs_iidxio-bio2         := \
     bio2drv \
     cconfig \
     util \
+    iface \
+    module \
+    iface-io \
+    iface-core \
 
 src_iidxio-bio2          := \
     iidxio.c \

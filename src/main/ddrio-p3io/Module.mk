@@ -11,6 +11,7 @@ libs_ddrio-p3io	:= \
 	p3io \
 	p3iodrv \
 	util \
+	iface-core \
 
 src_ddrio-p3io	:= \
 	config.c \

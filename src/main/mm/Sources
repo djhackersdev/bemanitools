@@ -1,6 +1,0 @@
-!include ../Common.inc
-
-TARGETNAME = libmm
-TARGETTYPE = LIBRARY
-SOURCES = mm.c
-

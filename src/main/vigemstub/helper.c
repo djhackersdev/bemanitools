@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "ViGEm/Client.h"
 

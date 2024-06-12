@@ -12,10 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "geninput/hid-meta-out.h"
 #include "geninput/hid-report-out.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 

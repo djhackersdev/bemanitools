@@ -2,12 +2,12 @@
 
 #include <string.h>
 
-#include "core/log.h"
-
 #include "ezusb-emu/node-eeprom.h"
 #include "ezusb-emu/node-security-mem.h"
 #include "ezusb-emu/node-security-plug.h"
 #include "ezusb-iidx/secplug-cmd.h"
+
+#include "iface-core/log.h"
 
 #include "security/rp.h"
 #include "security/rp2.h"

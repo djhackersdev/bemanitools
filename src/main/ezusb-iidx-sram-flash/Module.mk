@@ -8,6 +8,7 @@ libs_ezusb-iidx-sram-flash     := \
     ezusb \
     ezusb-iidx \
     util \
+    iface-core \
 
 src_ezusb-iidx-sram-flash      := \
     main.c \

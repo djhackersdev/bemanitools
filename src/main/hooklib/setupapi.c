@@ -4,7 +4,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/table.h"
 

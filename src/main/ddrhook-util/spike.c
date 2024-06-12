@@ -15,9 +15,9 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/str.h"

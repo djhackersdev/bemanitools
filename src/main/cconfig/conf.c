@@ -6,7 +6,7 @@
 
 #include "cconfig/conf.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/fs.h"
 #include "util/str.h"

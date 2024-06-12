@@ -14,8 +14,6 @@ libs_jbhook1       := \
     core \
     acioemu \
     cconfig \
-    eamio \
-    jbio \
     jbhook-util \
     jbhook-util-p3io \
     p3ioemu \
@@ -24,6 +22,10 @@ libs_jbhook1       := \
     hooklib \
     security \
     util \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_jbhook1        := \
     avs-boot.c \

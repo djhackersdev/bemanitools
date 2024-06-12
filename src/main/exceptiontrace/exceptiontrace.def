@@ -1,0 +1,8 @@
+LIBRARY exceptiontrace
+
+EXPORTS
+    DllMain@12 @1 NONAME
+    btapi_hook_core_thread_impl_set
+    btapi_hook_core_log_impl_set
+    btapi_hook_main_init
+    btapi_hook_main_fini

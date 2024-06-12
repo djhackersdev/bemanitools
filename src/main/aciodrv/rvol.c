@@ -5,7 +5,7 @@
 
 #include "aciodrv/device.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 static bool aciodrv_rvol_change_expand_mode(
     struct aciodrv_device_ctx *device, uint8_t node_id, uint8_t mode)

@@ -4,9 +4,9 @@
 #include <string.h>
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "util/crc.h"
 #include "util/defs.h"

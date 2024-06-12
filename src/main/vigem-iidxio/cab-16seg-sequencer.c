@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/time.h"
 

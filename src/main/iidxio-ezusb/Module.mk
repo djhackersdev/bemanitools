@@ -10,6 +10,10 @@ libs_iidxio-ezusb         := \
     ezusb2 \
     ezusb-iidx \
     util \
+    iface \
+    module \
+    iface-io \
+    iface-core \
 
 src_iidxio-ezusb          := \
     iidxio.c \

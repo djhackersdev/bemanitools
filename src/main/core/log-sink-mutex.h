@@ -16,6 +16,6 @@
  * @param sink Pointer to allocated memory that receives the opened sink
  */
 void core_log_sink_mutex_open(
-    const struct core_log_sink *child_sink, struct core_log_sink *sink);
+    const core_log_sink_t *child_sink, core_log_sink_t *sink);
 
 #endif

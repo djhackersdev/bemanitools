@@ -1,6 +1,12 @@
 LIBRARY geninput
 
 EXPORTS
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_core_thread_api_set
+    bt_module_input_api_get
+
+    ; Direct API
     action_iter_get_mapping
     action_iter_get_action
     action_iter_get_page
@@ -22,7 +28,6 @@ EXPORTS
     hid_stub_set_light
     input_fini
     input_init
-    input_set_loggers
     light_iter_get_mapping
     light_iter_get_game_light
     light_iter_is_valid
@@ -49,6 +54,6 @@ EXPORTS
     mapper_set_light_map
     mapper_set_nanalogs
     mapper_set_nlights
-    mapper_read_analog
+    mapper_analog_read
     mapper_update
-    mapper_write_light
+    mapper_light_write

@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+
 #include "security/id.h"
 
 #include "util/hex.h"
@@ -29,6 +33,11 @@ int main(int argc, char **argv)
         print_usage(argv);
         return -1;
     }
+
+    core_log_bt_core_api_set();
+
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     if (!strcmp(argv[1], "gen")) {
         srand(time(NULL));

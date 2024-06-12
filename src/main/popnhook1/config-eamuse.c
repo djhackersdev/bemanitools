@@ -2,7 +2,7 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "popnhook1/config-eamuse.h"
 

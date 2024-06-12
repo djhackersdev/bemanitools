@@ -4,18 +4,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/iidxio.h"
-
 #include "cconfig/cconfig-hook.h"
 
+#include "core/boot.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-debug.h"
-#include "core/log.h"
-#include "core/thread-crt-ext.h"
 #include "core/thread-crt.h"
-#include "core/thread.h"
 
 #include "ezusb-emu/desc.h"
 #include "ezusb-emu/device.h"
@@ -34,6 +29,12 @@
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/iidx.h"
+
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/clock.h"
@@ -47,7 +48,12 @@
 #include "iidxhook-util/effector.h"
 #include "iidxhook-util/settings.h"
 
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "iidxhook2/config-iidxhook2.h"
+
+#include "util/proc.h"
 
 #define IIDXHOOK2_INFO_HEADER \
     "iidxhook for DistorteD"  \
@@ -63,6 +69,8 @@ static HANDLE STDCALL my_OpenProcess(DWORD, BOOL, DWORD);
 static HANDLE(STDCALL *real_OpenProcess)(DWORD, BOOL, DWORD);
 
 static bool iidxhook_init_check;
+static module_io_t *iidxhook_module_io_iidx;
+static module_io_t *iidxhook_module_io_eam;
 
 static const struct hook_symbol init_hook_syms[] = {
     {.name = "OpenProcess",
@@ -72,10 +80,29 @@ static const struct hook_symbol init_hook_syms[] = {
 
 static void _iidxhook2_log_init()
 {
-    core_log_bt_ext_impl_set();
     core_log_bt_ext_init_with_debug();
     // TODO change log level support
     core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
+
+static void _iidxhook2_io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
+}
+
+static void _iidxhook2_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
 }
 
 static void iidxhook2_setup_d3d9_hooks(
@@ -84,9 +111,11 @@ static void iidxhook2_setup_d3d9_hooks(
 {
     struct iidxhook_util_d3d9_config d3d9_config;
 
-    log_warning(
-        "d3d8 hook module deprecated, using d3d9 hook modules requiring "
-        "d3d8to9 to work!");
+    if (!proc_is_module_loaded("d3d9.dll")) {
+        log_fatal(
+            "d3d8 hook module deprecated, using d3d9 hook modules requires "
+            "d3d8to9 to work! Could not detect loaded d3d9.dll");
+    }
 
     iidxhook_util_d3d9_init_config(&d3d9_config);
 
@@ -220,24 +249,20 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     /* Start up IIDXIO.DLL */
 
     log_info("Starting IIDX IO backend");
-    core_log_impl_assign(iidx_io_set_loggers);
 
-    if (!iidx_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get())) {
+    _iidxhook2_io_iidx_init(&iidxhook_module_io_iidx);
+
+    if (!bt_io_iidx_init()) {
         log_fatal("Initializing IIDX IO backend failed");
     }
 
     /* Start up EAMIO.DLL */
 
     log_misc("Initializing card reader backend");
-    core_log_impl_assign(eam_io_set_loggers);
 
-    if (!eam_io_init(
-            core_thread_create_impl_get(),
-            core_thread_join_impl_get(),
-            core_thread_destroy_impl_get())) {
+    _iidxhook2_io_eam_init(&iidxhook_module_io_eam);
+
+    if (!bt_io_eam_init()) {
         log_fatal("Initializing card reader backend failed");
     }
 
@@ -271,7 +296,11 @@ skip:
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        core_thread_crt_ext_impl_set();
+        core_boot_dll("iidxhook3");
+
+        // Use bemanitools core APIs
+        core_log_bt_core_api_set();
+        core_thread_crt_core_api_set();
 
         _iidxhook2_log_init();
 

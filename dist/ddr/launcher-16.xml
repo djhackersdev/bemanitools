@@ -60,15 +60,11 @@
   <eamuse>
     <config kind="file">bemanitools/ea3-service.xml</config>
   </eamuse>
-  <hook>
-    <hook_dlls>
-        <dll __type="str">ddrhook2.dll</dll>
-    </hook_dlls>
-    <before_hook_dlls>
-    </before_hook_dlls>
-    <iat_hook_dlls>
-    </iat_hook_dlls>
-  </hook>
+  <hooks>
+    <hook>
+      <path __type="str">ddrhook2.dll</path>
+    </hook>
+  </hooks>
   <debug>
     <remote_debugger __type="bool">0</remote_debugger>
     <log_property_configs __type="bool">0</log_property_configs>

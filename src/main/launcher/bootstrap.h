@@ -1,6 +1,8 @@
 #ifndef LAUNCHER_BOOTSTRAP_H
 #define LAUNCHER_BOOTSTRAP_H
 
+#include "core/property.h"
+
 #include "launcher/bootstrap-config.h"
 #include "launcher/ea3-ident-config.h"
 
@@ -13,19 +15,19 @@ void bootstrap_default_files_create(
 void bootstrap_avs_init(
     const struct bootstrap_boot_config *config,
     const struct bootstrap_log_config *log_config,
-    struct property *override_property);
+    const core_property_t *override_property);
 void bootstrap_eamuse_init(
     const struct bootstrap_eamuse_config *config,
     const struct ea3_ident_config *ea3_ident_config,
-    struct property *override_property);
-void bootstrap_module_init(
-    const struct bootstrap_module_config *module_config,
-    const struct array *iat_hook_dlls);
-void bootstrap_module_game_init(
+    const core_property_t *override_property);
+HMODULE bootstrap_app_unresolved_init(
+    const struct bootstrap_module_config *module_config);
+void bootstrap_app_resolve_init();
+void bootstrap_app_init(
     const struct bootstrap_module_config *module_config,
     struct ea3_ident_config *ea3_ident_config);
-void bootstrap_module_game_run();
-void bootstrap_module_game_fini();
+void bootstrap_app_run();
+void bootstrap_app_fini();
 void bootstrap_avs_fini();
 void bootstrap_eamuse_fini(const struct bootstrap_eamuse_config *config);
 

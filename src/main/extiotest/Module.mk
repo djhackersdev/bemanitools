@@ -5,6 +5,7 @@ libs_extiotest     := \
     extio \
     core \
     util \
+    iface-core \
 
 src_extiotest      := \
     main.c \

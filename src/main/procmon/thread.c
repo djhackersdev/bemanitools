@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #ifdef _WIN64
 #define SIZE_T_FORMAT_SPECIFIER "llu"

@@ -2,14 +2,15 @@
 
 #include <windows.h>
 
-#include "avs-util/error.h"
+#include "avs-ext/error.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
-#include "imports/avs.h"
+#include "core/property-node-ext.h"
+#include "core/property-node.h"
+#include "core/property.h"
 
 #include "launcher/avs-config.h"
-#include "launcher/property-util.h"
 
 #include "util/str.h"
 
@@ -19,9 +20,7 @@ static const char *_avs_config_property_mounttable_path =
     "/config/fs/mounttable";
 
 static void _avs_config_node_vfs_copy(
-    struct property *parent_property,
-    struct property_node *parent,
-    struct property_node *source)
+    core_property_node_t *parent, const core_property_node_t *source)
 {
     // Use max path size to fit dst and src fs paths
     char data[MAX_PATH];
@@ -34,118 +33,123 @@ static void _avs_config_node_vfs_copy(
 
     // Ignore errors and default to empty
     memset(data, 0, sizeof(data));
-    property_node_refer(
-        NULL, source, "name@", PROPERTY_TYPE_ATTR, data, sizeof(data));
-    property_util_node_attribute_replace(
-        parent_property, parent, "name@", data);
+    core_property_node_ext_attr_read(source, "name@", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "name@", data);
 
     memset(data, 0, sizeof(data));
-    property_node_refer(
-        NULL, source, "fstype@", PROPERTY_TYPE_ATTR, data, sizeof(data));
-    property_util_node_attribute_replace(
-        parent_property, parent, "fstype@", data);
+    core_property_node_ext_attr_read(source, "fstype@", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "fstype@", data);
 
     memset(data, 0, sizeof(data));
-    property_node_refer(
-        NULL, source, "src@", PROPERTY_TYPE_ATTR, data, sizeof(data));
-    property_util_node_attribute_replace(parent_property, parent, "src@", data);
+    core_property_node_ext_attr_read(source, "src@", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "src@", data);
 
     memset(data, 0, sizeof(data));
-    property_node_refer(
-        NULL, source, "dst@", PROPERTY_TYPE_ATTR, data, sizeof(data));
-    property_util_node_attribute_replace(parent_property, parent, "dst@", data);
+    core_property_node_ext_attr_read(source, "dst@", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "dst@", data);
 
     memset(data, 0, sizeof(data));
-    property_node_refer(
-        NULL, source, "opt@", PROPERTY_TYPE_ATTR, data, sizeof(data));
-    property_util_node_attribute_replace(parent_property, parent, "opt@", data);
+    core_property_node_ext_attr_read(source, "opt@", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "opt@", data);
 }
 
-static bool _avs_config_mounttable_vfs_nodes_merge_strategy_do(
-    struct property *parent_property,
-    struct property_node *parent,
-    struct property_node *source,
+static core_property_node_result_t
+_avs_config_mounttable_vfs_nodes_merge_strategy_do(
+    core_property_node_t *parent,
+    const core_property_node_t *source,
     void *ctx,
-    property_util_node_merge_recursion_do_t node_merge_recursion_do)
+    bool *consumed,
+    core_property_node_ext_merge_recursion_do_t node_merge_recursion_do)
 {
-    struct property_node *parent_child;
-    struct property_node *source_child;
+    core_property_node_t parent_child;
+    core_property_node_t tmp;
+    core_property_node_t source_child;
+    core_property_node_result_t result;
 
-    char parent_child_name[PROPERTY_NODE_NAME_SIZE_MAX];
-    char name_parent[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
-    char dst_parent[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char parent_child_name[CORE_PROPERTY_NODE_NAME_SIZE_MAX];
+    char name_parent[CORE_PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char dst_parent[CORE_PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
 
-    char source_child_name[PROPERTY_NODE_NAME_SIZE_MAX];
-    char name_source[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
-    char dst_source[PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char source_child_name[CORE_PROPERTY_NODE_NAME_SIZE_MAX];
+    char name_source[CORE_PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
+    char dst_source[CORE_PROPERTY_NODE_ATTR_NAME_SIZE_MAX];
 
-    bool node_consumed;
     bool found_parent;
 
-    source_child = property_node_traversal(source, TRAVERSE_FIRST_CHILD);
+    result = core_property_node_child_get(source, &source_child);
 
-    node_consumed = false;
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        return CORE_PROPERTY_NODE_RESULT_SUCCESS;
+    }
 
-    while (source_child) {
-        property_node_name(
-            source_child, source_child_name, sizeof(source_child_name));
+    if (result != CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+        core_property_node_fatal_on_error(result);
+    }
+
+    *consumed = false;
+
+    while (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+        result = core_property_node_name_get(
+            &source_child, source_child_name, sizeof(source_child_name));
+        core_property_node_fatal_on_error(result);
 
         if (str_eq(source_child_name, "vfs")) {
-            node_consumed = true;
+            *consumed = true;
 
-            parent_child =
-                property_node_traversal(parent, TRAVERSE_FIRST_CHILD);
+            result = core_property_node_child_get(parent, &parent_child);
+
+            if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND ||
+                result != CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+                core_property_node_fatal_on_error(result);
+            }
 
             found_parent = false;
 
-            while (parent_child) {
-                property_node_name(
-                    parent_child, parent_child_name, sizeof(parent_child_name));
+            while (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+                result = core_property_node_name_get(
+                    &parent_child,
+                    parent_child_name,
+                    sizeof(parent_child_name));
+                core_property_node_fatal_on_error(result);
 
                 if (str_eq(parent_child_name, "vfs")) {
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            source_child,
-                            "name@",
-                            PROPERTY_TYPE_ATTR,
-                            name_source,
-                            sizeof(name_source)))) {
+                    result = core_property_node_ext_attr_read(
+                        &source_child,
+                        "name@",
+                        name_source,
+                        sizeof(name_source));
+
+                    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
                             "Missing 'name' attribute on avs config mounttable "
                             "vfs source node");
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            source_child,
-                            "dst@",
-                            PROPERTY_TYPE_ATTR,
-                            dst_source,
-                            sizeof(dst_source)))) {
+                    result = core_property_node_ext_attr_read(
+                        &source_child, "dst@", dst_source, sizeof(dst_source));
+
+                    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
                             "Missing 'dst' attribute on avs config mounttable "
                             "vfs source node");
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            parent_child,
-                            "name@",
-                            PROPERTY_TYPE_ATTR,
-                            name_parent,
-                            sizeof(name_parent)))) {
+                    result = core_property_node_ext_attr_read(
+                        &parent_child,
+                        "name@",
+                        name_parent,
+                        sizeof(name_parent));
+
+                    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
                             "Missing 'name' attribute on avs config mounttable "
                             "vfs parent node");
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            parent_child,
-                            "dst@",
-                            PROPERTY_TYPE_ATTR,
-                            dst_parent,
-                            sizeof(dst_parent)))) {
+                    result = core_property_node_ext_attr_read(
+                        &parent_child, "dst@", dst_parent, sizeof(dst_parent));
+
+                    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
                             "Missing 'dst' attribute on avs config mounttable "
                             "vfs parent node");
@@ -154,71 +158,91 @@ static bool _avs_config_mounttable_vfs_nodes_merge_strategy_do(
                     // Found existing matching node on parent, replace it
                     if (str_eq(name_source, name_parent) &&
                         str_eq(dst_source, dst_parent)) {
-                        _avs_config_node_vfs_copy(
-                            parent_property, parent_child, source_child);
+                        _avs_config_node_vfs_copy(&parent_child, &source_child);
 
                         found_parent = true;
                         break;
                     }
                 }
 
-                parent_child = property_node_traversal(
-                    parent_child, TRAVERSE_NEXT_SIBLING);
+                result =
+                    core_property_node_next_sibling_get(&parent_child, &tmp);
+                memcpy(&parent_child, &tmp, sizeof(core_property_node_t));
+
+                if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+                    core_property_node_fatal_on_error(result);
+                }
             }
 
             // Not found an existing node that got replaced, insert/merge new
             // data
             if (!found_parent) {
-                parent_child = property_node_create(
-                    parent_property, parent, PROPERTY_TYPE_VOID, "vfs");
+                result = core_property_node_void_create(
+                    parent, "vfs", &parent_child);
+                core_property_node_fatal_on_error(result);
 
-                _avs_config_node_vfs_copy(
-                    parent_property, parent_child, source_child);
+                _avs_config_node_vfs_copy(&parent_child, &source_child);
             }
         }
 
-        source_child =
-            property_node_traversal(source_child, TRAVERSE_NEXT_SIBLING);
+        result = core_property_node_next_sibling_get(&source_child, &tmp);
+        memcpy(&source_child, &tmp, sizeof(core_property_node_t));
+
+        if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            core_property_node_fatal_on_error(result);
+        }
     }
 
-    return node_consumed;
+    return CORE_PROPERTY_NODE_RESULT_SUCCESS;
 }
 
-struct property *avs_config_load(const char *filepath)
+core_property_t *avs_config_load(const char *filepath)
 {
-    struct property *property;
+    core_property_t *property;
+    core_property_result_t result;
+    core_property_node_t node;
 
     log_assert(filepath);
 
     log_info("Loading from file path: %s", filepath);
 
-    property = property_util_load(filepath);
+    result = core_property_file_load(filepath, &property);
+    core_property_fatal_on_error(result);
 
     // Check if root node exists, call already errors if not
-    avs_config_root_get(property);
+    avs_config_root_get(property, &node);
 
     return property;
 }
 
-struct property_node *avs_config_root_get(struct property *property)
+void avs_config_root_get(
+    const core_property_t *property, core_property_node_t *node)
 {
-    struct property_node *node;
+    core_property_node_result_t result;
+    char node_name[128];
 
     log_assert(property);
+    log_assert(node);
 
-    node = property_search(property, 0, AVS_CONFIG_ROOT_NODE);
+    result = core_property_root_node_get(property, node);
+    core_property_fatal_on_error(result);
 
-    if (node == NULL) {
+    result = core_property_node_name_get(node, node_name, sizeof(node_name));
+    core_property_node_fatal_on_error(result);
+
+    if (!str_eq(node_name, "config")) {
         log_fatal("Root node " AVS_CONFIG_ROOT_NODE " in AVS config missing");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
-
-    return node;
 }
 
-struct property *
-avs_config_property_merge(struct property *parent, struct property *source)
+core_property_t *avs_config_property_merge(
+    const core_property_t *parent, const core_property_t *source)
 {
-    struct property_util_node_merge_strategies strategies;
+    core_property_node_ext_merge_strategies_t strategies;
+    core_property_t *merged;
+    core_property_node_result_t result;
 
     log_assert(parent);
     log_assert(source);
@@ -231,81 +255,111 @@ avs_config_property_merge(struct property *parent, struct property *source)
 
     strategies.entry[1].path = "";
     strategies.entry[1].merge_strategy_do =
-        property_util_node_merge_default_strategy_do;
+        core_property_node_ext_merge_strategy_default_do;
 
-    return property_util_merge_with_strategies(parent, source, &strategies);
+    result = core_property_node_ext_merge_with_strategies_do(
+        parent, source, &strategies, &merged);
+    core_property_node_fatal_on_error(result);
+
+    return merged;
 }
 
 void avs_config_fs_root_device_get(
-    struct property_node *node, char *buffer, size_t size)
+    const core_property_node_t *node, char *buffer, size_t size)
 {
-    struct property_node *device_node;
-    avs_error error;
+    core_property_node_t device_node;
+    core_property_node_result_t result;
 
     log_assert(node);
+    log_assert(buffer);
+    log_assert(size > 0);
 
-    device_node = property_search(NULL, node, "fs/root/device");
+    result = core_property_node_search(node, "fs/root/device", &device_node);
 
-    if (device_node == NULL) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         log_fatal("Could not find node fs/root/device AVS config");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
-    error = property_node_read(device_node, PROPERTY_TYPE_STR, buffer, size);
+    result = core_property_node_str_read(&device_node, buffer, size);
 
-    if (AVS_IS_ERROR(error)) {
+    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
         log_fatal(
             "fs/root/device, property read failed: %s",
-            avs_util_error_str(error));
+            core_property_node_result_to_str(result));
     }
 }
 
-void avs_config_mode_product_set(struct property_node *node, bool enable)
+void avs_config_mode_product_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(NULL, node, "mode/product", enable ? 1 : 0);
+    result =
+        core_property_node_ext_u8_replace(node, "mode/product", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "mode/product", enable);
+    result = core_property_node_ext_bool_replace(node, "mode/product", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_net_raw_set(struct property_node *node, bool enable)
+void avs_config_net_raw_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(NULL, node, "net/enable_raw", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "net/enable_raw", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "net/enable_raw", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "net/enable_raw", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_net_eaudp_set(struct property_node *node, bool enable)
+void avs_config_net_eaudp_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(
-        NULL, node, "net/eaudp/enable", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "net/eaudp/enable", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "net/eaudp/enable", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "net/eaudp/enable", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_sntp_ea_set(struct property_node *node, bool on)
+void avs_config_sntp_ea_set(core_property_node_t *node, bool on)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(NULL, node, "sntp/ea_on", on ? 1 : 0);
+    result = core_property_node_ext_u8_replace(node, "sntp/ea_on", on ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "sntp/ea_on", on);
+    result = core_property_node_ext_bool_replace(node, "sntp/ea_on", on);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_level_set(struct property_node *node, const char *level)
+void avs_config_log_level_set(core_property_node_t *node, const char *level)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
     log_assert(level);
 
@@ -330,122 +384,170 @@ void avs_config_log_level_set(struct property_node *node, const char *level)
         log_fatal("Unknown log level string %s", level);
     }
 
-    property_util_node_u32_replace(NULL, node, "log/level", level_value);
+    result = core_property_node_ext_u32_replace(node, "log/level", level_value);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_str_replace(NULL, node, "log/level", level);
+    result = core_property_node_ext_str_replace(node, "log/level", level);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_name_set(struct property_node *node, const char *name)
+void avs_config_log_name_set(core_property_node_t *node, const char *name)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
     log_assert(name);
 
-    property_util_node_str_replace(NULL, node, "log/name", name);
+    result = core_property_node_ext_str_replace(node, "log/name", name);
+    core_property_node_fatal_on_error(result);
 }
 
-void avs_config_log_file_set(struct property_node *node, const char *file)
+void avs_config_log_file_set(core_property_node_t *node, const char *file)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
     log_assert(file);
 
-    property_util_node_str_replace(NULL, node, "log/file", file);
+    result = core_property_node_ext_str_replace(node, "log/file", file);
+    core_property_node_fatal_on_error(result);
 }
 
-void avs_config_log_buffer_size_set(struct property_node *node, uint32_t size)
+void avs_config_log_buffer_size_set(core_property_node_t *node, uint32_t size)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
-    property_util_node_u32_replace(NULL, node, "log/sz_buf", size);
+    result = core_property_node_ext_u32_replace(node, "log/sz_buf", size);
+    core_property_node_fatal_on_error(result);
 }
 
 void avs_config_log_output_delay_set(
-    struct property_node *node, uint16_t delay_ms)
+    core_property_node_t *node, uint16_t delay_ms)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
-    property_util_node_u16_replace(NULL, node, "log/output_delay", delay_ms);
+    result =
+        core_property_node_ext_u16_replace(node, "log/output_delay", delay_ms);
+    core_property_node_fatal_on_error(result);
 }
 
-void avs_config_log_enable_console_set(struct property_node *node, bool enable)
+void avs_config_log_enable_console_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(
-        NULL, node, "log/enable_console", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "log/enable_console", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/enable_console", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "log/enable_console", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_enable_sci_set(struct property_node *node, bool enable)
+void avs_config_log_enable_sci_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(
-        NULL, node, "log/enable_netsci", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "log/enable_netsci", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/enable_netsci", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "log/enable_netsci", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_enable_net_set(struct property_node *node, bool enable)
+void avs_config_log_enable_net_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(
-        NULL, node, "log/enable_netlog", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "log/enable_netlog", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/enable_netlog", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "log/enable_netlog", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_enable_file_set(struct property_node *node, bool enable)
+void avs_config_log_enable_file_set(core_property_node_t *node, bool enable)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(
-        NULL, node, "log/enable_file", enable ? 1 : 0);
+    result = core_property_node_ext_u8_replace(
+        node, "log/enable_file", enable ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/enable_file", enable);
+    result =
+        core_property_node_ext_bool_replace(node, "log/enable_file", enable);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_rotate_set(struct property_node *node, bool rotate)
+void avs_config_log_rotate_set(core_property_node_t *node, bool rotate)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(NULL, node, "log/rotate", rotate ? 1 : 0);
+    result =
+        core_property_node_ext_u8_replace(node, "log/rotate", rotate ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/rotate", rotate);
+    result = core_property_node_ext_bool_replace(node, "log/rotate", rotate);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_append_set(struct property_node *node, bool append)
+void avs_config_log_append_set(core_property_node_t *node, bool append)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
 #if AVS_VERSION <= 1306
-    property_util_node_u8_replace(NULL, node, "log/append", append ? 1 : 0);
+    result =
+        core_property_node_ext_u8_replace(node, "log/append", append ? 1 : 0);
+    core_property_node_fatal_on_error(result);
 #else
-    property_util_node_bool_replace(NULL, node, "log/append", append);
+    result = core_property_node_ext_bool_replace(node, "log/append", append);
+    core_property_node_fatal_on_error(result);
 #endif
 }
 
-void avs_config_log_count_set(struct property_node *node, uint16_t count)
+void avs_config_log_count_set(core_property_node_t *node, uint16_t count)
 {
+    core_property_node_result_t result;
+
     log_assert(node);
 
-    property_util_node_u16_replace(NULL, node, "log/gen", count);
+    result = core_property_node_ext_u16_replace(node, "log/gen", count);
+    core_property_node_fatal_on_error(result);
 }
 
 void avs_config_set_log_level(
-    struct property_node *node, enum core_log_bt_log_level loglevel)
+    core_property_node_t *node, enum core_log_bt_log_level loglevel)
 {
     const char *str;
 
@@ -481,14 +583,16 @@ void avs_config_set_log_level(
 }
 
 void avs_config_local_fs_path_dev_nvram_and_raw_set(
-    struct property_node *node, const char *dev_nvram_raw_path)
+    core_property_node_t *node, const char *dev_nvram_raw_path)
 {
     char path_dev_raw[MAX_PATH];
     char path_dev_nvram[MAX_PATH];
 
-    struct property_node *fs_node;
-    struct property_node *mounttable_node;
-    struct property_node *vfs_node;
+    core_property_node_t fs_node;
+    core_property_node_t mounttable_node;
+    core_property_node_t vfs_node;
+    core_property_node_t tmp_node;
+    core_property_node_result_t result;
 
     log_assert(node);
     log_assert(dev_nvram_raw_path);
@@ -499,68 +603,101 @@ void avs_config_local_fs_path_dev_nvram_and_raw_set(
     str_cpy(path_dev_nvram, sizeof(path_dev_nvram), dev_nvram_raw_path);
     str_cat(path_dev_nvram, sizeof(path_dev_nvram), "/dev/nvram");
 
-    fs_node = property_search(NULL, node, "fs");
+    result = core_property_node_search(node, "fs", &fs_node);
 
-    if (!fs_node) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         log_fatal("Cannot find 'fs' node in avs config");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
     // Check if "new" mounttable config is used for dev/nvram and dev/raw or
     // legacy config
-    if (property_search(NULL, fs_node, "mounttable")) {
-        property_remove(NULL, fs_node, "mounttable");
+    result =
+        core_property_node_search(&fs_node, "mounttable", &mounttable_node);
 
-        mounttable_node = property_node_create(
-            NULL, fs_node, PROPERTY_TYPE_VOID, "mounttable");
+    if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+        result = core_property_node_remove(&mounttable_node);
+        core_property_node_fatal_on_error(result);
 
-        vfs_node = property_node_create(
-            NULL, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
+        result = core_property_node_void_create(
+            &fs_node, "mounttable", &mounttable_node);
+        core_property_node_fatal_on_error(result);
 
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_raw);
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/raw");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
+        result =
+            core_property_node_void_create(&mounttable_node, "vfs", &vfs_node);
+        core_property_node_fatal_on_error(result);
 
-        vfs_node = property_node_create(
-            NULL, mounttable_node, PROPERTY_TYPE_VOID, "vfs");
+        result = core_property_node_attr_create(
+            &vfs_node, "name", "boot", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "fstype", "fs", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "src", path_dev_raw, &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "dest", "/dev/raw", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "opt", "vf=1,posix=1", &tmp_node);
+        core_property_node_fatal_on_error(result);
 
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "name", "boot");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "fstype", "fs");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "src", path_dev_nvram);
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "dest", "/dev/nvram");
-        property_node_create(
-            NULL, vfs_node, PROPERTY_TYPE_ATTR, "opt", "vf=1,posix=1");
+        result =
+            core_property_node_void_create(&mounttable_node, "vfs", &vfs_node);
+        core_property_node_fatal_on_error(result);
+
+        result = core_property_node_attr_create(
+            &vfs_node, "name", "boot", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "fstype", "fs", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "src", path_dev_nvram, &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "dest", "/dev/nvram", &tmp_node);
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_attr_create(
+            &vfs_node, "opt", "vf=1,posix=1", &tmp_node);
+        core_property_node_fatal_on_error(result);
+    } else if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        result = core_property_node_ext_str_replace(
+            &fs_node, "nvram/device", path_dev_nvram);
+        core_property_node_fatal_on_error(result);
+        result =
+            core_property_node_ext_str_replace(&fs_node, "nvram/fstype", "fs");
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_ext_str_replace(
+            &fs_node, "nvram/option", "vf=1,posix=1");
+        core_property_node_fatal_on_error(result);
+
+        result = core_property_node_ext_str_replace(
+            &fs_node, "raw/device", path_dev_raw);
+        core_property_node_fatal_on_error(result);
+        result =
+            core_property_node_ext_str_replace(&fs_node, "raw/fstype", "fs");
+        core_property_node_fatal_on_error(result);
+        result = core_property_node_ext_str_replace(
+            &fs_node, "raw/option", "vf=1,posix=1");
+        core_property_node_fatal_on_error(result);
     } else {
-        property_util_node_str_replace(
-            NULL, fs_node, "nvram/device", path_dev_raw);
-        property_util_node_str_replace(NULL, fs_node, "nvram/fstype", "fs");
-        property_util_node_str_replace(
-            NULL, fs_node, "nvram/option", "vf=1,posix=1");
-
-        property_util_node_str_replace(
-            NULL, fs_node, "raw/device", path_dev_nvram);
-        property_util_node_str_replace(NULL, fs_node, "raw/fstype", "fs");
-        property_util_node_str_replace(
-            NULL, fs_node, "raw/option", "vf=1,posix=1");
+        core_property_node_fatal_on_error(result);
     }
 }
 
 void avs_config_vfs_mounttable_get(
-    struct property_node *node, struct avs_config_vfs_mounttable *mounttable)
+    const core_property_node_t *node,
+    struct avs_config_vfs_mounttable *mounttable)
 {
-    struct property_node *fs_node;
-    struct property_node *mounttable_node;
-    struct property_node *cur;
+    core_property_node_t fs_node;
+    core_property_node_t mounttable_node;
+    core_property_node_t cur;
+    core_property_node_t tmp;
+    core_property_node_result_t result;
+
     char mounttable_selector[128];
     char name[128];
     uint8_t pos;
@@ -568,40 +705,50 @@ void avs_config_vfs_mounttable_get(
     log_assert(node);
     log_assert(mounttable);
 
-    fs_node = property_search(NULL, node, "fs");
+    result = core_property_node_search(node, "fs", &fs_node);
 
-    if (!fs_node) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         log_fatal("Cannot find 'fs' node in avs config");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
     // Check if new mounttable config is used for dev/nvram and dev/raw or
     // legacy config
-    mounttable_node = property_search(NULL, fs_node, "mounttable");
+    result =
+        core_property_node_search(&fs_node, "mounttable", &mounttable_node);
 
     memset(mounttable, 0, sizeof(*mounttable));
     pos = 0;
 
-    if (mounttable_node) {
-        cur = property_search(NULL, fs_node, "mounttable_selector");
+    if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+        result =
+            core_property_node_search(&fs_node, "mounttable_selector", &cur);
 
-        if (!cur) {
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             log_fatal("Missing 'mounttable_selector' on mounttable");
+        } else {
+            core_property_node_fatal_on_error(result);
         }
 
-        if (AVS_IS_ERROR(property_node_read(
-                cur,
-                PROPERTY_TYPE_STR,
-                mounttable_selector,
-                sizeof(mounttable_selector)))) {
+        result = core_property_node_str_read(
+            &cur, mounttable_selector, sizeof(mounttable_selector));
+
+        if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
             log_fatal("Reading 'mounttable_selector' failed");
         }
 
         log_misc("Mounttable selector: %s", mounttable_selector);
 
-        cur = property_node_traversal(mounttable_node, TRAVERSE_FIRST_CHILD);
+        result = core_property_node_child_get(&mounttable_node, &cur);
 
-        while (cur) {
-            property_node_name(cur, name, sizeof(name));
+        if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            core_property_node_fatal_on_error(result);
+        }
+
+        while (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            result = core_property_node_name_get(&cur, name, sizeof(name));
+            core_property_node_fatal_on_error(result);
 
             if (str_eq(name, "vfs")) {
                 if (pos >= AVS_CONFIG_MOUNTTABLE_MAX_ENTRIES) {
@@ -612,97 +759,113 @@ void avs_config_vfs_mounttable_get(
                     break;
                 }
 
-                if (AVS_IS_ERROR(property_node_refer(
-                        NULL,
-                        cur,
-                        "name@",
-                        PROPERTY_TYPE_ATTR,
-                        name,
-                        sizeof(name)))) {
+                result = core_property_node_ext_attr_read(
+                    &cur, "name@", name, sizeof(name));
+
+                if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                     log_fatal("Missing 'name' attribute on vfs node");
+                } else {
+                    core_property_node_fatal_on_error(result);
                 }
 
                 if (str_eq(name, mounttable_selector)) {
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            cur,
-                            "fstype@",
-                            PROPERTY_TYPE_ATTR,
-                            mounttable->entry[pos].fstype,
-                            sizeof(mounttable->entry[pos].fstype)))) {
+                    result = core_property_node_ext_attr_read(
+                        &cur,
+                        "fstype@",
+                        mounttable->entry[pos].fstype,
+                        sizeof(mounttable->entry[pos].fstype));
+
+                    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                         // default
                         str_cpy(
                             mounttable->entry[pos].fstype,
                             sizeof(mounttable->entry[pos].fstype),
                             "fs");
+                    } else {
+                        core_property_node_fatal_on_error(result);
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            cur,
-                            "src@",
-                            PROPERTY_TYPE_ATTR,
-                            mounttable->entry[pos].src,
-                            sizeof(mounttable->entry[pos].src)))) {
+                    result = core_property_node_ext_attr_read(
+                        &cur,
+                        "src@",
+                        mounttable->entry[pos].src,
+                        sizeof(mounttable->entry[pos].src));
+
+                    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                         log_fatal(
                             "Missing 'src' attribute on vfs node, name: %s",
                             name);
+                    } else {
+                        core_property_node_fatal_on_error(result);
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            cur,
-                            "dst@",
-                            PROPERTY_TYPE_ATTR,
-                            mounttable->entry[pos].dst,
-                            sizeof(mounttable->entry[pos].dst)))) {
+                    result = core_property_node_ext_attr_read(
+                        &cur,
+                        "dst@",
+                        mounttable->entry[pos].dst,
+                        sizeof(mounttable->entry[pos].dst));
+
+                    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                         log_fatal(
                             "Missing 'dst' attribute on vfs node, name: %s",
                             name);
+                    } else {
+                        core_property_node_fatal_on_error(result);
                     }
 
-                    if (AVS_IS_ERROR(property_node_refer(
-                            NULL,
-                            cur,
-                            "opt@",
-                            PROPERTY_TYPE_ATTR,
-                            mounttable->entry[pos].opt,
-                            sizeof(mounttable->entry[pos].opt)))) {
+                    result = core_property_node_ext_attr_read(
+                        &cur,
+                        "opt@",
+                        mounttable->entry[pos].opt,
+                        sizeof(mounttable->entry[pos].opt));
+
+                    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                         // optional
+                    } else {
+                        core_property_node_fatal_on_error(result);
                     }
 
                     pos++;
                 }
             }
 
-            cur = property_node_traversal(cur, TRAVERSE_NEXT_SIBLING);
-        }
-    } else {
-        cur = property_search(NULL, fs_node, "nvram");
+            result = core_property_node_next_sibling_get(&cur, &tmp);
+            memcpy(&cur, &tmp, sizeof(core_property_node_t));
 
-        if (cur) {
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "fstype",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].fstype,
-                    sizeof(mounttable->entry[pos].fstype)))) {
+            if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+                core_property_node_fatal_on_error(result);
+            }
+        }
+    } else if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        result = core_property_node_search(&fs_node, "nvram", &cur);
+
+        if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "fstype",
+                mounttable->entry[pos].fstype,
+                sizeof(mounttable->entry[pos].fstype));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 // default
                 str_cpy(
                     mounttable->entry[pos].fstype,
                     sizeof(mounttable->entry[pos].fstype),
                     "fs");
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "device",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].src,
-                    sizeof(mounttable->entry[pos].src)))) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "device",
+                mounttable->entry[pos].src,
+                sizeof(mounttable->entry[pos].src));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 log_fatal("Missing 'device' attribute on nvram node");
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
             str_cpy(
@@ -710,44 +873,52 @@ void avs_config_vfs_mounttable_get(
                 sizeof(mounttable->entry[pos].dst),
                 "/dev/nvram");
 
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "opt",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].opt,
-                    sizeof(mounttable->entry[pos].opt)))) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "opt",
+                mounttable->entry[pos].opt,
+                sizeof(mounttable->entry[pos].opt));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 // optional
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
             pos++;
+        } else if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            core_property_node_fatal_on_error(result);
         }
 
-        cur = property_search(NULL, fs_node, "raw");
+        result = core_property_node_search(&fs_node, "raw", &cur);
 
-        if (cur) {
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "fstype",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].fstype,
-                    sizeof(mounttable->entry[pos].fstype)))) {
+        if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "fstype",
+                mounttable->entry[pos].fstype,
+                sizeof(mounttable->entry[pos].fstype));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 // default
                 str_cpy(
                     mounttable->entry[pos].fstype,
                     sizeof(mounttable->entry[pos].fstype),
                     "fs");
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "device",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].src,
-                    sizeof(mounttable->entry[pos].src)))) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "device",
+                mounttable->entry[pos].src,
+                sizeof(mounttable->entry[pos].src));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 log_fatal("Missing 'device' attribute on raw node");
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
             str_cpy(
@@ -755,18 +926,24 @@ void avs_config_vfs_mounttable_get(
                 sizeof(mounttable->entry[pos].dst),
                 "/dev/raw");
 
-            if (AVS_IS_ERROR(property_node_refer(
-                    NULL,
-                    cur,
-                    "opt",
-                    PROPERTY_TYPE_STR,
-                    mounttable->entry[pos].opt,
-                    sizeof(mounttable->entry[pos].opt)))) {
+            result = core_property_node_ext_str_read(
+                &cur,
+                "opt",
+                mounttable->entry[pos].opt,
+                sizeof(mounttable->entry[pos].opt));
+
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                 // optional
+            } else {
+                core_property_node_fatal_on_error(result);
             }
 
             pos++;
+        } else if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            core_property_node_fatal_on_error(result);
         }
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
     mounttable->num_entries = pos;

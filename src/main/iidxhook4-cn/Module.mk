@@ -7,8 +7,10 @@ ldflags_iidxhook4-cn   := \
 deplibs_iidxhook4-cn   := \
     avs \
 
+avslibs_iidxhook4-cn := \
+    avs-ext \
+
 libs_iidxhook4-cn      := \
-	avs-util \
     core \
     iidxhook-util \
     ezusb-emu \
@@ -18,10 +20,14 @@ libs_iidxhook4-cn      := \
     security \
     hook \
     hooklib \
-    iidxio \
     cconfig \
     util \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    util \
 
 src_iidxhook4-cn       := \
     avs-boot.c \

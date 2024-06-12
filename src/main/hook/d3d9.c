@@ -1,6 +1,6 @@
 #define LOG_MODULE "hook-d3d9"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/com-proxy.h"
 #include "hook/d3d9.h"

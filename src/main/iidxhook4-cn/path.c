@@ -4,9 +4,9 @@
 #include <string.h>
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "iidxhook4-cn/path.h"
 

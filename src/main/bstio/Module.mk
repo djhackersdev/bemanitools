@@ -1,7 +1,11 @@
 dlls		+= bstio
 
 libs_bstio	:= \
-	geninput \
+	module \
+	iface-core \
+	core \
+	iface \
+	util \
 
 src_bstio	:= \
 	bstio.c \

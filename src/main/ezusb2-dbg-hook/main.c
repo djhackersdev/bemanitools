@@ -12,12 +12,13 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log-sink-file.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
 
 #include "ezusb2/cyioctl.h"
 
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "util/cmdline.h"
 #include "util/hex.h"
@@ -376,8 +377,11 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         wchar_t *buffer;
         uint32_t args_success;
 
-        core_log_bt_ext_impl_set();
-        core_log_bt_ext_init_with_file("ezusb2_dbg.log", false, false, 0);
+        core_log_bt_core_api_set();
+
+        core_log_bt_ext_init_with_stderr_and_file(
+            "ezusb2_dbg.log", false, false, 0);
+        core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
         hook_table_apply(
             NULL,

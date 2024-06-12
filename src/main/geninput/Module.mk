@@ -7,6 +7,8 @@ ldflags_geninput    := \
 libs_geninput       := \
     core \
     util \
+    iface-core \
+    iface \
 
 src_geninput        := \
     dev-list.c \

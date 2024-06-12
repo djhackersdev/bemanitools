@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/fs.h"

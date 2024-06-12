@@ -7,9 +7,8 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/sdvxio.h"
-
-#include "core/log.h"
+#include "iface-core/log.h"
+#include "iface-io/sdvx.h"
 
 #include "util/defs.h"
 #include "util/time.h"
@@ -123,7 +122,7 @@ static void kfca_amp_control(const struct ac_io_message *req)
 
     // bytes 0-4: main, headphone, unused, subwoofer
 
-    if (!sdvx_io_set_amp_volume(
+    if (!bt_io_sdvx_amp_volume_set(
             req->cmd.raw[0], req->cmd.raw[1], req->cmd.raw[3])) {
         log_warning("Unable to set amp volume?");
     }
@@ -143,13 +142,13 @@ static void kfca_poll(const struct ac_io_message *req)
 
     pout = &req->cmd.kfca_poll_out;
 
-    sdvx_io_set_gpio_lights(ac_io_u32(pout->gpio));
+    bt_io_sdvx_gpio_lights_set(ac_io_u32(pout->gpio));
 
     for (i = 0; i < lengthof(pout->pwm); i++) {
-        sdvx_io_set_pwm_light(i, pout->pwm[i]);
+        bt_io_sdvx_pwm_light_set(i, pout->pwm[i]);
     }
 
-    sdvx_io_write_output();
+    bt_io_sdvx_output_write();
 
     /*  SDVX expects only one poll response per frame.
 
@@ -188,17 +187,17 @@ static void kfca_poll_thunk(void *ctx_ptr, struct ac_io_message *resp)
     resp->cmd.seq_no = req_seq_no;
     resp->cmd.nbytes = sizeof(*pin);
 
-    sdvx_io_read_input();
+    bt_io_sdvx_input_read();
 
     memset(pin, 0, sizeof(*pin));
 
-    pin->adc[0] = sdvx_io_get_spinner_pos(0) << 6;
-    pin->adc[1] = sdvx_io_get_spinner_pos(1) << 6;
+    pin->adc[0] = bt_io_sdvx_spinner_pos_get(0) << 6;
+    pin->adc[1] = bt_io_sdvx_spinner_pos_get(1) << 6;
 
-    pin->gpio_sys |= sdvx_io_get_input_gpio_sys() & 0x3F;
+    pin->gpio_sys |= bt_io_sdvx_input_gpio_sys_get() & 0x3F;
 
     pin->adc[0] = ac_io_u16(pin->adc[0]);
     pin->adc[1] = ac_io_u16(pin->adc[1]);
-    pin->gpio[0] = ac_io_u16(sdvx_io_get_input_gpio(0));
-    pin->gpio[1] = ac_io_u16(sdvx_io_get_input_gpio(1));
+    pin->gpio[0] = ac_io_u16(bt_io_sdvx_input_gpio_get(0));
+    pin->gpio[1] = ac_io_u16(bt_io_sdvx_input_gpio_get(1));
 }

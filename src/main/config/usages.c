@@ -9,7 +9,7 @@
 
 #include "config/resource.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/array.h"
 #include "util/str.h"

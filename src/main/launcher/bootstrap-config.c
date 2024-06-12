@@ -2,195 +2,19 @@
 
 #include <string.h>
 
-#include "core/log.h"
+#include "core/property-node-ext.h"
+#include "core/property-node.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 
 #include "launcher/avs-config.h"
 #include "launcher/bootstrap-config.h"
-#include "launcher/property-util.h"
 
 #include "util/defs.h"
 #include "util/hex.h"
 #include "util/str.h"
-
-// clang-format off
-PSMAP_BEGIN(bootstrap_startup_boot_psmap)
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_boot_config, config_file,
-    "boot/file")
-PSMAP_REQUIRED(PSMAP_TYPE_U32,  struct bootstrap_boot_config, avs_heap_size,
-    "boot/heap_avs")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_boot_config, std_heap_size,
-    "boot/heap_std", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_boot_config, mount_table_selector,
-    "boot/mounttable_selector", "boot")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_boot_config, watcher_enable,
-    "boot/watcher", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_boot_config, timemachine_enable,
-    "boot/timemachine", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_boot_config, launch_config_file,
-    "boot/launch_path", "/dev/raw/launch.xml")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_log_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, level,
-    "log/level", "all")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, name,
-    "log/name", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_log_config, file,
-    "log/file", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_log_config, bufsz,
-    "log/sz_buf", 4096)
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_log_config, output_delay_ms,
-    "log/output_delay", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_console,
-    "log/enable_console", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_sci,
-    "log/enable_netsci", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_net,
-    "log/enable_netlog", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, enable_file,
-    "log/enable_file", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, rotate,
-    "log/rotate", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_log_config, append,
-    "log/append", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_log_config, count,
-    "log/gen", 10)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_minidump_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_minidump_config, count,
-    "minidump/gen", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_minidump_config, continue_,
-    "minidump/cont_debug", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_minidump_config, log,
-    "minidump/echo_log", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_minidump_config, type,
-    "minidump/dump_type", 2)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_minidump_config, path,
-    "minidump/path", "/dev/raw/minidump")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_minidump_config, symbufsz,
-    "minidump/sz_symbuf", 32768)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_minidump_config, search_path,
-    "minidump/search", ".")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_module_psmap)
-PSMAP_REQUIRED(PSMAP_TYPE_STR,  struct bootstrap_module_config, file,
-    "component/file")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_module_config, load_type,
-    "component/load_type", "MEMORY")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_dlm_psmap)
-/* disabled until we implement PSMAP_TYPE_BIN
-   PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config, ntdll_digest,
-       "dlml/ntdll/hash", "")
- */
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, size,
-    "dlml/ntdll/size", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_table,
-    "dlml/ntdll/ift_table", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_insert,
-    "dlml/ntdll/insert_ift", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_dlm_config, ift_remove,
-    "dlml/ntdll/remove_ift", 0)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_shield_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, enable,
-    "shield/enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, verbose,
-    "shield/verbose", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_shield_config, use_loadlibrary,
-    "shield/use_loadlibrary", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, logger,
-    "shield/logger", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, sleep_min,
-    "shield/sleepmin", 10)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, sleep_blur,
-    "shield/sleepblur", 90)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, whitelist_file,
-    "shield/whitelist", "prop/whitelist.csv")
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, tick_sleep,
-    "shield/ticksleep", 100)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, tick_error,
-    "shield/tickerror", 1000)
-PSMAP_OPTIONAL(PSMAP_TYPE_U8,   struct bootstrap_shield_config, overwork_threshold,
-    "shield/overwork_threshold", 50)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, overwork_delay,
-    "shield/overwork_delay", 100)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_shield_config, pause_delay,
-    "shield/pause_delay", 1000)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_shield_config, unlimited_key,
-    "shield/unlimited_key", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_U16,  struct bootstrap_shield_config, killer_port,
-    "shield_killer/port", 5001)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_dongle_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, license_cn,
-    "dongle/license", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, account_cn,
-    "dongle/account", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_dongle_config, driver_dll,
-    "dongle/pkcs11_driver", "eTPKCS11.dll")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_dongle_config, disable_gc,
-    "dongle/disable_gc", 0)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_drm_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, dll,
-    "drm/dll", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, fstype,
-    "drm/fstype", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, device,
-    "drm/device", "")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, mount,
-    "drm/dst", "/")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_drm_config, options,
-    "drm/option", "")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_lte_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_lte_config, enable,
-    "lte/enable", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_lte_config, config_file,
-    "lte/file", "/dev/nvram/lte-config.xml")
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_lte_config, unlimited_key,
-    "lte/unlimited_key", "")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_ssl_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_ssl_config, options,
-    "ssl/option", "")
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_esign_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_esign_config, enable,
-    "esign/enable", 0)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_startup_eamuse_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, enable,
-    "eamuse/enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, sync,
-    "eamuse/sync", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, enable_model,
-    "eamuse/enable_model", 0)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_eamuse_config, config_file,
-    "eamuse/file", "/dev/nvram/ea3-config.xml")
-PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct bootstrap_eamuse_config, updatecert_enable,
-    "eamuse/updatecert_enable", 1)
-PSMAP_OPTIONAL(PSMAP_TYPE_U32,  struct bootstrap_eamuse_config, updatecert_interval,
-    "eamuse/updatecert_interval", 0)
-PSMAP_END
-
-PSMAP_BEGIN(bootstrap_psmap)
-PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct bootstrap_config, release_code, "/release_code", "")
-PSMAP_END
-// clang-format on
 
 #define ROOT_NODE "/config"
 #define MODULE_PATH_PREFIX "modules/"
@@ -222,147 +46,185 @@ const char *const inherited_nodes[] = {
 };
 
 static void _bootstrap_config_profile_node_verify(
-    struct property_node *node, const char *profile)
+    const core_property_node_t *node, const char *profile)
 {
-    struct property_node *profile_node;
+    core_property_node_t profile_node;
+    core_property_node_result_t result;
 
     log_assert(node);
     log_assert(profile);
 
-    profile_node = property_search(NULL, node, profile);
+    result = core_property_node_search(node, profile, &profile_node);
 
-    if (!profile_node) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         NODE_STARTUP_MISSING_FATAL(profile);
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 }
 
-static struct property_node *
-_bootstrap_config_root_node_get(struct property *property)
+static void _bootstrap_config_root_node_get(
+    const core_property_t *property, core_property_node_t *node)
 {
-    struct property_node *root_node;
+    core_property_node_result_t result;
+    char node_name[128];
 
     log_assert(property);
-
-    root_node = property_search(property, NULL, ROOT_NODE);
-
-    if (!root_node) {
-        NODE_MISSING_FATAL("");
-    }
-
-    return root_node;
-}
-
-static struct property_node *
-_bootstrap_config_startup_node_get(struct property_node *node)
-{
-    struct property_node *startup_node;
-
     log_assert(node);
 
-    startup_node = property_search(NULL, node, "startup");
+    result = core_property_root_node_get(property, node);
+    core_property_node_fatal_on_error(result);
 
-    if (!startup_node) {
-        NODE_MISSING_FATAL("startup");
+    result = core_property_node_name_get(node, node_name, sizeof(node_name));
+    core_property_node_fatal_on_error(result);
+
+    if (!str_eq(node_name, "config")) {
+        NODE_MISSING_FATAL("");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
+}
 
-    return startup_node;
+static void _bootstrap_config_startup_node_get(
+    const core_property_node_t *node, core_property_node_t *node_out)
+{
+    core_property_node_result_t result;
+
+    log_assert(node);
+    log_assert(node_out);
+
+    result = core_property_node_search(node, "startup", node_out);
+
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        NODE_MISSING_FATAL("startup");
+    } else {
+        core_property_node_fatal_on_error(result);
+    }
 }
 
 static void _bootstrap_config_inheritance_resolve(
-    struct property_node *startup_node, const char *profile_name)
+    const core_property_node_t *startup_node, const char *profile_name)
 {
-    struct property_node *startup_parent_node;
-    struct property_node *startup_profile_node;
-    struct property_node *tmp_node;
+    core_property_node_t startup_parent_node;
+    core_property_node_t startup_profile_node;
+    core_property_node_t tmp_node;
+    core_property_node_result_t result;
 
     char inherit_name[64];
-    avs_error error;
-    struct property_node *result;
+    int i;
 
-    startup_profile_node = property_search(NULL, startup_node, profile_name);
+    result = core_property_node_search(
+        startup_node, profile_name, &startup_profile_node);
 
-    if (!startup_profile_node) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         log_fatal(ROOT_NODE "/startup/%s: missing", profile_name);
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
-    startup_parent_node = startup_profile_node;
+    memcpy(
+        &startup_parent_node,
+        &startup_profile_node,
+        sizeof(core_property_node_t));
 
-    for (;;) {
-        error = property_node_refer(
-            NULL,
-            startup_parent_node,
+    while (true) {
+        result = core_property_node_ext_attr_read(
+            &startup_parent_node,
             "inherit@",
-            PROPERTY_TYPE_ATTR,
             inherit_name,
             sizeof(inherit_name));
 
-        if (AVS_IS_ERROR(error)) {
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             break;
+        } else {
+            core_property_node_fatal_on_error(result);
         }
 
-        startup_parent_node = property_search(NULL, startup_node, inherit_name);
+        result = core_property_node_search(
+            startup_node, inherit_name, &startup_parent_node);
 
-        if (!startup_parent_node) {
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             NODE_STARTUP_MISSING_FATAL(inherit_name);
+        } else {
+            core_property_node_fatal_on_error(result);
         }
 
-        for (int i = 0; i < _countof(inherited_nodes); i++) {
-            if (property_search(NULL, startup_node, inherited_nodes[i])) {
+        for (i = 0; i < _countof(inherited_nodes); i++) {
+            result = core_property_node_search(
+                startup_node, inherited_nodes[i], &tmp_node);
+
+            // if found, then continue; if not found, skip this, any other
+            // errors go fatal
+            if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
                 continue;
+            } else if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+                core_property_node_fatal_on_error(result);
             }
 
-            tmp_node =
-                property_search(NULL, startup_parent_node, inherited_nodes[i]);
+            result = core_property_node_search(
+                &startup_parent_node, inherited_nodes[i], &tmp_node);
 
-            if (tmp_node) {
+            if (result == CORE_PROPERTY_NODE_RESULT_SUCCESS) {
                 log_misc(
                     ROOT_NODE "/startup/%s: merging %s...",
                     inherit_name,
                     inherited_nodes[i]);
 
-                result = property_node_clone(
-                    NULL, startup_profile_node, tmp_node, true);
+                result =
+                    core_property_node_copy(&startup_profile_node, &tmp_node);
 
-                if (!result) {
+                if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                     log_fatal(
                         "Merging '%s' into '%s' failed",
                         inherited_nodes[i],
                         inherit_name);
                 }
+            } else if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+                core_property_node_fatal_on_error(result);
             }
         }
     }
 }
 
 static void _bootstrap_config_load_bootstrap_module_app_config(
-    struct property_node *profile_node, struct bootstrap_module_config *config)
+    const core_property_node_t *profile_node,
+    struct bootstrap_module_config *config)
 {
-    struct property_node *app_node;
+    core_property_node_t app_node;
+    core_property_node_result_t result;
 
     log_assert(profile_node);
     log_assert(config);
 
-    app_node = property_search(NULL, profile_node, "component/param");
+    result =
+        core_property_node_search(profile_node, "component/param", &app_node);
+    core_property_node_fatal_on_error(result);
 
-    config->app_config = property_util_node_extract(app_node);
+    result = core_property_node_ext_extract(&app_node, &config->app_config);
+    core_property_node_fatal_on_error(result);
 }
 
 static void _bootstrap_config_load_bootstrap_default_files_config(
     const char *profile_name,
-    struct property_node *profile_node,
+    const core_property_node_t *profile_node,
     struct bootstrap_default_file_config *config)
 {
     int i;
-    int result;
-    struct property_node *child;
+    core_property_node_t tmp;
+    core_property_node_t child;
+    core_property_node_result_t result;
 
     log_assert(profile_node);
     log_assert(config);
 
-    child = property_search(NULL, profile_node, "default/file");
+    result = core_property_node_search(profile_node, "default/file", &child);
     i = 0;
 
-    while (child) {
+    if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        core_property_node_fatal_on_error(result);
+    }
+
+    while (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         if (i >= DEFAULT_FILE_MAX) {
             log_warning(
                 "Currently not supporting more than %d default files, skipping "
@@ -371,138 +233,397 @@ static void _bootstrap_config_load_bootstrap_default_files_config(
             break;
         }
 
-        result = property_node_refer(
-            NULL,
-            child,
-            "src@",
-            PROPERTY_TYPE_ATTR,
-            &config->file[i].src,
-            sizeof(config->file[i].src));
+        result = core_property_node_ext_attr_read(
+            &child, "src@", config->file[i].src, sizeof(config->file[i].src));
 
-        if (result < 0) {
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             log_fatal(
                 "Missing src attribute on default file node of profile %s",
                 profile_name);
+        } else {
+            core_property_node_fatal_on_error(result);
         }
 
-        result = property_node_refer(
-            NULL,
-            child,
-            "dst@",
-            PROPERTY_TYPE_ATTR,
-            &config->file[i].dst,
-            sizeof(config->file[i].dst));
+        result = core_property_node_ext_attr_read(
+            &child, "dst@", config->file[i].dst, sizeof(config->file[i].dst));
 
-        if (result < 0) {
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             log_fatal(
                 "Missing dst attribute on default file node of profile %s",
                 profile_name);
+        } else {
+            core_property_node_fatal_on_error(result);
         }
 
-        child = property_node_traversal(child, TRAVERSE_NEXT_SEARCH_RESULT);
+        result = core_property_node_next_result_search(&child, &tmp);
+        memcpy(&child, &tmp, sizeof(core_property_node_t));
         i++;
+
+        if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            core_property_node_fatal_on_error(result);
+        }
     }
 }
 
 static void _bootstrap_config_load_bootstrap(
-    struct property_node *startup_node,
+    const core_property_node_t *startup_node,
     const char *profile,
     struct bootstrap_startup_config *config)
 {
-    struct property_node *profile_node;
+    core_property_node_t profile_node;
+    core_property_node_result_t result;
 
-    profile_node = property_search(NULL, startup_node, profile);
+    result = core_property_node_search(startup_node, profile, &profile_node);
 
-    if (!profile_node) {
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         NODE_PROFILE_LOADING_FATAL(profile, "");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
     _bootstrap_config_load_bootstrap_default_files_config(
-        profile, profile_node, &config->default_file);
+        profile, &profile_node, &config->default_file);
 
-    if (!property_psmap_import(
-            NULL, profile_node, &config->boot, bootstrap_startup_boot_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "boot");
-    }
+    result = core_property_node_ext_str_read(
+        &profile_node,
+        "boot/file",
+        config->boot.config_file,
+        sizeof(config->boot.config_file));
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read(
+        &profile_node, "boot/heap_avs", &config->boot.avs_heap_size);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "boot/heap_std", &config->boot.std_heap_size, 0);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "boot/mounttable_selector",
+        config->boot.mount_table_selector,
+        sizeof(config->boot.mount_table_selector),
+        "boot");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "boot/watcher", &config->boot.watcher_enable, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node,
+        "boot/timemachine",
+        &config->boot.timemachine_enable,
+        false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "boot/launch_path",
+        config->boot.launch_config_file,
+        sizeof(config->boot.launch_config_file),
+        "/dev/raw/launch.xml");
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL, profile_node, &config->log, bootstrap_startup_log_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "log");
-    }
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "log/level",
+        config->log.level,
+        sizeof(config->log.level),
+        "all");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "log/name",
+        config->log.name,
+        sizeof(config->log.name),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "log/file",
+        config->log.file,
+        sizeof(config->log.file),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "log/sz_buf", &config->log.bufsz, 4096);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u16_read_or_default(
+        &profile_node, "log/output_delay", &config->log.output_delay_ms, 10);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/enable_console", &config->log.enable_console, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/enable_netsci", &config->log.enable_sci, false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/enable_netlog", &config->log.enable_net, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/enable_file", &config->log.enable_file, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/rotate", &config->log.rotate, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "log/append", &config->log.append, false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u16_read_or_default(
+        &profile_node, "log/gen", &config->log.count, 10);
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->minidump,
-            bootstrap_startup_minidump_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "minidump");
-    }
+    result = core_property_node_ext_u8_read_or_default(
+        &profile_node, "minidump/gen", &config->minidump.count, 10);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node,
+        "minidump/cont_debug",
+        &config->minidump.continue_,
+        false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "minidump/echo_log", &config->minidump.log, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u8_read_or_default(
+        &profile_node, "minidump/dump_type", &config->minidump.type, 2);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "minidump/path",
+        config->minidump.path,
+        sizeof(config->minidump.path),
+        "/dev/raw/minidump");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "minidump/sz_symbuf", &config->minidump.symbufsz, 32768);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "minidump/search",
+        config->minidump.search_path,
+        sizeof(config->minidump.search_path),
+        ".");
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->module,
-            bootstrap_startup_module_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "component");
-    }
+    result = core_property_node_ext_str_read(
+        &profile_node,
+        "component/file",
+        config->module.file,
+        sizeof(config->module.file));
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "component/load_type",
+        config->module.load_type,
+        sizeof(config->module.load_type),
+        "MEMORY");
+    core_property_node_fatal_on_error(result);
 
     _bootstrap_config_load_bootstrap_module_app_config(
-        profile_node, &config->module);
+        &profile_node, &config->module);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->dlm_ntdll,
-            bootstrap_startup_dlm_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "dlm/ntdll");
-    }
+    /* disabled until we implement PSMAP_TYPE_BIN
+    PSMAP_OPTIONAL(PSMAP_TYPE_STR,  struct bootstrap_startup_config,
+    ntdll_digest, "dlml/ntdll/hash", "")
+    */
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "dlml/ntdll/size", &config->dlm_ntdll.size, 0);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "dlml/ntdll/ift_table", &config->dlm_ntdll.ift_table, 0);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node,
+        "dlml/ntdll/insert_ift",
+        &config->dlm_ntdll.ift_insert,
+        0);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node,
+        "dlml/ntdll/remove_ift",
+        &config->dlm_ntdll.ift_remove,
+        0);
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->shield,
-            bootstrap_startup_shield_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "shield");
-    }
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "shield/enable", &config->shield.enable, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "shield/verbose", &config->shield.verbose, false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node,
+        "shield/use_loadlibrary",
+        &config->shield.use_loadlibrary,
+        false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "shield/use_loadlibrary",
+        config->shield.logger,
+        sizeof(config->shield.logger),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "shield/sleepmin", &config->shield.sleep_min, 10);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "shield/sleepblur", &config->shield.sleep_blur, 90);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "shield/whitelist",
+        config->shield.whitelist_file,
+        sizeof(config->shield.whitelist_file),
+        "prop/whitelist.csv");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "shield/ticksleep", &config->shield.tick_sleep, 100);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "shield/tickerror", &config->shield.tick_error, 1000);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u8_read_or_default(
+        &profile_node,
+        "shield/overwork_threshold",
+        &config->shield.overwork_threshold,
+        50);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node,
+        "shield/overwork_delay",
+        &config->shield.overwork_delay,
+        100);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node, "shield/pause_delay", &config->shield.pause_delay, 1000);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "shield/unlimited_key",
+        config->shield.unlimited_key,
+        sizeof(config->shield.unlimited_key),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u16_read_or_default(
+        &profile_node, "shield_killer/port", &config->shield.killer_port, 5001);
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->dongle,
-            bootstrap_startup_dongle_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "dongle");
-    }
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "dongle/license",
+        config->dongle.license_cn,
+        sizeof(config->dongle.license_cn),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "dongle/account",
+        config->dongle.account_cn,
+        sizeof(config->dongle.account_cn),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "dongle/pkcs11_driver",
+        config->dongle.driver_dll,
+        sizeof(config->dongle.driver_dll),
+        "eTPKCS11.dll");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "dongle/disable_gc", &config->dongle.disable_gc, false);
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL, profile_node, &config->drm, bootstrap_startup_drm_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "drm");
-    }
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node, "drm/dll", config->drm.dll, sizeof(config->drm.dll), "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "drm/fstype",
+        config->drm.fstype,
+        sizeof(config->drm.fstype),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "drm/device",
+        config->drm.device,
+        sizeof(config->drm.device),
+        "");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "drm/dst",
+        config->drm.mount,
+        sizeof(config->drm.mount),
+        "/");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "drm/option",
+        config->drm.options,
+        sizeof(config->drm.options),
+        "");
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL, profile_node, &config->lte, bootstrap_startup_lte_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "lte");
-    }
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "lte/enable", &config->lte.enable, false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "lte/file",
+        config->lte.config_file,
+        sizeof(config->lte.config_file),
+        "/dev/nvram/lte-config.xml");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "lte/unlimited_key",
+        config->lte.unlimited_key,
+        sizeof(config->lte.unlimited_key),
+        "");
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL, profile_node, &config->ssl, bootstrap_startup_ssl_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "ssl");
-    }
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "ssl/option",
+        config->ssl.options,
+        sizeof(config->ssl.options),
+        "");
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->esign,
-            bootstrap_startup_esign_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "esign");
-    }
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "esign/enable", &config->esign.enable, false);
+    core_property_node_fatal_on_error(result);
 
-    if (!property_psmap_import(
-            NULL,
-            profile_node,
-            &config->eamuse,
-            bootstrap_startup_eamuse_psmap)) {
-        NODE_PROFILE_LOADING_FATAL(profile, "eamuse");
-    }
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "eamuse/enable", &config->eamuse.enable, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node, "eamuse/sync", &config->eamuse.sync, true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node,
+        "eamuse/enable_model",
+        &config->eamuse.enable_model,
+        false);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_str_read_or_default(
+        &profile_node,
+        "eamuse/file",
+        config->eamuse.config_file,
+        sizeof(config->eamuse.config_file),
+        "/dev/nvram/ea3-config.xml");
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_bool_read_or_default(
+        &profile_node,
+        "eamuse/updatecert_enable",
+        &config->eamuse.updatecert_enable,
+        true);
+    core_property_node_fatal_on_error(result);
+    result = core_property_node_ext_u32_read_or_default(
+        &profile_node,
+        "eamuse/updatecert_interval",
+        &config->eamuse.updatecert_interval,
+        0);
+    core_property_node_fatal_on_error(result);
 }
 
 void bootstrap_config_init(struct bootstrap_config *config)
@@ -513,12 +634,13 @@ void bootstrap_config_init(struct bootstrap_config *config)
 }
 
 void bootstrap_config_load(
-    struct property *property,
+    const core_property_t *property,
     const char *profile,
     struct bootstrap_config *config)
 {
-    struct property_node *root_node;
-    struct property_node *startup_node;
+    core_property_node_t root_node;
+    core_property_node_t startup_node;
+    core_property_node_result_t result;
 
     log_assert(property);
     log_assert(profile);
@@ -526,23 +648,30 @@ void bootstrap_config_load(
 
     log_info(ROOT_NODE ": loading...");
 
-    root_node = _bootstrap_config_root_node_get(property);
+    _bootstrap_config_root_node_get(property, &root_node);
 
-    if (!property_psmap_import(NULL, root_node, config, bootstrap_psmap)) {
+    result = core_property_node_ext_str_read_or_default(
+        &root_node,
+        "/release_code",
+        config->release_code,
+        sizeof(config->release_code),
+        "");
+
+    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
         log_fatal(ROOT_NODE ": loading failed");
     }
 
-    startup_node = _bootstrap_config_startup_node_get(root_node);
+    _bootstrap_config_startup_node_get(&root_node, &startup_node);
 
-    _bootstrap_config_profile_node_verify(startup_node, profile);
+    _bootstrap_config_profile_node_verify(&startup_node, profile);
 
-    _bootstrap_config_inheritance_resolve(startup_node, profile);
+    _bootstrap_config_inheritance_resolve(&startup_node, profile);
 
     log_misc(ROOT_NODE "/startup/%s: loading merged result...", profile);
 
-    property_util_node_log(startup_node);
+    core_property_node_log(&startup_node, log_misc_func);
 
-    _bootstrap_config_load_bootstrap(startup_node, profile, &config->startup);
+    _bootstrap_config_load_bootstrap(&startup_node, profile, &config->startup);
 
     log_misc("Loading finished");
 }

@@ -6,7 +6,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 #include "util/net.h"

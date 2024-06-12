@@ -1,10 +1,10 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "core/log.h"
-
 #include "geninput/dev-list.h"
 #include "geninput/hid.h"
+
+#include "iface-core/log.h"
 
 #include "util/str.h"
 
