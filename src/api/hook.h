@@ -9,12 +9,6 @@
 
 #include "api/core/config.h"
 
-typedef enum bt_io_bst_gpio_sys_bit {
-    BT_IO_BST_GPIO_SYS_COIN = 2,
-    BT_IO_BST_GPIO_SYS_TEST = 4,
-    BT_IO_BST_GPIO_SYS_SERVICE = 5,
-} bt_io_bst_gpio_sys_bit_t;
-
 typedef void (*bt_hook_iat_dll_name_get_t)(char *buffer, size_t size);
 typedef bool (*bt_hook_pre_avs_init_t)(const bt_core_config_t *config);
 // game module reference, either the exe or dll. allow for further targeted hooking/patching

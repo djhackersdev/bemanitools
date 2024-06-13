@@ -5,14 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
-
-#include "core/boot.h"
-#include "core/log-bt-ext.h"
-#include "core/log-bt.h"
-#include "core/log-sink-debug.h"
 
 #include "ezusb-emu/node-security-plug.h"
 
@@ -43,10 +36,12 @@
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/settings.h"
 
-#include "imports/avs.h"
-
 #include "module/io-ext.h"
 #include "module/io.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "security/rp-sign-key.h"
 
@@ -56,29 +51,12 @@
 #define IIDXHOOK5_CN_CMD_USAGE \
     "Usage: inject.exe iidxhook5-cn.dll <bm2dx.exe> [options...]"
 
-static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass);
-static ATOM(WINAPI *real_RegisterClassA)(const WNDCLASSA *lpWndClass);
-static bool iidxhook_init_check;
-
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
 
-static const struct hook_symbol init_hook_user32_syms[] = {
-    {.name = "RegisterClassA",
-     .patch = my_RegisterClassA,
-     .link = (void **) &real_RegisterClassA},
-};
-
 static struct iidxhook_config_io config_io;
 static module_io_t *iidxhook_module_io_iidx;
-
-static void _iidxhook5_cn_log_init()
-{
-    core_log_bt_ext_init_with_debug();
-    // TODO change log level support
-    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
-}
 
 static void _iidxhook5_cn_io_iidx_init(module_io_t **module)
 {
@@ -118,11 +96,8 @@ iidxhook5_cn_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
     hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
 }
 
-/**
- * OpenProcess is basically used for hooks in exe games,
- * but since it does not exist in this game, RegisterClassA is used instead.
- */
-static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
+static bool
+_iidxhook5_cn_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     struct cconfig *config;
 
@@ -130,12 +105,6 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook_config_sec config_sec;
     struct iidxhook_config_misc config_misc;
-
-    if (iidxhook_init_check) {
-        return real_RegisterClassA(lpWndClass);
-    }
-
-    iidxhook_init_check = true;
 
     log_info("-------------------------------------------------------------");
     log_info("------------- Begin iidxhook my_RegisterClassA --------------");
@@ -167,6 +136,11 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
 
     log_info(IIDXHOOK5_CN_INFO_HEADER);
     log_info("Initializing iidxhook...");
+
+    iidxhook5_cn_path_init();
+    iidxhook5_cn_avs_boot_init();
+    acp_hook_init();
+    settings_hook_init();
 
     /**
      * This game is using a black round plug for game license management instead
@@ -215,7 +189,30 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
     log_info("-------------- End iidxhook my_RegisterClassA ---------------");
     log_info("-------------------------------------------------------------");
 
-    return real_RegisterClassA(lpWndClass);
+    return true;
+}
+
+static void _iidxhook5_cn_main_fini()
+{
+    // TODO cleanup
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _iidxhook5_cn_main_init;
+    api->v1.main_fini = _iidxhook5_cn_main_fini;
 }
 
 /**
@@ -223,31 +220,5 @@ static ATOM WINAPI my_RegisterClassA(const WNDCLASSA *lpWndClass)
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        return TRUE;
-    }
-
-    core_boot_dll("iidxhook5-cn");
-
-    // Use bemanitools core APIs
-    core_log_bt_core_api_set();
-
-    // Use AVS APIs
-    avs_ext_thread_core_api_set();
-
-    // TODO init debug logging but with avs available? why not use avs logging?
-    _iidxhook5_cn_log_init();
-
-    hook_table_apply(
-        NULL,
-        "user32.dll",
-        init_hook_user32_syms,
-        lengthof(init_hook_user32_syms));
-
-    iidxhook5_cn_path_init();
-    iidxhook5_cn_avs_boot_init();
-    acp_hook_init();
-    settings_hook_init();
-
     return TRUE;
 }

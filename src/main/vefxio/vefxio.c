@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "iface-core/log.h"
 #include "iface-io/vefx.h"
 
 #include "sdk/module/io/vefx.h"
@@ -146,6 +147,11 @@ bool bt_io_vefx_16seg_send(const char *text)
        Log something and return false if you encounter an IO error. */
 
     return true;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
 }
 
 void bt_module_io_vefx_api_get(bt_io_vefx_api_t *api)

@@ -9,8 +9,6 @@ goal: fix inefficient logging causing stuttering and unify across launcher/injec
 
 new plan:
 * bt-log as its own async logging engine with ring buffer
-* don't use AVS loggers anymore, don't need to use AVS threads either then
-* gets rid of log-server in iidx since all logging in btools goes through bt-log engine
 * log sink needs to be setup with a mutex to ensure log messages aren't split
   * since AVS and btools log engines are async then, this is fine
 * can also simplify the whole logging API stuff since there is only one API impl

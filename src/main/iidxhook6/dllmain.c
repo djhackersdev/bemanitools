@@ -5,12 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
-
-#include "core/boot.h"
 
 #include "ezusb-iidx-emu/nodes.h"
 
@@ -38,11 +33,12 @@
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
 #include "iidxhook-util/d3d9.h"
-#include "iidxhook-util/log-server.h"
 
 #include "module/io-ext.h"
 #include "module/io.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
 #include "sdk/module/hook.h"
 
 #include "util/str.h"
@@ -116,10 +112,6 @@ iidxhook6_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 static bool
 _iidxhook6_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
@@ -145,8 +137,6 @@ _iidxhook6_main_init(HMODULE game_module, const bt_core_config_t *config_)
     cconfig_finit(config);
 
     log_info(IIDXHOOK6_INFO_HEADER);
-
-    log_server_init();
 
     acp_hook_init();
     adapter_hook_init();
@@ -217,8 +207,16 @@ static void _iidxhook6_main_fini()
         bt_io_iidx_api_clear();
         module_io_free(&iidxhook_module_io_iidx);
     }
+}
 
-    log_server_fini();
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
 }
 
 void bt_module_hook_api_get(bt_hook_api_t *api)

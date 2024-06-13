@@ -5,18 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
-
-#include "core/boot.h"
 
 #include "hook/d3d9.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
@@ -31,7 +25,6 @@
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/d3d9.h"
-#include "iidxhook-util/log-server.h"
 
 #include "bio2emu-iidx/bi2a.h"
 #include "bio2emu/emu.h"
@@ -40,10 +33,12 @@
 #include "camhook/config-cam.h"
 #include "iidxhook8/config-io.h"
 
-#include "imports/avs.h"
-
 #include "module/io-ext.h"
 #include "module/io.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "util/str.h"
 
@@ -121,14 +116,12 @@ static struct bio2emu_port bio2_emu = {
     .dispatcher = bio2_emu_bi2a_dispatch_request,
 };
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_iidxhook8_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     struct cconfig *config;
 
     struct iidxhook_config_gfx config_gfx;
-
-    // log_server_init is required due to IO occuring in a non avs_thread
-    log_server_init();
 
     log_info("-------------------------------------------------------------");
     log_info("--------------- Begin iidxhook dll_entry_init ---------------");
@@ -145,7 +138,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
             IIDXHOOK8_INFO_HEADER "\n" IIDXHOOK8_CMD_USAGE,
             CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
-        log_server_fini();
+
         exit(EXIT_FAILURE);
     }
 
@@ -157,6 +150,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info(IIDXHOOK8_INFO_HEADER);
     log_info("Initializing iidxhook...");
+
+    acp_hook_init();
+    adapter_hook_init();
 
     iidxhook8_setup_d3d9_hooks(&config_gfx);
 
@@ -210,15 +206,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("---------------- End iidxhook dll_entry_init ----------------");
     log_info("-------------------------------------------------------------");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _iidxhook8_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     if (!config_cam.disable_emu) {
         camhook_fini();
     }
@@ -238,10 +230,24 @@ static bool my_dll_entry_main(void)
         bt_io_iidx_api_clear();
         module_io_free(&iidxhook_module_io_iidx);
     }
+}
 
-    log_server_fini();
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
 
-    return result;
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _iidxhook8_main_init;
+    api->v1.main_fini = _iidxhook8_main_fini;
 }
 
 /**
@@ -249,21 +255,5 @@ static bool my_dll_entry_main(void)
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    core_boot("iidxhook8");
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    acp_hook_init();
-    adapter_hook_init();
-
-end:
     return TRUE;
 }
