@@ -127,7 +127,6 @@ _iidxhook6_main_init(HMODULE game_module, const bt_core_config_t *config_)
             CCONFIG_CMD_USAGE_OUT_DBG)) {
         cconfig_finit(config);
 
-        // log_server_fini();
         exit(EXIT_FAILURE);
     }
 
