@@ -3,6 +3,37 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 6.0.0-alpha.2
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+Goal of this version: Fix blocking logging which results in performance impact on many games using
+both launcher and inject. The impact typically materialized as the game stuttering, briefly slowing
+down, music de-syncing or occasional laggy input.
+
+This was a fundamental issue to the previous logging architecture in bemanitools. With the pre-work
+of having a more modular logging API that can be shared and used across internal components as well
+as public APIs including hooks, unified logging can be applied throughout the bemanitools stack.
+
+With this, all logging is channeled to a single logger, the bemanitools logger, where we have full
+control over how we log any log output (but also full control of messing it up =)).
+
+With this, we can also move away from the band aid of the log-server that's been used in iidx
+versions 19 to 24 because non AVS threads logging through the AVS logging system were crashing (see
+[this document](doc/dev/journal/2018-02-10-logging-breakdown-avs.md) for details).
+
+A new async log sink takes care of de-coupling the non blocking producing/posting of messages to
+a configurable queue by any number of threads concurrently, with a single producer thread consuming
+these messages from the queue and forwarding them to a configured target sink, e.g. file, terminal.
+
+With this, we ensure that threads with log messages don't have to wait for synchronization on 
+expensive and slow IO.
+
+These changes have been applied to to launcher and inject. The log-server module has been removed
+entirely from any (iidx) games using it.
+
 ## 6.0.0-alpha.1
 
 **THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
