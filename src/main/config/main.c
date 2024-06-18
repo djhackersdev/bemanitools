@@ -16,7 +16,7 @@
 
 #include "core/boot.h"
 #include "core/log-bt.h"
-#include "core/log-sink-std.h"
+#include "core/log-bt-ext.h"
 #include "core/thread-crt.h"
 
 #include "eamio/eam-config.h"
@@ -85,7 +85,6 @@ int main(int argc, char **argv)
     wchar_t text[1024];
     int max_light;
     size_t i;
-    core_log_sink_t sink;
     bt_input_api_t input_api;
     module_input_t *module_input;
     bt_io_eam_api_t eam_api;
@@ -100,9 +99,8 @@ int main(int argc, char **argv)
 
     core_boot("config");
 
-    core_log_sink_std_err_open(true, &sink);
+    core_log_bt_ext_init_with_stderr();
 
-    core_log_bt_init(&sink);
     core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
     core_log_bt_core_api_set();
 
