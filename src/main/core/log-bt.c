@@ -12,10 +12,9 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-/* 64k so we can log data dumps of rs232 without crashing */
-#define CORE_LOG_MSG_SIZE_MAX 65536
 #define CORE_LOG_TIMESTAMP_SIZE_MAX 64
 
+static uint32_t _core_log_bt_msg_buffer_size;
 static enum core_log_bt_log_level _core_log_bt_log_level;
 static core_log_sink_t *_core_log_bt_sink;
 
@@ -28,8 +27,8 @@ static void _core_log_bt_vformat_timestamp_log_level_write(
     static const char chars[] = "FFWIM";
 
     char timestamp[CORE_LOG_TIMESTAMP_SIZE_MAX];
-    char msg[CORE_LOG_MSG_SIZE_MAX];
-    char line[CORE_LOG_MSG_SIZE_MAX];
+    char msg[_core_log_bt_msg_buffer_size];
+    char line[_core_log_bt_msg_buffer_size];
     int result;
 
     time_t curtime;
@@ -40,6 +39,8 @@ static void _core_log_bt_vformat_timestamp_log_level_write(
 
     curtime = time(NULL);
     tm = localtime(&curtime);
+
+    // TODO truncate messages if too large and emit log warning message this happened
 
     strftime(timestamp, sizeof(timestamp), "[%Y/%m/%d %H:%M:%S]", tm);
 
@@ -61,6 +62,9 @@ static void _core_log_bt_log_misc(const char *module, const char *fmt, ...)
 {
     va_list args;
 
+    // Cut off logging as early as possible if the logging level isn't configured
+    // This saves processing time that might have performance impact on the
+    // calling thread
     if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_MISC) {
         va_start(args, fmt);
         _core_log_bt_vformat_timestamp_log_level_write(
@@ -73,6 +77,9 @@ static void _core_log_bt_log_info(const char *module, const char *fmt, ...)
 {
     va_list args;
 
+    // Cut off logging as early as possible if the logging level isn't configured
+    // This saves processing time that might have performance impact on the
+    // calling thread
     if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_INFO) {
         va_start(args, fmt);
         _core_log_bt_vformat_timestamp_log_level_write(
@@ -85,6 +92,9 @@ static void _core_log_bt_log_warning(const char *module, const char *fmt, ...)
 {
     va_list args;
 
+    // Cut off logging as early as possible if the logging level isn't configured
+    // This saves processing time that might have performance impact on the
+    // calling thread
     if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_WARNING) {
         va_start(args, fmt);
         _core_log_bt_vformat_timestamp_log_level_write(
@@ -97,6 +107,9 @@ static void _core_log_bt_log_fatal(const char *module, const char *fmt, ...)
 {
     va_list args;
 
+    // Cut off logging as early as possible if the logging level isn't configured
+    // This saves processing time that might have performance impact on the
+    // calling thread
     if (_core_log_bt_log_level >= CORE_LOG_BT_LOG_LEVEL_FATAL) {
         va_start(args, fmt);
         _core_log_bt_vformat_timestamp_log_level_write(
@@ -125,32 +138,35 @@ void core_log_bt_core_api_set()
     bt_core_log_api_set(&api);
 }
 
-void core_log_bt_init(const core_log_sink_t *sink)
+void core_log_bt_init(
+    size_t msg_buffer_size,
+    const core_log_sink_t *sink)
 {
+    // Sanity check for sizes we consider too much or too less
+    log_assert(msg_buffer_size > 1024); // 1 kB
+    log_assert(msg_buffer_size <= 1024 * 1024); // 1 MB
     log_assert(sink);
 
-    log_misc("Init");
+    _core_log_bt_msg_buffer_size = msg_buffer_size;
 
     _core_log_bt_sink = xmalloc(sizeof(core_log_sink_t));
     memcpy(_core_log_bt_sink, sink, sizeof(core_log_sink_t));
 
     _core_log_bt_log_level = CORE_LOG_BT_LOG_LEVEL_OFF;
+
+    log_misc("Init: msg_buffer_size %d", msg_buffer_size);
 }
 
-void core_log_bt_reinit(const core_log_sink_t *sink)
+void core_log_bt_reinit(
+    size_t msg_buffer_size,
+    const core_log_sink_t *sink)
 {
     log_assert(_core_log_bt_sink);
 
     log_misc("Re-init");
 
-    _core_log_bt_sink->close(_core_log_bt_sink->ctx);
-
-    free(_core_log_bt_sink);
-
-    _core_log_bt_sink = xmalloc(sizeof(core_log_sink_t));
-    memcpy(_core_log_bt_sink, sink, sizeof(core_log_sink_t));
-
-    _core_log_bt_log_level = CORE_LOG_BT_LOG_LEVEL_OFF;
+    core_log_bt_fini();
+    core_log_bt_init(msg_buffer_size, sink);
 }
 
 void core_log_bt_level_set(enum core_log_bt_log_level level)
