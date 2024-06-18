@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define BT_CORE_THREAD_RESULT_IS_ERROR(x) \
+    (x > BT_CORE_THREAD_RESULT_SUCCESS)
+
 typedef enum bt_core_thread_result {
     BT_CORE_THREAD_RESULT_SUCCESS = 0,
     BT_CORE_THREAD_RESULT_ERROR_INTERNAL = 1,

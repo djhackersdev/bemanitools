@@ -7,6 +7,9 @@
 
 typedef struct bt_core_config bt_core_config_t;
 
+#define BT_CORE_CONFIG_RESULT_IS_ERROR(x) \
+    (x > BT_CORE_CONFIG_RESULT_SUCCESS)
+
 typedef enum bt_core_config_result {
     BT_CORE_CONFIG_RESULT_SUCCESS = 0,
     BT_CORE_CONFIG_RESULT_ERROR_INTERNAL = 1,
