@@ -13,6 +13,7 @@
 typedef struct core_log_sink_std {
     HANDLE handle;
     bool color;
+    HANDLE mutex;
 } core_log_sink_std_t;
 
 static char _core_log_sink_std_determine_color(const char *str)
@@ -96,7 +97,13 @@ _core_log_sink_std_write(void *ctx_, const char *chars, size_t nchars)
     ctx = (core_log_sink_std_t *) ctx_;
 
     if (ctx->color) {
+        // Coloring needs to be mutex'd as the writes are non atomic
+        // and get messed up when this is called by multiple threads
+        // e.g. AVS logging engine and core bt logging engine
+
         write_pos = 0;
+
+        WaitForSingleObject(ctx->mutex, INFINITE);
 
         // Support multiple buffered log messages, e.g. from the AVS logging
         // engine
@@ -152,6 +159,8 @@ _core_log_sink_std_write(void *ctx_, const char *chars, size_t nchars)
                 write_pos += written;
             }
         }
+
+        ReleaseMutex(ctx->mutex);
     } else {
         WriteConsole(ctx->handle, chars, nchars, &written, NULL);
     }
@@ -164,6 +173,8 @@ static void _core_log_sink_std_close(void *ctx_)
     ctx = (core_log_sink_std_t *) ctx_;
 
     // Remark: Don't close the ctx->handle, see win API docs
+    
+    CloseHandle(ctx->mutex);
 
     free(ctx);
 }
@@ -180,6 +191,7 @@ void core_log_sink_std_out_open(bool color, core_log_sink_t *sink)
 
     ctx->handle = GetStdHandle(STD_OUTPUT_HANDLE);
     ctx->color = color;
+    ctx->mutex = CreateMutex(NULL, FALSE, NULL);
 
     sink->ctx = (void *) ctx;
     sink->write = _core_log_sink_std_write;
@@ -198,6 +210,7 @@ void core_log_sink_std_err_open(bool color, core_log_sink_t *sink)
 
     ctx->handle = GetStdHandle(STD_ERROR_HANDLE);
     ctx->color = color;
+    ctx->mutex = CreateMutex(NULL, FALSE, NULL);
 
     sink->ctx = (void *) ctx;
     sink->write = _core_log_sink_std_write;
