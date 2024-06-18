@@ -10,6 +10,7 @@
 #include "avs-ext/property-node.h"
 #include "avs-ext/property.h"
 
+#include "core/boot.h"
 #include "core/config-property-node.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
@@ -68,18 +69,11 @@ static void _launcher_log_header()
 void _launcher_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    core_log_sink_t sinks[2];
-    core_log_sink_t sink_composed;
-
     if (log_file_path) {
-        core_log_sink_std_out_open(true, &sinks[0]);
-        core_log_sink_file_open(log_file_path, false, true, 10, &sinks[1]);
-        core_log_sink_list_open(sinks, 2, &sink_composed);
+        core_log_bt_ext_init_async_with_stderr_and_file(log_file_path, false, true, 10);
     } else {
-        core_log_sink_std_out_open(true, &sink_composed);
+        core_log_bt_ext_init_async_with_stderr();
     }
-
-    core_log_bt_init(&sink_composed);
 
     core_log_bt_core_api_set();
 
@@ -411,12 +405,12 @@ void _launcher_init(
     log_assert(bootstrap_config);
     log_assert(ea3_ident_config);
 
+    core_thread_crt_core_api_set();
+
     // Early logging pre AVS setup depend entirely on command args
     // We don't even have the bootstrap configuration loaded at this point
     _launcher_log_init(options->log.file_path, options->log.level);
     _launcher_log_header();
-
-    core_thread_crt_core_api_set();
 
     // TODO make this configurable, e.g. command line args/env vars?
     core_property_trace_log_enable(true);
