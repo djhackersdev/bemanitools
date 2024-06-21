@@ -27,19 +27,19 @@ static void _core_boot_log_std_msg(const char *module, const char *fmt, ...)
 
 static void _core_boot_log_debug_msg(const char *module, const char *fmt, ...)
 {
-    char module_str[CORE_BOOT_LOG_MODULE_SIZE_MAX];
     char msg[CORE_BOOT_LOG_MSG_SIZE_MAX];
+    char msg2[CORE_BOOT_LOG_MSG_SIZE_MAX];
     va_list args;
 
     va_start(args, fmt);
 
-    str_format(module_str, sizeof(module_str), "[%s] ", module);
     str_vformat(msg, sizeof(msg), fmt, args);
-    OutputDebugStringA(module_str);
-    OutputDebugStringA(msg);
-    OutputDebugStringA("\n");
 
     va_end(args);
+
+    str_format(msg2, sizeof(msg2), "[%s] %s\n", module, msg);
+    
+    OutputDebugStringA(msg2);
 }
 
 static void _core_boot_minimal_logging_std_env_init()

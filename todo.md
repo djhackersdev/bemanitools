@@ -3,27 +3,27 @@
 Lose list of TODOs/notes/thoughts that might or might not need to worked on. Some of these are
 already sorted and moved to separate sub-sections outlining some kind of "roadmap".
 
-## Alpha 2
-
-goal: fix inefficient logging causing stuttering and unify across launcher/inject
-
-new plan:
-* bt-log as its own async logging engine with ring buffer
-* log sink needs to be setup with a mutex to ensure log messages aren't split
-  * since AVS and btools log engines are async then, this is fine
-* can also simplify the whole logging API stuff since there is only one API impl
-  needed
-
-* avs log server in iidx-utils (and also for other games where needed?)
-  move to bt-core and make it a generic and improved async log sink
-* replace inject logging through debug api with unified logging through bemanitools 6 api
-  * also solves issue with blocking logging on OutputDebugStr that needs synchronized
-
 ## Alpha 3
 
 goal: migrate and cleanup iidxhooks
 
-* use new bemanitools hook api in iidxhooks
+* inject
+  * Modify loading of hooks -> need to call btapi thread + log set functions somehow
+  * Modify hooking to hook main_init and main_fini of hook before and after the main function of the exe
+    * Load exe (PE) file, resolve references but don't call the start() function, yet
+    * Run the start() function with hook main_init and main_finit before and after that -> issue if exe has nothing, not even heap etc. initialized?
+    * Which functions can i use from hooklib for that? 
+      * Requires writing our own PE loader for executables?
+      * See hook/process -> process_hijack_startup and hook/pe 
+
+bemanitools: new tool called “loader” that’s a PE loader with additional btools 6 api. also supports generic hooks with just DllMain as it supports loading of arbitrary DLLs. should work trapping BT ApI before start() function because DllMain methods were called even earlier already. just need to make sure BT hook stuff is called after the entire process is set up and all dependencies loaded
+
+push back loader idea as inject still works fine with the debugger idea and everything else.
+also check my own references and read up to refresh my mind how windows loads executables/PE files
+regarding the stages/steps it takes before writing the bemanitools loader that replaces inject
+
+* use new bemanitools hook api in iidxhooks 
+  * replace inject logging through debug api with unified logging through bemanitools 6 api
 * iat hook impl in launcher not complete and working, yet
 
 ## Alpha 4
