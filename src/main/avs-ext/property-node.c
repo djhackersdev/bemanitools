@@ -933,15 +933,12 @@ static core_property_node_result_t _avs_ext_property_node_double_create(
 static core_property_node_result_t _avs_ext_property_node_attr_create(
     const core_property_node_t *parent_node_,
     const char *key,
-    const char *value,
-    core_property_node_t *node_out_)
+    const char *value)
 {
     avs_ext_property_internal_node_t *parent_node;
-    avs_ext_property_internal_node_t *node_out;
     struct property_node *tmp;
 
     parent_node = (avs_ext_property_internal_node_t *) parent_node_;
-    node_out = (avs_ext_property_internal_node_t *) node_out_;
 
     tmp = property_node_create(
         parent_node->property->property,
@@ -952,13 +949,6 @@ static core_property_node_result_t _avs_ext_property_node_attr_create(
 
     if (!tmp) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
-    }
-
-    if (node_out) {
-        memset(node_out, 0, sizeof(avs_ext_property_internal_node_t));
-
-        node_out->property = parent_node->property;
-        node_out->node = tmp;
     }
 
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
@@ -1233,15 +1223,32 @@ static core_property_node_result_t _avs_ext_property_node_double_read(
 }
 
 static core_property_node_result_t _avs_ext_property_node_attr_read(
-    const core_property_node_t *parent_node_, char *value, size_t len)
+    const core_property_node_t *parent_node_, const char *key, char *value, size_t len)
 {
     avs_ext_property_internal_node_t *parent_node;
     avs_error error;
+    size_t attr_key_len;
+    char *attr_key;
+    struct property_node *node_attr;
 
     parent_node = (avs_ext_property_internal_node_t *) parent_node_;
 
+    // Append @ denoting an attribute, plus null terminator
+    attr_key_len = strlen(key) + 1 + 1;
+
+    attr_key = xmalloc(sizeof(char) * attr_key_len);
+
+    str_cpy(attr_key, attr_key_len, key);
+    str_cat(attr_key, attr_key_len, "@");
+
+    node_attr = property_search(NULL, parent_node->node, attr_key);
+
+    if (node_attr == NULL) {
+        return CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND;
+    }
+
     error =
-        property_node_read(parent_node->node, PROPERTY_TYPE_ATTR, value, len);
+        property_node_read(node_attr, PROPERTY_TYPE_ATTR, value, len);
 
     if (AVS_IS_ERROR(error)) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -1260,6 +1267,41 @@ static core_property_node_result_t _avs_ext_property_node_bool_read(
 
     error = property_node_read(
         parent_node->node, PROPERTY_TYPE_BOOL, value, sizeof(bool));
+
+    if (AVS_IS_ERROR(error)) {
+        return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
+    }
+
+    return CORE_PROPERTY_NODE_RESULT_SUCCESS;
+}
+
+static core_property_node_result_t _avs_ext_property_node_attr_remove(
+    const core_property_node_t *parent_node_, const char *key)
+{
+    avs_ext_property_internal_node_t *parent_node;
+    struct property_node *attr_node;
+    size_t attr_key_len;
+    char *attr_key;
+    avs_error error;
+
+    parent_node = (avs_ext_property_internal_node_t *) parent_node_;
+
+    // Append @ denoting an attribute, plus null terminator
+    attr_key_len = strlen(key) + 1 + 1;
+
+    attr_key = xmalloc(sizeof(char) * attr_key_len);
+
+    str_cpy(attr_key, attr_key_len, key);
+    str_cat(attr_key, attr_key_len, "@");
+
+    // AVS property treats attributes as a type of node
+    attr_node = property_search(NULL, parent_node->node, attr_key);
+
+    if (attr_node == NULL) {
+        return CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND;
+    }
+
+    error = property_node_remove(attr_node);
 
     if (AVS_IS_ERROR(error)) {
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
@@ -1350,6 +1392,7 @@ void avs_ext_property_node_core_api_get(core_property_node_api_t *api)
     api->v1.attr_read = _avs_ext_property_node_attr_read;
     api->v1.bool_read = _avs_ext_property_node_bool_read;
     api->v1.remove = _avs_ext_property_node_remove;
+    api->v1.attr_remove = _avs_ext_property_node_attr_remove;
     api->v1.copy = _avs_ext_property_node_copy;
 }
 

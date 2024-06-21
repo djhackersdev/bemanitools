@@ -457,16 +457,15 @@ static core_property_node_result_t _core_property_node_trace_double_create(
 static core_property_node_result_t _core_property_node_trace_attr_create(
     const core_property_node_t *parent_node,
     const char *key,
-    const char *value,
-    core_property_node_t *node_out)
+    const char *value)
 {
     core_property_node_result_t result;
 
     log_misc(
-        ">>> attr_create(%p, %s, %s, %p)", parent_node, key, value, node_out);
+        ">>> attr_create(%p, %s, %s, %p)", parent_node, key, value);
 
     result = _core_property_node_trace_target_api.v1.attr_create(
-        parent_node, key, value, node_out);
+        parent_node, key, value);
 
     log_misc(
         "<<< attr_create(%p, %s): %s",
@@ -747,14 +746,14 @@ static core_property_node_result_t _core_property_node_trace_double_read(
 }
 
 static core_property_node_result_t _core_property_node_trace_attr_read(
-    const core_property_node_t *parent_node, char *value, size_t len)
+    const core_property_node_t *parent_node, const char *key, char *value, size_t len)
 {
     core_property_node_result_t result;
 
-    log_misc(">>> attr_read(%p, %p, %d)", parent_node, value, len);
+    log_misc(">>> attr_read(%p, %s, %p, %d)", parent_node, key, value, len);
 
     result = _core_property_node_trace_target_api.v1.attr_read(
-        parent_node, value, len);
+        parent_node, key, value, len);
 
     log_misc(
         "<<< attr_read(%p, %s): %s",

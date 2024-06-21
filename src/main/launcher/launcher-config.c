@@ -53,7 +53,7 @@ _launcher_config_layered_config_nodes_load(const core_property_node_t *node)
         }
 
         result =
-            core_property_node_ext_attr_read(&cur, "kind@", kind, sizeof(kind));
+            core_property_node_attr_read(&cur, "kind", kind, sizeof(kind));
 
         if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
             log_fatal("Failed reading 'kind' attribute value of config node");
