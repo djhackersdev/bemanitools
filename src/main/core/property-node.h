@@ -10,7 +10,7 @@
 #include "main/core/property.h"
 
 #define CORE_PROPERTY_NODE_RESULT_IS_ERROR(x) \
-    (x > CORE_PROPERTY_NODE_RESULT_SUCCESS)
+    (x != CORE_PROPERTY_NODE_RESULT_SUCCESS)
 // Based on actual AVS impl max size
 #define CORE_PROPERTY_NODE_NAME_SIZE_MAX 256
 // Guestimate, should be enough, I hope?
@@ -18,16 +18,26 @@
 // Guestimate, should be long enough, I hope?
 #define CORE_PROPERTY_NODE_PATH_LEN_MAX 4096
 
+// Macro to allow inlining of the caller function and line numbers
+// to make debugging easier
+#define core_property_node_fatal_on_error(result)       \
+    if (result != CORE_PROPERTY_NODE_RESULT_SUCCESS) {  \
+        log_fatal(                                      \
+            "Operation on property-node failed: %s",    \
+            core_property_node_result_to_str(result));  \
+    }                                                   \
+
 typedef struct core_property_node core_property_node_t;
 
 typedef enum core_property_node_result {
     CORE_PROPERTY_NODE_RESULT_SUCCESS = 0,
     CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL = 1,
     CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND = 2,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_TYPE = 3,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_STRUCTURE = 4,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_DATA = 5,
 } core_property_node_result_t;
 
-typedef void (*core_property_node_log_t)(
-    const core_property_node_t *node, bt_core_log_message_t log_message);
 typedef core_property_node_result_t (*core_property_node_name_get_t)(
     const core_property_node_t *node, char *name, size_t len);
 typedef core_property_node_result_t (*core_property_node_size_t)(
@@ -162,7 +172,6 @@ typedef struct core_property_node_api {
     uint16_t version;
 
     struct {
-        core_property_node_log_t log;
         core_property_node_name_get_t name_get;
         core_property_node_size_t size;
         core_property_node_search_t search;
@@ -212,10 +221,7 @@ void core_property_node_api_get(core_property_node_api_t *impl);
 
 const char *
 core_property_node_result_to_str(core_property_node_result_t result);
-void core_property_node_fatal_on_error(core_property_node_result_t result);
 
-void core_property_node_log(
-    const core_property_node_t *node, bt_core_log_message_t log_message);
 core_property_node_result_t core_property_node_name_get(
     const core_property_node_t *node, char *name, size_t len);
 core_property_node_result_t

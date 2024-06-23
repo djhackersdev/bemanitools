@@ -225,7 +225,7 @@ void avs_config_root_get(
     log_assert(node);
 
     result = core_property_root_node_get(property, node);
-    core_property_fatal_on_error(result);
+    core_property_node_fatal_on_error(result);
 
     result = core_property_node_name_get(node, node_name, sizeof(node_name));
     core_property_node_fatal_on_error(result);

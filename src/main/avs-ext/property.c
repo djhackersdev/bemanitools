@@ -292,25 +292,6 @@ static core_property_result_t _avs_ext_property_clone(
     return CORE_PROPERTY_RESULT_SUCCESS;
 }
 
-static void _avs_ext_property_log(
-    const core_property_t *property_, bt_core_log_message_t log_message)
-{
-    avs_ext_property_internal_node_t node;
-    core_property_node_api_t node_api;
-
-    node.property = (avs_ext_property_internal_property_t *) (property_);
-    node.node = property_search(node.property->property, NULL, "/");
-
-    if (node.node == NULL) {
-        log_message(LOG_MODULE, "<EMPTY>");
-        return;
-    }
-
-    avs_ext_property_node_core_api_get(&node_api);
-
-    node_api.v1.log((const core_property_node_t *) &node, log_message);
-}
-
 static core_property_result_t _avs_ext_property_root_node_get(
     const core_property_t *property_, core_property_node_t *node_)
 {
@@ -374,7 +355,6 @@ static void _avs_ext_property_core_api_get(core_property_api_t *api)
     api->v1.str_load = _avs_ext_property_str_load;
     api->v1.size = _avs_ext_property_size;
     api->v1.clone = _avs_ext_property_clone;
-    api->v1.log = _avs_ext_property_log;
     api->v1.root_node_get = _avs_ext_property_root_node_get;
     api->v1.other_node_insert = _avs_ext_property_other_node_insert;
     api->v1.free = _avs_ext_property_free;

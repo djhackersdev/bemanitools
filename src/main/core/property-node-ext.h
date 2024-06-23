@@ -30,6 +30,9 @@ typedef struct core_property_node_ext_merge_strategies {
     uint8_t num;
 } core_property_node_ext_merge_strategies_t;
 
+void core_property_node_ext_log(
+    const core_property_node_t *node, bt_core_log_message_t log_message);
+
 core_property_node_result_t core_property_node_ext_u8_read(
     const core_property_node_t *node, const char *name, uint8_t *value);
 core_property_node_result_t core_property_node_ext_u16_read(
@@ -39,11 +42,6 @@ core_property_node_result_t core_property_node_ext_u32_read(
 core_property_node_result_t core_property_node_ext_bool_read(
     const core_property_node_t *node, const char *name, bool *value);
 core_property_node_result_t core_property_node_ext_str_read(
-    const core_property_node_t *node,
-    const char *name,
-    char *value,
-    size_t len);
-core_property_node_result_t core_property_node_ext_attr_read(
     const core_property_node_t *node,
     const char *name,
     char *value,

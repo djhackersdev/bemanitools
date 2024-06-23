@@ -85,6 +85,8 @@ avsvers_64      := 1700 1603 1601 1509 1508
 
 imps            += avs avs-ea3
 
+include src/main/mxml/Module.mk
+
 include src/main/aciodrv/Module.mk
 include src/main/aciodrv-proc/Module.mk
 include src/main/acioemu/Module.mk
@@ -278,6 +280,7 @@ $(zipdir)/iidx-09-to-12.zip: \
 		dist/iidx/iidxhook-10.conf \
 		dist/iidx/iidxhook-11.conf \
 		dist/iidx/iidxhook-12.conf \
+		dist/iidx/inject-09.xml \
 		dist/iidx/vefx.txt \
 		build/bin/indep-32/iidx-irbeat-patch.exe \
 		dist/iidx/iidx-irbeat-patch-09.bat \

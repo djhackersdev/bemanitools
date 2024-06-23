@@ -36,7 +36,6 @@ void core_property_node_api_set(const core_property_node_api_t *api)
     }
 
     if (api->version == 1) {
-        CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.log, log);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.name_get, name_get);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.size, size);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.search, search);
@@ -116,33 +115,15 @@ const char *core_property_node_result_to_str(core_property_node_result_t result)
             return "Internal";
         case CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND:
             return "Node not found";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_TYPE:
+            return "Invalid node type";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_STRUCTURE:
+            return "Invalid node structure";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_DATA:
+            return "Invalid node data";
         default:
             return "Undefined error";
     }
-}
-
-void core_property_node_fatal_on_error(core_property_node_result_t result)
-{
-    switch (result) {
-        case CORE_PROPERTY_NODE_RESULT_SUCCESS:
-            return;
-        case CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL:
-        case CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND:
-        default:
-            log_fatal(
-                "Operation on property failed: %s",
-                core_property_node_result_to_str(result));
-    }
-}
-
-void core_property_node_log(
-    const core_property_node_t *node, bt_core_log_message_t log_message)
-{
-    log_assert(_core_property_node_api_is_valid());
-    log_assert(node);
-    log_assert(log_message);
-
-    _core_property_node_api.v1.log(node, log_message);
 }
 
 core_property_node_result_t core_property_node_name_get(

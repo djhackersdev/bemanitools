@@ -21,6 +21,14 @@
 #include "core/log-sink-std.h"
 #include "core/thread-crt.h"
 
+#include "core/property-mxml-internal.h"
+#include "core/property-node.h"
+#include "core/property.h"
+#include "core/property-node-mxml.h"
+#include "core/property-mxml.h"
+#include "core/property-ext.h"
+#include "core/property-node-ext.h"
+
 #include "iface-core/log.h"
 #include "iface-core/thread.h"
 
@@ -53,11 +61,12 @@ static void _inject_log_header()
 void _inject_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    if (log_file_path) {
-        core_log_bt_ext_init_async_with_stderr_and_file(log_file_path, false, true, 10);
-    } else {
-        core_log_bt_ext_init_async_with_stderr();
-    }
+    // if (log_file_path) {
+    //     core_log_bt_ext_init_async_with_stderr_and_file(log_file_path, false, true, 10);
+    // } else {
+    //     core_log_bt_ext_init_async_with_stderr();
+    // }
+    core_log_bt_ext_init_with_stderr();
 
     core_log_bt_core_api_set();
 
@@ -200,9 +209,9 @@ int main(int argc, char **argv)
 
     core_boot("inject");
 
-    if (!init_options(argc, argv, &options)) {
-        goto init_options_fail;
-    }
+    // if (!init_options(argc, argv, &options)) {
+    //     goto init_options_fail;
+    // }
 
     core_thread_crt_core_api_set();
 
@@ -210,6 +219,20 @@ int main(int argc, char **argv)
     _inject_log_init(
         strlen(options.log_file) > 0 ? options.log_file : NULL,
         CORE_LOG_BT_LOG_LEVEL_MISC);
+
+    core_property_mxml_core_api_set();
+    core_property_node_mxml_core_api_set();
+
+    core_property_t *property;
+    core_property_result_t result;
+
+    result = core_property_file_load("inject-09.xml", &property);
+    core_property_fatal_on_error(result);
+
+log_misc(">>>>>");
+    core_property_ext_log(property, log_misc_func);
+log_misc(">>>>>");
+    exit(1);
 
     _inject_log_header();
     os_version_log();

@@ -88,6 +88,12 @@
  */
 #define log_fatal(...)                                      \
     do {                                                    \
+        _bt_core_log_api.v1.fatal(                          \
+            LOG_MODULE,                                     \
+            "%s:%d: function `%s'",                         \
+            __FILE__,                                       \
+            __LINE__,                                       \
+            __FUNCTION__);                                  \
         _bt_core_log_api.v1.fatal(LOG_MODULE, __VA_ARGS__); \
         abort();                                            \
     } while (0)

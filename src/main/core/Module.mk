@@ -17,8 +17,10 @@ src_core	:= \
 	log-sink-std.c \
 	property-bt.c \
 	property-ext.c \
+	property-mxml.c \
 	property-node-bt.c \
 	property-node-ext.c \
+	property-node-mxml.c \
 	property-node-trace.c \
 	property-node.c \
 	property-trace.c \

@@ -64,11 +64,9 @@ static void _iidxhook1_dllmain_bt_hook_env_init()
     core_log_bt_ext_init_with_debug();
 
     core_log_bt_core_api_set();
-    
+
     // TODO change log level support
     core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
-
-    
     
     bt_module_hook_api_get(&api);
 

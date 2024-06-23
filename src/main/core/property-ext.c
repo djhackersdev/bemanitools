@@ -5,6 +5,24 @@
 #include "main/core/property-node-ext.h"
 #include "main/core/property.h"
 
+void core_property_ext_log(
+    const core_property_t *property, bt_core_log_message_t log_message)
+{
+    core_property_node_t node;
+    core_property_node_result_t node_result;
+
+    node_result = core_property_root_node_get(property, &node);
+
+    if (node_result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        log_message(LOG_MODULE, "<EMPTY>");
+        return;
+    } else if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(node_result)) {
+        return;
+    }
+
+    core_property_node_ext_log(&node, log_message);
+}
+
 core_property_result_t core_property_ext_many_merge(
     const core_property_t **properties,
     size_t count,
@@ -31,17 +49,9 @@ core_property_result_t core_property_ext_many_merge(
         return CORE_PROPERTY_RESULT_SUCCESS;
     }
 
-    core_property_log(merged_property, log_misc_func);
-
-    for (i = 0; i < count; i++) {
-        core_property_log(properties[i], log_misc_func);
-    }
-
     for (i = 1; i < count; i++) {
         result2 = core_property_node_ext_merge_do(
             merged_property, properties[i], &tmp);
-
-        core_property_log(tmp, log_misc_func);
 
         if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result2)) {
             core_property_free(&merged_property);
