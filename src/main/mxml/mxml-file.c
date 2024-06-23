@@ -55,11 +55,11 @@ static inline int	mxml_isspace(int ch)
 			}
 static mxml_node_t	*mxml_load_data(mxml_node_t *top, mxml_options_t *options, mxml_io_cb_t io_cb, void *io_cbdata);
 static int		mxml_parse_element(mxml_options_t *options, mxml_io_cb_t io_cb, void *io_cbdata, mxml_node_t *node, _mxml_encoding_t *encoding, int *line);
-static size_t		mxml_read_cb_fd(int *fd, void *buffer, size_t bytes);
+// static size_t		mxml_read_cb_fd(int *fd, void *buffer, size_t bytes);
 static size_t		mxml_read_cb_file(FILE *fp, void *buffer, size_t bytes);
 static size_t		mxml_read_cb_string(_mxml_stringbuf_t *sb, void *buffer, size_t bytes);
 static double		mxml_strtod(mxml_options_t *options, const char *buffer, char **bufptr);
-static size_t		mxml_io_cb_fd(int *fd, void *buffer, size_t bytes);
+// static size_t		mxml_io_cb_fd(int *fd, void *buffer, size_t bytes);
 static size_t		mxml_io_cb_file(FILE *fp, void *buffer, size_t bytes);
 static size_t		mxml_io_cb_string(_mxml_stringbuf_t *sb, void *buffer, size_t bytes);
 static int		mxml_write_node(mxml_node_t *node, mxml_options_t *options, mxml_io_cb_t io_cb, void *io_cbdata, int col);
@@ -80,19 +80,19 @@ static int		mxml_write_ws(mxml_node_t *node, mxml_options_t *options, mxml_io_cb
 // function to create options when loading XML data.
 //
 
-mxml_node_t *				// O - First node or `NULL` if the file could not be read.
-mxmlLoadFd(
-    mxml_node_t    *top,		// I - Top node
-    mxml_options_t *options,		// I - Options
-    int            fd)			// I - File descriptor to read from
-{
-  // Range check input...
-  if (fd < 0)
-    return (NULL);
+// mxml_node_t *				// O - First node or `NULL` if the file could not be read.
+// mxmlLoadFd(
+//     mxml_node_t    *top,		// I - Top node
+//     mxml_options_t *options,		// I - Options
+//     int            fd)			// I - File descriptor to read from
+// {
+//   // Range check input...
+//   if (fd < 0)
+//     return (NULL);
 
-  // Read the XML data...
-  return (mxml_load_data(top, options, (mxml_io_cb_t)mxml_read_cb_fd, &fd));
-}
+//   // Read the XML data...
+//   return (mxml_load_data(top, options, (mxml_io_cb_t)mxml_read_cb_fd, &fd));
+// }
 
 
 //

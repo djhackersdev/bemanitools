@@ -22,6 +22,7 @@ libs_iidxhook2      := \
     iface-core \
     module \
     util \
+    mxml \
 
 src_iidxhook2       := \
     config-iidxhook2.c \

@@ -6,6 +6,7 @@ libs_extiotest     := \
     core \
     util \
     iface-core \
+    mxml \
 
 src_extiotest      := \
     main.c \

@@ -1,3 +1,5 @@
+#define LOG_MODULE "util-signal"
+
 #include <unistd.h>
 
 #include "iface-core/log.h"

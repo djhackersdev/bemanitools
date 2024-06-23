@@ -11,6 +11,7 @@ libs_config     := \
     geninput \
     util \
     iface-core \
+    mxml \
 
 ldflags_config  := \
     -lcomctl32 \

@@ -2,16 +2,11 @@
 
 #include <stdbool.h>
 
-/**
- * Initialize inject's logger backend.
- *
- * This takes care of hooking and merging the different log
- * streams, e.g. inject's local logging and inject's debugger
- * receiving remote logging events.
- *
- * @param log_file_path Path to the file to log to or NULL to
- *                      disable.
- */
+typedef enum debugger_attach_type {
+    DEBUGGER_ATTACH_TYPE_NONE = 0,
+    DEBUGGER_ATTACH_TYPE_INJECT = 1,
+    DEBUGGER_ATTACH_TYPE_EXTERNAL = 2,
+} debugger_attach_type_t;
 
 /**
  * Initialize the debugger.
@@ -30,15 +25,11 @@
  * set the parameter local_debugger to false. Then, the debugger
  * will only create the remote process and monitor it.
  *
- * @param local_debugger True to attach inject's local debugger,
- *                       false to allow attaching a remote
- *                       debugger with enhanced features.
+ * @param attach_type Setup the debugger to attach with the given type of debugger
  * @param app_name Name of the application to spawn and debug.
  * @param cmd_line Command line string to pass to application.
- * @return true on success, false on error. On error, no remote
- *         application and local debugger is started.
  */
-bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line);
+void debugger_init(debugger_attach_type_t attach_type, const char *app_name, const char *cmd_line);
 
 /**
  * Inject a DLL into the remote process.
@@ -47,6 +38,8 @@ bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line);
  * @return true if sucessful, false on error.
  */
 bool debugger_inject_dll(const char *path_dll);
+
+void debugger_run();
 
 /**
  * Inject a DLL into the remote process by replacing its reference in

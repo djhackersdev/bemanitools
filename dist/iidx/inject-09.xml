@@ -1,71 +1,47 @@
 <?xml version="1.0" encoding="Shift-JIS"?>
 <inject>
   <version __type="u32">1</version>
-  <bootstrap>
-    <selector __type="str">bemanitools_local_fs</selector>
-    <config kind="inline">
-      <config>
-        <startup>
-            <bemanitools_local_fs>
-                <default>
-                    <file dst="/dev/nvram/ea3-config.xml" src="/prop/eamuse-config.xml" />
-                    <file dst="/dev/nvram/coin.xml" src="/prop/coin.xml" />
-                    <file dst="/dev/nvram/eacoin.xml" src="/prop/eacoin.xml" />
-                </default>
-                <boot>
-                    <file>prop/avs-config.xml</file>
-                    <heap_avs __type="u32">134217728</heap_avs>
-                </boot>
-                <log>
-                    <level>info</level>
-                </log>
-                <eamuse>
-                    <file>/dev/nvram/ea3-config.xml</file>
-                </eamuse>
-                <component>
-                    <file>bm2dx.dll</file>
-                    <param></param>
-                </component>
-            </bemanitools_local_fs>
-        </startup>
-      </config>
-    </config>
-  </bootstrap>
-  <ea3_ident>
-    <config kind="file">bemanitools/ea3-ident.xml</config>
-    <config kind="file">bemanitools/ea3-license.xml</config>
-  </ea3_ident>
-  <avs>
-    <config kind="inline">
-        <config>
-            <fs>
-                <root>
-                    <device __type="str">.</device>
-                </root>
-                <mounttable_selector __type="str">boot</mounttable_selector>
-                <mounttable>
-                    <vfs name="boot" fstype="fs" src="dev/raw" dst="/dev/raw" opt=""/>
-                    <vfs name="boot" fstype="fs" src="dev/nvram" dst="/dev/nvram" opt=""/>
-                </mounttable>
-            </fs>
-        </config>
-    </config>
-  </avs>
-  <eamuse>
-    <config kind="file">bemanitools/ea3-service.xml</config>
-  </eamuse>
+  <debugger>
+    <app>
+      <path __type="str">bm2dx.exe</path>
+    </app>
+    <attach_type __type="str">inject</attach_type>
+  </debugger>
   <hooks>
-    <pre_avs>
+    <hook>
       <enable __type="bool">1</enable>
       <path __type="str">iidxhook9.dll</path>
       <config kind="inline">
         <hook>
         </hook>
       </config>
-    </pre_avs>
+    </hook>
   </hooks>
+  <logger>
+    <enable __type="bool">1</enable>
+    <level __type="str">misc</level>
+    <msg_buffer_size_bytes __type="u32">8192</msg_buffer_size_bytes>
+    <sinks>
+      <async>
+        <enable __type="bool">1</enable>
+        <queue_length __type="u8">64</queue_length>
+        <overflow_policy __type="str">discard_new</overflow_policy>
+      </async>
+      <console>
+        <enable __type="bool">1</enable>
+        <color __type="bool">1</color>
+      </console>
+      <file>
+        <enable __type="bool">1</enable>
+        <path __type="str">inject.log</path>
+        <append __type="bool">0</append>
+        <rotate __type="bool">0</rotate>
+        <max_rotations __type="u8">1</max_rotations>
+      </file>
+    </sinks>
+  </logger>
   <debug>
-    <remote_debugger __type="bool">0</remote_debugger>
-    <log_property_configs __type="bool">0</log_property_configs>
+    <property_configs_log __type="bool">1</property_configs_log>
+    <property_api_trace_log __type="bool">0</property_api_trace_log>
   </debug>
 </inject>

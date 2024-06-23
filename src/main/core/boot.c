@@ -4,13 +4,15 @@
 
 #include <stdio.h>
 
+#include "core/property-mxml.h"
+#include "core/property-node-mxml.h"
+#include "core/thread-crt.h"
+
 #include "iface-core/log.h"
 
 #include "util/str.h"
 
-#define CORE_BOOT_LOG_MODULE_SIZE_MAX 128
-/* 64k so we can log data dumps of rs232 without crashing */
-#define CORE_BOOT_LOG_MSG_SIZE_MAX 65536
+#define CORE_BOOT_LOG_MSG_SIZE_MAX 8192
 
 static void _core_boot_log_std_msg(const char *module, const char *fmt, ...)
 {
@@ -19,7 +21,7 @@ static void _core_boot_log_std_msg(const char *module, const char *fmt, ...)
     va_start(args, fmt);
 
     printf("[%s] ", module);
-    vprintf(fmt, args);
+    vfprintf(stderr, fmt, args);
     printf("\n");
 
     va_end(args);
@@ -57,7 +59,7 @@ static void _core_boot_minimal_logging_std_env_init()
     _bt_core_log_api.v1.warning = _core_boot_log_std_msg;
     _bt_core_log_api.v1.fatal = _core_boot_log_std_msg;
 
-    log_info("Init minimal logging environment done");
+    log_misc("Init minimal logging environment done");
 }
 
 static void _core_boot_minimal_logging_debug_env_init()
@@ -75,7 +77,7 @@ static void _core_boot_minimal_logging_debug_env_init()
     _bt_core_log_api.v1.warning = _core_boot_log_debug_msg;
     _bt_core_log_api.v1.fatal = _core_boot_log_debug_msg;
 
-    log_info("Init minimal logging environment done");
+    log_misc("Init minimal logging environment done");
 }
 
 void core_boot(const char *name)
@@ -83,6 +85,11 @@ void core_boot(const char *name)
     _core_boot_log_std_msg(LOG_MODULE, "Boot: %s", name);
 
     _core_boot_minimal_logging_std_env_init();
+
+    core_thread_crt_core_api_set();
+
+    core_property_mxml_core_api_set();
+    core_property_node_mxml_core_api_set();
 }
 
 void core_boot_dll(const char *name)
@@ -90,4 +97,9 @@ void core_boot_dll(const char *name)
     _core_boot_log_debug_msg(LOG_MODULE, "Boot: %s", name);
 
     _core_boot_minimal_logging_debug_env_init();
+
+    core_thread_crt_core_api_set();
+
+    core_property_mxml_core_api_set();
+    core_property_node_mxml_core_api_set();
 }

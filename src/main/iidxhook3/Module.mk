@@ -23,6 +23,7 @@ libs_iidxhook3      := \
     iface-core \
     module \
     util \
+    mxml \
 
 src_iidxhook3       := \
     dllmain.c \

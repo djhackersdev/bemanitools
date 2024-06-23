@@ -36,7 +36,6 @@ mxmlFindElement(mxml_node_t    *node,	// I - Current node
 {
   const char	*temp;			// Current attribute value
 
-
   // Range check input...
   if (!node || !top || (!attr && value))
     return (NULL);
@@ -136,9 +135,9 @@ mxmlFindPath(mxml_node_t *top,		// I - Top node
   }
 
   // If we get this far, return the node or its first child...
-  if (node->child && node->child->type != MXML_TYPE_ELEMENT)
-    return (node->child);
-  else
+  // if (node->child && node->child->type != MXML_TYPE_ELEMENT)
+  //   return (node->child);
+  // else
     return (node);
 }
 

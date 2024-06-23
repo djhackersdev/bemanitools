@@ -20,6 +20,7 @@ libs_launcher   := \
     iface \
     module \
     core \
+    mxml \
 
 src_launcher    := \
     app.c \
