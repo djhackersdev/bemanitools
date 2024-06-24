@@ -86,6 +86,8 @@
  * @param ... Additional arguments according to the specified arguments in the
  *            printf format string
  */
+// Additional empty log statement to trigger flush on some sinks.
+// Otherwise, the last message might get lost
 #define log_fatal(...)                                      \
     do {                                                    \
         _bt_core_log_api.v1.fatal(                          \
@@ -95,6 +97,7 @@
             __LINE__,                                       \
             __FUNCTION__);                                  \
         _bt_core_log_api.v1.fatal(LOG_MODULE, __VA_ARGS__); \
+        _bt_core_log_api.v1.fatal(LOG_MODULE, "");          \
         abort();                                            \
     } while (0)
 

@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "cconfig/cconfig-hook.h"
-
 #include "ezusb-emu/desc.h"
 #include "ezusb-emu/device.h"
 #include "ezusb-emu/node-security-plug.h"
@@ -16,12 +14,12 @@
 
 #include "hook/d3d9.h"
 #include "hook/iohook.h"
-#include "hook/table.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
 #include "hooklib/setupapi.h"
 
+#include "iface-core/config.h"
 #include "iface-core/log.h"
 #include "iface-core/thread.h"
 
@@ -277,6 +275,11 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config_)
 static void _iidxhook1_main_fini()
 {
     // TODO cleanup
+}
+
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
 }
 
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)

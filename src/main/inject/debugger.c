@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "core/log-bt.h"
+#include "core/log-ext.h"
 
 #include "iface-core/log.h"
 
@@ -224,7 +225,7 @@ static bool debugger_create_process(const char *app_name, const char *cmd_line)
     flags = 0;
 
     // CREATE_SUSPENDED that we have plenty of time to set up the debugger and
-    // theemote process environment with hook dlls.
+    // the remote process environment with hook dlls.
     flags |= CREATE_SUSPENDED;
 
     if (debugger_attach_type == DEBUGGER_ATTACH_TYPE_INJECT) {
@@ -261,7 +262,7 @@ static bool debugger_create_process(const char *app_name, const char *cmd_line)
     return true;
 }
 
-static uint32_t debugger_loop()
+static uint32_t _debugger_thread_loop()
 {
     DEBUG_EVENT de;
     DWORD continue_status;
@@ -398,7 +399,7 @@ static uint32_t debugger_loop()
     }
 }
 
-static DWORD WINAPI debugger_proc(LPVOID param)
+static DWORD WINAPI _debugger_thread_proc(LPVOID param)
 {
     uint32_t debugger_loop_exit_code;
 
@@ -417,7 +418,7 @@ static DWORD WINAPI debugger_proc(LPVOID param)
     // Don't run our local debugger loop if the user wants to attach a remote
     // debugger or debugger is disabled
     if (debugger_attach_type == DEBUGGER_ATTACH_TYPE_INJECT) {
-        debugger_loop_exit_code = debugger_loop();
+        debugger_loop_exit_code = _debugger_thread_loop();
 
         free(params);
 
@@ -513,7 +514,7 @@ void debugger_init(debugger_attach_type_t attach_type, const char *app_name, con
     thread_params->cmd_line = cmd_line;
 
     debugger_thread_handle =
-        CreateThread(NULL, 0, debugger_proc, thread_params, 0, 0);
+        CreateThread(NULL, 0, _debugger_thread_proc, thread_params, 0, 0);
 
     if (!debugger_thread_handle) {
         free(thread_params);
@@ -542,6 +543,10 @@ bool debugger_inject_dll(const char *path_dll)
 
     dll_path_length =
         SearchPath(NULL, path_dll, NULL, MAX_PATH, dll_path, NULL);
+
+    if (dll_path_length == 0) {
+        log_fatal_on_win_last_error("Determining path for dll %s failed", path_dll);
+    }
 
     dll_path_length++;
 
@@ -598,6 +603,8 @@ bool debugger_inject_dll(const char *path_dll)
         log_warning(
             "VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
     }
+
+    log_misc("Injecting success: %s", path_dll);
 
     return true;
 
