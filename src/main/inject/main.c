@@ -28,6 +28,8 @@
 #include "inject/version.h"
 
 #include "util/cmdline.h"
+#include "util/debug.h"
+#include "util/log.h"
 #include "util/mem.h"
 #include "util/os.h"
 #include "util/signal.h"
@@ -222,6 +224,7 @@ int main(int argc, char **argv)
 
     os_version_log();
 
+    debug_init();
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
     signal_register_shutdown_handler(signal_shutdown_handler);
