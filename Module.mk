@@ -325,6 +325,10 @@ $(zipdir)/iidx-18.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18.bat \
 		dist/iidx/iidxhook-18.conf \
+		dist/iidx/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -356,6 +360,10 @@ $(zipdir)/iidx-19.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-19.bat \
 		dist/iidx/iidxhook-19.conf \
+		dist/iidx/launcher-19.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -372,6 +380,10 @@ $(zipdir)/iidx-20.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20.bat \
 		dist/iidx/iidxhook-20.conf \
+		dist/iidx/launcher-20.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -409,6 +421,13 @@ $(zipdir)/iidx-21-to-24.zip: \
 		dist/iidx/iidxhook-22.conf \
 		dist/iidx/iidxhook-23.conf \
 		dist/iidx/iidxhook-24.conf \
+		dist/iidx/launcher-21.xml \
+		dist/iidx/launcher-22.xml \
+		dist/iidx/launcher-23.xml \
+		dist/iidx/launcher-24.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -427,6 +446,11 @@ $(zipdir)/iidx-25-to-26.zip: \
 		dist/iidx/gamestart-26.bat \
 		dist/iidx/iidxhook-25.conf \
 		dist/iidx/iidxhook-26.conf \
+		dist/iidx/launcher-25.xml \
+		dist/iidx/launcher-26.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -449,6 +473,13 @@ $(zipdir)/iidx-27-to-30.zip: \
 		dist/iidx/iidxhook-28.conf \
 		dist/iidx/iidxhook-29.conf \
 		dist/iidx/iidxhook-30.conf \
+		dist/iidx/launcher-27.xml \
+		dist/iidx/launcher-28.xml \
+		dist/iidx/launcher-29.xml \
+		dist/iidx/launcher-30.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -517,6 +548,10 @@ $(zipdir)/jb-03.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-03.bat \
+		dist/jb/launcher-03.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -530,6 +565,10 @@ $(zipdir)/jb-04.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-03.bat \
+		dist/jb/launcher-03.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -543,6 +582,10 @@ $(zipdir)/jb-05-to-07.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-04.bat \
+		dist/jb/launcher-04.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -556,6 +599,10 @@ $(zipdir)/jb-08.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-04.bat \
+		dist/jb/launcher-04.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -580,6 +627,10 @@ $(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/indep-32/sdvxio.dll \
 		dist/sdvx/config.bat \
 		dist/sdvx/gamestart.bat \
+		dist/sdvx/launcher.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -594,6 +645,10 @@ $(zipdir)/sdvx-05-to-06.zip: \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
 		dist/sdvx5/sdvxhook2.conf \
+		dist/sdvx5/launcher.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -608,6 +663,10 @@ $(zipdir)/sdvx-05-cn.zip: \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart-cn.bat \
 		dist/sdvx5/sdvxhook2-cn.conf \
+		dist/sdvx5/launcher-cn.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -682,6 +741,10 @@ $(zipdir)/ddr-12.zip: \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-12.bat \
+		dist/ddr/launcher-12.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -698,6 +761,10 @@ $(zipdir)/ddr-13.zip: \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-13.bat \
+		dist/ddr/launcher-13.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -718,6 +785,14 @@ $(zipdir)/ddr-14-to-18.zip: \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
+		dist/ddr/launcher-14.xml \
+		dist/ddr/launcher-15.xml \
+		dist/ddr/launcher-16.xml \
+		dist/ddr/launcher-17.xml \
+		dist/ddr/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -736,6 +811,12 @@ $(zipdir)/ddr-16-to-18-x64.zip: \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
+		dist/ddr/launcher-16.xml \
+		dist/ddr/launcher-17.xml \
+		dist/ddr/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -774,6 +855,11 @@ $(zipdir)/bst.zip: \
 		dist/bst/config.bat \
 		dist/bst/gamestart1.bat \
 		dist/bst/gamestart2.bat \
+		dist/bst/launcher-01.xml \
+		dist/bst/launcher-02.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
