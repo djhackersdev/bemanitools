@@ -182,6 +182,8 @@ include src/main/p4ioemu/Module.mk
 include src/main/popnhook-util/Module.mk
 include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
+include src/main/procmon/Module.mk
+include src/main/procmon-lib/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
@@ -233,6 +235,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb2-dbg-hook.dll \
 		build/bin/indep-32/ezusb2-tool.exe \
 		build/bin/indep-32/ezusb-tool.exe \
+		build/bin/indep-32/procmon.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -247,6 +250,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
 		build/bin/indep-64/mempatch-hook.dll \
+		build/bin/indep-64/procmon.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
