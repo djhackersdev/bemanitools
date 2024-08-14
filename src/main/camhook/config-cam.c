@@ -1,8 +1,8 @@
 #include "cconfig/cconfig-util.h"
 
-#include "camhook/config-cam.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "camhook/config-cam.h"
 
 #define CAMHOOK_CONFIG_CAM_DISABLE_EMU_KEY "cam.disable_emu"
 #define CAMHOOK_CONFIG_CAM_DEFAULT_DISABLE_EMU_VALUE false

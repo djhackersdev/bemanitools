@@ -3,9 +3,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static bool usbmem_match_irp(const struct irp *irp);

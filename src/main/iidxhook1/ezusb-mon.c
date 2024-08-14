@@ -6,12 +6,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "core/log.h"
+
 #include "hook/table.h"
 
 #include "iidxhook1/ezusb-mon.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* ------------------------------------------------------------------------- */

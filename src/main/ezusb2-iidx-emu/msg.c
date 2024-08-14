@@ -6,6 +6,8 @@
 
 #include "bemanitools/iidxio.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "ezusb-emu/msg.h"
@@ -15,7 +17,6 @@
 #include "ezusb2-iidx/msg.h"
 
 #include "util/hex.h"
-#include "util/log.h"
 
 /* ------------------------------------------------------------------------ */
 

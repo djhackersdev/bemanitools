@@ -10,6 +10,14 @@
 
 #include "cconfig/cconfig-hook.h"
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-debug.h"
+#include "core/log.h"
+#include "core/thread-crt-ext.h"
+#include "core/thread-crt.h"
+#include "core/thread.h"
+
 #include "ezusb-emu/node-security-plug.h"
 
 #include "hook/d3d9.h"
@@ -29,8 +37,6 @@
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
-#include "util/thread.h"
 
 #include "ezusb2-emu/desc.h"
 #include "ezusb2-emu/device.h"
@@ -61,6 +67,14 @@ static const struct hook_symbol init_hook_syms[] = {
         .link = (void **) &real_GetStartupInfoA,
     },
 };
+
+static void _popnhook1_log_init()
+{
+    core_log_bt_ext_impl_set();
+    core_log_bt_ext_init_with_debug();
+    // TODO change log level support
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
 
 static void popnhook_setup_d3d9_hooks(
     const struct popnhook1_config_gfx *config_gfx, const bool texture_usage_fix)
@@ -145,20 +159,24 @@ static DWORD STDCALL my_GetStartupInfoA(LPSTARTUPINFOA lpStartupInfo)
     /* Start up POPNIO.DLL */
 
     log_info("Starting pop'n IO backend");
-    popn_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(popn_io_set_loggers);
 
-    if (!popn_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!popn_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing pop'n IO backend failed");
     }
 
     /* Start up EAMIO.DLL */
 
     log_misc("Initializing card reader backend");
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_impl_assign(eam_io_set_loggers);
 
-    if (!eam_io_init(thread_create, thread_join, thread_destroy)) {
+    if (!eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get())) {
         log_fatal("Initializing card reader backend failed");
     }
 
@@ -190,7 +208,9 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         return TRUE;
     }
 
-    log_to_writer(log_writer_debug, NULL);
+    core_thread_crt_ext_impl_set();
+
+    _popnhook1_log_init();
 
     hook_table_apply(
         NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));

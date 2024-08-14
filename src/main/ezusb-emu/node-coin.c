@@ -1,10 +1,10 @@
 #define LOG_MODULE "ezusb-emu-node-coin"
 
+#include "core/log.h"
+
 #include "ezusb-emu/node-coin.h"
 
 #include "ezusb-iidx/coin-cmd.h"
-
-#include "util/log.h"
 
 static uint8_t ezusb_iidx_emu_node_coin_mode = 0;
 

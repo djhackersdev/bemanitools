@@ -14,10 +14,10 @@
 
 #include "bemanitools/eamio.h"
 
+#include "core/log.h"
+
 #include "cconfig/cconfig-main.h"
 #include "eamio-icca/config-icc.h"
-
-#include "util/log.h"
 
 #define IDLE_RESPONSES_BETWEEN_FELICA_POLLS 5
 #define NUMBER_OF_EMULATED_READERS 2
@@ -60,7 +60,7 @@ void eam_io_set_loggers(
 {
     aciomgr_set_loggers(misc, info, warning, fatal);
 
-    log_to_external(misc, info, warning, fatal);
+    core_log_impl_set(misc, info, warning, fatal);
 }
 
 // all of these are referred to internally as ICCA

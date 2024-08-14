@@ -4,6 +4,7 @@ ldflags_sdvxio-bio2   := \
     -lsetupapi \
 
 libs_sdvxio-bio2 := \
+    core \
     aciodrv \
     bio2drv \
     cconfig \

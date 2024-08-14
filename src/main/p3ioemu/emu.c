@@ -7,6 +7,8 @@
 #include <string.h>
 #include <windows.h>
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "p3io/cmd.h"
@@ -18,7 +20,6 @@
 #include "p3ioemu/uart.h"
 
 #include "util/iobuf.h"
-#include "util/log.h"
 
 static HANDLE p3io_emu_fd;
 static uint8_t p3io_emu_resp_bytes[256];

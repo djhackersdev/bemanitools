@@ -5,12 +5,15 @@
 
 #include <windows.h>
 
-#include "extiodrv/extio.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "extiodrv/extio.h"
 
 int main(int argc, char **argv)
 {
+    struct core_log_sink log_sink;
     HRESULT hr;
     const char *port;
     HANDLE handle;
@@ -22,8 +25,9 @@ int main(int argc, char **argv)
         fprintf(stderr, "  COM_PORT: For example COM1\n");
     }
 
-    log_to_writer(log_writer_stderr, NULL);
-    log_set_level(LOG_LEVEL_MISC);
+    core_log_sink_std_err_open(true, &log_sink);
+    core_log_bt_init(&log_sink);
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     port = argv[1];
 

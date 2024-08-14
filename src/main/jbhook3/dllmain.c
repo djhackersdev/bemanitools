@@ -5,8 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "avs-util/core-interop.h"
+
 #include "bemanitools/eamio.h"
 #include "bemanitools/jbio.h"
+
+#include "core/log.h"
+#include "core/thread.h"
 
 #include "hook/iohook.h"
 #include "hook/table.h"
@@ -31,8 +36,6 @@
 #include "security/id.h"
 
 #include "util/defs.h"
-#include "util/log.h"
-#include "util/thread.h"
 
 static struct options options;
 
@@ -62,11 +65,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
 
-        jb_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(jb_io_set_loggers);
 
-        jb_io_ok =
-            jb_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        jb_io_ok = jb_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get());
 
         if (!jb_io_ok) {
             goto fail;
@@ -79,11 +83,12 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_cardemu) {
         log_info("Starting up card reader backend");
 
-        eam_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        core_log_impl_assign(eam_io_set_loggers);
 
-        eam_io_ok =
-            eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        eam_io_ok = eam_io_init(
+            core_thread_create_impl_get(),
+            core_thread_join_impl_get(),
+            core_thread_destroy_impl_get());
 
         if (!eam_io_ok) {
             goto fail;
@@ -143,8 +148,9 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         return TRUE;
     }
 
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    // Use AVS APIs
+    avs_util_core_interop_thread_avs_impl_set();
+    avs_util_core_interop_log_avs_impl_set();
 
     options_init_from_cmdline(&options);
 

@@ -2,11 +2,11 @@
 
 #include <string.h>
 
+#include "core/log.h"
+
 #include "ezusb-emu/node-eeprom.h"
 
 #include "ezusb-iidx/eeprom-cmd.h"
-
-#include "util/log.h"
 
 /* not verified, but we got calls with 3 pages only so far */
 #define EEPROM_NPAGES 3

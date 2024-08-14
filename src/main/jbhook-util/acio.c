@@ -16,6 +16,8 @@
 #include "acioemu/h44b.h"
 #include "acioemu/icca.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "jbhook-util/acio.h"
@@ -25,7 +27,6 @@
 #include "util/defs.h"
 #include "util/hex.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu ac_io_emu;

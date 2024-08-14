@@ -4,6 +4,8 @@ deplibs_sdvxhook	:= \
 	avs \
 
 libs_sdvxhook		:= \
+	avs-util \
+	core \
 	acioemu \
 	hook \
 	hooklib \

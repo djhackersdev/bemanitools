@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "iidxhook-util/config-gfx.h"
+#include "core/log.h"
 
-#include "util/log.h"
+#include "iidxhook-util/config-gfx.h"
 
 #define IIDXHOOK_CONFIG_GFX_BGVIDEO_UV_FIX_KEY "gfx.bgvideo_uv_fix"
 #define IIDXHOOK_CONFIG_GFX_FRAMED_KEY "gfx.framed"

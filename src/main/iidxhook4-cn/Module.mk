@@ -8,6 +8,8 @@ deplibs_iidxhook4-cn   := \
     avs \
 
 libs_iidxhook4-cn      := \
+	avs-util \
+    core \
     iidxhook-util \
     ezusb-emu \
     ezusb-iidx-16seg-emu \

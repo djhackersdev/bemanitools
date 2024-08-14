@@ -14,10 +14,11 @@
 
 #include "bemanitools/ddrio.h"
 
+#include "core/log.h"
+
 #include "hook/iohook.h"
 
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static HRESULT extio_open(struct irp *irp);
