@@ -16,6 +16,20 @@
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
 
+static bool _module_dependency_available(const char *lib)
+{
+    HMODULE module;
+
+    module = LoadLibraryA(lib);
+
+    if (module == NULL) {
+        return false;
+    } else {
+        FreeLibrary(module);
+        return true;
+    }
+}
+
 static bool
 module_replace_dll_iat(HMODULE hModule, const struct array *iat_hook_dlls)
 {
@@ -141,7 +155,7 @@ void module_init(struct module_context *module, const char *path)
 
     log_info("init: %s", path);
 
-    module->dll = LoadLibrary(path);
+    module->dll = LoadLibraryA(path);
 
     if (module->dll == NULL) {
         LPSTR buffer;
@@ -160,6 +174,28 @@ void module_init(struct module_context *module, const char *path)
         if (err == ERROR_MOD_NOT_FOUND) {
             log_warning("%s is likely missing dependencies", path);
             log_warning("Do you have vcredist/directx runtimes installed?");
+            log_warning(
+                "Ensure the installed dependencies match the architecture, "
+                "32-bit/64-bit, of the game");
+            log_warning(
+                "Running heuristic for commonly used libraries (actual "
+                "requirements depend on game)...");
+
+            if (_module_dependency_available("d3d9.dll")) {
+                log_warning("Could not find directx9 runtime");
+            }
+
+            if (_module_dependency_available("msvcr100.dll")) {
+                log_warning("Could not find vcredist 2010 runtime");
+            }
+
+            if (_module_dependency_available("msvcr120.dll")) {
+                log_warning("Could not find vcredist 2013 runtime");
+            }
+
+            if (_module_dependency_available("msvcp140.dll")) {
+                log_warning("Could not find vcredist 2015 runtime");
+            }
         }
 
         log_fatal("%s: Failed to load game DLL: %s", path, buffer);
