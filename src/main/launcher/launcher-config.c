@@ -16,8 +16,14 @@
 PSMAP_BEGIN(launcher_debug_psmap)
 PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, remote_debugger,
     "debug/remote_debugger", false)
-    PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, log_property_configs,
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, log_property_configs,
     "debug/log_property_configs", false)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_file,
+    "debug/procmon/file", false)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_module,
+    "debug/procmon/module", false)
+PSMAP_OPTIONAL(PSMAP_TYPE_BOOL, struct launcher_debug_config, procmon_thread,
+    "debug/procmon/thread", false)
 PSMAP_END
 // clang-format on
 
@@ -192,6 +198,9 @@ void launcher_config_init(struct launcher_config *config)
 
     config->debug.remote_debugger = false;
     config->debug.log_property_configs = false;
+    config->debug.procmon_file = false;
+    config->debug.procmon_module = false;
+    config->debug.procmon_thread = false;
 }
 
 void launcher_config_load(
