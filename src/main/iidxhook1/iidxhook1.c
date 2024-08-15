@@ -1,3 +1,5 @@
+#define LOG_MODULE "iidxhook1"
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -44,19 +46,19 @@
 #include "module/io-ext.h"
 #include "module/io.h"
 
+#include "sdk/module/core/config.h"
 #include "sdk/module/core/log.h"
 #include "sdk/module/core/thread.h"
 #include "sdk/module/hook.h"
 
-#include "util/defs.h"
 #include "util/proc.h"
 
-static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
+static const hook_d3d9_irp_handler_t _iidxhook1_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
 };
 
-static module_io_t *iidxhook_module_io_iidx;
-static module_io_t *iidxhook_module_io_eam;
+static module_io_t *_iidxhook1_module_io_iidx;
+static module_io_t *_iidxhook1_module_io_eam;
 
 static void _iidxhook1_io_iidx_init(module_io_t **module)
 {
@@ -124,7 +126,7 @@ static void iidxhook1_setup_d3d9_hooks(
 
     iidxhook_util_d3d9_configure(&d3d9_config);
 
-    hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
+    hook_d3d9_init(_iidxhook1_d3d9_handlers, lengthof(_iidxhook1_d3d9_handlers));
 }
 
 static bool
@@ -199,7 +201,7 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
 
     log_info("Starting IIDX IO backend");
 
-    _iidxhook1_io_iidx_init(&iidxhook_module_io_iidx);
+    _iidxhook1_io_iidx_init(&_iidxhook1_module_io_iidx);
 
     if (!bt_io_iidx_init()) {
         log_fatal("Initializing IIDX IO backend failed");
@@ -209,7 +211,7 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
 
     log_misc("Initializing card reader backend");
 
-    _iidxhook1_io_eam_init(&iidxhook_module_io_eam);
+    _iidxhook1_io_eam_init(&_iidxhook1_module_io_eam);
 
     if (!bt_io_eam_init()) {
         log_fatal("Initializing card reader backend failed");
@@ -229,10 +231,6 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
         ezusb_log_hook_init();
         ezusb_mon_hook_init();
     }
-
-    log_info("-------------------------------------------------------------");
-    log_info("---------------- End iidxhook my_OpenProcess ----------------");
-    log_info("-------------------------------------------------------------");
 
     return true;
 }
