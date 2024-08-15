@@ -8,6 +8,7 @@ src_core	:= \
 	config-property-node.c \
 	log-bt-ext.c \
 	log-bt.c \
+	log-ext.c \
 	log-sink-async.c \
 	log-sink-debug.c \
 	log-sink-file.c \
