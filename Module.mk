@@ -277,10 +277,10 @@ $(zipdir)/iidx-09-to-12.zip: \
 		dist/iidx/gamestart-10.bat \
 		dist/iidx/gamestart-11.bat \
 		dist/iidx/gamestart-12.bat \
-		dist/iidx/iidxhook-09.conf \
-		dist/iidx/iidxhook-10.conf \
-		dist/iidx/iidxhook-11.conf \
-		dist/iidx/iidxhook-12.conf \
+		dist/iidx/inject-09.xml \
+		dist/iidx/inject-10.xml \
+		dist/iidx/inject-11.xml \
+		dist/iidx/inject-12.xml \
 		dist/iidx/inject-09.xml \
 		dist/iidx/vefx.txt \
 		build/bin/indep-32/iidx-irbeat-patch.exe \

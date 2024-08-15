@@ -46,5 +46,4 @@ cd /d %REVISION_DIR%
 
 %BEMANITOOLS_DIR%\inject.exe^
   %BEMANITOOLS_DIR%\inject-09.xml^
-  --config %BEMANITOOLS_DIR%\iidxhook-09.conf^
   %*

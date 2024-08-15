@@ -16,7 +16,7 @@
         <hook>
           <eamuse>
             <!-- Magnetic card type, format XXX, 3 digit string (supports: C02, D01, E11, ECO) -->
-            <card_type __type="str">C02</card_type>
+            <card_type __type="str">ECO</card_type>
             <!-- URL (e.g. http://my.eamuse.server:80/whatever) or IPV4 (e.g. 127.0.0.1:80) of the target eamuse server. The port is optional but defaults to 80. -->
             <server __type="str">localhost:80</server>
             <pcbid __type="bin">0101020304050607086F</pcbid>
@@ -50,16 +50,18 @@
               <monitor_check __type="float">-1.000000</monitor_check>
               <!-- Fix stretched BG videos on newer GPUs. Might appear on SIRIUS and older. On 9th and 10th style this issue may only affect older BGAs (from 1st-3rd style) -->
               <bgvideo_uv_fix __type="bool">1</bgvideo_uv_fix>
+              <!-- Fix broken 3D background on Happy Sky's music select (if appearing completely white) -->
+              <happy_sky_ms_bg_fix __type="bool">0</happy_sky_ms_bg_fix>
             </game>
           </gfx>
           <ezusb>
-            <type __type="str">C02</type>
+            <type __type="str">D01</type>
             <security>
               <boot>
                 <version __type="str">GEC02</version>
-                <seed __type="str">0:0:0</seed>
+                <seed __type="str">0:3:3</seed>
               </boot>
-              <plug_black_mcode __type="str">GEC02JAA</plug_black_mcode>
+              <plug_black_mcode __type="str">GQECOJAA</plug_black_mcode>
             </security>
             <debug>
               <api_call_monitoring __type="bool">0</api_call_monitoring>

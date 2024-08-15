@@ -16,7 +16,7 @@
         <hook>
           <eamuse>
             <!-- Magnetic card type, format XXX, 3 digit string (supports: C02, D01, E11, ECO) -->
-            <card_type __type="str">C02</card_type>
+            <card_type __type="str">E11</card_type>
             <!-- URL (e.g. http://my.eamuse.server:80/whatever) or IPV4 (e.g. 127.0.0.1:80) of the target eamuse server. The port is optional but defaults to 80. -->
             <server __type="str">localhost:80</server>
             <pcbid __type="bin">0101020304050607086F</pcbid>
@@ -53,13 +53,13 @@
             </game>
           </gfx>
           <ezusb>
-            <type __type="str">C02</type>
+            <type __type="str">D01</type>
             <security>
               <boot>
                 <version __type="str">GEC02</version>
-                <seed __type="str">0:0:0</seed>
+                <seed __type="str">0:2:2</seed>
               </boot>
-              <plug_black_mcode __type="str">GEC02JAA</plug_black_mcode>
+              <plug_black_mcode __type="str">GQE11JAA</plug_black_mcode>
             </security>
             <debug>
               <api_call_monitoring __type="bool">0</api_call_monitoring>
