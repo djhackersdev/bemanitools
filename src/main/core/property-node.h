@@ -10,7 +10,7 @@
 #include "main/core/property.h"
 
 #define CORE_PROPERTY_NODE_RESULT_IS_ERROR(x) \
-    (x > CORE_PROPERTY_NODE_RESULT_SUCCESS)
+    (x != CORE_PROPERTY_NODE_RESULT_SUCCESS)
 // Based on actual AVS impl max size
 #define CORE_PROPERTY_NODE_NAME_SIZE_MAX 256
 // Guestimate, should be enough, I hope?
@@ -33,6 +33,9 @@ typedef enum core_property_node_result {
     CORE_PROPERTY_NODE_RESULT_SUCCESS = 0,
     CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL = 1,
     CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND = 2,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_TYPE = 3,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_STRUCTURE = 4,
+    CORE_PROPERTY_NODE_RESULT_INVALID_NODE_DATA = 5,
 } core_property_node_result_t;
 
 typedef core_property_node_result_t (*core_property_node_name_get_t)(

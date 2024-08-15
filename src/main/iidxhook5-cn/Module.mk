@@ -27,6 +27,7 @@ libs_iidxhook5-cn      := \
     iface-core \
     module \
     util \
+    mxml \
 
 src_iidxhook5-cn       := \
     avs-boot.c \

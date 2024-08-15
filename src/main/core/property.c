@@ -88,6 +88,8 @@ const char *core_property_result_to_str(core_property_result_t result)
             return "Permissions";
         case CORE_PROPERTY_RESULT_ERROR_READ:
             return "Read error";
+        case CORE_PROPERTY_RESULT_ERROR_WRITE:
+            return "Write error";
         default:
             return "Undefined error";
     }

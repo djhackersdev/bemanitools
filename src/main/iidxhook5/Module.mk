@@ -28,6 +28,7 @@ libs_iidxhook5      := \
     iface-core \
     module \
     util \
+    mxml \
 
 src_iidxhook5       := \
     dllmain.c \

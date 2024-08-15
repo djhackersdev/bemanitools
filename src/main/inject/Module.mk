@@ -11,6 +11,7 @@ libs_inject     := \
     util \
     dwarfstack \
     iface-core \
+    mxml \
 
 src_inject      := \
     main.c \

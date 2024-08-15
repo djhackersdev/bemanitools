@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "api/core/log.h"
+#define CORE_PROPERTY_RESULT_IS_ERROR(x) \
+    (x != CORE_PROPERTY_RESULT_SUCCESS)
 
 // Macro to allow inlining of the caller function and line numbers
 // to make debugging easier
@@ -25,6 +26,7 @@ typedef struct core_property_node {
     // Have size known, but not contents, to allow for stack allocations
     void *v1;
     void *v2;
+    void *v3;
 } core_property_node_t;
 
 typedef enum core_property_result {
@@ -34,6 +36,7 @@ typedef enum core_property_result {
     CORE_PROPERTY_RESULT_NOT_FOUND = 3,
     CORE_PROPERTY_RESULT_ERROR_PERMISSIONS = 4,
     CORE_PROPERTY_RESULT_ERROR_READ = 5,
+    CORE_PROPERTY_RESULT_ERROR_WRITE = 6,
 } core_property_result_t;
 
 typedef core_property_result_t (*core_property_create_t)(

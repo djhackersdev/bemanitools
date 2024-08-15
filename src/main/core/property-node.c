@@ -117,6 +117,12 @@ const char *core_property_node_result_to_str(core_property_node_result_t result)
             return "Internal";
         case CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND:
             return "Node not found";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_TYPE:
+            return "Invalid node type";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_STRUCTURE:
+            return "Invalid node structure";
+        case CORE_PROPERTY_NODE_RESULT_INVALID_NODE_DATA:
+            return "Invalid node data";
         default:
             return "Undefined error";
     }
