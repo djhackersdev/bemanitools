@@ -79,6 +79,8 @@ void core_property_node_api_set(const core_property_node_api_t *api)
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.bool_read, bool_read);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.remove, remove);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.copy, copy);
+
+        log_misc("api v1 set");
     } else {
         log_fatal("Unsupported API version: %d", api->version);
     }
