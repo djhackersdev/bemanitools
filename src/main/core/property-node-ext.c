@@ -1,5 +1,7 @@
 #define LOG_MODULE "core-property-node-ext"
 
+#include <inttypes.h>
+
 #include "iface-core/log.h"
 
 #include "core/property-node-ext.h"
@@ -89,6 +91,137 @@ static core_property_node_result_t _core_property_node_ext_merge_recursive_do(
     log_assert(consumed);
 
     return CORE_PROPERTY_NODE_RESULT_SUCCESS;
+}
+
+static core_property_node_result_t _core_property_node_ext_log_rec(
+    const core_property_node_t *parent_node,
+    const char *parent_path,
+    bt_core_log_message_t log_message)
+{
+    core_property_node_result_t result;
+
+    char property_type[16];
+
+    char cur_path[CORE_PROPERTY_NODE_PATH_LEN_MAX];
+    char cur_node_name[CORE_PROPERTY_NODE_NAME_SIZE_MAX];
+
+    core_property_node_t child_node;
+    core_property_node_t tmp;
+
+    int8_t value_s8;
+    int16_t value_s16;
+    int32_t value_s32;
+    int64_t value_s64;
+    uint8_t value_u8;
+    uint16_t value_u16;
+    uint32_t value_u32;
+    uint64_t value_u64;
+    char value_str[4096];
+    bool value_bool;
+
+    // Carry on the full root path down the node tree
+    result = core_property_node_name_get(parent_node, cur_node_name, sizeof(cur_node_name));
+
+    str_cpy(cur_path, sizeof(cur_path), parent_path);
+    str_cat(cur_path, sizeof(cur_path), "/");
+    str_cat(cur_path, sizeof(cur_path), cur_node_name);
+
+    result = core_property_node_child_get(parent_node, &child_node);
+
+    // parent node is a leaf node, print all data of it
+    if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+        result = core_property_node_attr_read(parent_node, "__type", property_type, sizeof(property_type));
+
+        if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+            // void type if doesn't have __type attribute
+            log_message(LOG_MODULE, "%s: <VOID>", cur_path);
+        } else if (str_eq(property_type, "s8")) {
+            result = core_property_node_s8_read(parent_node, &value_s8);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRId8, cur_path, value_s8);
+        } else if (str_eq(property_type, "s16")) {
+            result = core_property_node_s16_read(parent_node, &value_s16);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRId16, cur_path, value_s16);
+        } else if (str_eq(property_type, "s32")) {
+            result = core_property_node_s32_read(parent_node, &value_s32);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRId32, cur_path, value_s32);
+        } else if (str_eq(property_type, "s64")) {
+            result = core_property_node_s64_read(parent_node, &value_s64);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRId64, cur_path, value_s64);
+        } else if (str_eq(property_type, "u8")) {
+            result = core_property_node_u8_read(parent_node, &value_u8);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRIu8, cur_path, value_u8);
+        } else if (str_eq(property_type, "u16")) {
+            result = core_property_node_u16_read(parent_node, &value_u16);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRIu16, cur_path, value_u16);
+        } else if (str_eq(property_type, "u32")) {
+            result = core_property_node_u32_read(parent_node, &value_u32);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRIu32, cur_path, value_u32);
+        } else if (str_eq(property_type, "u64")) {
+            result = core_property_node_u64_read(parent_node, &value_u64);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %" PRIu64, cur_path, value_u64);
+        } else if (str_eq(property_type, "str")) {
+            result = core_property_node_str_read(parent_node, value_str, sizeof(value_str));
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %s", cur_path, value_str);
+        } else if (str_eq(property_type, "bool")) {
+            result = core_property_node_bool_read(parent_node, &value_bool);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %d", cur_path, value_bool);
+        } else if (str_eq(property_type, "bin")) {
+            log_message(LOG_MODULE, "%s: <BINARY>", cur_path);
+        } else {
+            log_fatal("%s: <UNKNOWN TYPE> (%d)", cur_path, property_type);
+        }
+
+        // TODO attribute traversal is missing here, needs an interface allowing arbitrary
+        // traversal on core_property_node
+    } else {
+        do {
+            result = _core_property_node_ext_log_rec(&child_node, cur_path, log_message);
+
+            if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
+                return result;
+            }
+
+            result = core_property_node_next_sibling_get(&child_node, &tmp);
+            memcpy(&child_node, &tmp, sizeof(core_property_node_t));
+
+            // No more siblings
+            if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
+                break;
+            }
+
+            if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
+                return result;
+            }
+        } while (true);
+    }
+
+    return CORE_PROPERTY_NODE_RESULT_SUCCESS;
+}
+
+void core_property_node_ext_log(
+    const core_property_node_t *node, bt_core_log_message_t log_message)
+{
+    _core_property_node_ext_log_rec(node, "", log_message);
 }
 
 core_property_node_result_t core_property_node_ext_u8_read(
@@ -593,16 +726,11 @@ core_property_node_result_t core_property_node_ext_merge_with_strategies_do(
         return CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL;
     }
 
-    core_property_node_log(&merged_node, log_misc_func);
-    core_property_node_log(&source_node, log_misc_func);
-
     ctx.path = "";
     ctx.strategies = strategies;
 
     property_node_result = _core_property_node_ext_merge_recursive_do(
         &merged_node, &source_node, &ctx);
-
-    core_property_node_log(&merged_node, log_misc_func);
 
     if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(property_node_result)) {
         core_property_free(&merged_property);

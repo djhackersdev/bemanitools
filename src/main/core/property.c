@@ -43,7 +43,6 @@ void core_property_api_set(const core_property_api_t *api)
         CORE_PROPERTY_ASSERT_IMPLEMENTED(api->v1.str_load, str_load);
         CORE_PROPERTY_ASSERT_IMPLEMENTED(api->v1.size, size);
         CORE_PROPERTY_ASSERT_IMPLEMENTED(api->v1.clone, clone);
-        CORE_PROPERTY_ASSERT_IMPLEMENTED(api->v1.log, log);
         CORE_PROPERTY_ASSERT_IMPLEMENTED(api->v1.root_node_get, root_node_get);
         CORE_PROPERTY_ASSERT_IMPLEMENTED(
             api->v1.other_node_insert, other_node_insert);
@@ -157,16 +156,6 @@ core_property_result_t core_property_clone(
     log_assert(property_cloned);
 
     return _core_property_api.v1.clone(property, property_cloned);
-}
-
-void core_property_log(
-    const core_property_t *property, bt_core_log_message_t log_message)
-{
-    log_assert(_core_property_api_is_valid());
-    log_assert(property);
-    log_assert(log_message);
-
-    _core_property_api.v1.log(property, log_message);
 }
 
 core_property_result_t core_property_root_node_get(

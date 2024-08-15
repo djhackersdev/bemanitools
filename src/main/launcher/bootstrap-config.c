@@ -669,8 +669,6 @@ void bootstrap_config_load(
 
     log_misc(ROOT_NODE "/startup/%s: loading merged result...", profile);
 
-    core_property_node_log(&startup_node, log_misc_func);
-
     _bootstrap_config_load_bootstrap(&startup_node, profile, &config->startup);
 
     log_misc("Loading finished");

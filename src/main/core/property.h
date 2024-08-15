@@ -39,8 +39,6 @@ typedef core_property_result_t (*core_property_size_t)(
     const core_property_t *property, size_t *size);
 typedef core_property_result_t (*core_property_clone_t)(
     const core_property_t *property, core_property_t **result);
-typedef void (*core_property_log_t)(
-    const core_property_t *property, bt_core_log_message_t log_message);
 typedef core_property_result_t (*core_property_root_node_get_t)(
     const core_property_t *property, core_property_node_t *result);
 typedef core_property_result_t (*core_property_other_node_insert_t)(
@@ -56,7 +54,6 @@ typedef struct core_property_api {
         core_property_str_load_t str_load;
         core_property_size_t size;
         core_property_clone_t clone;
-        core_property_log_t log;
         core_property_root_node_get_t root_node_get;
         core_property_other_node_insert_t other_node_insert;
         core_property_free_t free;
@@ -80,8 +77,6 @@ core_property_result_t
 core_property_size(const core_property_t *property, size_t *size);
 core_property_result_t core_property_clone(
     const core_property_t *property, core_property_t **property_cloned);
-void core_property_log(
-    const core_property_t *property, bt_core_log_message_t log_message);
 core_property_result_t core_property_root_node_get(
     const core_property_t *property, core_property_node_t *node);
 core_property_result_t core_property_other_node_insert(

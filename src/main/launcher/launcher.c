@@ -17,6 +17,7 @@
 #include "core/log-sink-file.h"
 #include "core/log-sink-list.h"
 #include "core/log-sink-std.h"
+#include "core/property-ext.h"
 #include "core/thread-crt.h"
 
 #include "iface-core/log.h"
@@ -218,16 +219,16 @@ _launcher_config_full_resolved_log(const struct launcher_config *config)
     if (config->debug.log_property_configs) {
         log_misc("launcher-config resolved properties");
         log_misc("bootstrap-config");
-        core_property_log(config->bootstrap.property, log_misc_func);
+        core_property_ext_log(config->bootstrap.property, log_misc_func);
 
         log_misc("avs-config");
-        core_property_log(config->avs.property, log_misc_func);
+        core_property_ext_log(config->avs.property, log_misc_func);
 
         log_misc("ea3-ident-config");
-        core_property_log(config->ea3_ident.property, log_misc_func);
+        core_property_ext_log(config->ea3_ident.property, log_misc_func);
 
         log_misc("eamuse-config");
-        core_property_log(config->eamuse.property, log_misc_func);
+        core_property_ext_log(config->eamuse.property, log_misc_func);
     }
 }
 
@@ -333,7 +334,7 @@ void _launcher_hooks_load(
                 if (debug_log_property_configs) {
                     log_misc("Property hook config: %s", config->hook[i].path);
 
-                    core_property_log(config->hook[i].property, log_misc_func);
+                    core_property_ext_log(config->hook[i].property, log_misc_func);
                 }
 
                 result_prop = core_property_root_node_get(
@@ -362,7 +363,7 @@ static void _launcher_ea3_ident_config_load(
     if (log_property_configs) {
         log_misc("Property ea3-ident-config");
 
-        core_property_log(launcher_config->property, log_misc_func);
+        core_property_ext_log(launcher_config->property, log_misc_func);
     }
 
     if (!ea3_ident_config_hardid_is_defined(config)) {
@@ -453,7 +454,7 @@ void _launcher_init(
 
         if (launcher_config->debug.log_property_configs) {
             log_misc("launcher-config");
-            core_property_log(launcher_property, log_misc_func);
+            core_property_ext_log(launcher_property, log_misc_func);
         }
 
         core_property_free(&launcher_property);

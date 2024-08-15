@@ -36,7 +36,6 @@ void core_property_node_api_set(const core_property_node_api_t *api)
     }
 
     if (api->version == 1) {
-        CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.log, log);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.name_get, name_get);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.size, size);
         CORE_PROPERTY_NODE_ASSERT_IMPLEMENTED(api->v1.search, search);
@@ -119,7 +118,6 @@ const char *core_property_node_result_to_str(core_property_node_result_t result)
         default:
             return "Undefined error";
     }
-}
 
 void core_property_node_fatal_on_error(core_property_node_result_t result)
 {
@@ -135,14 +133,6 @@ void core_property_node_fatal_on_error(core_property_node_result_t result)
     }
 }
 
-void core_property_node_log(
-    const core_property_node_t *node, bt_core_log_message_t log_message)
-{
-    log_assert(_core_property_node_api_is_valid());
-    log_assert(node);
-    log_assert(log_message);
-
-    _core_property_node_api.v1.log(node, log_message);
 }
 
 core_property_node_result_t core_property_node_name_get(

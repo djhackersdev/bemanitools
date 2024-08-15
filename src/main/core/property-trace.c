@@ -99,16 +99,6 @@ static core_property_result_t _core_property_trace_clone(
     return result;
 }
 
-static void _core_property_trace_log(
-    const core_property_t *property, bt_core_log_message_t log_message)
-{
-    log_misc(">>> log(%p)", property);
-
-    _core_property_trace_target_api.v1.log(property, log_message);
-
-    log_misc("<<< log(%p)", property);
-}
-
 static core_property_result_t _core_property_trace_root_node_get(
     const core_property_t *property, core_property_node_t *node)
 {
@@ -176,7 +166,6 @@ void core_property_trace_core_api_get(core_property_api_t *api)
     api->v1.str_load = _core_property_trace_str_load;
     api->v1.size = _core_property_trace_size;
     api->v1.clone = _core_property_trace_clone;
-    api->v1.log = _core_property_trace_log;
     api->v1.root_node_get = _core_property_trace_root_node_get;
     api->v1.other_node_insert = _core_property_trace_other_node_insert;
     api->v1.free = _core_property_trace_free;

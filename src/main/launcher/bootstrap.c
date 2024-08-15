@@ -8,6 +8,7 @@
 #include "core/log-sink-std.h"
 
 #include "core/property-ext.h"
+#include "core/property-node-ext.h"
 #include "core/property-node.h"
 #include "core/property.h"
 
@@ -184,7 +185,7 @@ void bootstrap_avs_init(
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config from file: %s", config->config_file);
-        core_property_log(file_property, log_misc_func);
+        core_property_ext_log(file_property, log_misc_func);
     }
 
     merged_property =
@@ -194,7 +195,7 @@ void bootstrap_avs_init(
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config merged with overrides");
-        core_property_log(merged_property, log_misc_func);
+        core_property_ext_log(merged_property, log_misc_func);
     }
 
     avs_config_root_get(merged_property, &root_node);
@@ -204,7 +205,7 @@ void bootstrap_avs_init(
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config final");
-        core_property_log(merged_property, log_misc_func);
+        core_property_ext_log(merged_property, log_misc_func);
     }
 
     avs_fs_assert_root_device_exists(&root_node);
@@ -241,7 +242,7 @@ void bootstrap_eamuse_init(
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config from file: %s", config->config_file);
-            core_property_log(file_property, log_misc_func);
+            core_property_ext_log(file_property, log_misc_func);
         }
 
         prop_result = core_property_ext_merge(
@@ -252,7 +253,7 @@ void bootstrap_eamuse_init(
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config merged with overrides");
-            core_property_log(merged_property, log_misc_func);
+            core_property_ext_log(merged_property, log_misc_func);
         }
 
         eamuse_config_root_get(merged_property, &root_node);
@@ -261,7 +262,7 @@ void bootstrap_eamuse_init(
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config final");
-            core_property_log(merged_property, log_misc_func);
+            core_property_ext_log(merged_property, log_misc_func);
         }
 
         eamuse_init(&root_node);
@@ -317,7 +318,7 @@ void bootstrap_app_init(
 
     if (_bootstrap_log_property_configs) {
         log_misc("app-config");
-        core_property_node_log(&node, log_misc_func);
+        core_property_node_ext_log(&node, log_misc_func);
     }
 
     app_init_invoke(&_bootstrap_app, ea3_ident_config, &node);

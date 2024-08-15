@@ -8,16 +8,6 @@
 
 static core_property_node_api_t _core_property_node_trace_target_api;
 
-static void _core_property_node_trace_log(
-    const core_property_node_t *node, bt_core_log_message_t log_message)
-{
-    log_misc(">>> log(%p)", node);
-
-    _core_property_node_trace_target_api.v1.log(node, log_message);
-
-    log_misc("<<< log(%p)", node);
-}
-
 static core_property_node_result_t _core_property_node_trace_name_get(
     const core_property_node_t *node, char *name, size_t len)
 {
@@ -833,7 +823,6 @@ void core_property_node_trace_core_api_get(core_property_node_api_t *api)
 
     api->version = 1;
 
-    api->v1.log = _core_property_node_trace_log;
     api->v1.name_get = _core_property_node_trace_name_get;
     api->v1.size = _core_property_node_trace_size;
     api->v1.search = _core_property_node_trace_search;
