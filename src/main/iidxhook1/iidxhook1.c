@@ -70,6 +70,12 @@ static void _iidxhook1_io_iidx_init(module_io_t **module)
     bt_io_iidx_api_set(&api);
 }
 
+static void _iidxhook1_io_iidx_fini(module_io_t **module)
+{
+    bt_io_iidx_api_clear();
+    module_io_free(module);
+}
+
 static void _iidxhook1_io_eam_init(module_io_t **module)
 {
     bt_io_eam_api_t api;
@@ -79,6 +85,12 @@ static void _iidxhook1_io_eam_init(module_io_t **module)
     module_io_api_get(*module, &api);
     bt_io_eam_api_set(&api);
 }
+
+static void _iidxhook1_io_eam_fini(module_io_t **module)
+{
+    bt_io_eam_api_clear();
+    module_io_free(module);
+} 
 
 static void iidxhook1_setup_d3d9_hooks(
     const struct iidxhook_config_gfx *config_gfx)
@@ -177,6 +189,8 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
     // this needs to be launched before bm2dx.exe even loads the rteffect.dll
     // and runs DllMain of it (see also how this is done with the proxy
     // ezusb.dll)
+
+    // TODO the default should also be off and the config should ask for enabling it
     if (config_misc.rteffect_stub) {
         effector_hook_init();
     }
@@ -193,6 +207,7 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
 
     /* Disable operator menu clock setting system clock time */
 
+    // TODO this should be inverted as the default is probably to not want it to be set
     if (config_misc.disable_clock_set) {
         iidxhook_util_clock_hook_init();
     }
@@ -236,7 +251,35 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
 }
 static void _iidxhook1_main_fini()
 {
-    // TODO cleanup
+    // TODO guard these as they are config driven
+    ezusb_mon_hook_fini();
+    ezusb_log_hook_fini();
+
+    ezusb_emu_device_hook_fini();
+    hook_setupapi_fini();
+
+    // TODO how to cleanup iohook_push_handler?
+
+    bt_io_eam_fini();
+
+    _iidxhook1_io_eam_fini(&_iidxhook1_module_io_eam);
+
+    bt_io_iidx_fini();
+
+    _iidxhook1_io_iidx_fini(&_iidxhook1_module_io_iidx);
+
+    // TODO guard because config driven
+    iidxhook_util_clock_hook_fini();
+
+    // TODO how to cleanup hook_d3d9_init?
+
+    // TODO guard because config driven
+    effector_hook_fini();
+
+    settings_hook_fini();
+    eamuse_hook_fini();
+    adapter_hook_fini();
+    acp_hook_fini();
 }
 
 void bt_module_core_config_api_set(const bt_core_config_api_t *api)
