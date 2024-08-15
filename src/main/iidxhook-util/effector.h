@@ -8,4 +8,6 @@
  */
 void effector_hook_init(void);
 
+void effector_hook_fini();
+
 #endif

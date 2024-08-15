@@ -81,3 +81,11 @@ void effector_hook_init(void)
 
     log_info("Inserted rteffect hooks");
 }
+
+void effector_hook_fini()
+{
+    hook_table_revert(
+        NULL, "rteffect.dll", effector_hook_syms, lengthof(effector_hook_syms));
+
+    log_info("Removed rteffect hooks");
+}

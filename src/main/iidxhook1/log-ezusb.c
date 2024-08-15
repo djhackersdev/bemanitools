@@ -49,3 +49,11 @@ void ezusb_log_hook_init(void)
 
     log_info("Inserted ezusb log hooks");
 }
+
+void ezusb_log_hook_fini()
+{
+    hook_table_revert(
+        NULL, "user32.dll", ezusb_log_hook_syms, lengthof(ezusb_log_hook_syms));
+
+    log_info("Removed ezusb log hooks");
+}

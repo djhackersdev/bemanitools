@@ -361,3 +361,14 @@ void hook_setupapi_init(const struct hook_setupapi_data *data)
     log_info(
         "Hooked setupapi for %s, %s", data->device_path, data->device_desc);
 }
+
+void hook_setupapi_fini()
+{
+    hook_table_revert(
+        NULL, "setupapi.dll", setupapi_hook_syms, lengthof(setupapi_hook_syms));
+
+    log_info(
+        "Removed hooks setupapi for %s, %s", hook_setupapi_data->device_path, hook_setupapi_data->device_desc);
+
+   hook_setupapi_data = NULL;
+}

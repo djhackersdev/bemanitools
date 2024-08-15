@@ -9,6 +9,8 @@
  */
 void eamuse_hook_init(void);
 
+void eamuse_hook_fini();
+
 /**
  * Set a net_addr to a eamuse server for the game to connect to.
  *

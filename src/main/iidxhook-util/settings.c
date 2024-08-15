@@ -100,6 +100,14 @@ void settings_hook_init(void)
     log_info("Inserted settings hooks, settings path: %s", settings_path);
 }
 
+void settings_hook_fini()
+{
+    hook_table_revert(
+        NULL, "kernel32.dll", settings_hook_syms, lengthof(settings_hook_syms));
+
+    log_info("Removed settings hooks for settings path: %s", settings_path);
+}
+
 void settings_hook_set_path(const char *path)
 {
     size_t len;

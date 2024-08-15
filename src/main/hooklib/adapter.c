@@ -117,6 +117,16 @@ void adapter_hook_init(void)
 {
     hook_table_apply(
         NULL, "iphlpapi.dll", adapter_hook_syms, lengthof(adapter_hook_syms));
+
+    log_info("Inserted adapter hooks");
+}
+
+void adapter_hook_fini()
+{
+    hook_table_revert(
+        NULL, "iphlpapi.dll", adapter_hook_syms, lengthof(adapter_hook_syms));
+
+    log_info("Removed adapter hooks");
 }
 
 void adapter_hook_override(const char *adapter_address)

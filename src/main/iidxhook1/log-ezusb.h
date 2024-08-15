@@ -7,4 +7,6 @@
  */
 void ezusb_log_hook_init(void);
 
+void ezusb_log_hook_fini();
+
 #endif

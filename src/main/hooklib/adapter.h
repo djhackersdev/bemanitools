@@ -7,6 +7,8 @@
  */
 void adapter_hook_init(void);
 
+void adapter_hook_fini();
+
 /**
  * Uses the provided address to try and match a network adapter.
  * This adapter is then returned as the only adapter.

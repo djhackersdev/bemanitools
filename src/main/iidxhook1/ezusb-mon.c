@@ -232,3 +232,10 @@ void ezusb_mon_hook_init(void)
 
     log_info("Inserted ezusb mon hooks");
 }
+
+void ezusb_mon_hook_fini()
+{
+    hook_table_revert(NULL, "ezusb.dll", ezusb_mon_hook_syms, lengthof(ezusb_mon_hook_syms));
+
+    log_info("Removed ezusb mon hooks");
+}

@@ -8,4 +8,6 @@
  */
 void iidxhook_util_clock_hook_init(void);
 
+void iidxhook_util_clock_hook_fini();
+
 #endif

@@ -3,4 +3,6 @@
 
 void acp_hook_init(void);
 
+void acp_hook_fini();
+
 #endif
