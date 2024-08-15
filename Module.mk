@@ -340,7 +340,6 @@ $(zipdir)/iidx-18.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18.bat \
-		dist/iidx/iidxhook-18.conf \
 		dist/iidx/launcher-18.xml \
 		dist/shared/ea3-ident.xml \
 		dist/shared/ea3-license.xml \
