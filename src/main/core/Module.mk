@@ -5,6 +5,7 @@ libs_core	:= \
 
 src_core	:= \
     boot.c \
+	config-ext.c \
 	config-property-node.c \
 	log-bt-ext.c \
 	log-bt.c \
