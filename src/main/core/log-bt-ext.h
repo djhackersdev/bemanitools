@@ -53,4 +53,9 @@ void core_log_bt_ext_init_with_stdout_and_file(
 void core_log_bt_ext_init_with_stderr_and_file(
     const char *path, bool append, bool rotate, uint8_t max_rotations);
 
+void core_log_bt_ext_init_async_with_stderr();
+
+void core_log_bt_ext_init_async_with_stderr_and_file(
+    const char *path, bool append, bool rotate, uint8_t max_rotations);
+
 #endif
