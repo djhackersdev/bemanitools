@@ -4,8 +4,10 @@ ldflags_iidxhook1   := \
     -lws2_32 \
     -liphlpapi \
     -lpsapi \
+    -lshlwapi \
 
 libs_iidxhook1      := \
+    sdk-hook \
     core \
     iidxhook-util \
     ezusb-emu \
@@ -25,7 +27,7 @@ libs_iidxhook1      := \
     mxml \
 
 src_iidxhook1       := \
-    config-iidxhook1.c \
     dllmain.c \
+    iidxhook1.c \
     ezusb-mon.c \
     log-ezusb.c \

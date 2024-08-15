@@ -31,6 +31,9 @@ int main(int argc, char **argv)
 
     config_path = argv[1];
 
+    // Duct-tape to allow access to config path and load config in hook dlls
+    SetEnvironmentVariable("INJECT_CONFIG_PATH", config_path);
+
     // TODO make configurable
     // core_property_trace_log_enable(true);
     // core_property_node_trace_log_enable(true);

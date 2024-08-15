@@ -45,8 +45,6 @@ set PATH=^
 cd /d %REVISION_DIR%
 
 %BEMANITOOLS_DIR%\inject.exe^
-  %BEMANITOOLS_DIR%\iidxhook1.dll^
-  %REVISION_DIR%\bm2dx.exe^
-  -D^
+  %BEMANITOOLS_DIR%\inject-09.xml^
   --config %BEMANITOOLS_DIR%\iidxhook-09.conf^
   %*

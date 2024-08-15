@@ -1,5 +1,7 @@
 #include "cconfig/cconfig-util.h"
 
+#include "core/config-ext.h"
+
 #include "iface-core/log.h"
 
 #include "iidxhook-util/config-io.h"
@@ -54,4 +56,12 @@ void iidxhook_config_io_get(
             IIDXHOOK_UTIL_CONFIG_IO_DISABLE_IO_EMU_KEY,
             IIDXHOOK_UTIL_CONFIG_IO_DEFAULT_DISABLE_IO_EMU_VALUE);
     }
+}
+
+void iidxhook_util_config_io_get2(
+    const bt_core_config_t *config,
+    iidxhook_config_io_t *config_io)
+{
+    bt_core_config_ext_bool_get(config, "io/disable_card_reader_emu", &config_io->disable_card_reader_emu);
+    bt_core_config_ext_bool_get(config, "io/disable_io_emu", &config_io->disable_io_emu);
 }
