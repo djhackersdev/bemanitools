@@ -14,8 +14,15 @@ libs_inject     := \
     mxml \
 
 src_inject      := \
-    main.c \
+    debug-config.c \
+    debugger-config.c \
     debugger.c \
+    hooks-config.c \
+    inject-config.c \
+    inject.c \
+    logger-config.c \
+    logger.c \
+    main.c \
     options.c \
     version.c \
 
