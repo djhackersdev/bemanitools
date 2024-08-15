@@ -1,12 +1,14 @@
 #define LOG_MODULE "core-property-node-ext"
 
 #include <inttypes.h>
+#include <string.h>
 
 #include "iface-core/log.h"
 
 #include "core/property-node-ext.h"
 #include "core/property-node.h"
 
+#include "util/hex.h"
 #include "util/str.h"
 
 struct core_property_node_ext_merge_ctx {
@@ -118,6 +120,9 @@ static core_property_node_result_t _core_property_node_ext_log_rec(
     uint64_t value_u64;
     char value_str[4096];
     bool value_bool;
+    float value_float;
+    double value_double;
+    char value_bin[128];
 
     // Carry on the full root path down the node tree
     result = core_property_node_name_get(parent_node, cur_node_name, sizeof(cur_node_name));
@@ -185,8 +190,24 @@ static core_property_node_result_t _core_property_node_ext_log_rec(
             core_property_node_fatal_on_error(result);
 
             log_message(LOG_MODULE, "%s: %d", cur_path, value_bool);
+        } else if (str_eq(property_type, "float")) {
+            result = core_property_node_float_read(parent_node, &value_float);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %f", cur_path, value_float);
+        } else if (str_eq(property_type, "double")) {
+            result = core_property_node_double_read(parent_node, &value_double);
+            core_property_node_fatal_on_error(result);
+
+            log_message(LOG_MODULE, "%s: %f", cur_path, value_double);
         } else if (str_eq(property_type, "bin")) {
-            log_message(LOG_MODULE, "%s: <BINARY>", cur_path);
+            memset(value_bin, 0, sizeof(value_bin));
+            result = core_property_node_bin_read(parent_node, value_bin, sizeof(value_bin));
+            core_property_node_fatal_on_error(result);
+
+            hex_encode_lc(value_bin, sizeof(value_bin), value_str, sizeof(value_str));
+
+            log_message(LOG_MODULE, "%s (truncated to 128 bytes): %s", cur_path, value_str);
         } else {
             log_fatal("%s: <UNKNOWN TYPE> (%d)", cur_path, property_type);
         }
