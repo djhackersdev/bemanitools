@@ -187,26 +187,6 @@ core_property_node_result_t core_property_node_ext_str_read(
     return core_property_node_str_read(&tmp, value, len);
 }
 
-core_property_node_result_t core_property_node_ext_attr_read(
-    const core_property_node_t *node, const char *name, char *value, size_t len)
-{
-    core_property_node_t tmp;
-    core_property_node_result_t result;
-
-    log_assert(node);
-    log_assert(name);
-    log_assert(value);
-    log_assert(len > 0);
-
-    result = core_property_node_search(node, name, &tmp);
-
-    if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
-        return result;
-    }
-
-    return core_property_node_attr_read(&tmp, value, len);
-}
-
 core_property_node_result_t core_property_node_ext_u8_read_or_default(
     const core_property_node_t *node,
     const char *name,
@@ -458,27 +438,21 @@ core_property_node_result_t core_property_node_ext_bool_replace(
 core_property_node_result_t core_property_node_ext_attr_replace(
     core_property_node_t *node, const char *name, const char *val)
 {
-    core_property_node_t tmp;
     core_property_node_result_t result;
 
     log_assert(node);
     log_assert(name);
+    log_assert(val);
 
-    result = core_property_node_search(node, name, &tmp);
+    result = core_property_node_attr_remove(node, name);
 
     if (result != CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
             return result;
         }
-
-        result = core_property_node_remove(&tmp);
-
-        if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
-            return result;
-        }
     }
 
-    return core_property_node_attr_create(node, name, val, NULL);
+    return core_property_node_attr_create(node, name, val);
 }
 
 core_property_node_result_t core_property_node_ext_extract(

@@ -33,24 +33,24 @@ static void _avs_config_node_vfs_copy(
 
     // Ignore errors and default to empty
     memset(data, 0, sizeof(data));
-    core_property_node_ext_attr_read(source, "name@", data, sizeof(data));
-    core_property_node_ext_attr_replace(parent, "name@", data);
+    core_property_node_attr_read(source, "name", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "name", data);
 
     memset(data, 0, sizeof(data));
-    core_property_node_ext_attr_read(source, "fstype@", data, sizeof(data));
-    core_property_node_ext_attr_replace(parent, "fstype@", data);
+    core_property_node_attr_read(source, "fstype", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "fstype", data);
 
     memset(data, 0, sizeof(data));
-    core_property_node_ext_attr_read(source, "src@", data, sizeof(data));
-    core_property_node_ext_attr_replace(parent, "src@", data);
+    core_property_node_attr_read(source, "src", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "src", data);
 
     memset(data, 0, sizeof(data));
-    core_property_node_ext_attr_read(source, "dst@", data, sizeof(data));
-    core_property_node_ext_attr_replace(parent, "dst@", data);
+    core_property_node_attr_read(source, "dst", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "dst", data);
 
     memset(data, 0, sizeof(data));
-    core_property_node_ext_attr_read(source, "opt@", data, sizeof(data));
-    core_property_node_ext_attr_replace(parent, "opt@", data);
+    core_property_node_attr_read(source, "opt", data, sizeof(data));
+    core_property_node_ext_attr_replace(parent, "opt", data);
 }
 
 static core_property_node_result_t
@@ -113,9 +113,9 @@ _avs_config_mounttable_vfs_nodes_merge_strategy_do(
                 core_property_node_fatal_on_error(result);
 
                 if (str_eq(parent_child_name, "vfs")) {
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &source_child,
-                        "name@",
+                        "name",
                         name_source,
                         sizeof(name_source));
 
@@ -125,8 +125,8 @@ _avs_config_mounttable_vfs_nodes_merge_strategy_do(
                             "vfs source node");
                     }
 
-                    result = core_property_node_ext_attr_read(
-                        &source_child, "dst@", dst_source, sizeof(dst_source));
+                    result = core_property_node_attr_read(
+                        &source_child, "dst", dst_source, sizeof(dst_source));
 
                     if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
@@ -134,9 +134,9 @@ _avs_config_mounttable_vfs_nodes_merge_strategy_do(
                             "vfs source node");
                     }
 
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &parent_child,
-                        "name@",
+                        "name",
                         name_parent,
                         sizeof(name_parent));
 
@@ -146,8 +146,8 @@ _avs_config_mounttable_vfs_nodes_merge_strategy_do(
                             "vfs parent node");
                     }
 
-                    result = core_property_node_ext_attr_read(
-                        &parent_child, "dst@", dst_parent, sizeof(dst_parent));
+                    result = core_property_node_attr_read(
+                        &parent_child, "dst", dst_parent, sizeof(dst_parent));
 
                     if (CORE_PROPERTY_NODE_RESULT_IS_ERROR(result)) {
                         log_fatal(
@@ -591,7 +591,6 @@ void avs_config_local_fs_path_dev_nvram_and_raw_set(
     core_property_node_t fs_node;
     core_property_node_t mounttable_node;
     core_property_node_t vfs_node;
-    core_property_node_t tmp_node;
     core_property_node_result_t result;
 
     log_assert(node);
@@ -629,19 +628,19 @@ void avs_config_local_fs_path_dev_nvram_and_raw_set(
         core_property_node_fatal_on_error(result);
 
         result = core_property_node_attr_create(
-            &vfs_node, "name", "boot", &tmp_node);
+            &vfs_node, "name", "boot");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "fstype", "fs", &tmp_node);
+            &vfs_node, "fstype", "fs");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "src", path_dev_raw, &tmp_node);
+            &vfs_node, "src", path_dev_raw);
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "dest", "/dev/raw", &tmp_node);
+            &vfs_node, "dest", "/dev/raw");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "opt", "vf=1,posix=1", &tmp_node);
+            &vfs_node, "opt", "vf=1,posix=1");
         core_property_node_fatal_on_error(result);
 
         result =
@@ -649,19 +648,19 @@ void avs_config_local_fs_path_dev_nvram_and_raw_set(
         core_property_node_fatal_on_error(result);
 
         result = core_property_node_attr_create(
-            &vfs_node, "name", "boot", &tmp_node);
+            &vfs_node, "name", "boot");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "fstype", "fs", &tmp_node);
+            &vfs_node, "fstype", "fs");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "src", path_dev_nvram, &tmp_node);
+            &vfs_node, "src", path_dev_nvram);
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "dest", "/dev/nvram", &tmp_node);
+            &vfs_node, "dest", "/dev/nvram");
         core_property_node_fatal_on_error(result);
         result = core_property_node_attr_create(
-            &vfs_node, "opt", "vf=1,posix=1", &tmp_node);
+            &vfs_node, "opt", "vf=1,posix=1");
         core_property_node_fatal_on_error(result);
     } else if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
         result = core_property_node_ext_str_replace(
@@ -759,8 +758,8 @@ void avs_config_vfs_mounttable_get(
                     break;
                 }
 
-                result = core_property_node_ext_attr_read(
-                    &cur, "name@", name, sizeof(name));
+                result = core_property_node_attr_read(
+                    &cur, "name", name, sizeof(name));
 
                 if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
                     log_fatal("Missing 'name' attribute on vfs node");
@@ -769,9 +768,9 @@ void avs_config_vfs_mounttable_get(
                 }
 
                 if (str_eq(name, mounttable_selector)) {
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &cur,
-                        "fstype@",
+                        "fstype",
                         mounttable->entry[pos].fstype,
                         sizeof(mounttable->entry[pos].fstype));
 
@@ -785,9 +784,9 @@ void avs_config_vfs_mounttable_get(
                         core_property_node_fatal_on_error(result);
                     }
 
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &cur,
-                        "src@",
+                        "src",
                         mounttable->entry[pos].src,
                         sizeof(mounttable->entry[pos].src));
 
@@ -799,9 +798,9 @@ void avs_config_vfs_mounttable_get(
                         core_property_node_fatal_on_error(result);
                     }
 
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &cur,
-                        "dst@",
+                        "dst",
                         mounttable->entry[pos].dst,
                         sizeof(mounttable->entry[pos].dst));
 
@@ -813,9 +812,9 @@ void avs_config_vfs_mounttable_get(
                         core_property_node_fatal_on_error(result);
                     }
 
-                    result = core_property_node_ext_attr_read(
+                    result = core_property_node_attr_read(
                         &cur,
-                        "opt@",
+                        "opt",
                         mounttable->entry[pos].opt,
                         sizeof(mounttable->entry[pos].opt));
 

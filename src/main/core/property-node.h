@@ -115,8 +115,7 @@ typedef core_property_node_result_t (*core_property_node_double_create_t)(
 typedef core_property_node_result_t (*core_property_node_attr_create_t)(
     const core_property_node_t *parent_node,
     const char *key,
-    const char *value,
-    core_property_node_t *node_out);
+    const char *value);
 typedef core_property_node_result_t (*core_property_node_bool_create_t)(
     const core_property_node_t *parent_node,
     const char *key,
@@ -149,11 +148,13 @@ typedef core_property_node_result_t (*core_property_node_float_read_t)(
 typedef core_property_node_result_t (*core_property_node_double_read_t)(
     const core_property_node_t *parent_node, double *value);
 typedef core_property_node_result_t (*core_property_node_attr_read_t)(
-    const core_property_node_t *parent_node, char *value, size_t len);
+    const core_property_node_t *parent_node, const char *key, char *value, size_t len);
 typedef core_property_node_result_t (*core_property_node_bool_read_t)(
     const core_property_node_t *parent_node, bool *value);
 typedef core_property_node_result_t (*core_property_node_remove_t)(
     const core_property_node_t *node);
+typedef core_property_node_result_t (*core_property_node_attr_remove_t)(
+    const core_property_node_t *parent_node, const char *key);
 typedef core_property_node_result_t (*core_property_node_copy_t)(
     core_property_node_t *dst_node, const core_property_node_t *src_node);
 
@@ -200,6 +201,7 @@ typedef struct core_property_node_api {
         core_property_node_attr_read_t attr_read;
         core_property_node_bool_read_t bool_read;
         core_property_node_remove_t remove;
+        core_property_node_attr_remove_t attr_remove;
         core_property_node_copy_t copy;
     } v1;
 } core_property_node_api_t;
@@ -302,8 +304,7 @@ core_property_node_result_t core_property_node_double_create(
 core_property_node_result_t core_property_node_attr_create(
     const core_property_node_t *parent_node,
     const char *key,
-    const char *value,
-    core_property_node_t *node_out);
+    const char *value);
 core_property_node_result_t core_property_node_bool_create(
     const core_property_node_t *parent_node,
     const char *key,
@@ -336,11 +337,13 @@ core_property_node_result_t core_property_node_float_read(
 core_property_node_result_t core_property_node_double_read(
     const core_property_node_t *parent_node, double *value);
 core_property_node_result_t core_property_node_attr_read(
-    const core_property_node_t *parent_node, char *value, size_t len);
+    const core_property_node_t *parent_node, const char *key, char *value, size_t len);
 core_property_node_result_t core_property_node_bool_read(
     const core_property_node_t *parent_node, bool *value);
 core_property_node_result_t
 core_property_node_remove(const core_property_node_t *node);
+core_property_node_result_t core_property_node_attr_remove(
+    const core_property_node_t *parent_node, const char *key);
 core_property_node_result_t core_property_node_copy(
     core_property_node_t *dst_node, const core_property_node_t *src_node);
 

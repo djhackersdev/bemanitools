@@ -409,8 +409,7 @@ core_property_node_result_t core_property_node_double_create(
 core_property_node_result_t core_property_node_attr_create(
     const core_property_node_t *parent_node,
     const char *key,
-    const char *value,
-    core_property_node_t *node_out)
+    const char *value)
 {
     log_assert(_core_property_node_api_is_valid());
     log_assert(parent_node);
@@ -418,7 +417,7 @@ core_property_node_result_t core_property_node_attr_create(
     log_assert(value);
 
     return _core_property_node_api.v1.attr_create(
-        parent_node, key, value, node_out);
+        parent_node, key, value);
 }
 
 core_property_node_result_t core_property_node_bool_create(
@@ -566,13 +565,14 @@ core_property_node_result_t core_property_node_double_read(
 }
 
 core_property_node_result_t core_property_node_attr_read(
-    const core_property_node_t *parent_node, char *value, size_t len)
+    const core_property_node_t *parent_node, const char *key, char *value, size_t len)
 {
     log_assert(_core_property_node_api_is_valid());
     log_assert(parent_node);
+    log_assert(key);
     log_assert(value);
 
-    return _core_property_node_api.v1.attr_read(parent_node, value, len);
+    return _core_property_node_api.v1.attr_read(parent_node, key, value, len);
 }
 
 core_property_node_result_t core_property_node_bool_read(
@@ -592,6 +592,16 @@ core_property_node_remove(const core_property_node_t *node)
     log_assert(node);
 
     return _core_property_node_api.v1.remove(node);
+}
+
+core_property_node_result_t core_property_node_attr_remove(
+    const core_property_node_t *parent_node, const char *key)
+{
+    log_assert(_core_property_node_api_is_valid());
+    log_assert(parent_node);
+    log_assert(key);
+
+    return _core_property_node_api.v1.attr_remove(parent_node, key);
 }
 
 core_property_node_result_t core_property_node_copy(

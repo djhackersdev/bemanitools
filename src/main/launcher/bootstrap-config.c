@@ -128,9 +128,9 @@ static void _bootstrap_config_inheritance_resolve(
         sizeof(core_property_node_t));
 
     while (true) {
-        result = core_property_node_ext_attr_read(
+        result = core_property_node_attr_read(
             &startup_parent_node,
-            "inherit@",
+            "inherit",
             inherit_name,
             sizeof(inherit_name));
 
@@ -233,8 +233,8 @@ static void _bootstrap_config_load_bootstrap_default_files_config(
             break;
         }
 
-        result = core_property_node_ext_attr_read(
-            &child, "src@", config->file[i].src, sizeof(config->file[i].src));
+        result = core_property_node_attr_read(
+            &child, "src", config->file[i].src, sizeof(config->file[i].src));
 
         if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             log_fatal(
@@ -244,8 +244,8 @@ static void _bootstrap_config_load_bootstrap_default_files_config(
             core_property_node_fatal_on_error(result);
         }
 
-        result = core_property_node_ext_attr_read(
-            &child, "dst@", config->file[i].dst, sizeof(config->file[i].dst));
+        result = core_property_node_attr_read(
+            &child, "dst", config->file[i].dst, sizeof(config->file[i].dst));
 
         if (result == CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND) {
             log_fatal(
