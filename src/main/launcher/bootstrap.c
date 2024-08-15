@@ -1,6 +1,7 @@
 #define LOG_MODULE "bootstrap"
 
 #include "core/log-bt.h"
+#include "core/log-sink-async.h"
 #include "core/log-sink-file.h"
 #include "core/log-sink-list.h"
 #include "core/log-sink-null.h"
@@ -104,6 +105,7 @@ void bootstrap_log_init(const struct bootstrap_log_config *config)
 {
     core_log_sink_t sinks[2];
     core_log_sink_t sink_composed;
+    core_log_sink_t sink_async;
     enum core_log_bt_log_level level;
 
     log_assert(config);
@@ -133,7 +135,12 @@ void bootstrap_log_init(const struct bootstrap_log_config *config)
         core_log_sink_null_open(&sink_composed);
     }
 
-    core_log_bt_reinit(&sink_composed);
+    // TODO have configurable parameters for these
+    // TODO Allow for configuration of async logger on/off, default on
+    core_log_sink_async_open(64 * 1024, 64, CORE_LOG_SINK_ASYNC_OVERFLOW_POLICY_DISCARD_NEW, &sink_composed, &sink_async);
+
+    // TODO have configurable parameters for these
+    core_log_bt_reinit(64 * 1024, &sink_async);
 
     level = _bootstrap_log_map_level(config->level);
     core_log_bt_level_set(level);
