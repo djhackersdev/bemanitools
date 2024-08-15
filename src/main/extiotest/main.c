@@ -5,8 +5,9 @@
 
 #include <windows.h>
 
+#include "core/boot.h"
 #include "core/log-bt.h"
-#include "core/log-sink-std.h"
+#include "core/log-bt-ext.h"
 
 #include "iface-core/log.h"
 
@@ -14,7 +15,6 @@
 
 int main(int argc, char **argv)
 {
-    core_log_sink_t log_sink;
     HRESULT hr;
     const char *port;
     HANDLE handle;
@@ -26,10 +26,10 @@ int main(int argc, char **argv)
         fprintf(stderr, "  COM_PORT: For example COM1\n");
     }
 
-    core_log_bt_core_api_set();
+    core_boot("extiotest");
 
-    core_log_sink_std_err_open(true, &log_sink);
-    core_log_bt_init(&log_sink);
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_core_api_set();
     core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     port = argv[1];
