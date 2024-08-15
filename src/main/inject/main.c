@@ -53,25 +53,12 @@ static void _inject_log_header()
 void _inject_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    core_log_sink_t sinks[2];
-    core_log_sink_t sink_composed;
-    core_log_sink_t sink_mutex;
-
     if (log_file_path) {
-        core_log_sink_std_out_open(true, &sinks[0]);
-        core_log_sink_file_open(log_file_path, false, true, 10, &sinks[1]);
-        core_log_sink_list_open(sinks, 2, &sink_composed);
+        core_log_bt_ext_init_async_with_stderr_and_file(log_file_path, false, true, 10);
     } else {
-        core_log_sink_std_out_open(true, &sink_composed);
+        core_log_bt_ext_init_async_with_stderr();
     }
 
-    // Different threads logging the same destination, e.g. debugger thread,
-    // main thread
-    // TODO this needs to be de-coupled with async logging to fix latency
-    // issues for any game related threads logging
-    core_log_sink_mutex_open(&sink_composed, &sink_mutex);
-
-    core_log_bt_init(&sink_mutex);
     core_log_bt_core_api_set();
 
     core_log_bt_level_set(level);
@@ -217,6 +204,8 @@ int main(int argc, char **argv)
         goto init_options_fail;
     }
 
+    core_thread_crt_core_api_set();
+
     // TODO expose log level
     _inject_log_init(
         strlen(options.log_file) > 0 ? options.log_file : NULL,
@@ -224,8 +213,6 @@ int main(int argc, char **argv)
 
     _inject_log_header();
     os_version_log();
-
-    core_thread_crt_core_api_set();
 
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
