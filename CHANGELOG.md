@@ -3,6 +3,34 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 6.0.0-alpha.3
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+Goals of this version:
+
+* property (node) API implementation without AVS -> [mxml](https://github.com/michaelrsweet/mxml)
+* inject refactoring similar to launcher
+  * Re-structure modules
+  * Use bemanitools config API backed by property (node) API with mxml (because no AVS2)
+* SDK foundation for hook libraries bootstrapping with DllMain
+* iidxhook1 refactoring to use new SDK hook foundation and bemanitools config API
+
+This brings inject and launcher closer together regarding common functionality. inject is also
+using a "bootstrap.xml" style approach with a XML configuration file. That configuration file
+can also include further inlined or referenced configuration for any hooks to be loaded.
+
+With a new module that will serve as a piece of a public SDK in the future, any library that just
+bootstraps with DllMain can implement the Bemanitools 6 hook API transparently. This solution
+isn't ideal, but it works with a bit of duct-tape fairly well. A future improve would be to have
+improved hooking in inject to have a pre- and post-main function hook. However, that is a lot more
+work as it requires our own PE loader to bootstrap the entire executable to get more fine grained
+control.
+
+Remarks regarding what's known to be broken: Inject command line args + overrides
+
 ## 6.0.0-alpha.2
 
 **THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
