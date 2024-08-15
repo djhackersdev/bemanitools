@@ -23,7 +23,7 @@ static void _core_boot_log_std_msg(const char *module, const char *fmt, ...)
     va_start(args, fmt);
 
     printf("[%s] ", module);
-    vprintf(fmt, args);
+    vfprintf(stderr, fmt, args);
     printf("\n");
 
     va_end(args);
