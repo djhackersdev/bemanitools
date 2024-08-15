@@ -12,16 +12,17 @@
 #include "cconfig/cconfig-util.h"
 #include "cconfig/cmd.h"
 
+#include "core/boot.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-file.h"
 #include "core/log-sink-list.h"
 #include "core/log-sink-mutex.h"
 #include "core/log-sink-std.h"
-#include "core/log.h"
-#include "core/thread-crt-ext.h"
 #include "core/thread-crt.h"
-#include "core/thread.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 #include "inject/debugger.h"
 #include "inject/options.h"
@@ -29,7 +30,6 @@
 
 #include "util/cmdline.h"
 #include "util/debug.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/os.h"
 #include "util/signal.h"
@@ -53,11 +53,9 @@ static void _inject_log_header()
 void _inject_log_init(
     const char *log_file_path, enum core_log_bt_log_level level)
 {
-    struct core_log_sink sinks[2];
-    struct core_log_sink sink_composed;
-    struct core_log_sink sink_mutex;
-
-    core_log_bt_ext_impl_set();
+    core_log_sink_t sinks[2];
+    core_log_sink_t sink_composed;
+    core_log_sink_t sink_mutex;
 
     if (log_file_path) {
         core_log_sink_std_out_open(true, &sinks[0]);
@@ -69,9 +67,13 @@ void _inject_log_init(
 
     // Different threads logging the same destination, e.g. debugger thread,
     // main thread
+    // TODO this needs to be de-coupled with async logging to fix latency
+    // issues for any game related threads logging
     core_log_sink_mutex_open(&sink_composed, &sink_mutex);
 
     core_log_bt_init(&sink_mutex);
+    core_log_bt_core_api_set();
+
     core_log_bt_level_set(level);
 }
 
@@ -209,22 +211,22 @@ int main(int argc, char **argv)
     char *cmd_line;
     bool local_debugger;
 
+    core_boot("inject");
+
     if (!init_options(argc, argv, &options)) {
         goto init_options_fail;
     }
 
-    core_thread_crt_ext_impl_set();
     // TODO expose log level
-
     _inject_log_init(
         strlen(options.log_file) > 0 ? options.log_file : NULL,
         CORE_LOG_BT_LOG_LEVEL_MISC);
 
     _inject_log_header();
-
     os_version_log();
 
-    debug_init();
+    core_thread_crt_core_api_set();
+
     signal_exception_handler_init();
     // Cleanup remote process on CTRL+C
     signal_register_shutdown_handler(signal_shutdown_handler);
@@ -287,7 +289,6 @@ verify_2_fail:
 verify_fail:
     core_log_bt_fini();
 
-init_logger_fail:
 init_options_fail:
     return EXIT_FAILURE;
 }

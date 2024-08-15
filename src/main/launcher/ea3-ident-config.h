@@ -1,7 +1,7 @@
 #ifndef LAUNCHER_EA3_IDENT_CONFIG_H
 #define LAUNCHER_EA3_IDENT_CONFIG_H
 
-#include "imports/avs.h"
+#include "core/property.h"
 
 /* N.B. even though this might look like a Konami ABI, this is purely an
    internal data structure. */
@@ -30,7 +30,7 @@ void ea3_ident_config_init(struct ea3_ident_config *config);
 void ea3_ident_config_from_file_load(
     const char *path, struct ea3_ident_config *config);
 void ea3_ident_config_load(
-    struct property *property, struct ea3_ident_config *config);
+    const core_property_t *property, struct ea3_ident_config *config);
 bool ea3_ident_config_hardid_is_defined(struct ea3_ident_config *config);
 void ea3_ident_config_hardid_from_ethernet_set(struct ea3_ident_config *config);
 

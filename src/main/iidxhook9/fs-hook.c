@@ -5,11 +5,12 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "imports/avs.h"
 
 #include "iidxhook9/fs-hook.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static void *(*real_avs_fs_mount)(const char *dest, const char *src, const char *fs_type, const char *options);

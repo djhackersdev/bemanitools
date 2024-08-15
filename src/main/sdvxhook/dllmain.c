@@ -3,18 +3,22 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/eamio.h"
-#include "bemanitools/sdvxio.h"
-
-#include "core/log.h"
-#include "core/thread.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "hook/iohook.h"
 
 #include "hooklib/app.h"
 #include "hooklib/rs232.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/sdvx.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "sdvxhook/acio.h"
 #include "sdvxhook/gfx.h"
@@ -26,6 +30,29 @@
 static bool my_dll_entry_init(char *sidcode, struct property_node *config);
 static bool my_dll_entry_main(void);
 
+static module_io_t *_sdvxhook_module_io_sdvx;
+static module_io_t *_sdvxhook_module_io_eam;
+
+static void _sdvxhook_io_sdvx_init(module_io_t **module)
+{
+    bt_io_sdvx_api_t api;
+
+    module_io_ext_load_and_init(
+        "sdvxio.dll", "bt_module_io_sdvx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_sdvx_api_set(&api);
+}
+
+static void _sdvxhook_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
+
 static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 {
     bool ok;
@@ -36,12 +63,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("Starting up SDVX IO backend");
 
-    core_log_impl_assign(sdvx_io_set_loggers);
+    _sdvxhook_io_sdvx_init(&_sdvxhook_module_io_sdvx);
 
-    ok = sdvx_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+    ok = bt_io_sdvx_init();
 
     if (!ok) {
         goto sdvx_io_fail;
@@ -49,12 +73,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("Starting up card reader backend");
 
-    core_log_impl_assign(eam_io_set_loggers);
+    _sdvxhook_io_eam_init(&_sdvxhook_module_io_eam);
 
-    ok = eam_io_init(
-        core_thread_create_impl_get(),
-        core_thread_join_impl_get(),
-        core_thread_destroy_impl_get());
+    ok = bt_io_eam_init();
 
     /* Set up IO emulation hooks _after_ IO API setup to allow
        API implementations with real IO devices */
@@ -73,7 +94,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
     return app_hook_invoke_init(sidcode, config);
 
 eam_io_fail:
-    sdvx_io_fini();
+    bt_io_sdvx_fini();
+
+    bt_io_sdvx_api_clear();
+    module_io_free(&_sdvxhook_module_io_sdvx);
 
 sdvx_io_fail:
     ac_io_bus_fini();
@@ -88,10 +112,16 @@ static bool my_dll_entry_main(void)
     result = app_hook_invoke_main();
 
     log_info("Shutting down card reader backend");
-    eam_io_fini();
+    bt_io_eam_fini();
+
+    bt_io_eam_api_clear();
+    module_io_free(&_sdvxhook_module_io_eam);
 
     log_info("Shutting down SDVX IO backend");
-    sdvx_io_fini();
+    bt_io_sdvx_fini();
+
+    bt_io_sdvx_api_clear();
+    module_io_free(&_sdvxhook_module_io_sdvx);
 
     ac_io_bus_fini();
 
@@ -109,8 +139,8 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
     }
 
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
-    avs_util_core_interop_log_avs_impl_set();
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     args_recover(&argc, &argv);
 

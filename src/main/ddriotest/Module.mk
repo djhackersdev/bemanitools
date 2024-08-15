@@ -2,8 +2,10 @@ exes            += ddriotest \
 
 libs_ddriotest     := \
     core \
-    ddrio \
     util \
+    module \
+    iface-core \
+    iface-io \
 
 src_ddriotest      := \
     main.c \

@@ -7,7 +7,7 @@
 
 #include "aciodrv/device.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 bool aciodrv_h44b_init(struct aciodrv_device_ctx *device, uint8_t node_id)
 {

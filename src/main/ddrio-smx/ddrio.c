@@ -1,15 +1,27 @@
+#define LOG_MODULE "ddrio-smx"
+
 #include <windows.h>
 
 #include <stdatomic.h>
 #include <stdlib.h>
 
-#include "bemanitools/ddrio.h"
-#include "bemanitools/input.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface/input.h"
 
 #include "imports/SMX.h"
 #include "imports/avs.h"
+
+#include "main/module/input-ext.h"
+#include "main/module/input.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/input.h"
+#include "sdk/module/io/ddr.h"
 
 #include "util/defs.h"
 
@@ -31,15 +43,15 @@ static void
 ddr_io_smx_callback(int pad_no, enum SMXUpdateCallbackReason reason, void *ctx);
 
 static const struct ddr_io_smx_pad_map ddr_io_smx_pad_map[] = {
-    {0, 1 << 1, 1 << DDR_P1_UP},
-    {0, 1 << 3, 1 << DDR_P1_LEFT},
-    {0, 1 << 5, 1 << DDR_P1_RIGHT},
-    {0, 1 << 7, 1 << DDR_P1_DOWN},
+    {0, 1 << 1, 1 << BT_IO_DDR_P1_UP},
+    {0, 1 << 3, 1 << BT_IO_DDR_P1_LEFT},
+    {0, 1 << 5, 1 << BT_IO_DDR_P1_RIGHT},
+    {0, 1 << 7, 1 << BT_IO_DDR_P1_DOWN},
 
-    {1, 1 << 1, 1 << DDR_P2_UP},
-    {1, 1 << 3, 1 << DDR_P2_LEFT},
-    {1, 1 << 5, 1 << DDR_P2_RIGHT},
-    {1, 1 << 7, 1 << DDR_P2_DOWN},
+    {1, 1 << 1, 1 << BT_IO_DDR_P2_UP},
+    {1, 1 << 3, 1 << BT_IO_DDR_P2_LEFT},
+    {1, 1 << 5, 1 << BT_IO_DDR_P2_RIGHT},
+    {1, 1 << 7, 1 << BT_IO_DDR_P2_DOWN},
 };
 
 #define DDR_IO_SMX_LIGHT_VALUES_PER_PANEL 75
@@ -50,39 +62,43 @@ static const struct ddr_io_smx_pad_map ddr_io_smx_pad_map[] = {
 static const struct ddr_io_smx_light_map ddr_io_smx_light_map[] = {
     /* Light L/R blue and U/D red to match DDR pad color scheme */
 
-    {1 << LIGHT_P1_UP, DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 1, 0xFF, 0x00, 0x00},
-    {1 << LIGHT_P1_LEFT,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P1_UP,
+     DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 1,
+     0xFF,
+     0x00,
+     0x00},
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P1_LEFT,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 3,
      0x00,
      0x00,
      0xFF},
-    {1 << LIGHT_P1_RIGHT,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P1_RIGHT,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 5,
      0x00,
      0x00,
      0xFF},
-    {1 << LIGHT_P1_DOWN,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P1_DOWN,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 7,
      0xFF,
      0x00,
      0x00},
 
-    {1 << LIGHT_P2_UP,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P2_UP,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 10,
      0xFF,
      0x00,
      0x00},
-    {1 << LIGHT_P2_LEFT,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P2_LEFT,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 12,
      0x00,
      0x00,
      0xFF},
-    {1 << LIGHT_P2_RIGHT,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P2_RIGHT,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 14,
      0x00,
      0x00,
      0xFF},
-    {1 << LIGHT_P2_DOWN,
+    {1 << BT_IO_DDR_EXTIO_LIGHT_P2_DOWN,
      DDR_IO_SMX_LIGHT_VALUES_PER_PANEL * 16,
      0xFF,
      0x00,
@@ -93,30 +109,24 @@ static _Atomic uint32_t ddr_io_smx_pad_state[2];
 static CRITICAL_SECTION ddr_io_smx_lights_lock;
 static uint8_t ddr_io_smx_lights_counter;
 static char ddr_io_smx_lights[DDR_IO_SMX_TOTAL_LIGHT_VALUES];
+static module_input_t *_ddr_io_smx_module_input;
 
-void ddr_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+bool bt_io_ddr_init()
 {
-    core_log_impl_set(misc, info, warning, fatal);
-    input_set_loggers(misc, info, warning, fatal);
+    bool result;
+    bt_input_api_t input_api;
 
-    /* We would need a log server thread to accept log messages from SMX, since
-       it uses raw Win32 threads and not AVS threads (only AVS threads are
-       permitted to use the AVS logging API). So it's not really worth it. */
-}
-
-bool ddr_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
-{
     /* Use geninput for menu/operator btns */
+    module_input_ext_load_and_init("geninput.dll", &_ddr_io_smx_module_input);
+    module_input_api_get(_ddr_io_smx_module_input, &input_api);
+    bt_input_api_set(&input_api);
 
-    input_init(thread_create, thread_join, thread_destroy);
-    mapper_config_load("ddr");
+    result = bt_input_mapper_config_load("ddr");
+
+    if (!result) {
+        log_warning("Failed loading input mapper config for ddr");
+        return false;
+    }
 
     /* Start up SMX API */
 
@@ -130,7 +140,7 @@ bool ddr_io_init(
     return true;
 }
 
-uint32_t ddr_io_read_pad(void)
+uint32_t bt_io_ddr_pad_read(void)
 {
     /* SMX pads require a constant stream of lighting updates or they will
        quickly revert to autonomous lighting control. Here is a hacky way of
@@ -161,11 +171,11 @@ uint32_t ddr_io_read_pad(void)
     /* We don't atomically read both pads, but they are separate USB devices
        so they don't update in lockstep anyway. */
 
-    return mapper_update() | atomic_load(&ddr_io_smx_pad_state[0]) |
+    return bt_input_mapper_update() | atomic_load(&ddr_io_smx_pad_state[0]) |
         atomic_load(&ddr_io_smx_pad_state[1]);
 }
 
-void ddr_io_set_lights_extio(uint32_t lights)
+void bt_io_ddr_extio_lights_set(uint32_t lights)
 {
     const struct ddr_io_smx_light_map *map;
     size_t offset;
@@ -194,42 +204,46 @@ void ddr_io_set_lights_extio(uint32_t lights)
     LeaveCriticalSection(&ddr_io_smx_lights_lock);
 }
 
-void ddr_io_set_lights_p3io(uint32_t lights)
+void bt_io_ddr_p3io_lights_set(uint32_t lights)
 {
     uint8_t i;
 
     for (i = 0x00; i <= 0x07; i++) {
-        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, lights & (1 << i) ? 255 : 0);
     }
 }
 
-void ddr_io_set_lights_hdxs_panel(uint32_t lights)
+void bt_io_ddr_hdxs_lights_panel_set(uint32_t lights)
 {
     uint8_t i;
 
     for (i = 0x08; i <= 0x0D; i++) {
-        mapper_write_light(i, lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, lights & (1 << i) ? 255 : 0);
     }
 }
 
-void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+void bt_io_ddr_hdxs_lights_rgb_set(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
 {
     if (idx < 4) {
         uint8_t base = 0x20 + idx * 3;
-        mapper_write_light(base + 0, r);
-        mapper_write_light(base + 1, g);
-        mapper_write_light(base + 2, b);
+        bt_input_mapper_light_write(base + 0, r);
+        bt_input_mapper_light_write(base + 1, g);
+        bt_input_mapper_light_write(base + 2, b);
     }
 }
 
-void ddr_io_fini(void)
+void bt_io_ddr_fini(void)
 {
     log_info("Stopping SMX.DLL");
     SMX_Stop();
     log_info("Stopped SMX.DLL");
 
     DeleteCriticalSection(&ddr_io_smx_lights_lock);
-    input_fini();
+
+    bt_input_fini();
+
+    bt_input_api_clear();
+    module_input_free(&_ddr_io_smx_module_input);
 }
 
 static void
@@ -256,4 +270,31 @@ ddr_io_smx_callback(int pad_no, enum SMXUpdateCallbackReason reason, void *ctx)
     }
 
     atomic_store(&ddr_io_smx_pad_state[pad_no], ddr_state);
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+
+    /* We would need a log server thread to accept log messages from SMX, since
+       it uses raw Win32 threads and not AVS threads (only AVS threads are
+       permitted to use the AVS logging API). So it's not really worth it. */
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_ddr_init;
+    api->v1.fini = bt_io_ddr_fini;
+    api->v1.pad_read = bt_io_ddr_pad_read;
+    api->v1.extio_lights_set = bt_io_ddr_extio_lights_set;
+    api->v1.p3io_lights_set = bt_io_ddr_p3io_lights_set;
+    api->v1.hdxs_lights_panel_set = bt_io_ddr_hdxs_lights_panel_set;
+    api->v1.hdxs_lights_rgb_set = bt_io_ddr_hdxs_lights_rgb_set;
 }

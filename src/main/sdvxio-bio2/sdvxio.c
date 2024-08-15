@@ -1,30 +1,24 @@
+#define LOG_MODULE "sdvxio-bio2"
+
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/sdvxio.h"
+#include "api/core/log.h"
 
 #include "cconfig/cconfig-main.h"
+
+#include "iface-core/log.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/sdvx.h"
 
 #include "aciodrv/device.h"
 #include "bio2drv/bi2a-sdvx.h"
 #include "bio2drv/config-bio2.h"
 #include "bio2drv/detect.h"
-
-#define LOG_MODULE "sdvxio-bio2"
-
-#define log_misc(...) sdvx_io_log_misc(LOG_MODULE, __VA_ARGS__)
-#define log_info(...) sdvx_io_log_info(LOG_MODULE, __VA_ARGS__)
-#define log_warning(...) sdvx_io_log_warning(LOG_MODULE, __VA_ARGS__)
-#define log_fatal(...) sdvx_io_log_fatal(LOG_MODULE, __VA_ARGS__)
-
-static log_formatter_t sdvx_io_log_misc;
-static log_formatter_t sdvx_io_log_info;
-static log_formatter_t sdvx_io_log_warning;
-static log_formatter_t sdvx_io_log_fatal;
 
 static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
@@ -42,26 +36,8 @@ struct bi2a_sdvx_state_out pout_ready;
 
 static struct aciodrv_device_ctx *bio2_device_ctx;
 
-void sdvx_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+bool bt_io_sdvx_init()
 {
-    sdvx_io_log_misc = misc;
-    sdvx_io_log_info = info;
-    sdvx_io_log_warning = warning;
-    sdvx_io_log_fatal = fatal;
-
-    bio2drv_set_loggers(misc, info, warning, fatal);
-}
-
-bool sdvx_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
-{
-
     struct cconfig *config;
     struct bio2drv_config_bio2 config_bio2;
 
@@ -152,7 +128,7 @@ bool sdvx_io_init(
     return running;
 }
 
-void sdvx_io_fini(void)
+void bt_io_sdvx_fini(void)
 {
     running = false;
     while (processing_io) {
@@ -175,20 +151,20 @@ static uint8_t assign_light(uint32_t gpio_lights, uint32_t shift)
 /* Blue generator lights are gpio, while the red and green are pwm on the KFCA.
    Tested this on a gen 1 sdvx pcb, and indeed the blue lights are only on/off,
    while the red & green can fade. */
-void sdvx_io_set_gpio_lights(uint32_t gpio_lights)
+void bt_io_sdvx_gpio_lights_set(uint32_t gpio_lights)
 {
-    pout_staging.gpio[0] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_START);
-    pout_staging.gpio[1] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_A);
-    pout_staging.gpio[2] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_B);
-    pout_staging.gpio[3] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_C);
-    pout_staging.gpio[4] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_D);
-    pout_staging.gpio[5] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_L);
-    pout_staging.gpio[6] = assign_light(gpio_lights, SDVX_IO_OUT_GPIO_FX_R);
+    pout_staging.gpio[0] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_START);
+    pout_staging.gpio[1] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_A);
+    pout_staging.gpio[2] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_B);
+    pout_staging.gpio[3] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_C);
+    pout_staging.gpio[4] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_D);
+    pout_staging.gpio[5] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_FX_L);
+    pout_staging.gpio[6] = assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_FX_R);
     pout_staging.generator[2] =
-        assign_light(gpio_lights, SDVX_IO_OUT_GPIO_GENERATOR_B);
+        assign_light(gpio_lights, BT_IO_SDVX_OUT_GPIO_GENERATOR_B);
 }
 
-void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
+void bt_io_sdvx_pwm_light_set(uint8_t light_no, uint8_t intensity)
 {
     if (light_no < 12) {
         wing_staging[light_no] = intensity;
@@ -224,7 +200,7 @@ void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
     }
 }
 
-bool sdvx_io_write_output(void)
+bool bt_io_sdvx_output_write(void)
 {
     memcpy(&pout_ready, &pout_staging, sizeof(struct bi2a_sdvx_state_out));
     pout_ready.wingUpper[0] = wing_staging[0] / 2 + wing_staging[3] / 2;
@@ -269,7 +245,7 @@ bool _bio2_sdvx_io_poll(
     return true;
 }
 
-bool sdvx_io_read_input(void)
+bool bt_io_sdvx_input_read(void)
 {
     struct bi2a_sdvx_state_in pin;
 
@@ -285,35 +261,37 @@ bool sdvx_io_read_input(void)
 
     sdvx_io_gpio_sys = 0;
     sdvx_io_gpio_sys |=
-        shift_pin(pin.analogs[0].a_coin, SDVX_IO_IN_GPIO_SYS_COIN);
+        shift_pin(pin.analogs[0].a_coin, BT_IO_SDVX_IN_GPIO_SYS_COIN);
     sdvx_io_gpio_sys |=
-        shift_pin(pin.analogs[0].a_test, SDVX_IO_IN_GPIO_SYS_TEST);
+        shift_pin(pin.analogs[0].a_test, BT_IO_SDVX_IN_GPIO_SYS_TEST);
     sdvx_io_gpio_sys |=
-        shift_pin(pin.analogs[0].a_service, SDVX_IO_IN_GPIO_SYS_SERVICE);
+        shift_pin(pin.analogs[0].a_service, BT_IO_SDVX_IN_GPIO_SYS_SERVICE);
 
     sdvx_io_gpio[0] = 0;
     sdvx_io_gpio[1] = 0;
 
     sdvx_io_gpio[0] |=
-        shift_pin(pin.buttons_1.b_start, SDVX_IO_IN_GPIO_0_START);
+        shift_pin(pin.buttons_1.b_start, BT_IO_SDVX_IN_GPIO_0_START);
     sdvx_io_gpio[0] |=
-        shift_pin(pin.buttons_1.b_headphone, SDVX_IO_IN_GPIO_0_HEADPHONE);
-    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_a, SDVX_IO_IN_GPIO_0_A);
-    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_b, SDVX_IO_IN_GPIO_0_B);
-    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_c, SDVX_IO_IN_GPIO_0_C);
-    sdvx_io_gpio[1] |= shift_pin(pin.buttons_1.b_d, SDVX_IO_IN_GPIO_1_D);
-    sdvx_io_gpio[1] |= shift_pin(pin.buttons_1.b_fxl, SDVX_IO_IN_GPIO_1_FX_L);
-    sdvx_io_gpio[1] |= shift_pin(pin.buttons_2.b_fxr, SDVX_IO_IN_GPIO_1_FX_R);
+        shift_pin(pin.buttons_1.b_headphone, BT_IO_SDVX_IN_GPIO_0_HEADPHONE);
+    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_a, BT_IO_SDVX_IN_GPIO_0_A);
+    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_b, BT_IO_SDVX_IN_GPIO_0_B);
+    sdvx_io_gpio[0] |= shift_pin(pin.buttons_1.b_c, BT_IO_SDVX_IN_GPIO_0_C);
+    sdvx_io_gpio[1] |= shift_pin(pin.buttons_1.b_d, BT_IO_SDVX_IN_GPIO_1_D);
+    sdvx_io_gpio[1] |=
+        shift_pin(pin.buttons_1.b_fxl, BT_IO_SDVX_IN_GPIO_1_FX_L);
+    sdvx_io_gpio[1] |=
+        shift_pin(pin.buttons_2.b_fxr, BT_IO_SDVX_IN_GPIO_1_FX_R);
 
     return true;
 }
 
-uint8_t sdvx_io_get_input_gpio_sys(void)
+uint8_t bt_io_sdvx_input_gpio_sys_get(void)
 {
     return sdvx_io_gpio_sys;
 }
 
-uint16_t sdvx_io_get_input_gpio(uint8_t gpio_bank)
+uint16_t bt_io_sdvx_input_gpio_get(uint8_t gpio_bank)
 {
     if (gpio_bank > 1) {
         return 0;
@@ -322,7 +300,7 @@ uint16_t sdvx_io_get_input_gpio(uint8_t gpio_bank)
     return sdvx_io_gpio[gpio_bank];
 }
 
-uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
+uint16_t bt_io_sdvx_spinner_pos_get(uint8_t spinner_no)
 {
     if (spinner_no >= 2) {
         return 0;
@@ -330,7 +308,7 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no)
     return sdvx_io_analog[spinner_no];
 }
 
-bool sdvx_io_set_amp_volume(
+bool bt_io_sdvx_amp_volume_set(
     uint8_t primary, uint8_t headphone, uint8_t subwoofer)
 {
     if (!running) {
@@ -345,4 +323,25 @@ bool sdvx_io_set_amp_volume(
     }
 
     return true;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_sdvx_api_get(bt_io_sdvx_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_sdvx_init;
+    api->v1.fini = bt_io_sdvx_fini;
+    api->v1.gpio_lights_set = bt_io_sdvx_gpio_lights_set;
+    api->v1.pwm_light_set = bt_io_sdvx_pwm_light_set;
+    api->v1.output_write = bt_io_sdvx_output_write;
+    api->v1.input_read = bt_io_sdvx_input_read;
+    api->v1.input_gpio_sys_get = bt_io_sdvx_input_gpio_sys_get;
+    api->v1.input_gpio_get = bt_io_sdvx_input_gpio_get;
+    api->v1.spinner_pos_get = bt_io_sdvx_spinner_pos_get;
+    api->v1.amp_volume_set = bt_io_sdvx_amp_volume_set;
 }

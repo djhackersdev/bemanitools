@@ -3,6 +3,9 @@
 
 #include <windows.h>
 
+#include "api/io/bst.h"
+#include "api/io/eam.h"
+
 #include "hook/iohook.h"
 
 void ac_io_bus_init(void);

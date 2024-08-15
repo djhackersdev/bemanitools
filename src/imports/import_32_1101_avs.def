@@ -26,8 +26,8 @@ EXPORTS
     property_desc_to_buffer @246 NONAME
     property_destroy @247 NONAME
     property_insert_read @255 NONAME
-    property_clear_error @573 NONAME
-    property_get_error @573 NONAME
+    property_clear_error @244 NONAME
+    property_get_error @253 NONAME
     property_node_create @266 NONAME
     property_node_datasize @267 NONAME
     property_node_name @274 NONAME
@@ -35,8 +35,8 @@ EXPORTS
     property_node_refer @278 NONAME
     property_node_remove @279 NONAME
     property_node_type @282 NONAME
-    property_node_clone @280 NONAME
-    property_node_traversal @282 NONAME
+    property_node_clone @265 NONAME
+    property_node_traversal @281 NONAME
     property_node_refdata @277 NONAME
     property_query_size @290 NONAME
     property_psmap_import @288 NONAME

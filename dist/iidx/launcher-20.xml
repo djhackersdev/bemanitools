@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="Shift-JIS"?>
-<launcher version="1">
+<launcher>
+  <version __type="u32">1</version>
   <bootstrap>
     <selector __type="str">bemanitools_local_fs</selector>
     <config kind="inline">
@@ -41,6 +42,8 @@
             <fs>
                 <root>
                     <device __type="str">.</device>
+                    <fstype __type="str">fs</fstype>
+                    <option __type="str">posix=1</option>
                 </root>
                 <nvram>
                     <device __type="str">dev/nvram</device>
@@ -60,13 +63,14 @@
     <config kind="file">bemanitools/ea3-service.xml</config>
   </eamuse>
   <hook>
-    <hook_dlls>
-        <dll __type="str">iidxhook6.dll</dll>
-    </hook_dlls>
-    <before_hook_dlls>
-    </before_hook_dlls>
-    <iat_hook_dlls>
-    </iat_hook_dlls>
+    <hook>
+      <enable __type="bool">1</enable>
+      <path __type="str">iidxhook6.dll</path>
+      <config kind="inline">
+        <hook>
+        </hook>
+      </config>
+    </hook>
   </hook>
   <debug>
     <remote_debugger __type="bool">0</remote_debugger>

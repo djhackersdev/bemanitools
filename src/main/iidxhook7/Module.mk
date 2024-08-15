@@ -7,8 +7,10 @@ ldflags_iidxhook7   := \
 deplibs_iidxhook7   := \
     avs \
 
+avslibs_iidxhook7 := \
+    avs-ext \
+
 libs_iidxhook7      := \
-	avs-util \
     core \
     iidxhook-d3d9 \
     iidxhook-util \
@@ -19,13 +21,15 @@ libs_iidxhook7      := \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \
     security \
-    eamio \
     acioemu \
     hook \
     hooklib \
-    iidxio \
-    util \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    util \
 
 src_iidxhook7       := \
     dllmain.c \

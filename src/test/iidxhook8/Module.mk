@@ -8,6 +8,7 @@ libs_iidxhook8-config-cam-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook8-config-cam-test     := \
     iidxhook8-config-cam-test.c \
@@ -23,6 +24,7 @@ libs_iidxhook8-config-io-test     := \
     cconfig \
     test \
     util \
+    iface-core \
 
 src_iidxhook8-config-io-test     := \
     iidxhook8-config-io-test.c \

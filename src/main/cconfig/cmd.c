@@ -7,7 +7,7 @@
 
 #include "cconfig/cmd.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 #include "util/str.h"

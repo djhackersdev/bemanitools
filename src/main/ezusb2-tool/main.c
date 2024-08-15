@@ -5,7 +5,9 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
 
 #include "ezusb/util.h"
 #include "ezusb2/ezusb2.h"
@@ -124,8 +126,10 @@ int main(int argc, char **argv)
 
     arg_pos = 1;
 
-    core_log_bt_ext_impl_set();
+    core_log_bt_core_api_set();
+
     core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     if (!strcmp(argv[arg_pos], "scan")) {
         return scan();

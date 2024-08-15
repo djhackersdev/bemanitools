@@ -10,6 +10,7 @@ libs_inject     := \
     core \
     util \
     dwarfstack \
+    iface-core \
 
 src_inject      := \
     main.c \

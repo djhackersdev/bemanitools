@@ -2,11 +2,14 @@
 
 #include <stdbool.h>
 
-#include "core/log.h"
+#include "avs-ext/log.h"
+#include "avs-ext/thread.h"
 
 #include "hook/iohook.h"
 
 #include "hooklib/app.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 
@@ -51,8 +54,8 @@ BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
         goto end;
     }
 
-    core_log_impl_set(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    avs_ext_log_core_api_set();
+    avs_ext_thread_core_api_set();
 
     app_hook_init(my_dll_entry_init, my_dll_entry_main);
 

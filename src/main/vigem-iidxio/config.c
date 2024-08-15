@@ -1,7 +1,7 @@
 #include "cconfig/cconfig-main.h"
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "vigem-iidxio/config.h"
 

@@ -11,8 +11,10 @@ ldflags_iidxhook8   := \
 deplibs_iidxhook8   := \
     avs \
 
+avslibs_iidxhook8 := \
+    avs-ext \
+
 libs_iidxhook8      := \
-	avs-util \
     core \
     iidxhook-d3d9 \
     iidxhook-util \
@@ -20,12 +22,14 @@ libs_iidxhook8      := \
     bio2emu \
     bio2emu-iidx \
     camhook \
-    iidxio \
     hook \
     hooklib \
     cconfig \
+    iface \
+    iface-io \
+    iface-core \
+    module \
     util \
-    eamio \
     
 src_iidxhook8       := \
     config-io.c \

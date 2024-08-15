@@ -3,15 +3,18 @@ avsdlls			+= bsthook
 deplibs_bsthook	:= \
 	avs \
 
+avslibs_bsthook := \
+    avs-ext \
+
 libs_bsthook		:= \
-	avs-util \
+	util \
 	core \
 	acioemu \
-	bstio \
 	hook \
 	hooklib \
-	util \
-	eamio \
+	iface-io \
+	module \
+	iface-core \
 
 src_bsthook		:= \
 	acio.c \

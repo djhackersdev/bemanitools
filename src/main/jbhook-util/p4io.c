@@ -2,9 +2,8 @@
 
 #include <string.h>
 
-#include "bemanitools/jbio.h"
-
-#include "core/log.h"
+#include "iface-core/log.h"
+#include "iface-io/jb.h"
 
 #include "imports/avs.h"
 
@@ -97,13 +96,13 @@ static void jbhook_io_jamma2_read(void *resp, uint32_t nbytes)
     /* lower three bytes low active, highest byte high active */
     inputs_out = 0x00FFFFFF;
 
-    if (!jb_io_read_inputs()) {
+    if (!bt_io_jb_inputs_read()) {
         log_warning("Reading inputs from jbio failed");
         return;
     }
 
-    panels = jb_io_get_panel_inputs();
-    buttons = jb_io_get_sys_inputs();
+    panels = bt_io_jb_panel_inputs_get();
+    buttons = bt_io_jb_sys_inputs_get();
 
     for (uint8_t i = 0; i < 16; i++) {
         if (panels & (1 << i)) {
@@ -134,7 +133,7 @@ static uint32_t jbhook_command_handle(
             // on is 0x00, off is either 0x10 or 0x20 depending on whether it's
             // during gameplay (0x10) or test menu (0x20). Both seem to have the
             // same effect
-            jb_io_set_coin_blocker(*(uint8_t *) payload == 0x00);
+            bt_io_jb_coin_blocker_set(*(uint8_t *) payload == 0x00);
 
             // this actually returns the coinstock, don't care for it
             memset(resp, 0, 4);
@@ -147,33 +146,33 @@ static uint32_t jbhook_command_handle(
                 (const struct p4io_req_panel_mode *) payload;
 
             // always fallback to ALL if input is unknown
-            enum jb_io_panel_mode mode = JB_IO_PANEL_MODE_ALL;
+            bt_io_jb_panel_mode_t mode = BT_IO_JB_PANEL_MODE_ALL;
 
             if (req->is_single) {
                 switch (req->mode) {
                     case 0x0001:
-                        mode = JB_IO_PANEL_MODE_TOP_LEFT;
+                        mode = BT_IO_JB_PANEL_MODE_TOP_LEFT;
                         break;
 
                     case 0x0000:
-                        mode = JB_IO_PANEL_MODE_TOP_RIGHT;
+                        mode = BT_IO_JB_PANEL_MODE_TOP_RIGHT;
                         break;
 
                     case 0x0101:
-                        mode = JB_IO_PANEL_MODE_BOTTOM_LEFT;
+                        mode = BT_IO_JB_PANEL_MODE_BOTTOM_LEFT;
                         break;
 
                     case 0x0100:
-                        mode = JB_IO_PANEL_MODE_BOTTOM_RIGHT;
+                        mode = BT_IO_JB_PANEL_MODE_BOTTOM_RIGHT;
                         break;
 
                     default:
-                        mode = JB_IO_PANEL_MODE_ALL;
+                        mode = BT_IO_JB_PANEL_MODE_ALL;
                         break;
                 }
             }
 
-            jb_io_set_panel_mode(mode);
+            bt_io_jb_panel_mode_set(mode);
 
             memset(resp, 0, 1);
 

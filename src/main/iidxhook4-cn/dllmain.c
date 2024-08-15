@@ -5,18 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "avs-util/core-interop.h"
-
-#include "bemanitools/iidxio.h"
+#include "avs-ext/thread.h"
 
 #include "cconfig/cconfig-hook.h"
 
+#include "core/boot.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-debug.h"
-#include "core/log.h"
-#include "core/thread-crt.h"
-#include "core/thread.h"
 
 #include "ezusb-emu/node-security-plug.h"
 
@@ -30,6 +26,11 @@
 #include "hooklib/acp.h"
 #include "hooklib/setupapi.h"
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/iidx.h"
+
 #include "iidxhook4-cn/avs-boot.h"
 #include "iidxhook4-cn/path.h"
 
@@ -42,9 +43,12 @@
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/settings.h"
 
-#include "security/rp-sign-key.h"
-
 #include "imports/avs.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
+
+#include "security/rp-sign-key.h"
 
 #define IIDXHOOK4_CN_INFO_HEADER    \
     "iidxhook for Resort Anthem CN" \
@@ -67,13 +71,23 @@ static const struct hook_symbol init_hook_syms[] = {
 };
 
 static struct iidxhook_config_io config_io;
+static module_io_t *iidxhook_module_io_iidx;
 
 static void _iidxhook4_cn_log_init()
 {
-    core_log_bt_ext_impl_set();
     core_log_bt_ext_init_with_debug();
     // TODO change log level support
     core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+}
+
+static void _iidxhook4_cn_io_iidx_init(module_io_t **module)
+{
+    bt_io_iidx_api_t api;
+
+    module_io_ext_load_and_init(
+        "iidxio.dll", "bt_module_io_iidx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_iidx_api_set(&api);
 }
 
 static void
@@ -198,12 +212,9 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     if (!config_io.disable_io_emu) {
         log_info("Starting IIDX IO backend");
 
-        core_log_impl_assign(iidx_io_set_loggers);
+        _iidxhook4_cn_io_iidx_init(&iidxhook_module_io_iidx);
 
-        if (!iidx_io_init(
-                core_thread_create_impl_get(),
-                core_thread_join_impl_get(),
-                core_thread_destroy_impl_get())) {
+        if (!bt_io_iidx_init()) {
             log_fatal("Initializing IIDX IO backend failed");
         }
     } else {
@@ -237,8 +248,13 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
         return TRUE;
     }
 
+    core_boot_dll("iidxhook4-cn");
+
+    // Use bemanitools core APIs
+    core_log_bt_core_api_set();
+
     // Use AVS APIs
-    avs_util_core_interop_thread_avs_impl_set();
+    avs_ext_thread_core_api_set();
 
     // TODO init debug logging but with avs available? why not use avs logging?
     _iidxhook4_cn_log_init();

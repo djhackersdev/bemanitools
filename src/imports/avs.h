@@ -142,7 +142,7 @@ typedef void (*avs_log_writer_t)(const char *chars, uint32_t nchars, void *ctx);
 typedef void (*avs_log_writer_t)(void *ctx, const char *chars, uint32_t nchars);
 #endif
 
-typedef int (*avs_reader_t)(uint32_t context, void *bytes, size_t nbytes);
+typedef size_t (*avs_reader_t)(uint32_t context, void *bytes, size_t nbytes);
 
 #if AVS_VERSION >= 1600
 /* "avs" and "std" heaps have been unified */
@@ -186,7 +186,7 @@ void avs_shutdown(void);
 typedef uint32_t avs_desc;
 typedef int avs_error;
 
-#define AVS_IS_ERROR(x) x < 0
+#define AVS_IS_ERROR(x) ((avs_error) x) < 0
 
 void log_body_fatal(const char *module, const char *fmt, ...);
 void log_body_info(const char *module, const char *fmt, ...);
@@ -223,12 +223,12 @@ void property_destroy(struct property *prop);
 avs_error property_get_error(struct property *prop);
 void property_clear_error(struct property *prop);
 
-int property_psmap_import(
+avs_error property_psmap_import(
     struct property *prop,
     struct property_node *root,
     void *dest,
     const struct property_psmap *psmap);
-int property_psmap_export(
+avs_error property_psmap_export(
     struct property *prop,
     struct property_node *root,
     const void *src,
@@ -254,7 +254,7 @@ int property_node_refer(
     enum property_type type,
     void *bytes,
     uint32_t nbytes);
-void property_node_remove(struct property_node *node);
+avs_error property_node_remove(struct property_node *node);
 enum property_type property_node_type(struct property_node *node);
 struct property_node *property_node_traversal(
     struct property_node *node, enum property_node_traversal direction);
@@ -315,7 +315,7 @@ enum avs_seek_origin {
 
 avs_desc avs_fs_open(const char *path, uint16_t mode, int flags);
 int avs_fs_close(avs_desc desc);
-size_t avs_fs_read(avs_desc desc, char *buf, uint32_t sz);
+size_t avs_fs_read(avs_desc desc, void *buf, size_t sz);
 int avs_fs_lseek(avs_desc desc, long pos, int whence);
 int avs_fs_lstat(const char *path, struct avs_stat *st);
 int avs_fs_copy(const char *src, const char *dest);

@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/log.h"
-#include "core/thread.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 #include "iidxhook-util/log-server.h"
 
@@ -35,13 +35,19 @@ static char log_rv_buffer[8192];
 void log_server_init(void)
 {
     HANDLE ready;
+    bt_core_log_api_t api;
 
     log_rv_producer = CreateSemaphore(NULL, 1, 1, NULL);
     log_rv_consumer = CreateSemaphore(NULL, 0, 1, NULL);
     ready = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    core_log_impl_set(
-        log_post_misc, log_post_info, log_post_warning, log_post_fatal);
+    api.version = 1;
+    api.v1.fatal = log_post_fatal;
+    api.v1.warning = log_post_warning;
+    api.v1.info = log_post_info;
+    api.v1.misc = log_post_misc;
+
+    bt_core_log_api_set(&api);
 
     log_thread_id = avs_thread_create(log_thread_proc, ready, 16384, 0);
 

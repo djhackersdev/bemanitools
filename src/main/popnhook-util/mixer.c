@@ -6,9 +6,9 @@
 #include <mmsystem.h>
 // clang-format on
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 

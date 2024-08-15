@@ -1,3 +1,5 @@
+#define LOG_MODULE "core-log-sink-file"
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -6,6 +8,8 @@
 #include <stdlib.h>
 
 #include "core/log-sink.h"
+
+#include "iface-core/log.h"
 
 #include "util/fs.h"
 #include "util/str.h"
@@ -64,9 +68,19 @@ void core_log_sink_file_open(
     bool append,
     bool rotate,
     uint8_t max_rotations,
-    struct core_log_sink *sink)
+    core_log_sink_t *sink)
 {
     FILE *file;
+
+    log_assert(path);
+    log_assert(sink);
+
+    log_info(
+        "Open: %s, append %s, rotate %d, max_rotations %d",
+        path,
+        append,
+        rotate,
+        max_rotations);
 
     if (rotate) {
         _core_log_sink_file_rotate(path, max_rotations);
@@ -82,8 +96,7 @@ void core_log_sink_file_open(
     }
 
     if (!file) {
-        printf("Cannot open log file: %s", path);
-        abort();
+        log_fatal("Cannot open log file: %s", path);
     }
 
     sink->ctx = (void *) file;

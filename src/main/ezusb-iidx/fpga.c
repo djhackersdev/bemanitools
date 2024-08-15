@@ -1,10 +1,10 @@
 #define LOG_MODULE "ezusb-iidx-fpga"
 
-#include "ezusb-iidx/fpga.h"
-
 #include <stdio.h>
 
-#include "core/log.h"
+#include "ezusb-iidx/fpga.h"
+
+#include "iface-core/log.h"
 
 #include "ezusb-iidx.h"
 #include "fpga-cmd.h"

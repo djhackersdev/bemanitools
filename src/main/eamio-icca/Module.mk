@@ -4,9 +4,11 @@ dlls                 += \
 libs_eamio-icca      := \
     core \
     aciodrv \
-    aciomgr \
     cconfig \
     util \
+    iface-core \
+    iface-acio \
+    module \
 
 src_eamio-icca       := \
     config-icc.c \

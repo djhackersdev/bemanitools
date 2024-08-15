@@ -7,6 +7,7 @@ libs_ezusb-tool     := \
     core \
     ezusb \
     util \
+    iface-core \
 
 src_ezusb-tool      := \
     main.c \

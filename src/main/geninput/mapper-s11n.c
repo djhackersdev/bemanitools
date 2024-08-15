@@ -22,9 +22,12 @@ enum mapper_config_version {
 static const uint32_t mapper_fourcc = FOURCC('B', 'T', 'M', 'D');
 
 static uint32_t mapper_impl_config_load_version(FILE *f);
-static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version);
-static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version);
-static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version);
+static bool
+mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version);
+static bool
+mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version);
+static bool
+mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version);
 static void mapper_impl_config_save_actions(struct mapper *m, FILE *f);
 static void mapper_impl_config_save_analogs(struct mapper *m, FILE *f);
 static void mapper_impl_config_save_lights(struct mapper *m, FILE *f);
@@ -60,9 +63,9 @@ static uint32_t mapper_impl_config_load_version(FILE *f)
     if (!read_u32(f, &fourcc)) {
         return 0;
     }
-    
+
     if (fourcc == mapper_fourcc) {
-        
+
         if (!read_u32(f, &version)) {
             fseek(f, -4, SEEK_CUR);
         }
@@ -74,7 +77,8 @@ static uint32_t mapper_impl_config_load_version(FILE *f)
     return version;
 }
 
-static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version)
+static bool
+mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_action ma;
@@ -110,7 +114,8 @@ static bool mapper_impl_config_load_actions(struct mapper *m, FILE *f, uint32_t 
     return true;
 }
 
-static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version)
+static bool
+mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_analog ma;
@@ -164,7 +169,8 @@ static bool mapper_impl_config_load_analogs(struct mapper *m, FILE *f, uint32_t 
     return true;
 }
 
-static bool mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version)
+static bool
+mapper_impl_config_load_lights(struct mapper *m, FILE *f, uint32_t version)
 {
     char *dev_node;
     struct mapped_light ml;

@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "ezusb/util.h"
+
+#include "iface-core/log.h"
 
 #include "util/crc.h"
 #include "util/fs.h"

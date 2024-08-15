@@ -2,11 +2,11 @@
 
 #include <string.h>
 
-#include "core/log.h"
-
 #include "ezusb-iidx-emu/conf.h"
 #include "ezusb-iidx-emu/node-fpga.h"
 #include "ezusb-iidx/fpga-cmd.h"
+
+#include "iface-core/log.h"
 
 #include "util/fs.h"
 

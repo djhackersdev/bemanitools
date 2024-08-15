@@ -17,8 +17,9 @@
 
 #include "camhook/cam-detect.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 EXTERN_GUID(

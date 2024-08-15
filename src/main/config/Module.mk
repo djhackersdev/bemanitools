@@ -4,9 +4,13 @@ cppflags_config := -DUNICODE
 
 libs_config     := \
     core \
+    iface-io \
+    iface \
+    module \
     eamio \
     geninput \
     util \
+    iface-core \
 
 ldflags_config  := \
     -lcomctl32 \

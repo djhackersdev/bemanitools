@@ -6,7 +6,7 @@
 #include "config/resource.h"
 #include "config/schema.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 

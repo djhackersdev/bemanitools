@@ -1,11 +1,13 @@
 dlls += sdvxio-kfca
 
 libs_sdvxio-kfca := \
-    core \
-    geninput \
     aciodrv \
-    aciomgr \
     cconfig \
+    util \
+    iface \
+    module \
+    iface-acio \
+    iface-core \
     util \
 
 src_sdvxio-kfca	:= \

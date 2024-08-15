@@ -88,10 +88,10 @@ imps            += avs avs-ea3
 include src/main/aciodrv/Module.mk
 include src/main/aciodrv-proc/Module.mk
 include src/main/acioemu/Module.mk
-include src/main/aciomgr/Module.mk
+include src/main/acio-mgr/Module.mk
 include src/main/aciotest/Module.mk
 include src/main/asio/Module.mk
-include src/main/avs-util/Module.mk
+include src/main/avs-ext/Module.mk
 include src/main/bio2drv/Module.mk
 include src/main/bio2emu-iidx/Module.mk
 include src/main/bio2emu/Module.mk
@@ -116,6 +116,7 @@ include src/main/dinput/Module.mk
 include src/main/eamio-icca/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamiotest/Module.mk
+include src/main/exceptiontrace/Module.mk
 include src/main/extio/Module.mk
 include src/main/extiodrv/Module.mk
 include src/main/extiotest/Module.mk
@@ -138,6 +139,10 @@ include src/main/ezusb2/Module.mk
 include src/main/geninput/Module.mk
 include src/main/hook/Module.mk
 include src/main/hooklib/Module.mk
+include src/main/iface/Module.mk
+include src/main/iface-acio/Module.mk
+include src/main/iface-core/Module.mk
+include src/main/iface-io/Module.mk
 include src/main/iidx-bio2-exit-hook/Module.mk
 include src/main/iidx-ezusb-exit-hook/Module.mk
 include src/main/iidx-ezusb2-exit-hook/Module.mk
@@ -173,6 +178,7 @@ include src/main/jbhook3/Module.mk
 include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
+include src/main/module/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
@@ -183,7 +189,6 @@ include src/main/popnhook-util/Module.mk
 include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
 include src/main/procmon/Module.mk
-include src/main/procmon-lib/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
@@ -493,7 +498,7 @@ $(zipdir)/iidx-27-to-30.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x86.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
@@ -506,7 +511,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x64.zip: \
-		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/acio-mgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
@@ -617,7 +622,7 @@ $(zipdir)/jb-08.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/jb-hwio.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/jbio-magicbox.dll \
 		build/bin/indep-32/jbio-p4io.dll \
@@ -681,7 +686,7 @@ $(zipdir)/sdvx-05-cn.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x86.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
@@ -691,7 +696,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x64.zip: \
-		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/acio-mgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \

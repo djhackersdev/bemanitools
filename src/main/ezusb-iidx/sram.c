@@ -1,8 +1,8 @@
 #define LOG_MODULE "ezusb-iidx-sram"
 
-#include "core/log.h"
-
 #include "ezusb-iidx/sram.h"
+
+#include "iface-core/log.h"
 
 #include "ezusb-iidx.h"
 #include "sram-cmd.h"

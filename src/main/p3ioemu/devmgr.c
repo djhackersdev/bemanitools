@@ -7,9 +7,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "core/log.h"
-
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "p3io/guid.h"
 

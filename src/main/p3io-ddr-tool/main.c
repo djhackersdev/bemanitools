@@ -10,9 +10,10 @@
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
 #include "core/log-sink-std.h"
-#include "core/log.h"
 
 #include "extiodrv/extio.h"
+
+#include "iface-core/log.h"
 
 #include "p3io/ddr.h"
 #include "p3iodrv/ddr.h"
@@ -258,7 +259,8 @@ static bool _process_cmd_args(int argc, char **argv)
 
 static void _init_logging()
 {
-    core_log_bt_ext_impl_set();
+    core_log_bt_core_api_set();
+
     core_log_bt_ext_init_with_stderr();
     core_log_bt_level_set(_log_level);
 }

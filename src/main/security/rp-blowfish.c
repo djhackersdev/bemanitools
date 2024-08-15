@@ -1,6 +1,6 @@
 #include <stdbool.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "security/rp-blowfish-table.h"
 #include "security/rp-blowfish.h"

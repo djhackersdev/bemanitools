@@ -6,12 +6,12 @@
 #include <stdio.h>
 #include <usb100.h>
 
-#include "core/log.h"
-
 #include "ezusb2/cyioctl.h"
 #include "ezusb2/ezusb2.h"
 
 #include "ezusb-emu/util.h"
+
+#include "iface-core/log.h"
 
 #include "util/hex.h"
 

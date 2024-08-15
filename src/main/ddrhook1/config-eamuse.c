@@ -2,9 +2,9 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "core/log.h"
-
 #include "ddrhook1/config-eamuse.h"
+
+#include "iface-core/log.h"
 
 #include "util/net.h"
 

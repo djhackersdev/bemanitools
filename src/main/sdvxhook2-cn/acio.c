@@ -14,10 +14,10 @@
 #include "acioemu/addr.h"
 #include "acioemu/emu.h"
 
-#include "core/log.h"
-
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
+
+#include "iface-core/log.h"
 
 #include "sdvxhook2-cn/acio.h"
 #include "sdvxhook2-cn/kfca.h"

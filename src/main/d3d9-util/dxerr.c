@@ -18,10 +18,7 @@
 
 #ifndef DXERROR
 #define DXERROR(v, n, d) {v, TEXT(n), TEXT(d)},
-#define DXERRORLAST(v, n, d) \
-    {                        \
-        v, TEXT(n), TEXT(d)  \
-    }
+#define DXERRORLAST(v, n, d) {v, TEXT(n), TEXT(d)}
 #endif
 #ifndef DXERROR8
 #define DXERROR8(v, n, d)

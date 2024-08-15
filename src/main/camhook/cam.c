@@ -19,10 +19,13 @@
 
 #include "camhook/cam.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "hook/com-proxy.h"
 #include "hook/table.h"
+
+#include "camhook/cam.h"
+#include "camhook/cam-detect.h"
 
 #include "util/defs.h"
 #include "util/str.h"

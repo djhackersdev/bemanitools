@@ -13,10 +13,12 @@
 
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
-#include "core/log.h"
+#include "core/log-sink-std.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
 
 #include "util/mem.h"
 #include "util/proc.h"
@@ -227,8 +229,10 @@ static HRESULT _iohook_handler(struct irp *irp)
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    core_log_bt_ext_impl_set();
-    core_log_bt_ext_init_with_stdout();
+    core_log_bt_core_api_set();
+
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     if (reason != DLL_PROCESS_ATTACH) {
         return TRUE;

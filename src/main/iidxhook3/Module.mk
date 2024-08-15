@@ -17,13 +17,15 @@ libs_iidxhook3      := \
     ezusb-iidx-emu \
     security \
     acioemu \
-    eamio \
     hook \
     hooklib \
-    iidxio \
     cconfig \
-    util \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    util \
 
 src_iidxhook3       := \
     avs-boot.c \

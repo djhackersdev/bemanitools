@@ -4,8 +4,12 @@ ldflags_jbio      := \
     -lwinmm
 
 libs_jbio         := \
-    geninput
-
+    iface \
+    module \
+    iface-io \
+    iface-core \
+    util \
+    
 src_jbio          := \
     jbio.c \
 

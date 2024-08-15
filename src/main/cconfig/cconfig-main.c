@@ -6,7 +6,7 @@
 
 #include "cconfig/cconfig-main.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 #include "util/cmdline.h"
 
@@ -85,7 +85,7 @@ bool cconfig_main_config_init(
         }
 
         log_misc("Config state after file loading:");
-        cconfig_util_log(config, core_log_misc_impl_get());
+        cconfig_util_log(config, log_misc_func);
     }
 
     log_misc("Parsing override config parameters from cmd");
@@ -97,7 +97,7 @@ bool cconfig_main_config_init(
     }
 
     log_misc("Config state after cmd parameter overrides:");
-    cconfig_util_log(config, core_log_misc_impl_get());
+    cconfig_util_log(config, log_misc_func);
 
     goto success;
 

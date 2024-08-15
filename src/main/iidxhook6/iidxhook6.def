@@ -3,3 +3,5 @@ LIBRARY iidxhook6
 EXPORTS
     DllMain@12 @1 NONAME
     
+    ; Bemanitools 6 API
+    bt_module_hook_api_get

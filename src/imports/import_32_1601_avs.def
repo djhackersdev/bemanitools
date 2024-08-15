@@ -5,8 +5,8 @@ EXPORTS
     avs_fs_copy @81 NONAME
     avs_fs_lseek @59 NONAME
     avs_fs_lstat @79 NONAME
-    avs_fs_open @58 NONAME
-    avs_fs_read @61 NONAME
+    avs_fs_open @58 NONAME == XCnbrep7000039
+    avs_fs_read @61 NONAME == XCnbrep700003c
     avs_fs_opendir @72 NONAME == XCnbrep7000047
     avs_fs_readdir @73 NONAME == XCnbrep7000048
     avs_fs_closedir @74 NONAME == XCnbrep7000049
@@ -19,8 +19,8 @@ EXPORTS
     property_destroy @125 NONAME
     property_desc_to_buffer @126 NONAME
     property_insert_read @128 NONAME
-    property_clear_error @573 NONAME
-    property_get_error @573 NONAME
+    property_clear_error @137 NONAME == XCnbrep7000088
+    property_get_error @138 NONAME == XCnbrep7000089
     property_search @141 NONAME
     property_node_create @142 NONAME
     property_node_name @147 NONAME == XCnbrep7000092

@@ -6,12 +6,12 @@
 #include <cfgmgr32.h>
 #include <setupapi.h>
 
-#include "bio2drv/detect.h"
-
-#include "core/log.h"
-
 #include <stdio.h>
 #include <string.h>
+
+#include "bio2drv/detect.h"
+
+#include "iface-core/log.h"
 
 DEFINE_GUID(
     GUID_COM_BUS_ENUMERATOR,
@@ -134,15 +134,6 @@ static bool get_device_by_filter(
 
     log_warning("No matching device found");
     return false;
-}
-
-void bio2drv_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    core_log_impl_set(misc, warning, info, fatal);
 }
 
 bool bio2drv_detect(

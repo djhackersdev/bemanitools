@@ -6,8 +6,10 @@ ldflags_ddrhook1   := \
 deplibs_ddrhook1	:= \
 	avs \
 
+avslibs_ddrhook1 := \
+    avs-ext \
+
 libs_ddrhook1		:= \
-	avs-util \
 	core \
 	acioemu \
 	cconfig \
@@ -17,9 +19,10 @@ libs_ddrhook1		:= \
 	hook \
 	hooklib \
 	util \
-	eamio \
-	ddrio \
 	security \
+	iface-core \
+	iface-io \
+	module \
 
 src_ddrhook1		:= \
 	avs-boot.c \

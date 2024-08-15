@@ -1,12 +1,16 @@
 #define LOG_MODULE "util-proc"
 
+// clang-format off
+// Don't format because the order is important here
 #include <windows.h>
+#include <psapi.h>
 #include <winnt.h>
+// clang-format on
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "core/log.h"
+#include "iface-core/log.h"
 
 bool proc_is_running_as_admin_user()
 {
@@ -58,4 +62,38 @@ void proc_terminate_current_process(uint32_t exit_code)
         SYNCHRONIZE | PROCESS_TERMINATE, TRUE, GetCurrentProcessId());
 
     TerminateProcess(hnd, exit_code);
+}
+
+bool proc_is_module_loaded(const char *name)
+{
+    HMODULE modules[1024];
+    HANDLE process;
+    DWORD size;
+    char module_name[MAX_PATH];
+
+    process = GetCurrentProcess();
+
+    if (EnumProcessModules(process, modules, sizeof(modules), &size)) {
+        for (int i = 0; i < (size / sizeof(HMODULE)); i++) {
+            if (GetModuleFileNameEx(
+                    process,
+                    modules[i],
+                    module_name,
+                    sizeof(module_name) / sizeof(char))) {
+                const char *p = strrchr(module_name, '\\');
+
+                if (p != NULL) {
+                    p++;
+                } else {
+                    p = module_name;
+                }
+
+                if (_stricmp(p, name) == 0) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }

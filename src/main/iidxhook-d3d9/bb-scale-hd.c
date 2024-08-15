@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
-#include "core/log.h"
-
 #include "d3d9-util/vertex.h"
+
+#include "iface-core/log.h"
 
 #include "bb-scale-hd.h"
 #include "util.h"

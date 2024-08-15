@@ -4,6 +4,8 @@ libs_core	:= \
 	util \
 
 src_core	:= \
+    boot.c \
+	config-property-node.c \
 	log-bt-ext.c \
 	log-bt.c \
 	log-sink-async.c \
@@ -13,8 +15,12 @@ src_core	:= \
 	log-sink-mutex.c \
 	log-sink-null.c \
 	log-sink-std.c \
-	log.c \
-	thread-crt-ext.c \
+	property-ext.c \
+	property-mxml.c \
+	property-mxml.c \
+	property-node-ext.c \
+	property-node-trace.c \
+	property-node.c \
+	property-trace.c \
+	property.c \
 	thread-crt.c \
-	thread.c \
-

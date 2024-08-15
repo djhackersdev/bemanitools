@@ -13,7 +13,9 @@
 #include "config/resource.h"
 #include "config/schema.h"
 
-#include "core/log.h"
+#include "iface-core/log.h"
+#include "iface-io/eam.h"
+#include "iface/input.h"
 
 #include "eamio/eam-config.h"
 
@@ -72,13 +74,13 @@ static INT_PTR eam_unit_ui_handle_change_device(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_tick(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_fini(HWND hwnd);
 
-static const struct eam_io_config_api *eam_io_config_api;
+static const bt_io_eam_config_api_t *eam_io_config_api;
 
 HPROPSHEETPAGE
 eam_ui_tab_create(
     HINSTANCE inst,
     const struct schema *schema,
-    const struct eam_io_config_api *api)
+    const bt_io_eam_config_api_t *api)
 {
     PROPSHEETPAGE psp;
 
@@ -216,7 +218,7 @@ static INT_PTR eam_ui_handle_tick(HWND hwnd)
 
     ui = (struct eam_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-    mapper_update();
+    bt_input_mapper_update();
 
     for (i = 0; i < ui->children.nitems; i++) {
         child = *array_item(HWND, &ui->children, i);
@@ -462,7 +464,7 @@ static INT_PTR eam_unit_ui_handle_tick(HWND hwnd)
     wchar_t state_str[9];
 
     ui = (struct eam_unit_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    state = eam_io_get_keypad_state(ui->def->unit_no);
+    state = bt_io_eam_keypad_state_get(ui->def->unit_no);
 
     wstr_format(state_str, lengthof(state_str), L"%04x", state);
 

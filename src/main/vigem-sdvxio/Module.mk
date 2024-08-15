@@ -12,9 +12,12 @@ ldflags_vigem-sdvxio  := \
 libs_vigem-sdvxio     := \
     core \
     cconfig \
-    sdvxio \
     util \
     vigemstub \
+    module \
+    iface \
+    iface-io \
+    iface-core \
 
 src_vigem-sdvxio      := \
     main.c \

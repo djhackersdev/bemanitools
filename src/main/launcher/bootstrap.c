@@ -5,8 +5,14 @@
 #include "core/log-sink-list.h"
 #include "core/log-sink-null.h"
 #include "core/log-sink-std.h"
-#include "core/log.h"
 
+#include "core/property-ext.h"
+#include "core/property-node.h"
+#include "core/property.h"
+
+#include "iface-core/log.h"
+
+#include "launcher/app.h"
 #include "launcher/avs-config.h"
 #include "launcher/avs.h"
 #include "launcher/bootstrap-config.h"
@@ -14,16 +20,14 @@
 #include "launcher/eamuse-config.h"
 #include "launcher/eamuse.h"
 #include "launcher/launcher-config.h"
-#include "launcher/module.h"
-#include "launcher/property-util.h"
 
 #include "util/str.h"
 
 static bool _bootstrap_log_property_configs;
-static struct module_context _bootstrap_module_context;
+static app_t _bootstrap_app;
 
 static void _bootstrap_eamuse_ea3_ident_config_inject(
-    struct property_node *node, const struct ea3_ident_config *ea3_ident_config)
+    core_property_node_t *node, const struct ea3_ident_config *ea3_ident_config)
 {
     eamuse_config_id_softid_set(node, ea3_ident_config->softid);
     eamuse_config_id_hardid_set(node, ea3_ident_config->hardid);
@@ -36,7 +40,7 @@ static void _bootstrap_eamuse_ea3_ident_config_inject(
 }
 
 static void
-_bootstrap_avs_config_force_overrides_apply(struct property_node *node)
+_bootstrap_avs_config_force_overrides_apply(core_property_node_t *node)
 {
     log_assert(node);
 
@@ -47,7 +51,7 @@ _bootstrap_avs_config_force_overrides_apply(struct property_node *node)
 }
 
 static void _bootstrap_avs_config_log_overrides_apply(
-    struct property_node *node, const struct bootstrap_log_config *log_config)
+    core_property_node_t *node, const struct bootstrap_log_config *log_config)
 {
     log_assert(node);
     log_assert(log_config);
@@ -98,16 +102,13 @@ void bootstrap_init(bool log_property_configs)
 
 void bootstrap_log_init(const struct bootstrap_log_config *config)
 {
-    struct core_log_sink sinks[2];
-    struct core_log_sink sink_composed;
+    core_log_sink_t sinks[2];
+    core_log_sink_t sink_composed;
     enum core_log_bt_log_level level;
 
     log_assert(config);
 
     log_info("log init");
-
-    // Shutdown old setup
-    core_log_bt_fini();
 
     if (config->enable_file && strlen(config->file) > 0 &&
         config->enable_console) {
@@ -132,7 +133,7 @@ void bootstrap_log_init(const struct bootstrap_log_config *config)
         core_log_sink_null_open(&sink_composed);
     }
 
-    core_log_bt_init(&sink_composed);
+    core_log_bt_reinit(&sink_composed);
 
     level = _bootstrap_log_map_level(config->level);
     core_log_bt_level_set(level);
@@ -160,11 +161,11 @@ void bootstrap_default_files_create(
 void bootstrap_avs_init(
     const struct bootstrap_boot_config *config,
     const struct bootstrap_log_config *log_config,
-    struct property *override_property)
+    const core_property_t *override_property)
 {
-    struct property *file_property;
-    struct property *merged_property;
-    struct property_node *root_node;
+    core_property_t *file_property;
+    core_property_t *merged_property;
+    core_property_node_t root_node;
 
     log_assert(config);
     log_assert(log_config);
@@ -176,38 +177,38 @@ void bootstrap_avs_init(
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config from file: %s", config->config_file);
-        property_util_log(file_property);
+        core_property_log(file_property, log_misc_func);
     }
 
     merged_property =
         avs_config_property_merge(file_property, override_property);
 
-    property_util_free(file_property);
+    core_property_free(&file_property);
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config merged with overrides");
-        property_util_log(merged_property);
+        core_property_log(merged_property, log_misc_func);
     }
 
-    root_node = avs_config_root_get(merged_property);
+    avs_config_root_get(merged_property, &root_node);
 
-    _bootstrap_avs_config_force_overrides_apply(root_node);
-    _bootstrap_avs_config_log_overrides_apply(root_node, log_config);
+    _bootstrap_avs_config_force_overrides_apply(&root_node);
+    _bootstrap_avs_config_log_overrides_apply(&root_node, log_config);
 
     if (_bootstrap_log_property_configs) {
         log_misc("avs-config final");
-        property_util_log(merged_property);
+        core_property_log(merged_property, log_misc_func);
     }
 
-    avs_fs_assert_root_device_exists(root_node);
+    avs_fs_assert_root_device_exists(&root_node);
 
     log_misc("Creating AVS file system directories...");
 
-    avs_fs_mountpoints_fs_dirs_create(root_node);
+    avs_fs_mountpoints_fs_dirs_create(&root_node);
 
-    avs_init(root_node, config->avs_heap_size, config->std_heap_size);
+    avs_init(&root_node, config->avs_heap_size, config->std_heap_size);
 
-    property_util_free(merged_property);
+    core_property_free(&merged_property);
 
     log_misc("avs init done");
 }
@@ -215,11 +216,12 @@ void bootstrap_avs_init(
 void bootstrap_eamuse_init(
     const struct bootstrap_eamuse_config *config,
     const struct ea3_ident_config *ea3_ident_config,
-    struct property *override_property)
+    const core_property_t *override_property)
 {
-    struct property *file_property;
-    struct property *merged_property;
-    struct property_node *root_node;
+    core_property_t *file_property;
+    core_property_t *merged_property;
+    core_property_node_t root_node;
+    core_property_result_t prop_result;
 
     log_assert(config);
     log_assert(ea3_ident_config);
@@ -232,30 +234,32 @@ void bootstrap_eamuse_init(
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config from file: %s", config->config_file);
-            property_util_log(file_property);
+            core_property_log(file_property, log_misc_func);
         }
 
-        merged_property = property_util_merge(file_property, override_property);
+        prop_result = core_property_ext_merge(
+            file_property, override_property, &merged_property);
+        core_property_fatal_on_error(prop_result);
 
-        property_util_free(file_property);
+        core_property_free(&file_property);
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config merged with overrides");
-            property_util_log(merged_property);
+            core_property_log(merged_property, log_misc_func);
         }
 
-        root_node = eamuse_config_root_get(merged_property);
+        eamuse_config_root_get(merged_property, &root_node);
 
-        _bootstrap_eamuse_ea3_ident_config_inject(root_node, ea3_ident_config);
+        _bootstrap_eamuse_ea3_ident_config_inject(&root_node, ea3_ident_config);
 
         if (_bootstrap_log_property_configs) {
             log_misc("eamuse-config final");
-            property_util_log(merged_property);
+            core_property_log(merged_property, log_misc_func);
         }
 
-        eamuse_init(root_node);
+        eamuse_init(&root_node);
 
-        property_util_free(merged_property);
+        core_property_free(&merged_property);
     } else {
         log_warning("Eamuse disabled");
     }
@@ -263,71 +267,65 @@ void bootstrap_eamuse_init(
     log_misc("eamuse init done");
 }
 
-void bootstrap_module_init(
-    const struct bootstrap_module_config *module_config,
-    const struct array *iat_hook_dlls)
+HMODULE bootstrap_app_unresolved_init(
+    const struct bootstrap_module_config *module_config)
 {
     log_assert(module_config);
-    log_assert(iat_hook_dlls);
 
-    log_info("module init");
+    app_unresolved_load(module_config->file, &_bootstrap_app);
 
-    if (iat_hook_dlls->nitems > 0) {
-        log_info(
-            "Load game DLL with IAT hooks (%d): %s",
-            (uint32_t) iat_hook_dlls->nitems,
-            module_config->file);
-
-        module_with_iat_hooks_init(
-            &_bootstrap_module_context, module_config->file, iat_hook_dlls);
-    } else {
-        log_info("Load game DLL: %s", module_config->file);
-
-        module_init(&_bootstrap_module_context, module_config->file);
-    }
-
-    log_misc("module init done");
+    return app_module_handle_get(&_bootstrap_app);
 }
 
-void bootstrap_module_game_init(
+void bootstrap_app_resolve_init()
+{
+    app_resolve(&_bootstrap_app);
+}
+
+void bootstrap_app_init(
     const struct bootstrap_module_config *module_config,
     struct ea3_ident_config *ea3_ident_config)
 {
-    struct property_node *node;
+    core_property_node_t node;
+    core_property_result_t prop_result;
+    core_property_node_result_t result;
+    char node_name[128];
 
     log_assert(module_config);
     log_assert(ea3_ident_config);
 
-    log_info("module game init");
+    log_info("app init");
 
-    node = property_search(module_config->app_config, NULL, "/param");
+    prop_result = core_property_root_node_get(module_config->app_config, &node);
+    core_property_fatal_on_error(prop_result);
 
-    if (!node) {
+    result = core_property_node_name_get(&node, node_name, sizeof(node_name));
+    core_property_node_fatal_on_error(result);
+
+    if (!str_eq(node_name, "param")) {
         log_fatal("Missing param node on app-config");
+    } else {
+        core_property_node_fatal_on_error(result);
     }
 
     if (_bootstrap_log_property_configs) {
         log_misc("app-config");
-        property_util_node_log(node);
+        core_property_node_log(&node, log_misc_func);
     }
 
-    module_init_invoke(&_bootstrap_module_context, ea3_ident_config, node);
+    app_init_invoke(&_bootstrap_app, ea3_ident_config, &node);
 
-    log_misc("module game init done");
+    log_misc("app init done");
 }
 
-void bootstrap_module_game_run()
+void bootstrap_app_run()
 {
-    log_info("module game run");
-
-    module_main_invoke(&_bootstrap_module_context);
+    app_main_invoke(&_bootstrap_app);
 }
 
-void bootstrap_module_game_fini()
+void bootstrap_app_fini()
 {
-    log_info("module game fini");
-
-    module_fini(&_bootstrap_module_context);
+    app_free(&_bootstrap_app);
 }
 
 void bootstrap_avs_fini()

@@ -6,9 +6,9 @@
 
 #include "config/snap.h"
 
-#include "core/log.h"
-
 #include "geninput/hid-mgr.h"
+
+#include "iface-core/log.h"
 
 #include "util/defs.h"
 #include "util/mem.h"

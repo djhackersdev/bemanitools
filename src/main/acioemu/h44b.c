@@ -11,7 +11,7 @@
 
 #include "acioemu/emu.h"
 
-#include "bemanitools/jbio.h"
+#include "iface-io/jb.h"
 
 #include "util/hex.h"
 
@@ -54,14 +54,14 @@ void ac_io_emu_h44b_dispatch_request(
         case AC_IO_H44B_CMD_SET_OUTPUTS:
             /* Not using the struct ac_io_h44b_output here */
             for (int i = 0; i < 6; i++) {
-                jb_io_set_rgb_led(
-                    (enum jb_io_rgb_led) i,
+                bt_io_jb_rgb_led_set(
+                    (enum bt_io_jb_rgb_led) i,
                     req->cmd.raw[i * 3],
                     req->cmd.raw[i * 3 + 1],
                     req->cmd.raw[i * 3 + 2]);
             }
 
-            jb_io_write_lights();
+            bt_io_jb_lights_write();
 
             ac_io_emu_h44b_send_status(h44b, req, 0x00);
 
