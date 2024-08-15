@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "core/config-property-node.h"
 #include "core/property-mxml.h"
 #include "core/property-node-mxml.h"
 #include "core/thread-crt.h"
@@ -90,6 +91,8 @@ void core_boot(const char *name)
 
     core_property_mxml_core_api_set();
     core_property_node_mxml_core_api_set();
+
+    core_config_property_node_core_api_set();
 }
 
 void core_boot_dll(const char *name)
@@ -102,4 +105,6 @@ void core_boot_dll(const char *name)
 
     core_property_mxml_core_api_set();
     core_property_node_mxml_core_api_set();
+
+    core_config_property_node_core_api_set();
 }
