@@ -191,6 +191,12 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     if (debug_str) {
         debug_str_len = strlen(debug_str);
 
+        // Important performance remark: If any sink in the chain has costly
+        // IO (e.g. blocking) or synchronization that can lead to blocking
+        // the caller here, the performance penalty propagates all the way up
+        // to the thread calling OutputDebugStr. This can lead to various
+        // symptoms such as stuttering or slowdowns in a game loop to laggy
+        // IO or music de-sync (depending on how logging is applied)
         core_log_bt_direct_sink_write(debug_str, debug_str_len);
 
         free(debug_str);
