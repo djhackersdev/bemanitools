@@ -192,6 +192,7 @@ include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
 include src/main/procmon/Module.mk
 include src/main/pcbidgen/Module.mk
+include src/main/sdk-hook/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
@@ -280,6 +281,7 @@ $(zipdir)/iidx-09-to-12.zip: \
 		dist/iidx/iidxhook-10.conf \
 		dist/iidx/iidxhook-11.conf \
 		dist/iidx/iidxhook-12.conf \
+		dist/iidx/inject-09.xml \
 		dist/iidx/vefx.txt \
 		build/bin/indep-32/iidx-irbeat-patch.exe \
 		dist/iidx/iidx-irbeat-patch-09.bat \
