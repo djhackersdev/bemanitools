@@ -84,7 +84,7 @@ const char *bt_core_config_result_to_str(bt_core_config_result_t result)
     }
 }
 
-void br_core_config_fatal_on_error(bt_core_config_result_t result)
+void bt_core_config_fatal_on_error(bt_core_config_result_t result)
 {
     switch (result) {
         case BT_CORE_CONFIG_RESULT_SUCCESS:
