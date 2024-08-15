@@ -321,10 +321,10 @@ $(zipdir)/iidx-14-to-17.zip: \
 		dist/iidx/gamestart-15.bat \
 		dist/iidx/gamestart-16.bat \
 		dist/iidx/gamestart-17.bat \
-		dist/iidx/iidxhook-14.conf \
-		dist/iidx/iidxhook-15.conf \
-		dist/iidx/iidxhook-16.conf \
-		dist/iidx/iidxhook-17.conf \
+		dist/iidx/inject-14.xml \
+		dist/iidx/inject-15.xml \
+		dist/iidx/inject-16.xml \
+		dist/iidx/inject-17.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@

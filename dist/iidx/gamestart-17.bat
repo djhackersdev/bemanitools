@@ -54,8 +54,5 @@ if not exist e\avs_conf\CONF\NVRAM mkdir e\avs_conf\CONF\NVRAM
 if not exist e\avs_conf\CONF\RAW mkdir e\avs_conf\CONF\RAW 
 
 %BEMANITOOLS_DIR%\inject.exe^
-  %BEMANITOOLS_DIR%\iidxhook3.dll^
-  %REVISION_DIR%\bm2dx.exe^
-  -D^
-  --config %BEMANITOOLS_DIR%\iidxhook-17.conf^
+  %BEMANITOOLS_DIR%\inject-17.xml^
   %*

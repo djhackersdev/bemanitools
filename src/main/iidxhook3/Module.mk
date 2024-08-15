@@ -3,6 +3,7 @@ avsdlls         += iidxhook3
 ldflags_iidxhook3   := \
     -lws2_32 \
     -liphlpapi \
+    -lshlwapi \
 
 deplibs_iidxhook3   := \
     avs \
@@ -27,7 +28,9 @@ libs_iidxhook3      := \
     module \
     util \
     mxml \
+    sdk-hook \
 
 src_iidxhook3       := \
     avs-boot.c \
     dllmain.c \
+    iidxhook3.c \
