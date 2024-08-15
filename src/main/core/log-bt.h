@@ -36,10 +36,12 @@ void core_log_bt_core_api_set();
  * @param sink Pointer to a log sink implementation. The caller owns the memory
  *             of this.
  */
-void core_log_bt_init(const core_log_sink_t *sink);
+void core_log_bt_init(
+    size_t msg_buffer_size,
+    const core_log_sink_t *sink);
 
 // special version to use when switching loggers
-void core_log_bt_reinit(const core_log_sink_t *sink);
+void core_log_bt_reinit(size_t msg_buffer_size, const core_log_sink_t *sink);
 
 /**
  * Set the current logging level. This can be changed at any given time, e.g.
