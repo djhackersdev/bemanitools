@@ -18,6 +18,15 @@
 // Guestimate, should be long enough, I hope?
 #define CORE_PROPERTY_NODE_PATH_LEN_MAX 4096
 
+// Macro to allow inlining of the caller function and line numbers
+// to make debugging easier
+#define core_property_node_fatal_on_error(result)       \
+    if (result != CORE_PROPERTY_NODE_RESULT_SUCCESS) {  \
+        log_fatal(                                      \
+            "Operation on property-node failed: %s",    \
+            core_property_node_result_to_str(result));  \
+    }                                                   \
+
 typedef struct core_property_node core_property_node_t;
 
 typedef enum core_property_node_result {
@@ -209,7 +218,6 @@ void core_property_node_api_get(core_property_node_api_t *impl);
 
 const char *
 core_property_node_result_to_str(core_property_node_result_t result);
-void core_property_node_fatal_on_error(core_property_node_result_t result);
 
 core_property_node_result_t core_property_node_name_get(
     const core_property_node_t *node, char *name, size_t len);

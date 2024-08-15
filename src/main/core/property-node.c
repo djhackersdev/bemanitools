@@ -118,21 +118,6 @@ const char *core_property_node_result_to_str(core_property_node_result_t result)
         default:
             return "Undefined error";
     }
-
-void core_property_node_fatal_on_error(core_property_node_result_t result)
-{
-    switch (result) {
-        case CORE_PROPERTY_NODE_RESULT_SUCCESS:
-            return;
-        case CORE_PROPERTY_NODE_RESULT_ERROR_INTERNAL:
-        case CORE_PROPERTY_NODE_RESULT_NODE_NOT_FOUND:
-        default:
-            log_fatal(
-                "Operation on property failed: %s",
-                core_property_node_result_to_str(result));
-    }
-}
-
 }
 
 core_property_node_result_t core_property_node_name_get(

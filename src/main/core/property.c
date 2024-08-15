@@ -91,23 +91,6 @@ const char *core_property_result_to_str(core_property_result_t result)
     }
 }
 
-void core_property_fatal_on_error(core_property_result_t result)
-{
-    switch (result) {
-        case CORE_PROPERTY_RESULT_SUCCESS:
-            return;
-        case CORE_PROPERTY_RESULT_ERROR_INTERNAL:
-        case CORE_PROPERTY_RESULT_ERROR_ALLOC:
-        case CORE_PROPERTY_RESULT_NOT_FOUND:
-        case CORE_PROPERTY_RESULT_ERROR_PERMISSIONS:
-        case CORE_PROPERTY_RESULT_ERROR_READ:
-        default:
-            log_fatal(
-                "Operation on property failed: %s",
-                core_property_result_to_str(result));
-    }
-}
-
 core_property_result_t
 core_property_create(size_t size, core_property_t **property)
 {

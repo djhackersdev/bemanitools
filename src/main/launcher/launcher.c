@@ -133,7 +133,7 @@ static void _launcher_bootstrap_config_options_override(
         core_property_free(&config->property);
         result =
             core_property_file_load(options->config_path, &config->property);
-        core_property_node_fatal_on_error(result);
+        core_property_fatal_on_error(result);
     }
 
     if (options->selector) {

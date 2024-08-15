@@ -7,7 +7,14 @@
 
 #include "api/core/log.h"
 
-#define CORE_PROPERTY_RESULT_IS_ERROR(x) (x > CORE_PROPERTY_RESULT_SUCCESS)
+// Macro to allow inlining of the caller function and line numbers
+// to make debugging easier
+#define core_property_fatal_on_error(result)        \
+    if (result != CORE_PROPERTY_RESULT_SUCCESS) {   \
+        log_fatal(                                  \
+            "Operation on property failed: %s",     \
+            core_property_result_to_str(result));   \
+    }                                               \
 
 typedef struct core_property {
     // Have size known, but not contents, to allow for stack allocations
@@ -65,7 +72,6 @@ void core_property_api_set(const core_property_api_t *api);
 void core_property_api_get(core_property_api_t *api);
 
 const char *core_property_result_to_str(core_property_result_t result);
-void core_property_fatal_on_error(core_property_result_t result);
 
 core_property_result_t
 core_property_create(size_t size, core_property_t **property);
