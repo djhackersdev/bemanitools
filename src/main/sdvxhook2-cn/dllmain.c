@@ -5,14 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 
 #include "iface-core/log.h"
@@ -33,7 +29,9 @@
 #include "d3d9exhook/config-gfx.h"
 #include "d3d9exhook/d3d9ex.h"
 
-#include "imports/avs.h"
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "util/str.h"
 
@@ -59,7 +57,8 @@ static void _sdvxhook2_cn_io_sdvx_init(module_io_t **module)
     bt_io_sdvx_api_set(&api);
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_sdvxhook2_cn_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     struct cconfig *config;
 
@@ -87,6 +86,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info(SDVXHOOK2_CN_INFO_HEADER);
     log_info("Initializing sdvxhook2-cn...");
+
+    acp_hook_init();
+    adapter_hook_init();
+    d3d9ex_hook_init();
 
     d3d9ex_configure(&config_gfx);
 
@@ -121,15 +124,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- End sdvxhook dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _sdvxhook2_cn_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     if (!config_cam.disable_emu) {
         camhook_fini();
     }
@@ -142,8 +141,24 @@ static bool my_dll_entry_main(void)
         bt_io_sdvx_api_clear();
         module_io_free(&_sdvxhook2_cn_module_io_sdvx);
     }
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _sdvxhook2_cn_main_init;
+    api->v1.main_fini = _sdvxhook2_cn_main_fini;
 }
 
 /**
@@ -151,20 +166,5 @@ static bool my_dll_entry_main(void)
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    acp_hook_init();
-    adapter_hook_init();
-    d3d9ex_hook_init();
-
-end:
     return TRUE;
 }

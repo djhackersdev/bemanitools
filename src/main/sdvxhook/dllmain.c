@@ -3,9 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "hook/iohook.h"
 
 #include "hooklib/app.h"
@@ -20,15 +17,16 @@
 #include "module/io-ext.h"
 #include "module/io.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
+
 #include "sdvxhook/acio.h"
 #include "sdvxhook/gfx.h"
 #include "sdvxhook/lcd.h"
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-
-static bool my_dll_entry_init(char *sidcode, struct property_node *config);
-static bool my_dll_entry_main(void);
 
 static module_io_t *_sdvxhook_module_io_sdvx;
 static module_io_t *_sdvxhook_module_io_eam;
@@ -53,12 +51,39 @@ static void _sdvxhook_io_eam_init(module_io_t **module)
     bt_io_eam_api_set(&api);
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *config)
+static bool
+_sdvxhook_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     bool ok;
+    int i;
+    int argc;
+    char **argv;
+
+    args_recover(&argc, &argv);
+
+    for (i = 1; i < argc; i++) {
+        if (argv[i][0] != '-') {
+            continue;
+        }
+
+        switch (argv[i][1]) {
+            case 'c':
+                gfx_set_confined();
+
+                break;
+
+            case 'w':
+                gfx_set_windowed();
+
+                break;
+        }
+    }
+
+    args_free(argc, argv);
 
     log_info("--- Begin sdvxhook dll_entry_init ---");
 
+    gfx_init();
     ac_io_bus_init();
 
     log_info("Starting up SDVX IO backend");
@@ -91,7 +116,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *config)
 
     log_info("---  End  sdvxhook dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, config);
+    return true;
 
 eam_io_fail:
     bt_io_sdvx_fini();
@@ -105,12 +130,8 @@ sdvx_io_fail:
     return false;
 }
 
-static bool my_dll_entry_main(void)
+static void _sdvxhook_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     log_info("Shutting down card reader backend");
     bt_io_eam_fini();
 
@@ -124,49 +145,27 @@ static bool my_dll_entry_main(void)
     module_io_free(&_sdvxhook_module_io_sdvx);
 
     ac_io_bus_fini();
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _sdvxhook_main_init;
+    api->v1.main_fini = _sdvxhook_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    int i;
-    int argc;
-    char **argv;
-
-    if (reason != DLL_PROCESS_ATTACH) {
-        return TRUE;
-    }
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    args_recover(&argc, &argv);
-
-    for (i = 1; i < argc; i++) {
-        if (argv[i][0] != '-') {
-            continue;
-        }
-
-        switch (argv[i][1]) {
-            case 'c':
-                gfx_set_confined();
-
-                break;
-
-            case 'w':
-                gfx_set_windowed();
-
-                break;
-        }
-    }
-
-    args_free(argc, argv);
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    gfx_init();
-
     return TRUE;
 }

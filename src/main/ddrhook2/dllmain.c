@@ -2,9 +2,6 @@
 
 #include <stdbool.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "ddrhook-util/_com4.h"
 #include "ddrhook-util/extio.h"
 #include "ddrhook-util/gfx.h"
@@ -16,7 +13,6 @@
 
 #include "hook/iohook.h"
 
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 
 #include "iface-core/log.h"
@@ -25,18 +21,17 @@
 #include "iface-io/ddr.h"
 #include "iface-io/eam.h"
 
-#include "imports/avs.h"
-
 #include "module/io-ext.h"
 #include "module/io.h"
 
 #include "p3ioemu/emu.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
+
 #include "util/cmdline.h"
 #include "util/defs.h"
-
-static bool my_dll_entry_init(char *sidcode, struct property_node *param);
-static bool my_dll_entry_main(void);
 
 bool standard_def;
 bool _15khz;
@@ -64,7 +59,8 @@ static void _ddrhook2_io_eam_init(module_io_t **module)
     bt_io_eam_api_set(&api);
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_ddrhook2_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     int argc;
     char **argv;
@@ -172,15 +168,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- End ddrhook dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _ddrhook2_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     log_misc("Shutting down card reader backend");
     bt_io_eam_fini();
     bt_io_eam_api_clear();
@@ -196,22 +188,27 @@ static bool my_dll_entry_main(void)
     usbmem_fini();
     extio_fini();
     p3io_emu_fini();
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _ddrhook2_main_init;
+    api->v1.main_fini = _ddrhook2_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-end:
     return TRUE;
 }

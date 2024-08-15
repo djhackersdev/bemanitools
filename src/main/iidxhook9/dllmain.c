@@ -5,19 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
-
-#include "core/boot.h"
-
-#include "core/log-bt-ext.h"
-#include "core/log-bt.h"
 
 #include "hooklib/acp.h"
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/config-adapter.h"
 #include "hooklib/memfile.h"
 #include "hooklib/rs232.h"
@@ -30,7 +21,6 @@
 #include "iface-io/iidx.h"
 
 #include "iidxhook-util/acio.h"
-#include "iidxhook-util/log-server.h"
 
 #include "bio2emu/emu.h"
 
@@ -47,10 +37,12 @@
 #include "d3d9exhook/d3d9ex.h"
 #include "dinput/dinput.h"
 
-#include "imports/avs.h"
-
 #include "module/io-ext.h"
 #include "module/io.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "util/cmdline.h"
 #include "util/str.h"
@@ -131,15 +123,39 @@ static bool load_configs()
     return true;
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool _iidxhook9_pre_avs_init(const bt_core_config_t *config)
 {
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
+    log_info("-------------------------------------------------------------");
+    log_info("------------------ Begin iidxhook pre_hook ------------------");
+    log_info("-------------------------------------------------------------");
 
-    // log_server_init is required due to IO occurring in a non avs_thread
-    log_server_init();
+    if (!load_configs()) {
+        exit(EXIT_FAILURE);
+    }
 
+    // asio hooks
+    if (config_asio.force_asio) {
+        SetEnvironmentVariable("SOUND_OUTPUT_DEVICE", "asio");
+    } else if (config_asio.force_wasapi) {
+        SetEnvironmentVariable("SOUND_OUTPUT_DEVICE", "wasapi");
+    }
+
+    if (iidxhook9_config_io.disable_cams) {
+        // this disables the entire camera subsystem
+        // useful for skipping the camera error entierly
+        SetEnvironmentVariable("CONNECT_CAMERA", "0");
+    }
+
+    log_info("-------------------------------------------------------------");
+    log_info("------------------- End iidxhook pre_hook -------------------");
+    log_info("-------------------------------------------------------------");
+
+    return true;
+}
+
+static bool
+_iidxhook9_main_init(HMODULE game_module, const bt_core_config_t *config_)
+{
     log_info("-------------------------------------------------------------");
     log_info("--------------- Begin iidxhook dll_entry_init ---------------");
     log_info("-------------------------------------------------------------");
@@ -150,7 +166,6 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     // reload configs again so they get logged through avs as well
     // (so we get a copy of them in the -Y logfile)
     if (!load_configs()) {
-        log_server_fini();
         exit(EXIT_FAILURE);
     }
 
@@ -240,15 +255,11 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     log_info("---------------- End iidxhook dll_entry_init ----------------");
     log_info("-------------------------------------------------------------");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _iidxhook9_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     if (!config_cam.disable_emu) {
         camhook_fini();
     }
@@ -272,38 +283,25 @@ static bool my_dll_entry_main(void)
     if (!iidxhook9_config_io.disable_file_hooks) {
         memfile_hook_fini();
     }
-
-    log_server_fini();
-
-    return result;
 }
 
-static void pre_hook()
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
-    log_info("-------------------------------------------------------------");
-    log_info("------------------ Begin iidxhook pre_hook ------------------");
-    log_info("-------------------------------------------------------------");
+    bt_core_log_api_set(api);
+}
 
-    if (!load_configs()) {
-        exit(EXIT_FAILURE);
-    }
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
 
-    // asio hooks
-    if (config_asio.force_asio) {
-        SetEnvironmentVariable("SOUND_OUTPUT_DEVICE", "asio");
-    } else if (config_asio.force_wasapi) {
-        SetEnvironmentVariable("SOUND_OUTPUT_DEVICE", "wasapi");
-    }
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
 
-    if (iidxhook9_config_io.disable_cams) {
-        // this disables the entire camera subsystem
-        // useful for skipping the camera error entierly
-        SetEnvironmentVariable("CONNECT_CAMERA", "0");
-    }
-
-    log_info("-------------------------------------------------------------");
-    log_info("------------------- End iidxhook pre_hook -------------------");
-    log_info("-------------------------------------------------------------");
+    api->v1.pre_avs_init = _iidxhook9_pre_avs_init;
+    api->v1.main_init = _iidxhook9_main_init;
+    api->v1.main_fini = _iidxhook9_main_fini;
 }
 
 /**
@@ -311,32 +309,5 @@ static void pre_hook()
  */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    core_boot("iidxhook9");
-
-    if (avs_is_active()) {
-        // if AVS is loaded, we're likely too late to be a prehook
-        // so we warn the user
-        // and switch the current logging context to AVS so it shows up in logs
-        avs_ext_log_core_api_set();
-
-        log_warning("iidxhook9 is designed to be used as a prehook");
-        log_warning("please ensure that it is being loaded with -B");
-        log_fatal("cya l8r in the prehook :3");
-    } else {
-        // we can't log to external in DllMain (AVS) as we're a prehook
-        // later during my_dll_entry_init, log_server_init is called
-        // which sets swaps the main log write to that instead
-        core_log_bt_ext_init_with_stderr();
-    }
-
-    pre_hook();
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-end:
     return TRUE;
 }

@@ -4,7 +4,8 @@ ldflags_vefxio      := \
     -lwinmm
 
 libs_vefxio         := \
-    geninput
+    iface-core \
+    geninput \
 
 src_vefxio          := \
     vefxio.c \

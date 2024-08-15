@@ -498,11 +498,6 @@ void _launcher_init(
         &bootstrap_config->startup.log,
         launcher_config->avs.property);
 
-    // Set APIs again because these have changed with AVS being initialized
-    hooks_core_log_api_set();
-    hooks_core_thread_api_set();
-    hooks_core_config_api_set();
-
     bootstrap_default_files_create(&bootstrap_config->startup.default_file);
 
     _launcher_ea3_ident_config_load(

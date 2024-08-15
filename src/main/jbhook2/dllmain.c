@@ -5,14 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
@@ -21,8 +17,6 @@
 
 #include "iface-io/eam.h"
 #include "iface-io/jb.h"
-
-#include "imports/avs.h"
 
 #include "jbhook2/options.h"
 
@@ -44,11 +38,61 @@
 #include "security/id.h"
 #include "security/mcode.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
+
 #include "util/defs.h"
 
 static struct options options;
 static module_io_t *jbhook_module_io_jb;
 static module_io_t *jbhook_module_io_eam;
+
+static HWND CDECL
+my_mwindow_create(HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
+static HWND(CDECL *real_mwindow_create)(
+    HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
+
+static const struct hook_symbol init_hook_syms[] = {
+    {
+        .name = "mwindow_create",
+        .patch = my_mwindow_create,
+        .link = (void **) &real_mwindow_create,
+    },
+};
+
+static HWND CDECL my_mwindow_create(
+    HINSTANCE hinstance,
+    void *callback,
+    const char *window_title,
+    DWORD window_width,
+    DWORD window_height,
+    BOOL fullscreen)
+{
+    log_info("-------------------------------------------------------------");
+    log_info("---------------- Begin jbhook mwindow_create ----------------");
+    log_info("-------------------------------------------------------------");
+
+    if (options.vertical) {
+        DWORD tmp = window_width;
+        window_width = window_height;
+        window_height = tmp;
+    }
+
+    if (options.show_cursor) {
+        ShowCursor(TRUE);
+    }
+
+    fullscreen = !options.windowed;
+
+    return real_mwindow_create(
+        hinstance,
+        callback,
+        window_title,
+        window_width,
+        window_height,
+        fullscreen);
+}
 
 static void _jbhook2_io_jb_init(module_io_t **module)
 {
@@ -69,7 +113,8 @@ static void _jbhook2_io_eam_init(module_io_t **module)
     bt_io_eam_api_set(&api);
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_jbhook2_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     bool eam_io_ok;
     bool jb_io_ok;
@@ -79,7 +124,20 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- Begin jbhook dll_entry_init ---");
 
+    char *sidcode = NULL; // TODO this isn't propagated with the new api anymore, what to do?
+
     log_assert(sidcode != NULL);
+
+    options_init_from_cmdline(&options);
+
+    hook_table_apply(
+        NULL, "mwindow.dll", init_hook_syms, lengthof(init_hook_syms));
+
+    if (!options.disable_adapteremu) {
+        adapter_hook_init();
+    }
+
+    jbhook_util_eamuse_hook_init();
 
     if (options.vertical) {
         jbhook_util_gfx_install_vertical_hooks();
@@ -138,7 +196,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     char *sidcode_in_ea3_config = strdup(sidcode);
 
-    bool ret = app_hook_invoke_init(sidcode, param);
+    // TODO the following needs the sidcode back-propagation, figure something out
+    // bool ret = app_hook_invoke_init(sidcode, param);
 
     // If the game is append, the mcode `cabinet` is forced to C. This is bad if
     // p3io was configured to respond as A! Help the user help themsevles...
@@ -157,7 +216,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     free(sidcode_in_ea3_config);
 
-    return ret;
+    return true;
 
 fail:
     if (eam_io_ok) {
@@ -177,12 +236,8 @@ fail:
     return false;
 }
 
-static bool my_dll_entry_main(void)
+static void _jbhook2_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     if (!options.disable_cardemu) {
         log_info("Shutting down card reader backend");
 
@@ -205,78 +260,27 @@ static bool my_dll_entry_main(void)
     }
 
     options_fini(&options);
-
-    return result;
 }
 
-static HWND CDECL
-my_mwindow_create(HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
-static HWND(CDECL *real_mwindow_create)(
-    HINSTANCE, void *, const char *, DWORD, DWORD, BOOL);
-
-static const struct hook_symbol init_hook_syms[] = {
-    {
-        .name = "mwindow_create",
-        .patch = my_mwindow_create,
-        .link = (void **) &real_mwindow_create,
-    },
-};
-
-static HWND CDECL my_mwindow_create(
-    HINSTANCE hinstance,
-    void *callback,
-    const char *window_title,
-    DWORD window_width,
-    DWORD window_height,
-    BOOL fullscreen)
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
-    log_info("-------------------------------------------------------------");
-    log_info("---------------- Begin jbhook mwindow_create ----------------");
-    log_info("-------------------------------------------------------------");
+    bt_core_log_api_set(api);
+}
 
-    if (options.vertical) {
-        DWORD tmp = window_width;
-        window_width = window_height;
-        window_height = tmp;
-    }
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
 
-    if (options.show_cursor) {
-        ShowCursor(TRUE);
-    }
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
 
-    fullscreen = !options.windowed;
-
-    return real_mwindow_create(
-        hinstance,
-        callback,
-        window_title,
-        window_width,
-        window_height,
-        fullscreen);
+    api->v1.main_init = _jbhook2_main_init;
+    api->v1.main_fini = _jbhook2_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        return TRUE;
-    }
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    options_init_from_cmdline(&options);
-
-    hook_table_apply(
-        NULL, "mwindow.dll", init_hook_syms, lengthof(init_hook_syms));
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    if (!options.disable_adapteremu) {
-        adapter_hook_init();
-    }
-
-    jbhook_util_eamuse_hook_init();
-
     return TRUE;
 }

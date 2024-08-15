@@ -5,14 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
@@ -21,8 +17,6 @@
 
 #include "iface-io/eam.h"
 #include "iface-io/jb.h"
-
-#include "imports/avs.h"
 
 #include "jbhook3/gfx.h"
 #include "jbhook3/options.h"
@@ -36,6 +30,10 @@
 
 #include "p4ioemu/device.h"
 #include "p4ioemu/setupapi.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "security/id.h"
 
@@ -64,7 +62,8 @@ static void _jbhook3_io_eam_init(module_io_t **module)
     bt_io_eam_api_set(&api);
 }
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_jbhook3_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     bool eam_io_ok;
     bool jb_io_ok;
@@ -73,6 +72,14 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     jb_io_ok = false;
 
     log_info("--- Begin jbhook dll_entry_init ---");
+
+    options_init_from_cmdline(&options);
+
+    if (!options.disable_adapteremu) {
+        adapter_hook_init();
+    }
+
+    jbhook_util_eamuse_hook_init();
 
     iohook_push_handler(p4ioemu_dispatch_irp);
     iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
@@ -120,9 +127,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("---  End  jbhook dll_entry_init ---");
 
-    bool ret = app_hook_invoke_init(sidcode, param);
-
-    return ret;
+    return true;
 
 fail:
     if (eam_io_ok) {
@@ -142,12 +147,8 @@ fail:
     return false;
 }
 
-static bool my_dll_entry_main(void)
+static void _jbhook3_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     if (!options.disable_cardemu) {
         log_info("Shutting down card reader backend");
 
@@ -170,29 +171,27 @@ static bool my_dll_entry_main(void)
     }
 
     options_fini(&options);
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _jbhook3_main_init;
+    api->v1.main_fini = _jbhook3_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        return TRUE;
-    }
-
-    // Use AVS APIs
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    options_init_from_cmdline(&options);
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    if (!options.disable_adapteremu) {
-        adapter_hook_init();
-    }
-
-    jbhook_util_eamuse_hook_init();
-
     return TRUE;
 }

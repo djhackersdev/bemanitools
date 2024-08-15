@@ -2,9 +2,6 @@
 
 #include <stdbool.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "cconfig/cconfig-hook.h"
 
 #include "core/log-bt-ext.h"
@@ -31,7 +28,6 @@
 #include "hook/iohook.h"
 #include "hook/table.h"
 
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 
 #include "iface-core/log.h"
@@ -40,12 +36,14 @@
 #include "iface-io/ddr.h"
 #include "iface-io/eam.h"
 
-#include "imports/avs.h"
-
 #include "module/io-ext.h"
 #include "module/io.h"
 
 #include "p3ioemu/emu.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "security/rp-sign-key.h"
 
@@ -65,23 +63,8 @@ static const hook_d3d9_irp_handler_t ddrhook1_d3d9_handlers[] = {
     gfx_d3d9_irp_handler,
 };
 
-static DWORD STDCALL
-my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-static DWORD(STDCALL *real_GetModuleFileNameA)(
-    HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-
-static bool ddrhook1_init_check = false;
-
 static module_io_t *_ddrhook1_module_io_ddr;
 static module_io_t *_ddrhook1_module_io_eam;
-
-static const struct hook_symbol init_hook_syms[] = {
-    {
-        .name = "GetModuleFileNameA",
-        .patch = my_GetModuleFileNameA,
-        .link = (void **) &real_GetModuleFileNameA,
-    },
-};
 
 static void _ddrhook1_io_ddr_init(module_io_t **module)
 {
@@ -103,8 +86,8 @@ static void _ddrhook1_io_eam_init(module_io_t **module)
     bt_io_eam_api_set(&api);
 }
 
-static DWORD STDCALL
-my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
+static bool
+_ddrhook1_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     bool ok;
     struct cconfig *config;
@@ -114,12 +97,13 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
     struct ddrhook1_config_gfx config_gfx;
     struct ddrhook1_config_security config_security;
 
-    if (ddrhook1_init_check)
-        goto skip;
+    ddrhook1_master_insert_hooks(NULL);
+    ddrhook1_filesystem_hook_init();
+
+    hook_d3d9_init(
+        ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
 
     log_info("--- Begin ddrhook1 main ---");
-
-    ddrhook1_init_check = true;
 
     config = cconfig_init();
 
@@ -214,26 +198,33 @@ my_GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize)
 
     log_info("--- End ddrhook1 main ---");
 
-skip:
-    return real_GetModuleFileNameA(hModule, lpFilename, nSize);
+    return true;
+}
+
+static void _ddrhook1_main_fini()
+{
+    // TODO cleanup
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _ddrhook1_main_init;
+    api->v1.main_fini = _ddrhook1_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    if (reason == DLL_PROCESS_ATTACH) {
-        // Use AVS APIs
-        avs_ext_log_core_api_set();
-        avs_ext_thread_core_api_set();
-
-        hook_table_apply(
-            NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));
-
-        ddrhook1_master_insert_hooks(NULL);
-        ddrhook1_filesystem_hook_init();
-
-        hook_d3d9_init(
-            ddrhook1_d3d9_handlers, lengthof(ddrhook1_d3d9_handlers));
-    }
-
     return TRUE;
 }

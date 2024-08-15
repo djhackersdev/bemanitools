@@ -2,26 +2,22 @@
 
 #include <stdbool.h>
 
-#include "avs-ext/log.h"
-#include "avs-ext/thread.h"
-
 #include "hook/iohook.h"
 
-#include "hooklib/app.h"
-
 #include "iface-core/log.h"
+#include "iface-core/thread.h"
 
-#include "imports/avs.h"
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "unicorntail/p3io.h"
 #include "unicorntail/usbmem.h"
 
 #include "util/defs.h"
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param);
-static bool my_dll_entry_main(void);
-
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static bool
+_unicorntail_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     log_info("--- Begin unicorntail dll_entry_init ---");
 
@@ -33,32 +29,34 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- End unicorntail dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _unicorntail_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     usbmem_fini();
     p3io_filter_fini();
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _unicorntail_main_init;
+    api->v1.main_fini = _unicorntail_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    avs_ext_log_core_api_set();
-    avs_ext_thread_core_api_set();
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-end:
     return TRUE;
 }

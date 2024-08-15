@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include "avs-ext/error.h"
-#include "avs-ext/log.h"
 #include "avs-ext/property-node.h"
 
 #include "core/log-bt.h"
@@ -96,16 +95,6 @@ static AVS_LOG_WRITER(_avs_context_log_writer, chars, nchars, ctx)
 
     free(utf8);
     free(utf16);
-}
-
-static void _avs_switch_log_engine()
-{
-    // Switch the logging backend now that AVS is booted to use a single logging
-    // engine which avoids concurrency issues as AVS runs it's own async logger
-    // thread
-    avs_ext_log_core_api_set();
-
-    log_misc("Switched logging engine to AVS");
 }
 
 void avs_fs_assert_root_device_exists(const core_property_node_t *node)
@@ -212,8 +201,6 @@ void avs_init(
     avs_boot(
         avs_node, avs_heap, avs_heap_size, NULL, _avs_context_log_writer, NULL);
 #endif
-
-    _avs_switch_log_engine();
 
     log_misc("init done");
 }

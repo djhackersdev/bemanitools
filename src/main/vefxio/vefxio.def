@@ -2,6 +2,7 @@ LIBRARY vefxio
 
 EXPORTS
     ; Bemanitools 6 API
+    bt_module_core_log_api_set
     bt_module_io_vefx_api_get
 
     ; Direct API
