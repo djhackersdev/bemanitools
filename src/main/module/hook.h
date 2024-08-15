@@ -8,6 +8,8 @@
 
 #include "api/hook.h"
 
+typedef void (*bt_module_hook_api_get_t)(bt_hook_api_t *api);
+
 typedef struct module_hook module_hook_t;
 
 void module_hook_load(const char *path, module_hook_t **module);

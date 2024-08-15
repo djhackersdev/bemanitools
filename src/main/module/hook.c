@@ -13,8 +13,6 @@
 #include "util/mem.h"
 #include "util/str.h"
 
-typedef void (*module_hook_api_get_t)(bt_hook_api_t *api);
-
 struct module_hook {
     module_t *module;
 
@@ -22,7 +20,7 @@ struct module_hook {
     bt_module_core_log_api_set_t core_log_api_set;
     bt_module_core_thread_api_set_t core_thread_api_set;
 
-    module_hook_api_get_t api_get;
+    bt_module_hook_api_get_t api_get;
 };
 
 static void _module_hook_resolve(module_hook_t *module)
@@ -37,7 +35,7 @@ static void _module_hook_resolve(module_hook_t *module)
         (bt_module_core_thread_api_set_t) module_func_optional_resolve(
             module->module, "bt_module_core_thread_api_set");
 
-    module->api_get = (module_hook_api_get_t) module_func_optional_resolve(
+    module->api_get = (bt_module_hook_api_get_t) module_func_optional_resolve(
         module->module, "bt_module_hook_api_get");
 }
 
