@@ -8,12 +8,25 @@
 #include "core/log-sink-file.h"
 #include "core/log-sink-list.h"
 #include "core/log-sink-mutex.h"
+#include "core/log-sink-null.h"
 #include "core/log-sink-std.h"
 
 // so we can log data dumps of rs232 streams without crashing
 #define CORE_LOG_BT_EXT_MSG_BUFFER_SIZE 1024 * 64
 // 64 kb * 64 = 4 MB for logging total
 #define CORE_LOG_BT_EXT_ASYNC_QUEUE_LENGTH 64
+
+void core_log_bt_ext_init_with_null()
+{
+    core_log_sink_t sink;
+
+    core_log_sink_null_open(&sink);
+
+    // Size doesn't matter (but must be valid)
+    // logger is entirely disabled
+    core_log_bt_init(1024, &sink);
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_OFF);
+}
 
 void core_log_bt_ext_init_with_stdout()
 {

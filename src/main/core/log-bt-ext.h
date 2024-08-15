@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+void core_log_bt_ext_init_with_null();
+
 /**
  * Helper to setup the bemanitools log implementation with a stdout sink.
  */
