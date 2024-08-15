@@ -26,6 +26,7 @@
 #define IIDXHOOK_CONFIG_GFX_FORCED_REFRESHRATE_KEY "gfx.forced_refresh_rate"
 #define IIDXHOOK_CONFIG_GFX_DEVICE_ADAPTER_KEY "gfx.device_adapter"
 #define IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY "gfx.diagonal_tearing_fix"
+#define IIDXHOOK_CONFIG_MISC_DISTORTED_MS_BG_FIX_KEY "gfx.distorted_ms_bg_fix"
 
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_BGVIDEO_UV_FIX_VALUE false
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_FRAMED_VALUE false
@@ -41,6 +42,7 @@
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_FORCED_RR_VALUE -1
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_DEVICE_ADAPTER_VALUE -1
 #define IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE false
+#define IIDXHOOK_CONFIG_MISC_DEFAULT_DISTORTED_MS_BG_FIX_VALUE false
 
 void iidxhook_config_gfx_init(struct cconfig *config)
 {
@@ -172,6 +174,14 @@ void iidxhook_config_gfx_init(struct cconfig *config)
         IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE,
         "Fix diagonal tearing with video cards "
         "other than Radeon X1300 and HD3450");
+
+    cconfig_util_set_bool(
+        config,
+        IIDXHOOK_CONFIG_MISC_DISTORTED_MS_BG_FIX_KEY,
+        IIDXHOOK_CONFIG_MISC_DEFAULT_DISTORTED_MS_BG_FIX_VALUE,
+        "Fix broken 3D background on DistorteD's music select (if "
+        "appearing "
+        "completely black)");
 }
 
 void iidxhook_config_gfx_get(
@@ -392,6 +402,18 @@ void iidxhook_config_gfx_get(
             IIDXHOOK_CONFIG_GFX_DIAGONAL_TEARING_FIX_KEY,
             IIDXHOOK_CONFIG_GFX_DEFAULT_DIAGONAL_TEARING_FIX_VALUE);
     }
+
+    if (!cconfig_util_get_bool(
+            config,
+            IIDXHOOK_CONFIG_MISC_DISTORTED_MS_BG_FIX_KEY,
+            &config_gfx->distorted_ms_bg_fix,
+            IIDXHOOK_CONFIG_MISC_DEFAULT_DISTORTED_MS_BG_FIX_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            IIDXHOOK_CONFIG_MISC_DISTORTED_MS_BG_FIX_KEY,
+            IIDXHOOK_CONFIG_MISC_DEFAULT_DISTORTED_MS_BG_FIX_VALUE);
+    }
 }
 
 static void _iidxhook_util_config_gfx_verify(const iidxhook_config_gfx_t *config)
@@ -473,6 +495,7 @@ void iidxhook_util_config_gfx_get2(
     bt_core_config_float_get(config, "gfx/game/monitor_check", &config_gfx->monitor_check);
     bt_core_config_bool_get(config, "gfx/game/diagonal_tearing_fix", &config_gfx->diagonal_tearing_fix);
     bt_core_config_bool_get(config, "gfx/game/happy_sky_ms_bg_fix", &config_gfx->happy_sky_ms_bg_fix);
+    bt_core_config_bool_get(config, "gfx/game/distorted_ms_bg_fix", &config_gfx->distorted_ms_bg_fix);
 
     _iidxhook_util_config_gfx_verify(config_gfx);
 }

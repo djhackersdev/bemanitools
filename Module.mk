@@ -301,7 +301,7 @@ $(zipdir)/iidx-13.zip: \
 		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-13.bat \
-		dist/iidx/iidxhook-13.conf \
+		dist/iidx/inject-13.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@

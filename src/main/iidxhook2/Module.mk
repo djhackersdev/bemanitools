@@ -4,6 +4,7 @@ ldflags_iidxhook2   := \
     -lws2_32 \
     -liphlpapi \
     -lpsapi \
+    -lshlwapi \
 
 libs_iidxhook2      := \
     core \
@@ -23,7 +24,8 @@ libs_iidxhook2      := \
     module \
     util \
     mxml \
+    sdk-hook \
 
 src_iidxhook2       := \
-    config-iidxhook2.c \
     dllmain.c \
+    iidxhook2.c \

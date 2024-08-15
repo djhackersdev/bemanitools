@@ -25,6 +25,7 @@ typedef struct iidxhook_config_gfx {
     int8_t device_adapter;
     bool diagonal_tearing_fix;
     bool happy_sky_ms_bg_fix;
+    bool distorted_ms_bg_fix;
 } iidxhook_config_gfx_t;
 
 void iidxhook_config_gfx_init(struct cconfig *config);

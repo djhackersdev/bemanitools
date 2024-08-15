@@ -1,320 +1,69 @@
 #include <windows.h>
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-#include "cconfig/cconfig-hook.h"
-
-#include "core/boot.h"
-#include "core/log-bt-ext.h"
-#include "core/log-bt.h"
-#include "core/log-sink-debug.h"
-#include "core/thread-crt.h"
-
-#include "ezusb-emu/desc.h"
-#include "ezusb-emu/device.h"
-#include "ezusb-emu/node-security-plug.h"
-
-#include "ezusb-iidx-emu/msg.h"
-#include "ezusb-iidx-emu/node-serial.h"
-#include "ezusb-iidx-emu/nodes.h"
-
-#include "hook/d3d9.h"
-#include "hook/iohook.h"
 #include "hook/table.h"
 
-#include "hooklib/acp.h"
-#include "hooklib/adapter.h"
-#include "hooklib/rs232.h"
-#include "hooklib/setupapi.h"
+#include "iidxhook2/iidxhook2.h"
 
-#include "iface-core/log.h"
-#include "iface-core/thread.h"
+#include "main/sdk-hook/dllentry.h"
 
-#include "iface-io/eam.h"
-#include "iface-io/iidx.h"
+#include "util/defs.h"
 
-#include "iidxhook-util/acio.h"
-#include "iidxhook-util/chart-patch.h"
-#include "iidxhook-util/clock.h"
-#include "iidxhook-util/config-eamuse.h"
-#include "iidxhook-util/config-ezusb.h"
-#include "iidxhook-util/config-gfx.h"
-#include "iidxhook-util/config-misc.h"
-#include "iidxhook-util/config-sec.h"
-#include "iidxhook-util/d3d9.h"
-#include "iidxhook-util/eamuse.h"
-#include "iidxhook-util/effector.h"
-#include "iidxhook-util/settings.h"
+static HANDLE STDCALL _iidxhook2_dllmain_my_OpenProcess(DWORD, BOOL, DWORD);
+static HANDLE(STDCALL *_iidxhook2_dllmain_real_OpenProcess)(DWORD, BOOL, DWORD);
 
-#include "module/io-ext.h"
-#include "module/io.h"
+static bool _iidxhook2_dllmain_openprocess_call_check;
 
-#include "iidxhook2/config-iidxhook2.h"
-
-#include "util/proc.h"
-
-#define IIDXHOOK2_INFO_HEADER \
-    "iidxhook for DistorteD"  \
-    ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV)
-#define IIDXHOOK2_CMD_USAGE \
-    "Usage: inject.exe iidxhook2.dll <bm2dx.exe> [options...]"
-
-static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
-    iidxhook_util_d3d9_irp_handler,
+static const struct hook_symbol _iidxhook2_dllmain_hook_syms[] = {
+    {
+        .name = "OpenProcess",
+        .patch = _iidxhook2_dllmain_my_OpenProcess,
+        .link = (void **) &_iidxhook2_dllmain_real_OpenProcess,
+    },
 };
 
-static HANDLE STDCALL my_OpenProcess(DWORD, BOOL, DWORD);
-static HANDLE(STDCALL *real_OpenProcess)(DWORD, BOOL, DWORD);
-
-static bool iidxhook_init_check;
-static module_io_t *iidxhook_module_io_iidx;
-static module_io_t *iidxhook_module_io_eam;
-
-static const struct hook_symbol init_hook_syms[] = {
-    {.name = "OpenProcess",
-     .patch = my_OpenProcess,
-     .link = (void **) &real_OpenProcess},
-};
-
-static void _iidxhook2_log_init()
+static HANDLE STDCALL
+_iidxhook2_dllmain_my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 {
-    core_log_bt_ext_init_with_debug();
-    // TODO change log level support
-    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+    if (_iidxhook2_dllmain_openprocess_call_check) {
+        return _iidxhook2_dllmain_real_OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId); 
+    }
+
+    _iidxhook2_dllmain_openprocess_call_check = true;
+
+    bt_hook_dllentry_main_init();
+
+    return _iidxhook2_dllmain_real_OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
 }
 
-static void _iidxhook2_io_iidx_init(module_io_t **module)
-{
-    bt_io_iidx_api_t api;
+// TODO find another call right before main exits to hook cleanup and stuff with
+// bt_hook_dllentry_main_fini()
 
-    module_io_ext_load_and_init(
-        "iidxio.dll", "bt_module_io_iidx_api_get", module);
-    module_io_api_get(*module, &api);
-    bt_io_iidx_api_set(&api);
-}
-
-static void _iidxhook2_io_eam_init(module_io_t **module)
-{
-    bt_io_eam_api_t api;
-
-    module_io_ext_load_and_init(
-        "eamio.dll", "bt_module_io_eam_api_get", module);
-    module_io_api_get(*module, &api);
-    bt_io_eam_api_set(&api);
-}
-
-static void iidxhook2_setup_d3d9_hooks(
-    const struct iidxhook_config_gfx *config_gfx,
-    const struct iidxhook_config_iidxhook2 *config_iidxhook2)
-{
-    struct iidxhook_util_d3d9_config d3d9_config;
-
-    if (!proc_is_module_loaded("d3d9.dll")) {
-        log_fatal(
-            "d3d8 hook module deprecated, using d3d9 hook modules requires "
-            "d3d8to9 to work! Could not detect loaded d3d9.dll");
-    }
-
-    iidxhook_util_d3d9_init_config(&d3d9_config);
-
-    d3d9_config.windowed = config_gfx->windowed;
-    d3d9_config.framed = config_gfx->framed;
-    d3d9_config.override_window_width = config_gfx->window_width;
-    d3d9_config.override_window_height = config_gfx->window_height;
-    d3d9_config.framerate_limit = config_gfx->frame_rate_limit;
-    d3d9_config.iidx13_fix_song_select_bg =
-        config_iidxhook2->distorted_ms_bg_fix;
-    d3d9_config.iidx09_to_17_fix_uvs_bg_videos = config_gfx->bgvideo_uv_fix;
-    d3d9_config.scale_back_buffer_width = config_gfx->scale_back_buffer_width;
-    d3d9_config.scale_back_buffer_height = config_gfx->scale_back_buffer_height;
-    d3d9_config.scale_back_buffer_filter = config_gfx->scale_back_buffer_filter;
-    d3d9_config.forced_refresh_rate = config_gfx->forced_refresh_rate;
-    d3d9_config.device_adapter = config_gfx->device_adapter;
-
-    if (config_gfx->monitor_check == 0) {
-        log_info("Auto monitor check enabled");
-
-        d3d9_config.iidx09_to_19_monitor_check_cb =
-            iidxhook_util_chart_patch_set_refresh_rate;
-        iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-    } else if (config_gfx->monitor_check > 0) {
-        log_info(
-            "Manual monitor check, resulting refresh rate: %f",
-            config_gfx->monitor_check);
-
-        iidxhook_util_chart_patch_init(
-            IIDXHOOK_UTIL_CHART_PATCH_TIMEBASE_9_TO_13);
-        iidxhook_util_chart_patch_set_refresh_rate(config_gfx->monitor_check);
-    }
-
-    iidxhook_util_d3d9_configure(&d3d9_config);
-
-    hook_d3d9_init(iidxhook_d3d9_handlers, lengthof(iidxhook_d3d9_handlers));
-}
-
-/**
- * This seems to be a good entry point to intercept
- * before the game calls anything important
- */
-HANDLE STDCALL
-my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
-{
-    struct cconfig *config;
-
-    struct iidxhook_util_config_ezusb config_ezusb;
-    struct iidxhook_util_config_eamuse config_eamuse;
-    struct iidxhook_config_gfx config_gfx;
-    struct iidxhook_config_iidxhook2 config_iidxhook2;
-    struct iidxhook_config_misc config_misc;
-    struct iidxhook_config_sec config_sec;
-
-    if (iidxhook_init_check) {
-        goto skip;
-    }
-
-    iidxhook_init_check = true;
-
-    log_info("-------------------------------------------------------------");
-    log_info("--------------- Begin iidxhook my_OpenProcess ---------------");
-    log_info("-------------------------------------------------------------");
-
-    config = cconfig_init();
-
-    iidxhook_util_config_ezusb_init(config);
-    iidxhook_util_config_eamuse_init(config);
-    iidxhook_config_gfx_init(config);
-    iidxhook_config_iidxhook2_init(config);
-    iidxhook_config_misc_init(config);
-    iidxhook_config_sec_init(config);
-
-    if (!cconfig_hook_config_init(
-            config,
-            IIDXHOOK2_INFO_HEADER "\n" IIDXHOOK2_CMD_USAGE,
-            CCONFIG_CMD_USAGE_OUT_DBG)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    iidxhook_util_config_ezusb_get(&config_ezusb, config);
-    iidxhook_util_config_eamuse_get(&config_eamuse, config);
-    iidxhook_config_gfx_get(&config_gfx, config);
-    iidxhook_config_iidxhook2_get(&config_iidxhook2, config);
-    iidxhook_config_misc_get(&config_misc, config);
-    iidxhook_config_sec_get(&config_sec, config);
-
-    cconfig_finit(config);
-
-    log_info(IIDXHOOK2_INFO_HEADER);
-    log_info("Initializing iidxhook...");
-
-    /* Round plug security */
-
-    ezusb_iidx_emu_node_security_plug_set_boot_version(
-        &config_sec.boot_version);
-    ezusb_iidx_emu_node_security_plug_set_boot_seeds(config_sec.boot_seeds);
-    ezusb_iidx_emu_node_security_plug_set_plug_black_mcode(
-        &config_sec.black_plug_mcode);
-    ezusb_iidx_emu_node_security_plug_set_pcbid(&config_eamuse.pcbid);
-
-    /* eAmusement server IP */
-
-    eamuse_set_addr(&config_eamuse.server);
-    eamuse_check_connection();
-
-    /* Patch rteffect.dll calls */
-
-    if (config_misc.rteffect_stub) {
-        effector_hook_init();
-    }
-
-    /* Settings paths */
-
-    if (strlen(config_misc.settings_path) > 0) {
-        settings_hook_set_path(config_misc.settings_path);
-    }
-
-    /* Direct3D and USER32 hooks */
-
-    iidxhook2_setup_d3d9_hooks(&config_gfx, &config_iidxhook2);
-
-    /* Disable operator menu clock setting system clock time */
-
-    if (config_misc.disable_clock_set) {
-        iidxhook_util_clock_hook_init();
-    }
-
-    /* Start up IIDXIO.DLL */
-
-    log_info("Starting IIDX IO backend");
-
-    _iidxhook2_io_iidx_init(&iidxhook_module_io_iidx);
-
-    if (!bt_io_iidx_init()) {
-        log_fatal("Initializing IIDX IO backend failed");
-    }
-
-    /* Start up EAMIO.DLL */
-
-    log_misc("Initializing card reader backend");
-
-    _iidxhook2_io_eam_init(&iidxhook_module_io_eam);
-
-    if (!bt_io_eam_init()) {
-        log_fatal("Initializing card reader backend failed");
-    }
-
-    /* Set up IO emulation hooks _after_ IO API setup to allow
-       API implementations with real IO devices */
-    iohook_push_handler(ezusb_emu_device_dispatch_irp);
-    iohook_push_handler(iidxhook_util_acio_dispatch_irp);
-    iohook_push_handler(iidxhook_util_chart_patch_dispatch_irp);
-    iohook_push_handler(settings_hook_dispatch_irp);
-
-    hook_setupapi_init(&ezusb_emu_desc_device.setupapi);
-    ezusb_emu_device_hook_init(
-        ezusb_iidx_emu_msg_init(config_ezusb.io_board_type));
-
-    /* Card reader emulation, same issue with hooking as IO emulation */
-    rs232_hook_init();
-
-    iidxhook_util_acio_init(true);
-
-    log_info("-------------------------------------------------------------");
-    log_info("---------------- End iidxhook my_OpenProcess ----------------");
-    log_info("-------------------------------------------------------------");
-
-skip:
-    return real_OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
-}
-
-/**
- * Hook library for DistorteD
- */
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        core_boot_dll("iidxhook3");
+        bt_hook_dllentry_init(
+            mod,
+            "iidxhook2",
+            bt_module_core_config_api_set,
+            bt_module_core_log_api_set,
+            bt_module_core_thread_api_set,
+            bt_module_hook_api_get);
 
-        // Use bemanitools core APIs
-        core_log_bt_core_api_set();
-        core_thread_crt_core_api_set();
-
-        _iidxhook2_log_init();
-
-        /* Bootstrap hook for further init tasks (see above) */
+        _iidxhook2_dllmain_openprocess_call_check = false;
 
         hook_table_apply(
-            NULL, "kernel32.dll", init_hook_syms, lengthof(init_hook_syms));
+            NULL, "kernel32.dll", _iidxhook2_dllmain_hook_syms, lengthof(_iidxhook2_dllmain_hook_syms));
 
-        /* Actual hooks for game specific stuff */
+    } else if (reason == DLL_PROCESS_DETACH) {
+        // https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain#remarks
+        if (ctx == NULL) {
+            hook_table_revert(NULL, "kernel32.dll", _iidxhook2_dllmain_hook_syms, lengthof(_iidxhook2_dllmain_hook_syms));
 
-        acp_hook_init();
-        adapter_hook_init();
-        eamuse_hook_init();
-        settings_hook_init();
+            // Hacky to have this here, should be close/right after application main exits, see TODO above
+            bt_hook_dllentry_main_fini();
+
+            bt_hook_dllentry_fini();
+        }
     }
 
     return TRUE;
