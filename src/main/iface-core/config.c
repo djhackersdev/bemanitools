@@ -84,7 +84,7 @@ const char *bt_core_config_result_to_str(bt_core_config_result_t result)
     }
 }
 
-void bt_core_config_fatal_on_error(bt_core_config_result_t result)
+void bt_core_config_fatal_on_error(bt_core_config_result_t result, const char *path)
 {
     switch (result) {
         case BT_CORE_CONFIG_RESULT_SUCCESS:
@@ -94,7 +94,7 @@ void bt_core_config_fatal_on_error(bt_core_config_result_t result)
         case BT_CORE_CONFIG_RESULT_TYPE_MISMATCH:
         default:
             log_fatal(
-                "Operation on config failed: %s",
+                "Operation on config for path \"%s\" failed: %s", path,
                 bt_core_config_result_to_str(result));
     }
 }

@@ -10,7 +10,7 @@ void bt_core_config_api_get(bt_core_config_api_t *api);
 void bt_core_config_api_clear();
 
 const char *bt_core_config_result_to_str(bt_core_config_result_t result);
-void bt_core_config_fatal_on_error(bt_core_config_result_t result);
+void bt_core_config_fatal_on_error(bt_core_config_result_t result, const char *path);
 
 bt_core_config_result_t bt_core_config_s8_get(
     const bt_core_config_t *config, const char *path, int8_t *value);
