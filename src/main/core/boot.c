@@ -59,7 +59,7 @@ static void _core_boot_minimal_logging_std_env_init()
     _bt_core_log_api.v1.warning = _core_boot_log_std_msg;
     _bt_core_log_api.v1.fatal = _core_boot_log_std_msg;
 
-    log_info("Init minimal logging environment done");
+    log_misc("Init minimal logging environment done");
 }
 
 static void _core_boot_minimal_logging_debug_env_init()
@@ -77,7 +77,7 @@ static void _core_boot_minimal_logging_debug_env_init()
     _bt_core_log_api.v1.warning = _core_boot_log_debug_msg;
     _bt_core_log_api.v1.fatal = _core_boot_log_debug_msg;
 
-    log_info("Init minimal logging environment done");
+    log_misc("Init minimal logging environment done");
 }
 
 void core_boot(const char *name)
