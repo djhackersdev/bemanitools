@@ -493,8 +493,9 @@ $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
 		build/bin/indep-32/iidxio-ezusb2.dll \
-		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-32/vigem-iidxio.exe \
+		dist/iidx/eamio-icca.xml \
+		dist/iidx/iidxio-bio2.conf \
 		dist/iidx/vigem-iidxio.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -506,8 +507,9 @@ $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
-		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-64/vigem-iidxio.exe \
+		dist/iidx/eamio-icca.xml \
+		dist/iidx/iidxio-bio2.conf \
 		dist/iidx/vigem-iidxio.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -617,7 +619,7 @@ $(zipdir)/jb-hwio.zip: \
 		build/bin/indep-32/jbio-magicbox.dll \
 		build/bin/indep-32/jbio-p4io.dll \
 		dist/jb/jbio-h44b.conf \
-		dist/jb/eamio-icc.conf \
+		dist/jb/eamio-icca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -681,6 +683,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
+		dist/sdvx/eamio-icca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -691,6 +694,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
+		dist/sdvx/eamio-icca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

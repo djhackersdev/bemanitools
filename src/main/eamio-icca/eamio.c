@@ -11,17 +11,18 @@
 #include "aciodrv/device.h"
 #include "aciodrv/icca.h"
 
+#include "api/core/config.h"
 #include "api/core/log.h"
 
-#include "cconfig/cconfig-main.h"
-
-#include "eamio-icca/config-icc.h"
+#include "eamio-icca/config.h"
 
 #include "iface-acio/mgr.h"
+#include "iface-core/config.h"
 #include "iface-core/log.h"
 
 #include "module/acio-mgr.h"
 
+#include "sdk/module/core/config.h"
 #include "sdk/module/core/log.h"
 #include "sdk/module/io/eam.h"
 
@@ -46,6 +47,8 @@ static const uint8_t eam_io_keypad_mappings[16] = {
     BT_IO_EAM_KEYPAD_SCAN_CODE_2,
     BT_IO_EAM_KEYPAD_SCAN_CODE_5,
     BT_IO_EAM_KEYPAD_SCAN_CODE_8};
+
+static icc_config_t _eamio_icca_config;
 
 static struct ac_io_icca_state eam_io_icca_state[NUMBER_OF_EMULATED_READERS];
 
@@ -90,35 +93,12 @@ static bool check_if_icca(int node_id)
 
 bool bt_io_eam_init()
 {
-    struct cconfig *config;
-    struct icc_config config_icc;
-
-    config = cconfig_init();
-
-    eamio_icca_config_icc_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--icc-config",
-            "eamio-icc.conf",
-            "--help",
-            "-h",
-            "eamio-icca",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
     _bt_io_eam_icca_acio_mgr_init(&_icca_module_acio_mgr);
 
-    eamio_icca_config_icc_get(&config_icc, config);
-
-    cconfig_finit(config);
-
-    acio_manager_ctx = bt_acio_mgr_port_init(config_icc.port, config_icc.baud);
+    acio_manager_ctx = bt_acio_mgr_port_init(_eamio_icca_config.port, _eamio_icca_config.baud);
 
     if (acio_manager_ctx == NULL) {
-        log_warning("Opening acio device on %s failed", config_icc.port);
+        log_warning("Opening acio device on %s failed", _eamio_icca_config.port);
         return false;
     }
 
@@ -337,9 +317,21 @@ const bt_io_eam_config_api_t *bt_io_eam_config_api_get(void)
     return NULL;
 }
 
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
     bt_core_log_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    eamio_icca_config_icc_get(config, &_eamio_icca_config);
+
+    return true;
 }
 
 void bt_module_io_eam_api_get(bt_io_eam_api_t *api)
@@ -354,9 +346,4 @@ void bt_module_io_eam_api_get(bt_io_eam_api_t *api)
     api->v1.card_slot_cmd_send = bt_io_eam_card_slot_cmd_send;
     api->v1.poll = bt_io_eam_poll;
     api->v1.config_api_get = bt_io_eam_config_api_get;
-}
-
-BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)
-{
-    return TRUE;
 }

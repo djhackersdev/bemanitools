@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<eamio-icca>
+  <port __type="str">COM1</port>
+  <baud __type="s32">57600</baud>
+</eamio-icca>
