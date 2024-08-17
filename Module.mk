@@ -374,7 +374,6 @@ $(zipdir)/iidx-19.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-19.bat \
-		dist/iidx/iidxhook-19.conf \
 		dist/iidx/launcher-19.xml \
 		dist/shared/ea3-ident.xml \
 		dist/shared/ea3-license.xml \
