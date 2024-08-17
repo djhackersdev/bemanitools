@@ -153,11 +153,11 @@ _iidxhook1_main_init(HMODULE game_module, const bt_core_config_t *config)
     log_info("iidxhook for 9th Style, 10th Style, RED and HAPPY SKY");
     log_info("build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV));
 
-    iidxhook_util_config_ezusb_get2(config, &config_ezusb);
-    iidxhook_util_config_eamuse_get2(config, &config_eamuse);
-    iidxhook_util_config_gfx_get2(config, &config_gfx);
-    iidxhook_util_config_misc_get2(config, &config_misc);
-    iidxhook_util_config_sec_get2(config, &config_sec);
+    iidxhook_util_config_ezusb_get(config, &config_ezusb);
+    iidxhook_util_config_eamuse_get(config, &config_eamuse);
+    iidxhook_util_config_gfx_get(config, &config_gfx);
+    iidxhook_util_config_misc_get(config, &config_misc);
+    iidxhook_util_config_sec_get(config, &config_sec);
 
     acp_hook_init();
     adapter_hook_init();

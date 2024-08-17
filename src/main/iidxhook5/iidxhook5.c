@@ -130,9 +130,9 @@ _iidxhook5_main_init(HMODULE game_module, const bt_core_config_t *config)
     log_info("iidxhook for Lincle");
     log_info("build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV));
 
-    iidxhook_util_config_gfx_get2(config, &config_gfx);
-    iidxhook_util_config_misc_get2(config, &config_misc);
-    iidxhook_util_config_io_get2(config, &config_io);
+    iidxhook_util_config_gfx_get(config, &config_gfx);
+    iidxhook_util_config_misc_get(config, &config_misc);
+    iidxhook_util_config_io_get(config, &config_io);
 
     acp_hook_init();
     adapter_hook_init();

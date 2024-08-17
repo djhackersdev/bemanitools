@@ -3,8 +3,6 @@
 
 #include <windows.h>
 
-#include "cconfig/cconfig.h"
-
 #include "iface-core/config.h"
 
 typedef struct iidxhook_config_misc {
@@ -13,12 +11,7 @@ typedef struct iidxhook_config_misc {
     char settings_path[MAX_PATH];
 } iidxhook_config_misc_t;
 
-void iidxhook_config_misc_init(struct cconfig *config);
-
-void iidxhook_config_misc_get(
-    struct iidxhook_config_misc *config_misc, struct cconfig *config);
-
-void iidxhook_util_config_misc_get2(
+void iidxhook_util_config_misc_get(
     const bt_core_config_t *config,
     iidxhook_config_misc_t *config_misc);
 

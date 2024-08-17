@@ -5,7 +5,6 @@ libs_camhook := \
     iface-core \
     hook \
     hooklib \
-    cconfig \
     util \
 
 src_camhook := \

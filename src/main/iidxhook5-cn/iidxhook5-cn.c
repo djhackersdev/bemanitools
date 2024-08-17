@@ -101,11 +101,11 @@ _iidxhook5_cn_main_init(HMODULE game_module, const bt_core_config_t *config)
     log_info("iidxhook for tricoro CN");
     log_info("build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV));
 
-    iidxhook_util_config_eamuse_get2(config, &config_eamuse);
-    iidxhook_util_config_gfx_get2(config, &config_gfx);
-    iidxhook_util_config_sec_get2(config, &config_sec);
-    iidxhook_util_config_misc_get2(config, &config_misc);
-    iidxhook_util_config_io_get2(config, &config_io);
+    iidxhook_util_config_eamuse_get(config, &config_eamuse);
+    iidxhook_util_config_gfx_get(config, &config_gfx);
+    iidxhook_util_config_sec_get(config, &config_sec);
+    iidxhook_util_config_misc_get(config, &config_misc);
+    iidxhook_util_config_io_get(config, &config_io);
 
     iidxhook5_cn_path_init();
     iidxhook5_cn_avs_boot_init();

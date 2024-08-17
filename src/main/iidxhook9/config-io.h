@@ -1,9 +1,7 @@
 #ifndef IIDXHOOK9_CONFIG_IO_H
 #define IIDXHOOK9_CONFIG_IO_H
 
-#include <windows.h>
-
-#include "cconfig/cconfig.h"
+#include <stdbool.h>
 
 struct iidxhook9_config_io {
     bool disable_card_reader_emu;
@@ -15,12 +13,7 @@ struct iidxhook9_config_io {
     float tt_multiplier;
 };
 
-void iidxhook9_config_io_init(struct cconfig *config);
-
 void iidxhook9_config_io_get(
-    struct iidxhook9_config_io *config_io, struct cconfig *config);
-
-void iidxhook9_config_io_get2(
     const bt_core_config_t *config,
     struct iidxhook9_config_io *config_io);
 

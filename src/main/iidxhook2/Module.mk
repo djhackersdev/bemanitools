@@ -16,7 +16,6 @@ libs_iidxhook2      := \
     acioemu \
     hook \
     hooklib \
-    cconfig \
     ezusb \
     iface \
     iface-io \

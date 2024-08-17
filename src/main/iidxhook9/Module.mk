@@ -27,7 +27,6 @@ libs_iidxhook9      := \
     dinput \
     hook \
     hooklib \
-    cconfig \
     iface \
     iface-io \
     iface-core \

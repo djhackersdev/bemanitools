@@ -86,14 +86,14 @@ static void _iidxhook9_io_eam_init(module_io_t **module)
 
 static void load_configs(const bt_core_config_t *config)
 {
-    iidxhook9_config_io_get2(config, &iidxhook9_config_io);
+    iidxhook9_config_io_get(config, &iidxhook9_config_io);
 
-    camhook_config_cam_get2(config, &config_cam, 2, true);
+    camhook_config_cam_get(config, &config_cam, 2, true);
 
-    d3d9exhook_config_gfx_get2(config, &config_gfx);
+    d3d9exhook_config_gfx_get(config, &config_gfx);
 
-    hooklib_config_adapter_get2(config, &config_adapter);
-    asiohook_config_asio_get2(config, &config_asio);
+    hooklib_config_adapter_get(config, &config_adapter);
+    asiohook_config_asio_get(config, &config_asio);
 }
 
 static bool _iidxhook9_pre_avs_init(const bt_core_config_t *config)

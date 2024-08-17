@@ -1,8 +1,6 @@
 #ifndef IIDXHOOK_CONFIG_GFX_H
 #define IIDXHOOK_CONFIG_GFX_H
 
-#include "cconfig/cconfig.h"
-
 #include "iface-core/config.h"
 
 #include "iidxhook-util/d3d9.h"
@@ -28,12 +26,7 @@ typedef struct iidxhook_config_gfx {
     bool distorted_ms_bg_fix;
 } iidxhook_config_gfx_t;
 
-void iidxhook_config_gfx_init(struct cconfig *config);
-
-void iidxhook_config_gfx_get(
-    struct iidxhook_config_gfx *config_gfx, struct cconfig *config);
-
-void iidxhook_util_config_gfx_get2(
+void iidxhook_util_config_gfx_get(
     const bt_core_config_t *config,
     iidxhook_config_gfx_t *config_gfx);
 

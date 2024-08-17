@@ -14,7 +14,6 @@ libs_iidxhook7      := \
     core \
     iidxhook-d3d9 \
     iidxhook-util \
-    cconfig \
     ezusb-emu \
     ezusb-iidx-16seg-emu \
     ezusb2-emu \

@@ -25,7 +25,6 @@ libs_iidxhook8      := \
     camhook \
     hook \
     hooklib \
-    cconfig \
     iface \
     iface-io \
     iface-core \

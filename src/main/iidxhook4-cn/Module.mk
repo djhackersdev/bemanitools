@@ -21,7 +21,6 @@ libs_iidxhook4-cn      := \
     security \
     hook \
     hooklib \
-    cconfig \
     util \
     ezusb \
     iface \
