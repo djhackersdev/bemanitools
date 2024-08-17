@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<sdvxio-kfca>
+  <port __type="str">COM4</port>
+  <baud __type="s32">115200</baud>
+  <main_override __type="s32">-1</main_override>
+  <headphone_override __type="s32">-1</headphone_override>
+  <subwoofer_override __type="s32">-1</subwoofer_override>
+</sdvxio-kfca>

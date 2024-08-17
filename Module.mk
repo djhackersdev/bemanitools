@@ -681,6 +681,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		build/bin/indep-32/vigem-sdvxio.exe \
 		dist/sdvx/eamio-icca.xml \
 		dist/sdvx/sdvxio-bio2.xml \
+		dist/sdvx/sdvxio-kfca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -693,6 +694,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/vigem-sdvxio.exe \
 		dist/sdvx/eamio-icca.xml \
 		dist/sdvx/sdvxio-bio2.xml \
+		dist/sdvx/sdvxio-kfca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

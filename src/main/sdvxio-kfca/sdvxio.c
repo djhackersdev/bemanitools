@@ -8,21 +8,25 @@
 
 #include "acio/acio.h"
 
+#include "api/core/config.h"
 #include "api/core/log.h"
 
-#include "cconfig/cconfig-main.h"
-
+#include "iface-core/config.h"
 #include "iface-acio/mgr.h"
 #include "iface-core/log.h"
 
 #include "main/module/acio-mgr-ext.h"
 
+#include "sdk/module/core/config.h"
+#include "sdk/module/configure.h"
 #include "sdk/module/core/log.h"
 #include "sdk/module/io/sdvx.h"
 
 #include "aciodrv/kfca.h"
 
 #include "sdvxio-kfca/config-kfca.h"
+
+static sdvxio_kfca_config_kfca_t _sdvxio_kfca_config;
 
 static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
@@ -50,36 +54,13 @@ static void _bt_io_jb_module_acio_mgr_init(module_acio_mgr_t **module)
 
 bool bt_io_sdvx_init()
 {
-    struct cconfig *config;
-    struct sdvxio_kfca_config_kfca config_kfca;
-
-    config = cconfig_init();
-
-    sdvxio_kfca_config_kfca_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--kfca-config",
-            "sdvxio-kfca.conf",
-            "--help",
-            "-h",
-            "sdvxio-kfca",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    sdvxio_kfca_config_kfca_get(&config_kfca, config);
-
-    cconfig_finit(config);
-
     _bt_io_jb_module_acio_mgr_init(&acio_mgr_module);
 
     acio_manager_ctx =
-        bt_acio_mgr_port_init(config_kfca.port, config_kfca.baud);
+        bt_acio_mgr_port_init(_sdvxio_kfca_config.port, _sdvxio_kfca_config.baud);
 
     if (acio_manager_ctx == NULL) {
-        log_info("Opening acio device on [%s] failed", config_kfca.port);
+        log_info("Opening acio device on [%s] failed", _sdvxio_kfca_config.port);
         return 0;
     }
 
@@ -116,14 +97,14 @@ bool bt_io_sdvx_init()
         uint8_t headphone = 0;
         uint8_t subwoofer = 0;
 
-        if (config_kfca.override_main_volume >= 0) {
-            primary = config_kfca.override_main_volume;
+        if (_sdvxio_kfca_config.override_main_volume >= 0) {
+            primary = _sdvxio_kfca_config.override_main_volume;
         }
-        if (config_kfca.override_headphone_volume >= 0) {
-            headphone = config_kfca.override_headphone_volume;
+        if (_sdvxio_kfca_config.override_headphone_volume >= 0) {
+            headphone = _sdvxio_kfca_config.override_headphone_volume;
         }
-        if (config_kfca.override_sub_volume >= 0) {
-            subwoofer = config_kfca.override_sub_volume;
+        if (_sdvxio_kfca_config.override_sub_volume >= 0) {
+            subwoofer = _sdvxio_kfca_config.override_sub_volume;
         }
 
         bool init_result = aciodrv_kfca_amp(
@@ -264,9 +245,21 @@ bool bt_io_sdvx_amp_volume_set(
     return true;
 }
 
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
     bt_core_log_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    sdvxio_kfca_config_kfca_get(config, &_sdvxio_kfca_config);
+
+    return true;
 }
 
 void bt_module_io_sdvx_api_get(bt_io_sdvx_api_t *api)
