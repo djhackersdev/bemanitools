@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<sdvxio-bio2>
+  <autodetect __type="bool">1</autodetect>
+  <port __type="str">COM4</port>
+  <baud __type="s32">115200</baud>
+</sdvxio-bio2>

@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "api/core/config.h"
 #include "api/core/log.h"
 
-#include "cconfig/cconfig-main.h"
-
+#include "iface-core/config.h"
 #include "iface-core/log.h"
 
 #include "sdk/module/core/log.h"
@@ -17,8 +17,15 @@
 
 #include "aciodrv/device.h"
 #include "bio2drv/bi2a-sdvx.h"
-#include "bio2drv/config-bio2.h"
+#include "bio2drv/config.h"
 #include "bio2drv/detect.h"
+
+#include "sdk/module/core/config.h"
+#include "sdk/module/configure.h"
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/sdvx.h"
+
+static bio2drv_config_t _sdvxio_bio2_config;
 
 static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
@@ -38,32 +45,9 @@ static struct aciodrv_device_ctx *bio2_device_ctx;
 
 bool bt_io_sdvx_init()
 {
-    struct cconfig *config;
-    struct bio2drv_config_bio2 config_bio2;
+    const char *selected_port = _sdvxio_bio2_config.port;
 
-    config = cconfig_init();
-
-    bio2drv_config_bio2_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--bio2-config",
-            "sdvxio-bio2.conf",
-            "--help",
-            "-h",
-            "sdvxio-bio2",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    bio2drv_config_bio2_get(&config_bio2, config);
-
-    cconfig_finit(config);
-
-    const char *selected_port = config_bio2.port;
-
-    if (config_bio2.autodetect) {
+    if (_sdvxio_bio2_config.autodetect) {
         log_info("Attempting autodetect");
 
         if (bio2drv_detect(
@@ -78,7 +62,7 @@ bool bt_io_sdvx_init()
     }
 
     // BIO2's cannot share a bus with anything else, so use device directly
-    bio2_device_ctx = aciodrv_device_open_path(selected_port, config_bio2.baud);
+    bio2_device_ctx = aciodrv_device_open_path(selected_port, _sdvxio_bio2_config.baud);
 
     if (bio2_device_ctx == NULL) {
         log_info("Opening BIO2 device on [%s] failed", selected_port);
@@ -325,9 +309,21 @@ bool bt_io_sdvx_amp_volume_set(
     return true;
 }
 
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
     bt_core_log_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    bio2drv_config_bio2_get(config, &_sdvxio_bio2_config);
+
+    return true;
 }
 
 void bt_module_io_sdvx_api_get(bt_io_sdvx_api_t *api)
