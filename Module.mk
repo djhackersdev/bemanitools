@@ -887,10 +887,10 @@ $(zipdir)/popn-15-to-18.zip: \
 		dist/popn/gamestart-16.bat \
 		dist/popn/gamestart-17.bat \
 		dist/popn/gamestart-18.bat \
-		dist/popn/popnhook-15.conf \
-		dist/popn/popnhook-16.conf \
-		dist/popn/popnhook-17.conf \
-		dist/popn/popnhook-18.conf \
+		dist/popn/inject-15.xml \
+		dist/popn/inject-16.xml \
+		dist/popn/inject-17.xml \
+		dist/popn/inject-18.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

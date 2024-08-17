@@ -1,21 +1,20 @@
 #ifndef POPNHOOK1_CONFIG_GFX_H
 #define POPNHOOK1_CONFIG_GFX_H
 
-#include "cconfig/cconfig.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "popnhook1/d3d9.h"
+#include "api/core/config.h"
 
-// see struct popnhook1_d3d9_config for more info
-struct popnhook1_config_gfx {
+typedef struct popnhook1_config_gfx {
     bool framed;
     bool windowed;
     int32_t window_width;
     int32_t window_height;
-};
-
-void popnhook1_config_gfx_init(struct cconfig *config);
+} popnhook1_config_gfx_t;
 
 void popnhook1_config_gfx_get(
-    struct popnhook1_config_gfx *config_gfx, struct cconfig *config);
-
+    const bt_core_config_t *config,
+    popnhook1_config_gfx_t *out_config);
+    
 #endif

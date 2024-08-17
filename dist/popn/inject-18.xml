@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<inject>
+  <version __type="u32">1</version>
+  <debugger>
+    <app>
+      <path __type="str">popn18.exe</path>
+      <args __type="str"></args>
+    </app>
+    <attach_type __type="str">inject</attach_type>
+  </debugger>
+  <hooks>
+    <iat>
+      <enable __type="bool">1</enable>
+      <source_name __type="str">ezusb.dll</source_name>
+      <path __type="str">ezusb2-popn-shim.dll</path>
+    </iat>
+    <hook>
+      <enable __type="bool">1</enable>
+      <path __type="str">popnhook1.dll</path>
+      <config kind="inline">
+        <hook>
+          <eamuse>
+            <!-- URL (e.g. http://my.eamuse.server:80/whatever) or IPV4 (e.g. 127.0.0.1:80) of the target eamuse server. The port is optional but defaults to 80. -->
+            <server __type="str">localhost:80</server>
+            <pcbid __type="bin">0101020304050607086F</pcbid>
+            <eamid __type="bin">0101020304050607086F</eamid>
+          </eamuse>
+          <gfx>
+            <windowed __type="bool">1</windowed>
+            <framed __type="bool">1</framed>
+            <window_width __type="s32">0</window_width>
+            <window_height __type="s32">0</window_height>
+          </gfx>
+          <sec>
+            <black_plug_mcode __type="str">GCJ39JAA</black_plug_mcode>
+          </sec>
+        </hook>
+      </config>
+    </hook>
+  </hooks>
+  <logger>
+    <enable __type="bool">1</enable>
+    <level __type="str">misc</level>
+    <msg_buffer_size_bytes __type="u32">8192</msg_buffer_size_bytes>
+    <sinks>
+      <async>
+        <enable __type="bool">0</enable>
+        <queue_length __type="u8">64</queue_length>
+        <overflow_policy __type="str">discard_new</overflow_policy>
+      </async>
+      <console>
+        <enable __type="bool">1</enable>
+        <color __type="bool">1</color>
+      </console>
+      <file>
+        <enable __type="bool">1</enable>
+        <path __type="str">inject.log</path>
+        <append __type="bool">0</append>
+        <rotate __type="bool">0</rotate>
+        <max_rotations __type="u8">1</max_rotations>
+      </file>
+    </sinks>
+  </logger>
+  <debug>
+    <property_configs_log __type="bool">1</property_configs_log>
+    <property_api_trace_log __type="bool">0</property_api_trace_log>
+  </debug>
+</inject>

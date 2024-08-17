@@ -1,17 +1,16 @@
 #ifndef POPNHOOK1_CONFIG_SEC_H
 #define POPNHOOK1_CONFIG_SEC_H
 
-#include "cconfig/cconfig.h"
+#include "api/core/config.h"
 
 #include "security/mcode.h"
 
-struct popnhook1_config_sec {
-    struct security_mcode black_plug_mcode;
-};
-
-void popnhook1_config_sec_init(struct cconfig *config);
+typedef struct popnhook1_config_sec {
+    security_mcode_t black_plug_mcode;
+} popnhook1_config_sec_t;
 
 void popnhook1_config_sec_get(
-    struct popnhook1_config_sec *config_sec, struct cconfig *config);
-
+    const bt_core_config_t *config,
+    popnhook1_config_sec_t *out_config);
+    
 #endif
