@@ -7,8 +7,9 @@
 
 #include "aciodrv/port.h"
 
+#include "iface-core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 /* Enable to dump all data to the logger */

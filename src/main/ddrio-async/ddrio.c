@@ -9,45 +9,22 @@
 
 #include <stdio.h>
 
-#include "bemanitools/ddrio.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface-io/ddr.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "util/time.h"
 
-typedef void (*ddr_io_set_loggers_t)(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal);
-typedef bool (*ddr_io_init_t)(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy);
-typedef uint32_t (*ddr_io_read_pad_t)(void);
-typedef void (*ddr_io_set_lights_extio_t)(uint32_t extio_lights);
-typedef void (*ddr_io_set_lights_p3io_t)(uint32_t p3io_lights);
-typedef void (*ddr_io_set_lights_hdxs_panel_t)(uint32_t hdxs_lights);
-typedef void (*ddr_io_set_lights_hdxs_rgb_t)(
-    uint8_t idx, uint8_t r, uint8_t g, uint8_t b);
-typedef void (*ddr_io_fini_t)(void);
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/io/ddr.h"
 
-static HMODULE _child_ddr_io_module;
+static module_io_t *_ddr_io_async_module_ddr_io;
 
-static ddr_io_set_loggers_t _child_ddr_io_set_loggers;
-static ddr_io_init_t _child_ddr_io_init;
-static ddr_io_read_pad_t _child_ddr_io_read_pad;
-static ddr_io_set_lights_extio_t _child_ddr_io_set_lights_extio;
-static ddr_io_set_lights_p3io_t _child_ddr_io_set_lights_p3io;
-static ddr_io_set_lights_hdxs_panel_t _child_ddr_io_set_lights_hdxs_panel;
-static ddr_io_set_lights_hdxs_rgb_t _child_ddr_io_set_lights_hdxs_rgb;
-static ddr_io_fini_t _child_ddr_io_fini;
-
-static log_formatter_t _log_formatter_misc;
-static log_formatter_t _log_formatter_info;
-static log_formatter_t _log_formatter_warning;
-static log_formatter_t _log_formatter_fatal;
-
+static bt_core_thread_id_t _io_thread_id;
 static _Atomic(bool) _io_thread_proc_loop;
 static _Atomic(bool) _io_thread_proc_running;
 
@@ -80,7 +57,7 @@ static int _io_thread_proc(void *ctx)
     loop_counter = 0;
 
     while (atomic_load_explicit(&_io_thread_proc_loop, memory_order_seq_cst)) {
-        local_tmp = _child_ddr_io_read_pad();
+        local_tmp = bt_io_ddr_pad_read();
 
         atomic_store_explicit(
             &_child_ddr_io_data_pad, local_tmp, memory_order_relaxed);
@@ -95,7 +72,7 @@ static int _io_thread_proc(void *ctx)
             &_child_ddr_io_data_extio_lights, memory_order_relaxed);
 
         if (local_tmp != prev_child_ddr_io_data_extio_lights) {
-            _child_ddr_io_set_lights_extio(local_tmp);
+            bt_io_ddr_extio_lights_set(local_tmp);
             prev_child_ddr_io_data_extio_lights = local_tmp;
         }
 
@@ -103,7 +80,7 @@ static int _io_thread_proc(void *ctx)
             &_child_ddr_io_data_p3io_lights, memory_order_relaxed);
 
         if (local_tmp != prev_child_ddr_io_data_p3io_lights) {
-            _child_ddr_io_set_lights_p3io(local_tmp);
+            bt_io_ddr_p3io_lights_set(local_tmp);
             prev_child_ddr_io_data_p3io_lights = local_tmp;
         }
 
@@ -130,84 +107,48 @@ static int _io_thread_proc(void *ctx)
     return 0;
 }
 
-static void *_load_function(HMODULE module, const char *name)
+static void _ddr_io_async_child_ddr_io_init(module_io_t **module)
 {
-    void *ptr;
+    bt_io_ddr_api_t api;
 
-    ptr = GetProcAddress(module, name);
-
-    if (ptr == NULL) {
-        log_fatal("Could not find function %s in ddr3io child library", name);
-    }
-
-    return ptr;
+    module_io_ext_load_and_init(
+        "ddrio-async-child.dll", "bt_module_io_ddr_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_ddr_api_set(&api);
 }
 
-void ddr_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+bool bt_io_ddr_async_init()
 {
-    _log_formatter_misc = misc;
-    _log_formatter_info = info;
-    _log_formatter_warning = warning;
-    _log_formatter_fatal = fatal;
+    bool result;
+    bt_core_thread_result_t result2;
 
-    log_to_external(misc, info, warning, fatal);
-}
-
-bool ddr_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
-{
     log_info("Loading ddrio-async-child.dll as child ddrio library...");
 
-    _child_ddr_io_module = LoadLibraryA("ddrio-async-child.dll");
-
-    if (_child_ddr_io_module == NULL) {
-        log_warning("Loading ddrio-async-child.dll failed");
-        return false;
-    }
-
-    _child_ddr_io_set_loggers =
-        _load_function(_child_ddr_io_module, "ddr_io_set_loggers");
-    _child_ddr_io_init = _load_function(_child_ddr_io_module, "ddr_io_init");
-    _child_ddr_io_read_pad =
-        _load_function(_child_ddr_io_module, "ddr_io_read_pad");
-    _child_ddr_io_set_lights_extio =
-        _load_function(_child_ddr_io_module, "ddr_io_set_lights_extio");
-    _child_ddr_io_set_lights_p3io =
-        _load_function(_child_ddr_io_module, "ddr_io_set_lights_p3io");
-    _child_ddr_io_set_lights_hdxs_panel =
-        _load_function(_child_ddr_io_module, "ddr_io_set_lights_hdxs_panel");
-    _child_ddr_io_set_lights_hdxs_rgb =
-        _load_function(_child_ddr_io_module, "ddr_io_set_lights_hdxs_rgb");
-    _child_ddr_io_fini = _load_function(_child_ddr_io_module, "ddr_io_fini");
-
-    _child_ddr_io_set_loggers(
-        _log_formatter_misc,
-        _log_formatter_info,
-        _log_formatter_warning,
-        _log_formatter_fatal);
+    _ddr_io_async_child_ddr_io_init(&_ddr_io_async_module_ddr_io);
 
     log_info("Calling child ddr_io_init...");
 
-    if (!_child_ddr_io_init(thread_create, thread_join, thread_destroy)) {
+    result = bt_io_ddr_init();
+
+    if (!result) {
         log_warning("Child ddr_io_init failed");
-        FreeLibrary(_child_ddr_io_module);
+        module_io_free(&_ddr_io_async_module_ddr_io);
 
         return false;
     }
 
     atomic_store_explicit(&_io_thread_proc_loop, true, memory_order_seq_cst);
 
-    if (!thread_create(_io_thread_proc, NULL, 16384, 0)) {
-        log_warning("Creating IO thread failed");
+    result2 =
+        bt_core_thread_create(_io_thread_proc, NULL, 16384, 0, &_io_thread_id);
 
-        _child_ddr_io_fini();
-        FreeLibrary(_child_ddr_io_module);
+    if (result2 != BT_CORE_THREAD_RESULT_SUCCESS) {
+        log_warning(
+            "Creating IO thread failed: %s",
+            bt_core_thread_result_to_str(result2));
+
+        bt_io_ddr_fini();
+        module_io_free(&_ddr_io_async_module_ddr_io);
 
         return false;
     }
@@ -215,34 +156,7 @@ bool ddr_io_init(
     return true;
 }
 
-uint32_t ddr_io_read_pad(void)
-{
-    return atomic_load_explicit(&_child_ddr_io_data_pad, memory_order_relaxed);
-}
-
-void ddr_io_set_lights_extio(uint32_t extio_lights)
-{
-    atomic_store_explicit(
-        &_child_ddr_io_data_extio_lights, extio_lights, memory_order_relaxed);
-}
-
-void ddr_io_set_lights_p3io(uint32_t p3io_lights)
-{
-    atomic_store_explicit(
-        &_child_ddr_io_data_p3io_lights, p3io_lights, memory_order_relaxed);
-}
-
-void ddr_io_set_lights_hdxs_panel(uint32_t lights)
-{
-    // Not implemented for now
-}
-
-void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
-{
-    // Not implemented for now
-}
-
-void ddr_io_fini(void)
+void bt_io_ddr_async_fini(void)
 {
     atomic_store_explicit(&_io_thread_proc_loop, false, memory_order_seq_cst);
 
@@ -255,7 +169,58 @@ void ddr_io_fini(void)
 
     log_info("IO thread finished");
 
-    _child_ddr_io_fini();
+    bt_io_ddr_fini();
 
-    FreeLibrary(_child_ddr_io_module);
+    module_io_free(&_ddr_io_async_module_ddr_io);
+}
+
+uint32_t bt_io_ddr_async_pad_read(void)
+{
+    return atomic_load_explicit(&_child_ddr_io_data_pad, memory_order_relaxed);
+}
+
+void bt_io_ddr_async_extio_lights_set(uint32_t extio_lights)
+{
+    atomic_store_explicit(
+        &_child_ddr_io_data_extio_lights, extio_lights, memory_order_relaxed);
+}
+
+void bt_io_ddr_async_p3io_lights_set(uint32_t p3io_lights)
+{
+    atomic_store_explicit(
+        &_child_ddr_io_data_p3io_lights, p3io_lights, memory_order_relaxed);
+}
+
+void bt_io_ddr_async_hdxs_lights_panel_set(uint32_t lights)
+{
+    // Not implemented for now
+}
+
+void bt_io_ddr_async_hdxs_lights_rgb_set(
+    uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+{
+    // Not implemented for now
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_ddr_async_init;
+    api->v1.fini = bt_io_ddr_async_fini;
+    api->v1.pad_read = bt_io_ddr_async_pad_read;
+    api->v1.extio_lights_set = bt_io_ddr_async_extio_lights_set;
+    api->v1.p3io_lights_set = bt_io_ddr_async_p3io_lights_set;
+    api->v1.hdxs_lights_panel_set = bt_io_ddr_async_hdxs_lights_panel_set;
+    api->v1.hdxs_lights_rgb_set = bt_io_ddr_async_hdxs_lights_rgb_set;
 }

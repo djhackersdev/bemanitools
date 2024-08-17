@@ -9,12 +9,13 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "p3io/guid.h"
 
 #include "p3ioemu/devmgr.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* Link pointers */

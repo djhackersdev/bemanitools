@@ -1,11 +1,12 @@
 #define LOG_MODULE "crypto"
 
-#include "util/crypto.h"
-#include "util/log.h"
-#include "util/mem.h"
-
 #include <stdlib.h>
 #include <string.h>
+
+#include "iface-core/log.h"
+
+#include "util/crypto.h"
+#include "util/mem.h"
 
 static const char vista_prov[] =
     "Microsoft Enhanced RSA and AES Cryptographic Provider";

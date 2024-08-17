@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<launcher version="1">
+  <bootstrap>
+    <selector __type="str">bemanitools_local_fs</selector>
+    <config kind="inline">
+      <config>
+        <startup>
+            <bemanitools_local_fs>
+                <default>
+                    <file dst="/dev/nvram/ea3-config.xml" src="/prop/eamuse-config.xml" />
+                    <file dst="/dev/nvram/coin.xml" src="/prop/coin.xml" />
+                    <file dst="/dev/nvram/eacoin.xml" src="/prop/eacoin.xml" />
+                </default>
+                <boot>
+                    <file>prop/avs-config.xml</file>
+                    <heap_avs __type="u32">268435456</heap_avs>
+                </boot>
+                <log>
+                    <level>info</level>
+                </log>
+                <eamuse>
+                    <file>/dev/nvram/ea3-config.xml</file>
+                </eamuse>
+                <component>
+                    <file>soundvoltex.dll</file>
+                    <param></param>
+                </component>
+            </bemanitools_local_fs>
+        </startup>
+      </config>
+    </config>
+  </bootstrap>
+  <ea3_ident>
+    <config kind="file">bemanitools/ea3-ident.xml</config>
+    <config kind="file">bemanitools/ea3-license.xml</config>
+  </ea3_ident>
+  <avs>
+    <config kind="inline">
+        <config>
+            <fs>
+                <root>
+                    <device __type="str">.</device>
+                </root>
+                <nvram>
+                    <device __type="str">dev/nvram</device>
+                    <fstype __type="str">fs</fstype>
+                    <option __type="str">vf=1,posix=1</option>
+                </nvram>
+                <raw>
+                    <device __type="str">dev/raw</device>
+                    <fstype __type="str">fs</fstype>
+                    <option __type="str">vf=1,posix=1</option>
+                </raw>
+            </fs>
+        </config>
+    </config>
+  </avs>
+  <eamuse>
+    <config kind="file">bemanitools/ea3-service.xml</config>
+  </eamuse>
+  <hooks>
+    <hook>
+      <enable __type="bool">1</enable>
+      <path __type="str">sdvxhook2.dll</path>
+      <config kind="inline">
+        <hook>
+          <adapter>
+            <!-- IP of adapter to force override with -->
+            <override_ip __type="str"></override_ip>
+          </adapter>
+          <gfx>
+            <device>
+              <!-- D3D9ex device adapter (monitor), -1 to use default, 0, 1, 2 etc. to use specified adapter -->
+              <adapter __type="s32">-1</adapter>
+              <!-- Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors) -->
+              <forced_refresh_rate __type="s32">-1</forced_refresh_rate>
+              <!-- Orientation to force monitor into, -1 to use default, 0, 1, 2, 3 to do 0, 90, 180, 270 degrees -->
+              <force_orientation __type="s32">-1</force_orientation>
+              <!-- Force a screen resolution (width), -1 to disable. Use this if the game does not auto detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720. -->
+              <force_screen_res>
+                <width __type="s32">-1</width>
+                <height __type="s32">-1</height>
+              </force_screen_res>
+            </device>
+            <window>
+              <!-- Run the game windowed -->
+              <windowed __type="bool">0</windowed>
+              <!-- Run the game in a framed window (requires windowed option) -->
+              <framed __type="bool">1</framed>
+              <!-- Confine mouse cursor to window -->
+              <confined __type="bool">0</confined>
+              <!-- Windowed width, -1 for default size -->
+              <width __type="s32">1080</width>
+              <!-- Windowed height, -1 for default size -->
+              <height __type="s32">1920</height>
+              <!-- Windowed X, -1 for default X position -->
+              <x __type="s32">-1</x>
+              <!-- Windowed Y, -1 for default Y position -->
+              <y __type="s32">-1</y>
+            </window>
+          </gfx>
+          <camera>
+            <!-- Disables the camera emulation -->
+            <disable_emu __type="bool">0</disable_emu>
+            <device_1>
+              <!-- Disable camera 1. Use, i.e., if you only have one camera and want it to be mapped to camera 2 ingame. -->
+              <disable __type="bool">1</disable>
+              <!-- Override camera device ID 1 detection (copy from device manager, do not escape) Leave blank to automatically detect -->
+              <id __type="str"></id>
+            </device_1>
+          </camera>
+          <io>
+            <!-- Disable card reader emulation and enable usage of real card reader hardware on COM2 -->
+            <disable_card_reader_emu __type="bool">0</disable_card_reader_emu>
+            <!-- Disable BIO2 emulation and enable usage of real BIO2 hardware -->
+            <disable_bio2_emu __type="bool">0</disable_bio2_emu>
+            <!-- Disables the poll limiter, warning very high CPU usage may arise -->
+            <disable_poll_limiter __type="bool">0</disable_poll_limiter>
+            <!-- Forces game to think headphones are attached -->
+            <force_headphones __type="bool">0</force_headphones>
+            <!-- Disables the built in file hooks, requiring manual file creation (/dev/raw/j.dest) -->
+            <disable_file_hooks __type="bool">0</disable_file_hooks>
+            <!-- Disables the built in power control hooks, allowing game to modify system power settings -->
+            <disable_power_hooks __type="bool">0</disable_power_hooks>
+            <!-- Disables the built in NVAPI control hooks, allowing game to modify system monitor settings -->
+            <disable_nvapi_hooks __type="bool">0</disable_nvapi_hooks>
+            <!-- Emulates the card reader on COM1 instead of COM2 -->
+            <com1_card_reader __type="bool">0</com1_card_reader>
+          </io>
+        </hook>
+      </config>
+    </hook>
+  </hooks>
+  <debug>
+    <remote_debugger __type="bool">0</remote_debugger>
+    <log_property_configs __type="bool">0</log_property_configs>
+  </debug>
+</launcher>

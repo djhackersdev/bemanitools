@@ -10,10 +10,11 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook-util/eamuse.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* ------------------------------------------------------------------------- */
@@ -117,6 +118,14 @@ void eamuse_hook_init(void)
         NULL, "ws2_32.dll", eamuse_hook_syms, lengthof(eamuse_hook_syms));
 
     log_info("Inserted eamuse hooks");
+}
+
+void eamuse_hook_fini()
+{
+    hook_table_revert(
+        NULL, "ws2_32.dll", eamuse_hook_syms, lengthof(eamuse_hook_syms));
+
+    log_info("Removed eamuse hooks");
 }
 
 void eamuse_set_addr(const struct net_addr *addr)

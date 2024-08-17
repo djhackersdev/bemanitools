@@ -5,9 +5,11 @@ srcdir_d3d9hook := src/test/d3d9hook
 ldflags_d3d9hook   := \
 
 libs_d3d9hook     := \
+    core \
     hook \
     test \
     util \
+    iface-core \
 
 src_d3d9hook     := \
     dllmain.c \
@@ -25,6 +27,8 @@ libs_d3d9hook-test     := \
     hook \
     test \
     util \
+    core \
+    iface-core \
 
 src_d3d9hook-test      := \
     main.c \

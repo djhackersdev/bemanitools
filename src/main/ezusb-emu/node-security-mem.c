@@ -5,7 +5,7 @@
 #include "ezusb-emu/node-security-mem.h"
 #include "ezusb-iidx/secmem-cmd.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 #define SECURITY2_NPAGES 5
 

@@ -10,7 +10,7 @@
 #include "bio2emu/emu.h"
 #include "sdvxhook2/bi2a.h"
 
-#include "bemanitools/sdvxio.h"
+#include "iface-io/sdvx.h"
 
 static void bio2_emu_bi2a_cmd_send_version(
     struct ac_io_emu *emu, const struct ac_io_message *req);
@@ -209,44 +209,44 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     gpio |= assign_light(0x01, pout->gpio[5]);
     gpio |= assign_light(0x02, pout->gpio[6]);
 
-    sdvx_io_set_gpio_lights(gpio);
+    bt_io_sdvx_gpio_lights_set(gpio);
 
-    sdvx_io_set_pwm_light(0x0, pout->wingUpper[0]);
-    sdvx_io_set_pwm_light(0x1, pout->wingUpper[1]);
-    sdvx_io_set_pwm_light(0x2, pout->wingUpper[2]);
-    sdvx_io_set_pwm_light(0x3, pout->wingUpper[0]);
-    sdvx_io_set_pwm_light(0x4, pout->wingUpper[1]);
-    sdvx_io_set_pwm_light(0x5, pout->wingUpper[2]);
+    bt_io_sdvx_pwm_light_set(0x0, pout->wingUpper[0]);
+    bt_io_sdvx_pwm_light_set(0x1, pout->wingUpper[1]);
+    bt_io_sdvx_pwm_light_set(0x2, pout->wingUpper[2]);
+    bt_io_sdvx_pwm_light_set(0x3, pout->wingUpper[0]);
+    bt_io_sdvx_pwm_light_set(0x4, pout->wingUpper[1]);
+    bt_io_sdvx_pwm_light_set(0x5, pout->wingUpper[2]);
 
-    sdvx_io_set_pwm_light(0x6, pout->wingLower[0]);
-    sdvx_io_set_pwm_light(0x7, pout->wingLower[1]);
-    sdvx_io_set_pwm_light(0x8, pout->wingLower[2]);
-    sdvx_io_set_pwm_light(0x9, pout->wingLower[0]);
-    sdvx_io_set_pwm_light(0xA, pout->wingLower[1]);
-    sdvx_io_set_pwm_light(0xB, pout->wingLower[2]);
+    bt_io_sdvx_pwm_light_set(0x6, pout->wingLower[0]);
+    bt_io_sdvx_pwm_light_set(0x7, pout->wingLower[1]);
+    bt_io_sdvx_pwm_light_set(0x8, pout->wingLower[2]);
+    bt_io_sdvx_pwm_light_set(0x9, pout->wingLower[0]);
+    bt_io_sdvx_pwm_light_set(0xA, pout->wingLower[1]);
+    bt_io_sdvx_pwm_light_set(0xB, pout->wingLower[2]);
 
-    sdvx_io_set_pwm_light(0xC, pout->woof_r);
-    sdvx_io_set_pwm_light(0xD, pout->woof_g);
-    sdvx_io_set_pwm_light(0xE, pout->woof_b);
+    bt_io_sdvx_pwm_light_set(0xC, pout->woof_r);
+    bt_io_sdvx_pwm_light_set(0xD, pout->woof_g);
+    bt_io_sdvx_pwm_light_set(0xE, pout->woof_b);
 
-    sdvx_io_set_pwm_light(0xF, pout->controller[0]);
-    sdvx_io_set_pwm_light(0x10, pout->controller[1]);
-    sdvx_io_set_pwm_light(0x11, pout->controller[2]);
+    bt_io_sdvx_pwm_light_set(0xF, pout->controller[0]);
+    bt_io_sdvx_pwm_light_set(0x10, pout->controller[1]);
+    bt_io_sdvx_pwm_light_set(0x11, pout->controller[2]);
 
-    sdvx_io_write_output();
+    bt_io_sdvx_output_write();
 
-    sdvx_io_read_input();
-    uint8_t sys = sdvx_io_get_input_gpio_sys();
-    uint16_t gpio0 = sdvx_io_get_input_gpio(0);
-    uint16_t gpio1 = sdvx_io_get_input_gpio(1);
+    bt_io_sdvx_input_read();
+    uint8_t sys = bt_io_sdvx_input_gpio_sys_get();
+    uint16_t gpio0 = bt_io_sdvx_input_gpio_get(0);
+    uint16_t gpio1 = bt_io_sdvx_input_gpio_get(1);
 
     // TODO: Make a counter or smth to counteract the accuracy lost in *4
-    pin->analogs[0].a_val = sdvx_io_get_spinner_pos(0);
-    pin->analogs[1].a_val = sdvx_io_get_spinner_pos(1);
+    pin->analogs[0].a_val = bt_io_sdvx_spinner_pos_get(0);
+    pin->analogs[1].a_val = bt_io_sdvx_spinner_pos_get(1);
 
-    pin->analogs[0].a_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
-    pin->analogs[0].a_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
-    pin->analogs[0].a_coin = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+    pin->analogs[0].a_test = check_pin(sys, BT_IO_SDVX_IN_GPIO_SYS_TEST);
+    pin->analogs[0].a_service = check_pin(sys, BT_IO_SDVX_IN_GPIO_SYS_SERVICE);
+    pin->analogs[0].a_coin = check_pin(sys, BT_IO_SDVX_IN_GPIO_SYS_COIN);
 
     if (pin->analogs[0].a_coin) {
         if (!coin_latch) {
@@ -263,17 +263,18 @@ bio2_emu_bi2a_send_state(struct ac_io_emu *emu, const struct ac_io_message *req)
     pin->raw[0] = ac_io_u16(pin->raw[0]);
     pin->raw[1] = ac_io_u16(pin->raw[1]);
 
-    pin->buttons_1.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
-    pin->buttons_1.b_headphone = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+    pin->buttons_1.b_start = check_pin(gpio0, BT_IO_SDVX_IN_GPIO_0_START);
+    pin->buttons_1.b_headphone =
+        check_pin(gpio0, BT_IO_SDVX_IN_GPIO_0_HEADPHONE);
     if (force_headphones_on) {
         pin->buttons_1.b_headphone = 1;
     }
-    pin->buttons_1.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
-    pin->buttons_1.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
-    pin->buttons_1.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
-    pin->buttons_1.b_d = check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
-    pin->buttons_1.b_fxl = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
-    pin->buttons_2.b_fxr = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
+    pin->buttons_1.b_a = check_pin(gpio0, BT_IO_SDVX_IN_GPIO_0_A);
+    pin->buttons_1.b_b = check_pin(gpio0, BT_IO_SDVX_IN_GPIO_0_B);
+    pin->buttons_1.b_c = check_pin(gpio0, BT_IO_SDVX_IN_GPIO_0_C);
+    pin->buttons_1.b_d = check_pin(gpio1, BT_IO_SDVX_IN_GPIO_1_D);
+    pin->buttons_1.b_fxl = check_pin(gpio1, BT_IO_SDVX_IN_GPIO_1_FX_L);
+    pin->buttons_2.b_fxr = check_pin(gpio1, BT_IO_SDVX_IN_GPIO_1_FX_R);
 
     ac_io_emu_response_push(emu, &resp, 0);
 }

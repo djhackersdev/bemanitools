@@ -3,10 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+
+#include "iface-core/log.h"
+
 #include "ezusb/ezusb.h"
 #include "ezusb/util.h"
-
-#include "util/log.h"
 
 static int info()
 {
@@ -103,7 +107,10 @@ int main(int argc, char **argv)
 
     arg_pos = 1;
 
-    log_to_writer(log_writer_stderr, NULL);
+    core_log_bt_core_api_set();
+
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     if (!strcmp(argv[arg_pos], "info")) {
         return info();

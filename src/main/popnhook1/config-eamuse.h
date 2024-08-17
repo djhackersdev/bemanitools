@@ -1,21 +1,20 @@
 #ifndef POPNHOOK1_CONFIG_EAMUSE_H
 #define POPNHOOK1_CONFIG_EAMUSE_H
 
-#include "cconfig/cconfig.h"
+#include "api/core/config.h"
 
 #include "security/id.h"
 
 #include "util/net.h"
 
-struct popnhook1_config_eamuse {
+typedef struct popnhook1_config_eamuse {
     struct net_addr server;
     struct security_id pcbid;
     struct security_id eamid;
-};
-
-void popnhook1_config_eamuse_init(struct cconfig *config);
+} popnhook1_config_eamuse_t;
 
 void popnhook1_config_eamuse_get(
-    struct popnhook1_config_eamuse *config_eamuse, struct cconfig *config);
+    const bt_core_config_t *config,
+    popnhook1_config_eamuse_t *config_out);
 
 #endif

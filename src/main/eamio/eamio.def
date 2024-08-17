@@ -1,12 +1,17 @@
 LIBRARY eamio
 
 EXPORTS
-    eam_io_fini
-    eam_io_init
-    eam_io_get_config_api
-    eam_io_get_keypad_state
-    eam_io_get_sensor_state
-    eam_io_read_card
-    eam_io_card_slot_cmd
-    eam_io_set_loggers
-    eam_io_poll
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_core_thread_api_set
+    bt_module_io_eam_api_get
+
+    ; Direct API
+    bt_io_eam_init
+    bt_io_eam_fini
+    bt_io_eam_keypad_state_get
+    bt_io_eam_sensor_state_get
+    bt_io_eam_card_read
+    bt_io_eam_card_slot_cmd_send
+    bt_io_eam_poll
+    bt_io_eam_config_api_get

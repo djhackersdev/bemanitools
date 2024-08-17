@@ -1,11 +1,12 @@
 #ifndef VIGEM_IIDXIO_CONFIG_H
 #define VIGEM_IIDXIO_CONFIG_H
 
-#include <windows.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "cconfig/cconfig.h"
+#include "api/core/config.h"
 
-struct vigem_iidxio_config {
+typedef struct vigem_iidxio_config {
     struct tt {
         struct analog {
             bool relative;
@@ -26,8 +27,8 @@ struct vigem_iidxio_config {
         char text_16seg[1024 + 1];
         int32_t text_scroll_cycle_time_ms;
     } cab_light;
-};
+} vigem_iidxio_config_t;
 
-bool vigem_iidxio_config_get(struct vigem_iidxio_config *config_out);
+void vigem_iidxio_config_get(const bt_core_config_t *config, vigem_iidxio_config_t *config_out);
 
 #endif

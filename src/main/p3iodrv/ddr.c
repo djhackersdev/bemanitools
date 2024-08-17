@@ -1,8 +1,8 @@
 #define LOG_MODULE "p3iodrv-ddr"
 
-#include "p3io/cmd.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "p3io/cmd.h"
 
 #include "ddr.h"
 #include "device.h"

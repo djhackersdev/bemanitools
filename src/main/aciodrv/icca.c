@@ -5,7 +5,7 @@
 #include "aciodrv/device.h"
 #include "aciodrv/icca.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 static bool aciodrv_icca_queue_loop_start(
     struct aciodrv_device_ctx *device, uint8_t node_id)

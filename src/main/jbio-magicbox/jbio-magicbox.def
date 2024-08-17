@@ -1,13 +1,17 @@
 LIBRARY jbio
 
 EXPORTS
-    jb_io_fini
-    jb_io_get_panel_inputs
-    jb_io_get_sys_inputs
-    jb_io_init
-    jb_io_read_inputs
-    jb_io_set_loggers
-    jb_io_set_rgb_led
-    jb_io_set_coin_blocker
-    jb_io_set_panel_mode
-    jb_io_write_lights
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_io_jb_api_get
+
+    ; Direct API
+    bt_io_jb_init
+    bt_io_jb_fini
+    bt_io_jb_inputs_read
+    bt_io_jb_sys_inputs_get
+    bt_io_jb_panel_inputs_get
+    bt_io_jb_rgb_led_set
+    bt_io_jb_lights_write
+    bt_io_jb_panel_mode_set
+    bt_io_jb_coin_blocker_set

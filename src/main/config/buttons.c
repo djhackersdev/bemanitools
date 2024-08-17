@@ -15,11 +15,12 @@
 #include "config/schema.h"
 #include "config/usages.h"
 
+#include "iface-core/log.h"
+
 #include "geninput/input-config.h"
 #include "geninput/mapper.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/winres.h"
 

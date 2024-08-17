@@ -2,9 +2,6 @@
 
 #include <stdbool.h>
 
-#include "bemanitools/ddrio.h"
-#include "bemanitools/eamio.h"
-
 #include "ddrhook-util/_com4.h"
 #include "ddrhook-util/extio.h"
 #include "ddrhook-util/gfx.h"
@@ -16,24 +13,54 @@
 
 #include "hook/iohook.h"
 
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 
-#include "imports/avs.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/ddr.h"
+#include "iface-io/eam.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
 
 #include "p3ioemu/emu.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
+
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
-
-static bool my_dll_entry_init(char *sidcode, struct property_node *param);
-static bool my_dll_entry_main(void);
 
 bool standard_def;
 bool _15khz;
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static module_io_t *_ddrhook2_module_io_ddr;
+static module_io_t *_ddrhook2_module_io_eam;
+
+static void _ddrhook2_io_ddr_init(module_io_t **module)
+{
+    bt_io_ddr_api_t api;
+
+    module_io_ext_load_and_init(
+        "ddrio.dll", "bt_module_io_ddr_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_ddr_api_set(&api);
+}
+
+static void _ddrhook2_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
+
+static bool
+_ddrhook2_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     int argc;
     char **argv;
@@ -119,10 +146,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("Initializing DDR IO backend");
 
-    ddr_io_set_loggers(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+    _ddrhook2_io_ddr_init(&_ddrhook2_module_io_ddr);
 
-    ok = ddr_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+    ok = bt_io_ddr_init();
 
     if (!ok) {
         return false;
@@ -131,11 +157,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (com4) {
         log_info("Initializing card reader backend");
 
-        eam_io_set_loggers(
-            log_body_misc, log_body_info, log_body_warning, log_body_fatal);
+        _ddrhook2_io_eam_init(&_ddrhook2_module_io_eam);
 
-        ok =
-            eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        ok = bt_io_eam_init();
 
         if (!ok) {
             return false;
@@ -144,41 +168,47 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("--- End ddrhook dll_entry_init ---");
 
-    return app_hook_invoke_init(sidcode, param);
+    return true;
 }
 
-static bool my_dll_entry_main(void)
+static void _ddrhook2_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
     log_misc("Shutting down card reader backend");
-    eam_io_fini();
+    bt_io_eam_fini();
+    bt_io_eam_api_clear();
+    module_io_free(&_ddrhook2_module_io_eam);
 
     log_misc("Shutting down DDR IO backend");
-    ddr_io_fini();
+    bt_io_ddr_fini();
+    bt_io_ddr_api_clear();
+    module_io_free(&_ddrhook2_module_io_ddr);
 
     com4_fini();
     spike_fini();
     usbmem_fini();
     extio_fini();
     p3io_emu_fini();
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _ddrhook2_main_init;
+    api->v1.main_fini = _ddrhook2_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        goto end;
-    }
-
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-end:
     return TRUE;
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<jbio-h44b>
+  <!-- H44B serial port -->
+  <port __type="str">COM2</port>
+  <!-- H44B bus baudrate (real devices expect 57600) -->
+  <baud __type="s32">57600</baud>
+</jbio-h44b>

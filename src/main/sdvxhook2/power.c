@@ -13,9 +13,9 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "sdvxhook2/power.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "sdvxhook2/power.h"
 
 static DWORD
 my_PowerSetActiveScheme(HKEY UserRootPowerKey, const GUID *SchemeGuid);

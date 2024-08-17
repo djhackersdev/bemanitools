@@ -1,76 +1,12 @@
-#include "cconfig/cconfig-util.h"
+#include "core/config-ext.h"
 
 #include "iidxhook-util/config-misc.h"
 
-#include "util/log.h"
-
-#define IIDXHOOK_CONFIG_MISC_DISABLE_CLOCK_SET_KEY "misc.disable_clock_set"
-#define IIDXHOOK_CONFIG_MISC_RTEFFECT_STUB_KEY "misc.rteffect_stub"
-#define IIDXHOOK_CONFIG_MISC_SETTINGS_PATH_STUB_KEY "misc.settings_path"
-
-#define IIDXHOOK_CONFIG_MISC_DEFAULT_DISABLE_CLOCK_SET_VALUE false
-#define IIDXHOOK_CONFIG_MISC_DEFAULT_RTEFFECT_STUB_VALUE false
-#define IIDXHOOK_CONFIG_MISC_DEFAULT_SETTINGS_PATH_STUB_VALUE ".\\"
-
-void iidxhook_config_misc_init(struct cconfig *config)
+void iidxhook_util_config_misc_get(
+    const bt_core_config_t *config,
+    iidxhook_config_misc_t *config_misc)
 {
-    cconfig_util_set_bool(
-        config,
-        IIDXHOOK_CONFIG_MISC_DISABLE_CLOCK_SET_KEY,
-        IIDXHOOK_CONFIG_MISC_DEFAULT_DISABLE_CLOCK_SET_VALUE,
-        "Disable operator clock setting system clock time");
-
-    cconfig_util_set_bool(
-        config,
-        IIDXHOOK_CONFIG_MISC_RTEFFECT_STUB_KEY,
-        IIDXHOOK_CONFIG_MISC_DEFAULT_RTEFFECT_STUB_VALUE,
-        "Stub calls to rteffect.dll (10th to DistorteD)");
-
-    cconfig_util_set_str(
-        config,
-        IIDXHOOK_CONFIG_MISC_SETTINGS_PATH_STUB_KEY,
-        IIDXHOOK_CONFIG_MISC_DEFAULT_SETTINGS_PATH_STUB_VALUE,
-        "Path to store the settings, e.g. bookkeeping, operator settings. d:, "
-        "e: and f: drive configuration/settings data");
-}
-
-void iidxhook_config_misc_get(
-    struct iidxhook_config_misc *config_misc, struct cconfig *config)
-{
-    if (!cconfig_util_get_bool(
-            config,
-            IIDXHOOK_CONFIG_MISC_DISABLE_CLOCK_SET_KEY,
-            &config_misc->disable_clock_set,
-            IIDXHOOK_CONFIG_MISC_DEFAULT_DISABLE_CLOCK_SET_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
-            IIDXHOOK_CONFIG_MISC_DISABLE_CLOCK_SET_KEY,
-            IIDXHOOK_CONFIG_MISC_DEFAULT_DISABLE_CLOCK_SET_VALUE);
-    }
-
-    if (!cconfig_util_get_bool(
-            config,
-            IIDXHOOK_CONFIG_MISC_RTEFFECT_STUB_KEY,
-            &config_misc->rteffect_stub,
-            IIDXHOOK_CONFIG_MISC_DEFAULT_RTEFFECT_STUB_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
-            IIDXHOOK_CONFIG_MISC_RTEFFECT_STUB_KEY,
-            IIDXHOOK_CONFIG_MISC_DEFAULT_RTEFFECT_STUB_VALUE);
-    }
-
-    if (!cconfig_util_get_str(
-            config,
-            IIDXHOOK_CONFIG_MISC_SETTINGS_PATH_STUB_KEY,
-            config_misc->settings_path,
-            sizeof(config_misc->settings_path),
-            IIDXHOOK_CONFIG_MISC_DEFAULT_SETTINGS_PATH_STUB_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%s'",
-            IIDXHOOK_CONFIG_MISC_SETTINGS_PATH_STUB_KEY,
-            IIDXHOOK_CONFIG_MISC_DEFAULT_SETTINGS_PATH_STUB_VALUE);
-    }
+    bt_core_config_ext_bool_get(config, "misc/disable_clock_set", &config_misc->disable_clock_set);
+    bt_core_config_ext_bool_get(config, "misc/rteffect_stub", &config_misc->rteffect_stub);
+    bt_core_config_ext_str_get(config, "misc/settings_path", config_misc->settings_path, sizeof(config_misc->settings_path));
 }

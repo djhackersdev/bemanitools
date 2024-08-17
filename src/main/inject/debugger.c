@@ -8,22 +8,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "inject/debugger.h"
-#include "inject/logger.h"
+#include "core/log-bt.h"
+#include "core/log-ext.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
+#include "inject/debugger.h"
+
+#include "util/debug.h"
 #include "util/mem.h"
 #include "util/proc.h"
-#include "util/signal.h"
 #include "util/str.h"
 
 #define MM_ALLOCATION_GRANULARITY 0x10000
 
 struct debugger_thread_params {
     const char *app_name;
-    char *cmd_line;
-    bool local_debugger;
+    const char *cmd_line;
 };
+
+static debugger_attach_type_t debugger_attach_type;
 
 static HANDLE debugger_thread_handle;
 static HANDLE debugger_ready_event;
@@ -132,7 +136,7 @@ read_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
         free(str);
 
         log_warning(
-            "ERROR: ReadProcessMemory for debug string failed: %08x",
+            "ReadProcessMemory for debug string failed: %08x",
             (unsigned int) GetLastError());
         str = NULL;
     }
@@ -158,12 +162,12 @@ read_debug_wstr(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
         if (wstr_narrow(wstr, &str)) {
             str[odsi->nDebugStringLength - 1] = '\0';
         } else {
-            log_warning("ERROR: OutputDebugStringW: UTF-16 conversion failed");
+            log_warning("OutputDebugStringW: UTF-16 conversion failed");
             str = NULL;
         }
     } else {
         log_warning(
-            "ERROR: ReadProcessMemory for debug string failed: %08x",
+            "ReadProcessMemory for debug string failed: %08x",
             (unsigned int) GetLastError());
         str = NULL;
     }
@@ -178,6 +182,7 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     log_assert(odsi);
 
     char *debug_str;
+    size_t debug_str_len;
 
     if (odsi->fUnicode) {
         debug_str = read_debug_wstr(process, odsi);
@@ -186,7 +191,15 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     }
 
     if (debug_str) {
-        logger_log(debug_str);
+        debug_str_len = strlen(debug_str);
+
+        // Important performance remark: If any sink in the chain has costly
+        // IO (e.g. blocking) or synchronization that can lead to blocking
+        // the caller here, the performance penalty propagates all the way up
+        // to the thread calling OutputDebugStr. This can lead to various
+        // symptoms such as stuttering or slowdowns in a game loop to laggy
+        // IO or music de-sync (depending on how logging is applied)
+        core_log_bt_direct_sink_write(debug_str, debug_str_len);
 
         free(debug_str);
         return true;
@@ -195,9 +208,10 @@ static bool log_debug_str(HANDLE process, const OUTPUT_DEBUG_STRING_INFO *odsi)
     }
 }
 
-static bool debugger_create_process(
-    bool local_debugger, const char *app_name, char *cmd_line)
+static bool debugger_create_process(const char *app_name, const char *cmd_line)
 {
+    char cmd_line_cpy[8192];
+
     log_assert(app_name);
     log_assert(cmd_line);
 
@@ -211,42 +225,44 @@ static bool debugger_create_process(
     flags = 0;
 
     // CREATE_SUSPENDED that we have plenty of time to set up the debugger and
-    // theemote process environment with hook dlls.
+    // the remote process environment with hook dlls.
     flags |= CREATE_SUSPENDED;
 
-    if (local_debugger) {
+    if (debugger_attach_type == DEBUGGER_ATTACH_TYPE_INJECT) {
         // DEBUG_PROCESS is required to make this work properly. Otherwise,
         // weird things like random remote process crashing are happening. Also,
         // DEBUG_ONLY_THIS_PROCESS is NOT sufficient/ correct here. Maybe I
         // didn't understand the documentation properly or it and various blog
         // posts I read are not explaining things well enough or are even wrong.
         flags |= DEBUG_PROCESS;
+
+        log_info("Local debugger enabled");
+    } else {
+        log_info("Local debugger disabled, no log output from remote process");
     }
 
     log_misc("Creating remote process %s...", app_name);
     log_misc("Remote process cmd_line: %s", cmd_line);
 
+    str_cpy(cmd_line_cpy, sizeof(cmd_line_cpy), cmd_line);
+
     ok = CreateProcess(
-        app_name, cmd_line, NULL, NULL, FALSE, flags, NULL, NULL, &si, &pi);
+        app_name, cmd_line_cpy, NULL, NULL, FALSE, flags, NULL, NULL, &si, &pi);
 
     if (!ok) {
         log_warning(
-            "ERROR: Failed to launch hooked EXE: %08x",
+            "Failed to launch hooked EXE: %08x",
             (unsigned int) GetLastError());
-
-        free(cmd_line);
 
         return false;
     }
-
-    free(cmd_line);
 
     log_info("Remote process created, pid: %ld", pi.dwProcessId);
 
     return true;
 }
 
-static uint32_t debugger_loop()
+static uint32_t _debugger_thread_loop()
 {
     DEBUG_EVENT de;
     DWORD continue_status;
@@ -257,7 +273,7 @@ static uint32_t debugger_loop()
     for (;;) {
         if (!WaitForDebugEvent(&de, INFINITE)) {
             log_warning(
-                "ERROR: WaitForDebugEvent failed: %08x",
+                "WaitForDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
             return 1;
         }
@@ -271,7 +287,7 @@ static uint32_t debugger_loop()
                     "EXCEPTION_DEBUG_EVENT(pid %ld, tid %ld): x%s 0x%p",
                     de.dwProcessId,
                     de.dwThreadId,
-                    signal_exception_code_to_str(
+                    debug_exception_code_to_str(
                         de.u.Exception.ExceptionRecord.ExceptionCode),
                     de.u.Exception.ExceptionRecord.ExceptionAddress);
 
@@ -376,14 +392,14 @@ static uint32_t debugger_loop()
         if (!ContinueDebugEvent(
                 de.dwProcessId, de.dwThreadId, continue_status)) {
             log_warning(
-                "ERROR: ContinueDebugEvent failed: %08x",
+                "ContinueDebugEvent failed: %08x",
                 (unsigned int) GetLastError());
             return 1;
         }
     }
 }
 
-static DWORD WINAPI debugger_proc(LPVOID param)
+static DWORD WINAPI _debugger_thread_proc(LPVOID param)
 {
     uint32_t debugger_loop_exit_code;
 
@@ -391,11 +407,9 @@ static DWORD WINAPI debugger_proc(LPVOID param)
 
     params = (struct debugger_thread_params *) param;
 
-    log_misc(
-        "Debugger thread start (local debugger: %d)", params->local_debugger);
+    log_misc("Debugger thread start");
 
-    if (!debugger_create_process(
-            params->local_debugger, params->app_name, params->cmd_line)) {
+    if (!debugger_create_process(params->app_name, params->cmd_line)) {
         return 0;
     }
 
@@ -403,8 +417,8 @@ static DWORD WINAPI debugger_proc(LPVOID param)
 
     // Don't run our local debugger loop if the user wants to attach a remote
     // debugger or debugger is disabled
-    if (params->local_debugger) {
-        debugger_loop_exit_code = debugger_loop();
+    if (debugger_attach_type == DEBUGGER_ATTACH_TYPE_INJECT) {
+        debugger_loop_exit_code = _debugger_thread_loop();
 
         free(params);
 
@@ -424,49 +438,7 @@ static DWORD WINAPI debugger_proc(LPVOID param)
     }
 }
 
-bool debugger_init(bool local_debugger, const char *app_name, char *cmd_line)
-{
-    struct debugger_thread_params *thread_params;
-
-    debugger_ready_event = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-    if (!debugger_ready_event) {
-        free(cmd_line);
-
-        log_warning(
-            "ERROR: Creating event object failed: %08x",
-            (unsigned int) GetLastError());
-        return false;
-    }
-
-    // free'd by thread if created successfully
-    thread_params = xmalloc(sizeof(struct debugger_thread_params));
-
-    thread_params->app_name = app_name;
-    thread_params->cmd_line = cmd_line;
-    thread_params->local_debugger = local_debugger;
-
-    debugger_thread_handle =
-        CreateThread(NULL, 0, debugger_proc, thread_params, 0, 0);
-
-    if (!debugger_thread_handle) {
-        free(cmd_line);
-        free(thread_params);
-
-        log_warning(
-            "ERROR: Creating debugger thread failed: %08x",
-            (unsigned int) GetLastError());
-        return false;
-    }
-
-    WaitForSingleObject(debugger_ready_event, INFINITE);
-
-    log_misc("Debugger initialized");
-
-    return true;
-}
-
-bool debugger_wait_for_remote_debugger()
+void _debugger_wait_for_remote_debugger()
 {
     BOOL res;
 
@@ -476,10 +448,10 @@ bool debugger_wait_for_remote_debugger()
         res = FALSE;
 
         if (!CheckRemoteDebuggerPresent(pi.hProcess, &res)) {
-            log_warning(
-                "ERROR: CheckRemoteDebuggerPresent failed: %08x",
+            log_fatal(
+                "CheckRemoteDebuggerPresent failed: %08x",
                 (unsigned int) GetLastError());
-            return false;
+            return;
         }
 
         if (res) {
@@ -489,8 +461,72 @@ bool debugger_wait_for_remote_debugger()
 
         Sleep(1000);
     }
+}
 
-    return true;
+void _debugger_resume_process()
+{
+    log_info("Resuming remote process...");
+
+    if (ResumeThread(pi.hThread) == -1) {
+        log_fatal(
+            "Resuming remote process failed: %08x",
+            (unsigned int) GetLastError());
+    }
+
+    CloseHandle(pi.hThread);
+}
+
+void _debugger_wait_process_exit()
+{
+    log_misc("Waiting for remote process to exit...");
+
+    // Wait for the process as we might have a remote debugger attached, so our
+    // debugger thread exits after creating the process
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    // When the process exits, the debugger gets notified and the thread ends
+    WaitForSingleObject(debugger_thread_handle, INFINITE);
+
+    log_misc("Remote process exit'd");
+}
+
+void debugger_init(debugger_attach_type_t attach_type, const char *app_name, const char *cmd_line)
+{
+    struct debugger_thread_params *thread_params;
+
+    log_assert(app_name);
+    log_assert(cmd_line);
+
+    debugger_attach_type = attach_type;
+
+    debugger_ready_event = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+    if (!debugger_ready_event) {
+        log_fatal(
+            "Creating event object failed: %08x",
+            (unsigned int) GetLastError());
+    }
+
+    // free'd by thread if created successfully
+    thread_params = xmalloc(sizeof(struct debugger_thread_params));
+
+    thread_params->app_name = app_name;
+    thread_params->cmd_line = cmd_line;
+
+    debugger_thread_handle =
+        CreateThread(NULL, 0, _debugger_thread_proc, thread_params, 0, 0);
+
+    if (!debugger_thread_handle) {
+        free(thread_params);
+
+        log_fatal(
+            "Creating debugger thread failed: %08x",
+            (unsigned int) GetLastError());
+    }
+
+    WaitForSingleObject(debugger_ready_event, INFINITE);
+
+    log_misc("Initialized, attach type: %d", debugger_attach_type);
 }
 
 bool debugger_inject_dll(const char *path_dll)
@@ -508,6 +544,10 @@ bool debugger_inject_dll(const char *path_dll)
     dll_path_length =
         SearchPath(NULL, path_dll, NULL, MAX_PATH, dll_path, NULL);
 
+    if (dll_path_length == 0) {
+        log_fatal_on_win_last_error("Determining path for dll %s failed", path_dll);
+    }
+
     dll_path_length++;
 
     remote_addr = VirtualAllocEx(
@@ -519,7 +559,7 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (!remote_addr) {
         log_warning(
-            "ERROR: VirtualAllocEx failed: %08x",
+            "VirtualAllocEx failed: %08x",
             (unsigned int) GetLastError());
 
         goto alloc_fail;
@@ -530,7 +570,7 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (!ok) {
         log_warning(
-            "ERROR: WriteProcessMemory failed: %08x",
+            "WriteProcessMemory failed: %08x",
             (unsigned int) GetLastError());
 
         goto write_fail;
@@ -547,7 +587,7 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (remote_thread == NULL) {
         log_warning(
-            "ERROR: CreateRemoteThread failed: %08x",
+            "CreateRemoteThread failed: %08x",
             (unsigned int) GetLastError());
 
         goto inject_fail;
@@ -561,8 +601,10 @@ bool debugger_inject_dll(const char *path_dll)
 
     if (!ok) {
         log_warning(
-            "ERROR: VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
+            "VirtualFreeEx failed: %08x", (unsigned int) GetLastError());
     }
+
+    log_misc("Injecting success: %s", path_dll);
 
     return true;
 
@@ -746,34 +788,19 @@ inject_fail:
     return false;
 }
 
-bool debugger_resume_process()
+void debugger_run()
 {
-    log_info("Resuming remote process...");
-
-    if (ResumeThread(pi.hThread) == -1) {
-        log_warning(
-            "ERROR: Resuming remote process: %08x",
-            (unsigned int) GetLastError());
-        return false;
+    // Execute this after injecting the DLLs. Some debuggers seem to crash if we
+    // attach the process before DLL injection (inject's local one doesn't
+    // crash). However, this means the remote debugger is missing out on all
+    // injected DLL loads, e.g. calls to DllMain
+    if (debugger_attach_type == DEBUGGER_ATTACH_TYPE_EXTERNAL) {
+        _debugger_wait_for_remote_debugger();
     }
 
-    CloseHandle(pi.hThread);
+    _debugger_resume_process();
 
-    return true;
-}
-
-void debugger_wait_process_exit()
-{
-    log_misc("Waiting for remote process to exit...");
-
-    // Wait for the process as we might have a remote debugger attached, so our
-    // debugger thread exits after creating the process
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    // When the process exits, the debugger gets notified and the thread ends
-    WaitForSingleObject(debugger_thread_handle, INFINITE);
-
-    log_misc("Remote process exit'd");
+    _debugger_wait_process_exit();
 }
 
 void debugger_finit(bool failure)

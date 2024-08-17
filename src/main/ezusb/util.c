@@ -3,9 +3,10 @@
 
 #include "ezusb/util.h"
 
+#include "iface-core/log.h"
+
 #include "util/crc.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct ezusb_firmware *ezusb_firmware_load(const char *file)

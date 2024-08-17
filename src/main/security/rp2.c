@@ -1,11 +1,12 @@
 #include <string.h>
 
+#include "iface-core/log.h"
+
 #include "security/rp-util.h"
 #include "security/rp2.h"
 #include "security/util.h"
 
 #include "util/crypto.h"
-#include "util/log.h"
 
 static uint8_t security_rp2_signature_scramble_table[16] = {
     0x0C,

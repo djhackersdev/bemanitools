@@ -9,8 +9,9 @@
 #include "hook/pe.h"
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 
 static HRESULT STDCALL my_DirectInput8Create(
     HINSTANCE hinst,

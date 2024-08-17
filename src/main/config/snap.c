@@ -8,8 +8,9 @@
 
 #include "geninput/hid-mgr.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 enum snap_control_heuristic { CONTROL_CENTERING_AXIS, CONTROL_MULTISWITCH };

@@ -3,13 +3,19 @@ avsdlls			+= sdvxhook
 deplibs_sdvxhook	:= \
 	avs \
 
+avslibs_sdvxhook := \
+    avs-ext \
+
 libs_sdvxhook		:= \
+	core \
 	acioemu \
 	hook \
 	hooklib \
 	util \
-	eamio \
-	sdvxio \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_sdvxhook		:= \
 	acio.c \

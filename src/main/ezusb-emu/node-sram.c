@@ -6,8 +6,9 @@
 #include "ezusb-emu/node-sram.h"
 #include "ezusb-iidx/sram-cmd.h"
 
+#include "iface-core/log.h"
+
 #include "util/fs.h"
-#include "util/log.h"
 
 #define SRAM_NPAGES 12
 

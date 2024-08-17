@@ -4,10 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/popnio.h"
-
-#include "hook/iohook.h"
-
 #include "ezusb-emu/msg.h"
 
 #include "ezusb-emu/node-coin.h"
@@ -18,8 +14,12 @@
 
 #include "ezusb2-popn/msg.h"
 
+#include "hook/iohook.h"
+
+#include "iface-core/log.h"
+#include "iface-io/popn.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 
 /* ------------------------------------------------------------------------ */
 
@@ -89,7 +89,7 @@ static HRESULT ezusb2_popn_emu_msg_interrupt_read(struct iobuf *read)
     msg_resp.coin_count = 0;
     msg_resp.unk4 = 0xfd;
 
-    msg_resp.io.inverted_pad = ~popn_io_get_buttons();
+    msg_resp.io.inverted_pad = ~bt_io_popn_buttons_get();
 
     msg_resp.unk5 = 0x00;
     msg_resp.unk6 = 0x7d;
@@ -137,12 +137,12 @@ static HRESULT ezusb2_popn_emu_msg_interrupt_write(struct const_iobuf *write)
         return E_INVALIDARG;
     }
 
-    popn_io_set_top_lights(msg_req.lamp & 0x1f);
-    popn_io_set_side_lights((msg_req.lamp >> 8) & 0xf);
-    popn_io_set_button_lights((msg_req.lamp >> 20) & 0xfff);
-    popn_io_set_coin_counter_light(
+    bt_io_popn_top_lights_set(msg_req.lamp & 0x1f);
+    bt_io_popn_side_lights_set((msg_req.lamp >> 8) & 0xf);
+    bt_io_popn_button_lights_set((msg_req.lamp >> 20) & 0xfff);
+    bt_io_popn_coin_counter_light_set(
         ((msg_req.lamp >> 12) & 0xf) == 0); // Active low
-    popn_io_set_coin_blocker_light(((msg_req.lamp >> 16) & 0xf) == 0xf);
+    bt_io_popn_coin_blocker_light_set(((msg_req.lamp >> 16) & 0xf) == 0xf);
 
     /* Remember node for next bulk read */
 

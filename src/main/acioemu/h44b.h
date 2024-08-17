@@ -6,13 +6,13 @@
 
 #include "acioemu/emu.h"
 
+#include "api/io/jb.h"
+
 struct ac_io_emu_h44b {
     struct ac_io_emu *emu;
     uint8_t unit_no;
     // TODO
 };
-
-void acioemu_h44b_init(void);
 
 void ac_io_emu_h44b_init(
     struct ac_io_emu_h44b *h44b, struct ac_io_emu *emu, uint8_t unit_no);

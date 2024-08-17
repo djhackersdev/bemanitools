@@ -8,8 +8,9 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 
 MMRESULT STDCALL hook_mixerGetLineControlsA(
     HMIXEROBJ hmxobj, LPMIXERLINECONTROLSA pmxlc, DWORD fdwControls);

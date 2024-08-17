@@ -6,13 +6,14 @@
 #include <ntdef.h>
 #include <ntstatus.h>
 
+#include "iface-core/log.h"
+
 #include "hook/table.h"
 
 #include "hooklib/acp.h"
 
 #include "util/codepage.h"
 #include "util/defs.h"
-#include "util/log.h"
 
 static NTSTATUS NTAPI my_RtlMultiByteToUnicodeN(
     wchar_t *dest,
@@ -63,5 +64,11 @@ static NTSTATUS NTAPI my_RtlMultiByteToUnicodeN(
 void acp_hook_init(void)
 {
     hook_table_apply(NULL, "ntdll.dll", acp_hook_syms, lengthof(acp_hook_syms));
-    log_info("ACP Hook enabled");
+    log_info("Inserted ACP hook");
+}
+
+void acp_hook_fini()
+{
+    hook_table_revert(NULL, "ntdll.dll", acp_hook_syms, lengthof(acp_hook_syms));
+    log_info("Removed ACP hook");
 }

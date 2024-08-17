@@ -7,16 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bemanitools/eamio.h"
+#include "api/io/eam.h"
 
 #include "eamio/eam-impl.h"
 
 #include "geninput/hid-mgr.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
 #include "util/fs.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 
@@ -25,7 +26,7 @@
 struct eam_unit {
     char *card_path;
     struct hid_stub *hid;
-    size_t keypad_ctls[EAM_IO_KEYPAD_COUNT];
+    size_t keypad_ctls[BT_IO_EAM_KEYPAD_COUNT];
     size_t sensor_ctl;
     bool bound_ctls;
     uint8_t drive_no;
@@ -45,7 +46,7 @@ struct eam {
     bool mux;
 };
 
-static const uint32_t eam_keypad_usages[EAM_IO_KEYPAD_COUNT + 1] = {
+static const uint32_t eam_keypad_usages[BT_IO_EAM_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_0]           = */ 0x00070062,
     /* [EAM_KEYPAD_1]           = */ 0x00070059,
     /* [EAM_KEYPAD_4]           = */ 0x0007005C,
@@ -60,7 +61,7 @@ static const uint32_t eam_keypad_usages[EAM_IO_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_9]           = */ 0x00070061,
     /* Sensor                   = */ 0x00070057};
 
-static const uint32_t eam_keypad_usages_alt[EAM_IO_KEYPAD_COUNT + 1] = {
+static const uint32_t eam_keypad_usages_alt[BT_IO_EAM_KEYPAD_COUNT + 1] = {
     /* [EAM_KEYPAD_0]           = */ 0x00070027,
     /* [EAM_KEYPAD_1]           = */ 0x0007001E,
     /* [EAM_KEYPAD_4]           = */ 0x00070021,
@@ -270,13 +271,13 @@ static void eam_impl_bind_keypad(struct eam *eam, uint8_t unit_no)
     }
 
     for (control_no = 0; control_no < ncontrols; control_no++) {
-        for (btn_no = 0; btn_no < EAM_IO_KEYPAD_COUNT; btn_no++) {
+        for (btn_no = 0; btn_no < BT_IO_EAM_KEYPAD_COUNT; btn_no++) {
             if (controls[control_no].usage == usages[btn_no]) {
                 unit->keypad_ctls[btn_no] = control_no;
             }
         }
 
-        if (controls[control_no].usage == usages[EAM_IO_KEYPAD_COUNT]) {
+        if (controls[control_no].usage == usages[BT_IO_EAM_KEYPAD_COUNT]) {
             unit->sensor_ctl = control_no;
         }
     }
@@ -424,9 +425,9 @@ uint8_t eam_impl_read_card(
     fclose(f);
 
     if (card_id[0] == 0xe0 && card_id[1] == 0x04) {
-        return EAM_IO_CARD_ISO15696;
+        return BT_IO_EAM_READ_CARD_RESULT_ISO15696;
     } else {
-        return EAM_IO_CARD_FELICA;
+        return BT_IO_EAM_READ_CARD_RESULT_FELICA;
     }
 
 decode_fail:
@@ -436,7 +437,7 @@ fgets_fail:
 
 fopen_fail:
 path_fail:
-    return EAM_IO_CARD_NONE;
+    return BT_IO_EAM_READ_CARD_RESULT_NONE;
 }
 
 static bool eam_impl_autogen(struct eam_unit *unit, uint8_t *card_id)

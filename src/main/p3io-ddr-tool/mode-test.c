@@ -5,11 +5,11 @@
 
 #include "extiodrv/extio.h"
 
+#include "iface-core/log.h"
+
 #include "p3io/ddr.h"
 #include "p3iodrv/ddr.h"
 #include "p3iodrv/device.h"
-
-#include "util/log.h"
 
 #include "mode-test.h"
 

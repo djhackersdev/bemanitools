@@ -9,4 +9,6 @@
  */
 void ezusb_mon_hook_init(void);
 
+void ezusb_mon_hook_fini();
+
 #endif

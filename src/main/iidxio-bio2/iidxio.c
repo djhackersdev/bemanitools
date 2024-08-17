@@ -1,6 +1,6 @@
-#include <windows.h>
-
 #define LOG_MODULE "iidxio-bio2"
+
+#include <windows.h>
 
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -8,25 +8,27 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/iidxio.h"
-
-#include "cconfig/cconfig-main.h"
-
 #include "aciodrv/device.h"
+
+#include "api/core/config.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
+
 #include "bio2drv/bi2a-iidx.h"
-#include "bio2drv/config-bio2.h"
+#include "bio2drv/config.h"
 #include "bio2drv/detect.h"
 
-#define log_misc(...) iidx_io_log_misc(LOG_MODULE, __VA_ARGS__)
-#define log_info(...) iidx_io_log_info(LOG_MODULE, __VA_ARGS__)
-#define log_warning(...) iidx_io_log_warning(LOG_MODULE, __VA_ARGS__)
-#define log_fatal(...) iidx_io_log_fatal(LOG_MODULE, __VA_ARGS__)
+#include "iface-core/config.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
-static log_formatter_t iidx_io_log_misc;
-static log_formatter_t iidx_io_log_info;
-static log_formatter_t iidx_io_log_warning;
-static log_formatter_t iidx_io_log_fatal;
+#include "sdk/module/core/config.h"
+#include "sdk/module/configure.h"
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/io/iidx.h"
+
+static bio2drv_config_t _iidxio_bio2_config;
 
 static char autodetect_buffer[512];
 
@@ -39,6 +41,9 @@ static struct bi2a_iidx_state_out pout_staging;
 static struct bi2a_iidx_state_out pout_ready;
 
 static struct aciodrv_device_ctx *bio2_device_ctx;
+
+bool bt_io_iidx_ep1_send(void);
+bool bt_io_iidx_ep2_recv(void);
 
 static bool _bio2_iidx_io_poll(
     const struct bi2a_iidx_state_out *pout, struct bi2a_iidx_state_in *pin)
@@ -58,51 +63,11 @@ static bool _bio2_iidx_io_poll(
     return true;
 }
 
-void iidx_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+bool bt_io_iidx_init()
 {
-    iidx_io_log_misc = misc;
-    iidx_io_log_info = info;
-    iidx_io_log_warning = warning;
-    iidx_io_log_fatal = fatal;
+    const char *selected_port = _iidxio_bio2_config.port;
 
-    bio2drv_set_loggers(misc, info, warning, fatal);
-}
-
-bool iidx_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
-{
-    struct cconfig *config;
-    struct bio2drv_config_bio2 config_bio2;
-
-    config = cconfig_init();
-
-    bio2drv_config_bio2_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--bio2-config",
-            "iidxio-bio2.conf",
-            "--help",
-            "-h",
-            "iidxio-bio2",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    bio2drv_config_bio2_get(&config_bio2, config);
-
-    cconfig_finit(config);
-
-    const char *selected_port = config_bio2.port;
-
-    if (config_bio2.autodetect) {
+    if (_iidxio_bio2_config.autodetect) {
         log_info("Attempting autodetect");
 
         if (bio2drv_detect(
@@ -117,7 +82,7 @@ bool iidx_io_init(
     }
 
     // BIO2's cannot share a bus with anything else, so use device directly
-    bio2_device_ctx = aciodrv_device_open_path(selected_port, config_bio2.baud);
+    bio2_device_ctx = aciodrv_device_open_path(selected_port, _iidxio_bio2_config.baud);
 
     if (bio2_device_ctx == NULL) {
         log_info("Opening BIO2 device on [%s] failed", selected_port);
@@ -169,14 +134,14 @@ bool iidx_io_init(
     return running;
 }
 
-void iidx_io_fini(void)
+void bt_io_iidx_fini(void)
 {
     // Pushing some final state before closing the IO to the actual outputs,
     // e.g. lights on/off can be a bit finicky. Do a few polls to
     // "enforce"/flush this final state
     for (uint8_t i = 0; i < 3; i++) {
-        iidx_io_ep1_send();
-        iidx_io_ep2_recv();
+        bt_io_iidx_ep1_send();
+        bt_io_iidx_ep2_recv();
 
         Sleep(10);
     }
@@ -191,59 +156,59 @@ void iidx_io_fini(void)
     aciodrv_device_close(bio2_device_ctx);
 }
 
-void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
+void bt_io_iidx_ep1_deck_lights_set(uint16_t deck_lights)
 {
     for (uint8_t i = 0; i < sizeof(pout_staging.DECKSW); i++) {
         pout_staging.DECKSW[i].l_state = (deck_lights & (1 << i)) > 0;
     }
 }
 
-void iidx_io_ep1_set_panel_lights(uint8_t panel_lights)
+void bt_io_iidx_ep1_panel_lights_set(uint8_t panel_lights)
 {
     pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P1].l_state =
-        (panel_lights & (1 << IIDX_IO_PANEL_P1_START)) > 0;
+        (panel_lights & (1 << BT_IO_IIDX_PANEL_P1_START)) > 0;
     pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_START_P2].l_state =
-        (panel_lights & (1 << IIDX_IO_PANEL_P2_START)) > 0;
+        (panel_lights & (1 << BT_IO_IIDX_PANEL_P2_START)) > 0;
     pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_VEFX].l_state =
-        (panel_lights & (1 << IIDX_IO_PANEL_VEFX)) > 0;
+        (panel_lights & (1 << BT_IO_IIDX_PANEL_VEFX)) > 0;
     pout_staging.PANEL[BI2A_IIDX_PANEL_BUTTON_EFFECT].l_state =
-        (panel_lights & (1 << IIDX_IO_PANEL_EFFECT)) > 0;
+        (panel_lights & (1 << BT_IO_IIDX_PANEL_EFFECT)) > 0;
 }
 
-void iidx_io_ep1_set_top_lamps(uint8_t top_lamps)
+void bt_io_iidx_ep1_top_lamps_set(uint8_t top_lamps)
 {
     pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_RED].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_RED)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_RED)) > 0;
     pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_YELLOW].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_YELLOW)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_YELLOW)) > 0;
     pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_GREEN].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_GREEN)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_GREEN)) > 0;
     pout_staging.SPOTLIGHT1[BI2A_IIDX_SPOTLIGHT_RIGHT_BLUE].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_RIGHT_BLUE)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_RIGHT_BLUE)) > 0;
 
     pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_RED].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_RED)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_LEFT_RED)) > 0;
     pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_YELLOW].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_YELLOW)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_LEFT_YELLOW)) > 0;
     pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_GREEN].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_GREEN)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_LEFT_GREEN)) > 0;
     pout_staging.SPOTLIGHT2[BI2A_IIDX_SPOTLIGHT_LEFT_BLUE].l_state =
-        (top_lamps & (1 << IIDX_IO_TOP_LAMP_LEFT_BLUE)) > 0;
+        (top_lamps & (1 << BT_IO_IIDX_TOP_LAMP_LEFT_BLUE)) > 0;
 }
 
-void iidx_io_ep1_set_top_neons(bool top_neons)
+void bt_io_iidx_ep1_top_neons_set(bool top_neons)
 {
     pout_staging.NEONLAMP.l_state = top_neons;
 }
 
-bool iidx_io_ep1_send(void)
+bool bt_io_iidx_ep1_send(void)
 {
     memcpy(&pout_ready, &pout_staging, sizeof(struct bi2a_iidx_state_out));
 
     return true;
 }
 
-bool iidx_io_ep2_recv(void)
+bool bt_io_iidx_ep2_recv(void)
 {
     if (!_bio2_iidx_io_poll(&pout_ready, &pin_cur)) {
         return false;
@@ -252,7 +217,7 @@ bool iidx_io_ep2_recv(void)
     return true;
 }
 
-uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
+uint8_t bt_io_iidx_ep2_turntable_get(uint8_t player_no)
 {
     switch (player_no) {
         case 0:
@@ -264,7 +229,7 @@ uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
     }
 }
 
-uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
+uint8_t bt_io_iidx_ep2_slider_get(uint8_t slider_no)
 {
     switch (slider_no) {
         case 0:
@@ -282,80 +247,122 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
     }
 }
 
-uint8_t iidx_io_ep2_get_sys(void)
+uint8_t bt_io_iidx_ep2_sys_get(void)
 {
     uint8_t state;
 
     state = 0;
 
     if (pin_cur.SYSTEM.v_test) {
-        state |= (1 << IIDX_IO_SYS_TEST);
+        state |= (1 << BT_IO_IIDX_SYS_TEST);
     }
 
     if (pin_cur.SYSTEM.v_service) {
-        state |= (1 << IIDX_IO_SYS_SERVICE);
+        state |= (1 << BT_IO_IIDX_SYS_SERVICE);
     }
 
     if (pin_cur.SYSTEM.v_coin) {
-        state |= (1 << IIDX_IO_SYS_COIN);
+        state |= (1 << BT_IO_IIDX_SYS_COIN);
     }
 
     return state;
 }
 
-uint8_t iidx_io_ep2_get_panel(void)
+uint8_t bt_io_iidx_ep2_panel_get(void)
 {
     uint8_t state;
 
     state = 0;
 
     if (pin_cur.PANEL.y_start1) {
-        state |= (1 << IIDX_IO_PANEL_P1_START);
+        state |= (1 << BT_IO_IIDX_PANEL_P1_START);
     }
 
     if (pin_cur.PANEL.y_start2) {
-        state |= (1 << IIDX_IO_PANEL_P2_START);
+        state |= (1 << BT_IO_IIDX_PANEL_P2_START);
     }
 
     if (pin_cur.PANEL.y_vefx) {
-        state |= (1 << IIDX_IO_PANEL_VEFX);
+        state |= (1 << BT_IO_IIDX_PANEL_VEFX);
     }
 
     if (pin_cur.PANEL.y_effect) {
-        state |= (1 << IIDX_IO_PANEL_EFFECT);
+        state |= (1 << BT_IO_IIDX_PANEL_EFFECT);
     }
 
     return state;
 }
 
-uint16_t iidx_io_ep2_get_keys(void)
+uint16_t bt_io_iidx_ep2_keys_get(void)
 {
     uint16_t state;
 
     state = 0;
 
-    state |= ((pin_cur.P1SW1.b_val > 0) << IIDX_IO_KEY_P1_1);
-    state |= ((pin_cur.P1SW2.b_val > 0) << IIDX_IO_KEY_P1_2);
-    state |= ((pin_cur.P1SW3.b_val > 0) << IIDX_IO_KEY_P1_3);
-    state |= ((pin_cur.P1SW4.b_val > 0) << IIDX_IO_KEY_P1_4);
-    state |= ((pin_cur.P1SW5.b_val > 0) << IIDX_IO_KEY_P1_5);
-    state |= ((pin_cur.P1SW6.b_val > 0) << IIDX_IO_KEY_P1_6);
-    state |= ((pin_cur.P1SW7.b_val > 0) << IIDX_IO_KEY_P1_7);
+    state |= ((pin_cur.P1SW1.b_val > 0) << BT_IO_IIDX_KEY_P1_1);
+    state |= ((pin_cur.P1SW2.b_val > 0) << BT_IO_IIDX_KEY_P1_2);
+    state |= ((pin_cur.P1SW3.b_val > 0) << BT_IO_IIDX_KEY_P1_3);
+    state |= ((pin_cur.P1SW4.b_val > 0) << BT_IO_IIDX_KEY_P1_4);
+    state |= ((pin_cur.P1SW5.b_val > 0) << BT_IO_IIDX_KEY_P1_5);
+    state |= ((pin_cur.P1SW6.b_val > 0) << BT_IO_IIDX_KEY_P1_6);
+    state |= ((pin_cur.P1SW7.b_val > 0) << BT_IO_IIDX_KEY_P1_7);
 
-    state |= ((pin_cur.P2SW1.b_val > 0) << IIDX_IO_KEY_P2_1);
-    state |= ((pin_cur.P2SW2.b_val > 0) << IIDX_IO_KEY_P2_2);
-    state |= ((pin_cur.P2SW3.b_val > 0) << IIDX_IO_KEY_P2_3);
-    state |= ((pin_cur.P2SW4.b_val > 0) << IIDX_IO_KEY_P2_4);
-    state |= ((pin_cur.P2SW5.b_val > 0) << IIDX_IO_KEY_P2_5);
-    state |= ((pin_cur.P2SW6.b_val > 0) << IIDX_IO_KEY_P2_6);
-    state |= ((pin_cur.P2SW7.b_val > 0) << IIDX_IO_KEY_P2_7);
+    state |= ((pin_cur.P2SW1.b_val > 0) << BT_IO_IIDX_KEY_P2_1);
+    state |= ((pin_cur.P2SW2.b_val > 0) << BT_IO_IIDX_KEY_P2_2);
+    state |= ((pin_cur.P2SW3.b_val > 0) << BT_IO_IIDX_KEY_P2_3);
+    state |= ((pin_cur.P2SW4.b_val > 0) << BT_IO_IIDX_KEY_P2_4);
+    state |= ((pin_cur.P2SW5.b_val > 0) << BT_IO_IIDX_KEY_P2_5);
+    state |= ((pin_cur.P2SW6.b_val > 0) << BT_IO_IIDX_KEY_P2_6);
+    state |= ((pin_cur.P2SW7.b_val > 0) << BT_IO_IIDX_KEY_P2_7);
 
     return state;
 }
 
-bool iidx_io_ep3_write_16seg(const char *text)
+bool bt_io_iidx_ep3_16seg_send(const char *text)
 {
     memcpy(pout_staging.SEG16, text, sizeof(pout_staging.SEG16));
 
     return true;
+}
+
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    bio2drv_config_bio2_get(config, &_iidxio_bio2_config);
+
+    return true;
+}
+
+void bt_module_io_iidx_api_get(bt_io_iidx_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_iidx_init;
+    api->v1.fini = bt_io_iidx_fini;
+    api->v1.ep1_deck_lights_set = bt_io_iidx_ep1_deck_lights_set;
+    api->v1.ep1_panel_lights_set = bt_io_iidx_ep1_panel_lights_set;
+    api->v1.ep1_top_lamps_set = bt_io_iidx_ep1_top_lamps_set;
+    api->v1.ep1_top_neons_set = bt_io_iidx_ep1_top_neons_set;
+    api->v1.ep1_send = bt_io_iidx_ep1_send;
+    api->v1.ep2_recv = bt_io_iidx_ep2_recv;
+    api->v1.ep2_turntable_get = bt_io_iidx_ep2_turntable_get;
+    api->v1.ep2_slider_get = bt_io_iidx_ep2_slider_get;
+    api->v1.ep2_sys_get = bt_io_iidx_ep2_sys_get;
+    api->v1.ep2_panel_get = bt_io_iidx_ep2_panel_get;
+    api->v1.ep2_keys_get = bt_io_iidx_ep2_keys_get;
+    api->v1.ep3_16seg_send = bt_io_iidx_ep3_16seg_send;
 }

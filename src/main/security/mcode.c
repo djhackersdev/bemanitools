@@ -1,8 +1,9 @@
 #include <string.h>
 
+#include "iface-core/log.h"
+
 #include "security/mcode.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 const struct security_mcode security_mcode_eamuse = {

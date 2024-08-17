@@ -1,7 +1,11 @@
 dlls		+= ddrio
 
 libs_ddrio	:= \
-	geninput \
+	module \
+	iface-core \
+	core \
+	iface \
+	util \
 
 src_ddrio	:= \
 	ddrio.c \

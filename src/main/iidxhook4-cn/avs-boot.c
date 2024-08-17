@@ -3,13 +3,15 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "core/log-bt.h"
+
 #include "hook/table.h"
+
+#include "iface-core/log.h"
 
 #include "imports/avs.h"
 
 #include "iidxhook4-cn/avs-boot.h"
-
-#include "util/log.h"
 
 static void (*real_avs_boot)(
     struct property_node *config,
@@ -34,6 +36,11 @@ static const struct hook_symbol iidxhook4_cn_log_hook_syms[] = {
      .patch = my_avs_boot,
      .link = (void **) &real_avs_boot},
 };
+
+static AVS_LOG_WRITER(_avs_boot_log_writer, chars, nchars, ctx)
+{
+    core_log_bt_direct_sink_write(chars, nchars);
+}
 
 static void avs_boot_replace_property_uint32(
     struct property_node *node, const char *name, uint32_t val)
@@ -87,7 +94,7 @@ static void my_avs_boot(
         sz_std_heap,
         avs_heap,
         sz_avs_heap,
-        log_writer_debug,
+        _avs_boot_log_writer,
         NULL);
 }
 

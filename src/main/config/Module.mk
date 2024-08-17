@@ -3,9 +3,15 @@ rc_config       := config.rc
 cppflags_config := -DUNICODE
 
 libs_config     := \
+    core \
+    iface-io \
+    iface \
+    module \
     eamio \
     geninput \
     util \
+    iface-core \
+    mxml \
 
 ldflags_config  := \
     -lcomctl32 \

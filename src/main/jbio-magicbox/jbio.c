@@ -1,10 +1,19 @@
+#define LOG_MODULE "jbio-magicbox"
+
 // This implementation is ported from the device.dll source graciously
 // provided by zyp
 
 #include <windows.h>
 
-#include "bemanitools/jbio.h"
+#include "api/core/log.h"
+
+#include "iface-core/log.h"
+
 #include "imports/ch341.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/jb.h"
+
 #include "util/defs.h"
 
 static uint16_t jb_io_panels;
@@ -12,35 +21,15 @@ static uint8_t jb_io_sys_buttons;
 
 static bool is_initialized = false;
 
-static log_formatter_t jb_io_log_misc;
-static log_formatter_t jb_io_log_info;
-static log_formatter_t jb_io_log_warning;
-static log_formatter_t jb_io_log_fatal;
-
 union magicbox_input {
     uint32_t dword;
     uint8_t bytes[4];
 };
 
-void jb_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    jb_io_log_misc = misc;
-    jb_io_log_info = info;
-    jb_io_log_warning = warning;
-    jb_io_log_fatal = fatal;
-}
-
-bool jb_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+bool bt_io_jb_init()
 {
     if (CH341OpenDevice(0) < 0) {
-        jb_io_log_warning("jbio", "Can't open CH341 device.\n");
+        log_warning("jbio", "Can't open CH341 device.\n");
         return false;
     }
 
@@ -49,7 +38,7 @@ bool jb_io_init(
     return true;
 }
 
-void jb_io_fini(void)
+void bt_io_jb_fini()
 {
     CH341CloseDevice(0);
 }
@@ -79,7 +68,7 @@ static const uint32_t magic_sys_mappings[] = {
     (1 << 0x13), // COIN
 };
 
-bool jb_io_read_inputs(void)
+bool bt_io_jb_inputs_read()
 {
     // Read IO board
     unsigned long size;
@@ -119,34 +108,55 @@ bool jb_io_read_inputs(void)
     return true;
 }
 
-bool jb_io_write_lights(void)
+bool bt_io_jb_lights_write()
 {
     return true;
 }
 
-uint8_t jb_io_get_sys_inputs(void)
+uint8_t bt_io_jb_sys_inputs_get()
 {
     return jb_io_sys_buttons;
 }
 
-uint16_t jb_io_get_panel_inputs(void)
+uint16_t bt_io_jb_panel_inputs_get()
 {
     return jb_io_panels;
 }
 
-void jb_io_set_rgb_led(enum jb_io_rgb_led unit, uint8_t r, uint8_t g, uint8_t b)
+void bt_io_jb_rgb_led_set(
+    bt_io_jb_rgb_led_t unit, uint8_t r, uint8_t g, uint8_t b)
 {
     // I mean I guess there's reactive LEDs on the sides? I'm not going to the
     // effort to work out if they're controllable or not
 }
 
-bool jb_io_set_panel_mode(enum jb_io_panel_mode mode)
+bool bt_io_jb_panel_mode_set(bt_io_jb_panel_mode_t mode)
 {
     // panel always returns merged input state, no corner support
     return true;
 }
 
-bool jb_io_set_coin_blocker(bool blocked)
+bool bt_io_jb_coin_blocker_set(bool blocked)
 {
     return true;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_jb_api_get(bt_io_jb_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_jb_init;
+    api->v1.fini = bt_io_jb_fini;
+    api->v1.inputs_read = bt_io_jb_inputs_read;
+    api->v1.sys_inputs_get = bt_io_jb_sys_inputs_get;
+    api->v1.panel_inputs_get = bt_io_jb_panel_inputs_get;
+    api->v1.rgb_led_set = bt_io_jb_rgb_led_set;
+    api->v1.lights_write = bt_io_jb_lights_write;
+    api->v1.panel_mode_set = bt_io_jb_panel_mode_set;
+    api->v1.coin_blocker_set = bt_io_jb_coin_blocker_set;
 }

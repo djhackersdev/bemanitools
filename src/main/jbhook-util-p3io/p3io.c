@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/jbio.h"
+#include "iface-core/log.h"
+#include "iface-io/jb.h"
 
 #include "jbhook-util-p3io/p3io.h"
 
@@ -12,8 +13,6 @@
 
 #include "security/rp-sign-key.h"
 #include "security/rp3.h"
-
-#include "util/log.h"
 
 static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state);
 static HRESULT jbhook_p3io_get_roundplug(
@@ -119,13 +118,13 @@ static HRESULT jbhook_p3io_read_jamma(void *ctx, uint32_t *state)
 
     state_tmp = 0;
 
-    if (!jb_io_read_inputs()) {
+    if (!bt_io_jb_inputs_read()) {
         log_warning("Reading inputs from jbio failed");
         return E_FAIL;
     }
 
-    panels = jb_io_get_panel_inputs();
-    buttons = jb_io_get_sys_inputs();
+    panels = bt_io_jb_panel_inputs_get();
+    buttons = bt_io_jb_sys_inputs_get();
 
     for (uint8_t i = 0; i < 16; i++) {
         // panels are active-low
@@ -189,30 +188,30 @@ static HRESULT jbhook_p3io_set_outputs(void *ctx, uint32_t state)
     uint8_t p3io_panel = (state & 0x00FF00) >> 8;
     uint8_t p3io_coinblocker = (state & 0xFF0000) >> 16;
 
-    enum jb_io_panel_mode panel_mode;
+    bt_io_jb_panel_mode_t panel_mode;
 
     switch (p3io_panel) {
         case 5:
-            panel_mode = JB_IO_PANEL_MODE_TOP_LEFT;
+            panel_mode = BT_IO_JB_PANEL_MODE_TOP_LEFT;
             break;
         case 4:
-            panel_mode = JB_IO_PANEL_MODE_TOP_RIGHT;
+            panel_mode = BT_IO_JB_PANEL_MODE_TOP_RIGHT;
             break;
         case 6:
-            panel_mode = JB_IO_PANEL_MODE_BOTTOM_RIGHT;
+            panel_mode = BT_IO_JB_PANEL_MODE_BOTTOM_RIGHT;
             break;
         case 7:
-            panel_mode = JB_IO_PANEL_MODE_BOTTOM_LEFT;
+            panel_mode = BT_IO_JB_PANEL_MODE_BOTTOM_LEFT;
             break;
         default:
-            panel_mode = JB_IO_PANEL_MODE_ALL;
+            panel_mode = BT_IO_JB_PANEL_MODE_ALL;
             break;
     }
 
-    jb_io_set_panel_mode(panel_mode);
+    bt_io_jb_panel_mode_set(panel_mode);
 
     // 0x40 has been seen to unblock, no other values observed
-    jb_io_set_coin_blocker(p3io_coinblocker == 0x00);
+    bt_io_jb_coin_blocker_set(p3io_coinblocker == 0x00);
 
     return S_OK;
 }

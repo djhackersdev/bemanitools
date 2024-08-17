@@ -1,12 +1,13 @@
 #include <string.h>
 
+#include "iface-core/log.h"
+
 #include "security/rp-util.h"
 #include "security/rp2.h"
 #include "security/rp3.h"
 #include "security/util.h"
 
 #include "util/crc.h"
-#include "util/log.h"
 
 void security_rp3_generate_signed_eeprom_data(
     enum security_rp_util_rp_type type,

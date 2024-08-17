@@ -11,7 +11,7 @@
 #include "geninput/io-thread.h"
 #include "geninput/ri.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 static HDEVNOTIFY hotplug_handle;
 

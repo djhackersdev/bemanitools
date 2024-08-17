@@ -17,6 +17,8 @@
 
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+
 #include "imports/avs.h"
 
 #include "sdvxhook/acio.h"
@@ -24,7 +26,6 @@
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu ac_io_emu;

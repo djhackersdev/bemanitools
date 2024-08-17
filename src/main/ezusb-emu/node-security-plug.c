@@ -7,11 +7,11 @@
 #include "ezusb-emu/node-security-plug.h"
 #include "ezusb-iidx/secplug-cmd.h"
 
+#include "iface-core/log.h"
+
 #include "security/rp.h"
 #include "security/rp2.h"
 #include "security/util.h"
-
-#include "util/log.h"
 
 static struct security_mcode ezusb_iidx_emu_node_security_plug_boot_version;
 static uint32_t ezusb_iidx_emu_node_security_plug_boot_seeds[3];

@@ -85,21 +85,23 @@ avsvers_64      := 1700 1603 1601 1509 1508
 
 imps            += avs avs-ea3
 
+include src/main/mxml/Module.mk
+
 include src/main/aciodrv/Module.mk
 include src/main/aciodrv-proc/Module.mk
 include src/main/acioemu/Module.mk
-include src/main/aciomgr/Module.mk
+include src/main/acio-mgr/Module.mk
 include src/main/aciotest/Module.mk
 include src/main/asio/Module.mk
-include src/main/avs-util/Module.mk
+include src/main/avs-ext/Module.mk
 include src/main/bio2drv/Module.mk
 include src/main/bio2emu-iidx/Module.mk
 include src/main/bio2emu/Module.mk
 include src/main/bsthook/Module.mk
 include src/main/bstio/Module.mk
 include src/main/camhook/Module.mk
-include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
+include src/main/core/Module.mk
 include src/main/d3d9-util/Module.mk
 include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
@@ -115,6 +117,7 @@ include src/main/dinput/Module.mk
 include src/main/eamio-icca/Module.mk
 include src/main/eamio/Module.mk
 include src/main/eamiotest/Module.mk
+include src/main/exceptiontrace/Module.mk
 include src/main/extio/Module.mk
 include src/main/extiodrv/Module.mk
 include src/main/extiotest/Module.mk
@@ -137,6 +140,10 @@ include src/main/ezusb2/Module.mk
 include src/main/geninput/Module.mk
 include src/main/hook/Module.mk
 include src/main/hooklib/Module.mk
+include src/main/iface/Module.mk
+include src/main/iface-acio/Module.mk
+include src/main/iface-core/Module.mk
+include src/main/iface-io/Module.mk
 include src/main/iidx-bio2-exit-hook/Module.mk
 include src/main/iidx-ezusb-exit-hook/Module.mk
 include src/main/iidx-ezusb2-exit-hook/Module.mk
@@ -172,6 +179,7 @@ include src/main/jbhook3/Module.mk
 include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
+include src/main/module/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
@@ -181,7 +189,9 @@ include src/main/p4ioemu/Module.mk
 include src/main/popnhook-util/Module.mk
 include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
+include src/main/procmon/Module.mk
 include src/main/pcbidgen/Module.mk
+include src/main/sdk-hook/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
@@ -197,10 +207,7 @@ include src/main/vigem-sdvxio/Module.mk
 include src/main/vigem-ddrio/Module.mk
 include src/main/vigemstub/Module.mk
 
-include src/test/cconfig/Module.mk
 include src/test/d3d9hook/Module.mk
-include src/test/iidxhook-util/Module.mk
-include src/test/iidxhook8/Module.mk
 include src/test/security/Module.mk
 include src/test/test/Module.mk
 include src/test/util/Module.mk
@@ -232,6 +239,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb2-dbg-hook.dll \
 		build/bin/indep-32/ezusb2-tool.exe \
 		build/bin/indep-32/ezusb-tool.exe \
+		build/bin/indep-32/procmon.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -246,6 +254,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
 		build/bin/indep-64/mempatch-hook.dll \
+		build/bin/indep-64/procmon.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -258,15 +267,17 @@ $(zipdir)/iidx-09-to-12.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-09.bat \
 		dist/iidx/gamestart-10.bat \
 		dist/iidx/gamestart-11.bat \
 		dist/iidx/gamestart-12.bat \
-		dist/iidx/iidxhook-09.conf \
-		dist/iidx/iidxhook-10.conf \
-		dist/iidx/iidxhook-11.conf \
-		dist/iidx/iidxhook-12.conf \
+		dist/iidx/inject-09.xml \
+		dist/iidx/inject-10.xml \
+		dist/iidx/inject-11.xml \
+		dist/iidx/inject-12.xml \
+		dist/iidx/inject-09.xml \
 		dist/iidx/vefx.txt \
 		build/bin/indep-32/iidx-irbeat-patch.exe \
 		dist/iidx/iidx-irbeat-patch-09.bat \
@@ -283,9 +294,10 @@ $(zipdir)/iidx-13.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-13.bat \
-		dist/iidx/iidxhook-13.conf \
+		dist/iidx/inject-13.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -299,15 +311,16 @@ $(zipdir)/iidx-14-to-17.zip: \
 		build/bin/indep-32/iidxio.dll \
 		build/bin/indep-32/vefxio.dll \
 		build/bin/indep-32/inject.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-14.bat \
 		dist/iidx/gamestart-15.bat \
 		dist/iidx/gamestart-16.bat \
 		dist/iidx/gamestart-17.bat \
-		dist/iidx/iidxhook-14.conf \
-		dist/iidx/iidxhook-15.conf \
-		dist/iidx/iidxhook-16.conf \
-		dist/iidx/iidxhook-17.conf \
+		dist/iidx/inject-14.xml \
+		dist/iidx/inject-15.xml \
+		dist/iidx/inject-16.xml \
+		dist/iidx/inject-17.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -323,7 +336,10 @@ $(zipdir)/iidx-18.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18.bat \
-		dist/iidx/iidxhook-18.conf \
+		dist/iidx/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -338,7 +354,7 @@ $(zipdir)/iidx-18-cn.zip: \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18-cn.bat \
-		dist/iidx/iidxhook-18-cn.conf \
+		dist/iidx/inject-18-cn.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -354,7 +370,10 @@ $(zipdir)/iidx-19.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-19.bat \
-		dist/iidx/iidxhook-19.conf \
+		dist/iidx/launcher-19.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -370,7 +389,10 @@ $(zipdir)/iidx-20.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20.bat \
-		dist/iidx/iidxhook-20.conf \
+		dist/iidx/launcher-20.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -385,7 +407,7 @@ $(zipdir)/iidx-20-cn.zip: \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20-cn.bat \
-		dist/iidx/iidxhook-20-cn.conf \
+		dist/iidx/inject-20-cn.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -404,10 +426,13 @@ $(zipdir)/iidx-21-to-24.zip: \
 		dist/iidx/gamestart-22.bat \
 		dist/iidx/gamestart-23.bat \
 		dist/iidx/gamestart-24.bat \
-		dist/iidx/iidxhook-21.conf \
-		dist/iidx/iidxhook-22.conf \
-		dist/iidx/iidxhook-23.conf \
-		dist/iidx/iidxhook-24.conf \
+		dist/iidx/launcher-21.xml \
+		dist/iidx/launcher-22.xml \
+		dist/iidx/launcher-23.xml \
+		dist/iidx/launcher-24.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -424,8 +449,11 @@ $(zipdir)/iidx-25-to-26.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-25.bat \
 		dist/iidx/gamestart-26.bat \
-		dist/iidx/iidxhook-25.conf \
-		dist/iidx/iidxhook-26.conf \
+		dist/iidx/launcher-25.xml \
+		dist/iidx/launcher-26.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
@@ -444,37 +472,42 @@ $(zipdir)/iidx-27-to-30.zip: \
 		dist/iidx/gamestart-28.bat \
 		dist/iidx/gamestart-29.bat \
 		dist/iidx/gamestart-30.bat \
-		dist/iidx/iidxhook-27.conf \
-		dist/iidx/iidxhook-28.conf \
-		dist/iidx/iidxhook-29.conf \
-		dist/iidx/iidxhook-30.conf \
+		dist/iidx/launcher-27.xml \
+		dist/iidx/launcher-28.xml \
+		dist/iidx/launcher-29.xml \
+		dist/iidx/launcher-30.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x86.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
 		build/bin/indep-32/iidxio-ezusb2.dll \
-		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-32/vigem-iidxio.exe \
-		dist/iidx/vigem-iidxio.conf \
+		dist/iidx/eamio-icca.xml \
+		dist/iidx/iidxio-bio2.xml \
+		dist/iidx/vigem-iidxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-hwio-x64.zip: \
-		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/acio-mgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
-		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-64/vigem-iidxio.exe \
-		dist/iidx/vigem-iidxio.conf \
+		dist/iidx/eamio-icca.xml \
+		dist/iidx/iidxio-bio2.xml \
+		dist/iidx/vigem-iidxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -486,9 +519,10 @@ $(zipdir)/jb-01.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/jbio.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-01.bat \
-		dist/jb/jbhook-01.conf \
+		dist/jb/inject-01.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -500,9 +534,10 @@ $(zipdir)/jb-02.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		build/bin/indep-32/jbio.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-02.bat \
-		dist/jb/jbhook-02.conf \
+		dist/jb/inject-02.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -516,6 +551,10 @@ $(zipdir)/jb-03.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-03.bat \
+		dist/jb/launcher-03.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -529,6 +568,10 @@ $(zipdir)/jb-04.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-03.bat \
+		dist/jb/launcher-03.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -542,6 +585,10 @@ $(zipdir)/jb-05-to-07.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-04.bat \
+		dist/jb/launcher-04.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -555,17 +602,21 @@ $(zipdir)/jb-08.zip: \
 		build/bin/indep-32/jbio.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-04.bat \
+		dist/jb/launcher-04.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
 $(zipdir)/jb-hwio.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/jbio-magicbox.dll \
 		build/bin/indep-32/jbio-p4io.dll \
-		dist/jb/jbio-h44b.conf \
-		dist/jb/eamio-icc.conf \
+		dist/jb/jbio-h44b.xml \
+		dist/jb/eamio-icca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -579,6 +630,10 @@ $(zipdir)/sdvx-01-to-04.zip: \
 		build/bin/indep-32/sdvxio.dll \
 		dist/sdvx/config.bat \
 		dist/sdvx/gamestart.bat \
+		dist/sdvx/launcher.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -592,7 +647,10 @@ $(zipdir)/sdvx-05-to-06.zip: \
 		build/bin/indep-64/sdvxio.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
-		dist/sdvx5/sdvxhook2.conf \
+		dist/sdvx5/launcher.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -606,27 +664,38 @@ $(zipdir)/sdvx-05-cn.zip: \
 		build/bin/indep-64/sdvxio.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart-cn.bat \
-		dist/sdvx5/sdvxhook2-cn.conf \
+		dist/sdvx5/launcher-cn.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x86.zip: \
-		build/bin/indep-32/aciomgr.dll \
+		build/bin/indep-32/acio-mgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
+		dist/sdvx/eamio-icca.xml \
+		dist/sdvx/sdvxio-bio2.xml \
+		dist/sdvx/sdvxio-kfca.xml \
+		dist/sdvx/vigem-sdvxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
 $(zipdir)/sdvx-hwio-x64.zip: \
-		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/acio-mgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
+		dist/sdvx/eamio-icca.xml \
+		dist/sdvx/sdvxio-bio2.xml \
+		dist/sdvx/sdvxio-kfca.xml \
+		dist/sdvx/vigem-sdvxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -660,6 +729,7 @@ $(zipdir)/ddr-12-us.zip: \
 		build/bin/indep-32/ddrio-smx.dll \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-12-us.bat \
 		dist/ddr/gamestart-12-eu.bat \
@@ -681,6 +751,10 @@ $(zipdir)/ddr-12.zip: \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-12.bat \
+		dist/ddr/launcher-12.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -697,6 +771,10 @@ $(zipdir)/ddr-13.zip: \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
 		dist/ddr/gamestart-13.bat \
+		dist/ddr/launcher-13.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -717,6 +795,14 @@ $(zipdir)/ddr-14-to-18.zip: \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
+		dist/ddr/launcher-14.xml \
+		dist/ddr/launcher-15.xml \
+		dist/ddr/launcher-16.xml \
+		dist/ddr/launcher-17.xml \
+		dist/ddr/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -735,6 +821,12 @@ $(zipdir)/ddr-16-to-18-x64.zip: \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
+		dist/ddr/launcher-16.xml \
+		dist/ddr/launcher-17.xml \
+		dist/ddr/launcher-18.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -747,6 +839,7 @@ $(zipdir)/ddr-hwio-x86.zip: \
 		build/bin/indep-32/extiotest.exe \
 		build/bin/indep-32/p3io-ddr-tool.exe \
 		build/bin/indep-32/vigem-ddrio.exe \
+		dist/ddr/vigem-ddrio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -759,6 +852,7 @@ $(zipdir)/ddr-hwio-x64.zip: \
 		build/bin/indep-64/extiotest.exe \
 		build/bin/indep-64/p3io-ddr-tool.exe \
 		build/bin/indep-64/vigem-ddrio.exe \
+		dist/ddr/vigem-ddrio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -773,6 +867,11 @@ $(zipdir)/bst.zip: \
 		dist/bst/config.bat \
 		dist/bst/gamestart1.bat \
 		dist/bst/gamestart2.bat \
+		dist/bst/launcher-01.xml \
+		dist/bst/launcher-02.xml \
+		dist/shared/ea3-ident.xml \
+		dist/shared/ea3-license.xml \
+		dist/shared/ea3-service.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -785,15 +884,16 @@ $(zipdir)/popn-15-to-18.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/popnio.dll \
 		build/bin/indep-32/ezusb2-popn-shim.dll \
+		dist/dwarfstack/32/dwarfstack.dll \
 		dist/popn/config.bat \
 		dist/popn/gamestart-15.bat \
 		dist/popn/gamestart-16.bat \
 		dist/popn/gamestart-17.bat \
 		dist/popn/gamestart-18.bat \
-		dist/popn/popnhook-15.conf \
-		dist/popn/popnhook-16.conf \
-		dist/popn/popnhook-17.conf \
-		dist/popn/popnhook-18.conf \
+		dist/popn/inject-15.xml \
+		dist/popn/inject-16.xml \
+		dist/popn/inject-17.xml \
+		dist/popn/inject-18.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -807,15 +907,9 @@ $(zipdir)/doc.zip: \
 $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/iidxhook1.dll \
 		build/bin/avs2_0-32/iidxhook2.dll \
-		build/bin/indep-32/cconfig-test.exe \
-		build/bin/indep-32/cconfig-util-test.exe \
-		build/bin/indep-32/cconfig-cmd-test.exe \
 		build/bin/indep-32/d3d9hook.dll \
 		build/bin/indep-32/d3d9hook-test.exe \
-		build/bin/indep-32/iidxhook-util-config-eamuse-test.exe \
-		build/bin/indep-32/iidxhook-util-config-gfx-test.exe \
-		build/bin/indep-32/iidxhook-util-config-misc-test.exe \
-		build/bin/indep-32/iidxhook-util-config-sec-test.exe \
+		dist/dwarfstack/32/dwarfstack.dll \
 		build/bin/indep-32/inject.exe \
 		build/bin/indep-32/security-id-test.exe \
 		build/bin/indep-32/security-mcode-test.exe \
@@ -824,7 +918,6 @@ $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/security-rp3-test.exe \
 		build/bin/indep-32/security-util-test.exe \
 		build/bin/indep-32/util-net-test.exe \
-		build/bin/indep-64/iidxhook8-config-cam-test.exe \
 		dist/test/run-tests.sh \
 		| $(zipdir)/
 	$(V)echo ... $@

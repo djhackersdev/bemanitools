@@ -20,12 +20,13 @@
 #include "bio2emu/emu.h"
 #include "bio2emu/setupapi.h"
 
+#include "iface-core/log.h"
+
 #include "imports/avs.h"
 
 #include "util/array.h"
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct array bio2_active_ports;

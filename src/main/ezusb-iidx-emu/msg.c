@@ -4,10 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bemanitools/iidxio.h"
-
-#include "hook/iohook.h"
-
 #include "ezusb-emu/msg.h"
 #include "ezusb-emu/node-coin.h"
 #include "ezusb-emu/nodes.h"
@@ -20,9 +16,12 @@
 
 #include "ezusb-iidx-16seg-emu/nodes.h"
 
-#include "util/hex.h"
-#include "util/log.h"
+#include "hook/iohook.h"
 
+#include "iface-core/log.h"
+#include "iface-io/iidx.h"
+
+#include "util/hex.h"
 /* ------------------------------------------------------------------------ */
 
 static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read);
@@ -121,25 +120,25 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_read(struct iobuf *read)
     struct ezusb_iidx_msg_interrupt_read_packet *msg_resp =
         (struct ezusb_iidx_msg_interrupt_read_packet *) read->bytes;
 
-    if (!iidx_io_ep2_recv()) {
+    if (!bt_io_iidx_ep2_recv()) {
         return E_FAIL;
     }
 
-    msg_resp->p1_turntable = iidx_io_ep2_get_turntable(0);
-    msg_resp->p2_turntable = iidx_io_ep2_get_turntable(1);
+    msg_resp->p1_turntable = bt_io_iidx_ep2_turntable_get(0);
+    msg_resp->p2_turntable = bt_io_iidx_ep2_turntable_get(1);
 
     msg_resp->sliders[0] =
-        iidx_io_ep2_get_slider(0) | (iidx_io_ep2_get_slider(1) << 4);
+        bt_io_iidx_ep2_slider_get(0) | (bt_io_iidx_ep2_slider_get(1) << 4);
 
     msg_resp->sliders[1] =
-        iidx_io_ep2_get_slider(2) | (iidx_io_ep2_get_slider(3) << 4);
+        bt_io_iidx_ep2_slider_get(2) | (bt_io_iidx_ep2_slider_get(3) << 4);
 
-    msg_resp->sliders[2] = iidx_io_ep2_get_slider(4);
+    msg_resp->sliders[2] = bt_io_iidx_ep2_slider_get(4);
 
-    msg_resp->inverted_pad = ((iidx_io_ep2_get_keys() & 0x3FFF) << 8) |
-        ((iidx_io_ep2_get_panel() & 0x0F) << 24) |
-        ((iidx_io_ep2_get_sys() & 0x07) << 28) |
-        (((iidx_io_ep2_get_sys() >> 2) & 0x01) << 22);
+    msg_resp->inverted_pad = ((bt_io_iidx_ep2_keys_get() & 0x3FFF) << 8) |
+        ((bt_io_iidx_ep2_panel_get() & 0x0F) << 24) |
+        ((bt_io_iidx_ep2_sys_get() & 0x07) << 28) |
+        (((bt_io_iidx_ep2_sys_get() >> 2) & 0x01) << 22);
 
     /* make sure to update the current coin mode state, otherwise
     the game will bang the IO and try to enforce the coin state it wants to
@@ -208,12 +207,12 @@ static HRESULT ezusb_iidx_emu_msg_interrupt_write(struct const_iobuf *write)
         return E_INVALIDARG;
     }
 
-    iidx_io_ep1_set_deck_lights(msg_req->deck_lights);
-    iidx_io_ep1_set_panel_lights(msg_req->panel_lights);
-    iidx_io_ep1_set_top_lamps(msg_req->top_lamps);
-    iidx_io_ep1_set_top_neons(msg_req->top_neons);
+    bt_io_iidx_ep1_deck_lights_set(msg_req->deck_lights);
+    bt_io_iidx_ep1_panel_lights_set(msg_req->panel_lights);
+    bt_io_iidx_ep1_top_lamps_set(msg_req->top_lamps);
+    bt_io_iidx_ep1_top_neons_set(msg_req->top_neons);
 
-    if (!iidx_io_ep1_send()) {
+    if (!bt_io_iidx_ep1_send()) {
         return E_FAIL;
     }
 

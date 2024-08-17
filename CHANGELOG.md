@@ -3,6 +3,117 @@
 Note for CI/CD: Ensure the version formatting in the sections is kept identical to the versions
 given in tags. The pipeline will pick this up and cuts out the relevant section for release notes.
 
+## 6.0.0-alpha.3
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+Goals of this version:
+
+* property (node) API implementation without AVS -> [mxml](https://github.com/michaelrsweet/mxml)
+* inject refactoring similar to launcher
+  * Re-structure modules
+  * Use bemanitools config API backed by property (node) API with mxml (because no AVS2)
+* SDK foundation for hook libraries bootstrapping with DllMain
+* iidxhook1 refactoring to use new SDK hook foundation and bemanitools config API
+
+This brings inject and launcher closer together regarding common functionality. inject is also
+using a "bootstrap.xml" style approach with a XML configuration file. That configuration file
+can also include further inlined or referenced configuration for any hooks to be loaded.
+
+With a new module that will serve as a piece of a public SDK in the future, any library that just
+bootstraps with DllMain can implement the Bemanitools 6 hook API transparently. This solution
+isn't ideal, but it works with a bit of duct-tape fairly well. A future improve would be to have
+improved hooking in inject to have a pre- and post-main function hook. However, that is a lot more
+work as it requires our own PE loader to bootstrap the entire executable to get more fine grained
+control.
+
+Remarks regarding what's known to be broken: Inject command line args + overrides
+
+## 6.0.0-alpha.2
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+Goal of this version: Fix blocking logging which results in performance impact on many games using
+both launcher and inject. The impact typically materialized as the game stuttering, briefly slowing
+down, music de-syncing or occasional laggy input.
+
+This was a fundamental issue to the previous logging architecture in bemanitools. With the pre-work
+of having a more modular logging API that can be shared and used across internal components as well
+as public APIs including hooks, unified logging can be applied throughout the bemanitools stack.
+
+With this, all logging is channeled to a single logger, the bemanitools logger, where we have full
+control over how we log any log output (but also full control of messing it up =)).
+
+With this, we can also move away from the band aid of the log-server that's been used in iidx
+versions 19 to 24 because non AVS threads logging through the AVS logging system were crashing (see
+[this document](doc/dev/journal/2018-02-10-logging-breakdown-avs.md) for details).
+
+A new async log sink takes care of de-coupling the non blocking producing/posting of messages to
+a configurable queue by any number of threads concurrently, with a single producer thread consuming
+these messages from the queue and forwarding them to a configured target sink, e.g. file, terminal.
+
+With this, we ensure that threads with log messages don't have to wait for synchronization on 
+expensive and slow IO.
+
+These changes have been applied to to launcher and inject. The log-server module has been removed
+entirely from any (iidx) games using it.
+
+## 6.0.0-alpha.1
+
+**THIS IS A HIGHLY WORK/DEVELOPMENT IN PROGRESS VERSION**
+
+**THINGS ARE BROKEN AND EVERYTHING IS SUBJECT TO CHANGE**
+
+First cut after massive refactoring with most critical and fundamental changes implemented.
+We need to start somewhere, and this might be as good as anything else, so we can get started
+with testing, bug fixing and iterating for the next releases.
+
+The following list is non-exhaustive, does not guarantee anything does work, yet, and is supposed
+to give a high level idea of what all of this is about. Updated documentation will reflect all of
+this at some later point in time in more detail.
+
+* A common "core" now abstracts logging, thread, property and configuration infrastructure and
+  provides a common interface. This is used by bemanitools internally as well as all tools, hooks
+  and APIs provided and don't depend on the game, version of the game or AVS version available
+  anymore
+* New bemanitools (public) API
+  * Versioned API allowing for handling incremental API changes as well as breaking changes by
+    providing a new/different version when necessary
+  * Unified interfaces for bemanitools core API, i.e. logging, threads, configuration
+  * SDK with examples (TBD)
+  * Dogfooding approach: Bemanitools uses its own (public) API to implement and provide fundamental
+    features like configurable keyboard implementations for IO or hooks for different games and
+    versions
+* All bemanitools hooks and IO libraries have been or are about to be re-worked to use the new APIs
+* New hook API allows for more fine grained runtime control when stages of the hook are to be
+  executed, i.e. pre AVS, before main game, iat hooking instead of relying purely on DllMain
+  (which is still a compatible option though)
+* launcher as a replacement for bootstrap: Bring it significantly closer to the original bootstrap
+  by supporting completely vanilla data and bootstrap.xml configurations to run the games. Note
+  that bemanitools does not include any code or means to run DRM'd data, only decrypted
+* inject is also being reworked to use as much of the same "infrastructure" as launcher to provide
+  a more seamless bootstrapping process for games that keeps pre-eapki data as vanilla as possible
+
+### What works
+
+* inject: Basic functionality, launches games iidx 09 to 17 with iidxhook1 to iidxhook4
+* launcher: Basic functionality, launches games iidx 09 to 17 with iidxhook5 to iidxhook7
+* iidxhook1: Boots, reaching in-game with keyboard inputs working
+* iidxhook2: Boots, reaching in-game with keyboard inputs working
+* iidxhook3: Boots, reaching in-game with keyboard inputs working
+* iidxhook4: Boots, reaching in-game with keyboard inputs working
+* iidxhook5: Boots, reaching in-game with keyboard inputs working
+* iidxhook6: Boots, reaching in-game with keyboard inputs working
+* iidxhook7: Boots, reaching in-game with keyboard inputs working
+
+### What's broken
+
+Since everything else is untested, consider it (very) broken
+
 ## 5.49
 
 ### Features

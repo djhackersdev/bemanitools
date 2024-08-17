@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
 #include "geninput/dev-list.h"
 #include "geninput/hid-generic.h"
 #include "geninput/hid-mgr.h"
@@ -10,9 +13,7 @@
 #include "geninput/pacdrive.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
-#include "util/thread.h"
 
 enum io_thread_cmd {
     IO_THREAD_CMD_STOP,
@@ -26,7 +27,7 @@ struct io_thread_msg {
 };
 
 static HANDLE io_thread_cp;
-static int io_thread_id;
+static bt_core_thread_id_t io_thread_id;
 
 static void io_thread_proc_add_device(const char *dev_node);
 static void io_thread_proc_init(void);
@@ -169,10 +170,13 @@ static int io_thread_proc(void *param)
 void io_thread_init(void)
 {
     HANDLE barrier;
+    bt_core_thread_result_t result;
 
     barrier = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    io_thread_id = thread_create(io_thread_proc, barrier, 16384, 0);
+    result =
+        bt_core_thread_create(io_thread_proc, barrier, 16384, 0, &io_thread_id);
+    bt_core_thread_fatal_on_error(result);
 
     WaitForSingleObject(barrier, INFINITE);
     CloseHandle(barrier);
@@ -195,11 +199,15 @@ void io_thread_add_device(const char *dev_node)
 void io_thread_fini(void)
 {
     struct io_thread_msg msg;
+    bt_core_thread_result_t result;
 
     msg.cmd = IO_THREAD_CMD_STOP;
 
     PostQueuedCompletionStatus(io_thread_cp, 0, (uintptr_t) &msg, NULL);
 
-    thread_join(io_thread_id, NULL);
-    thread_destroy(io_thread_id);
+    result = bt_core_thread_join(io_thread_id, NULL);
+    bt_core_thread_fatal_on_error(result);
+
+    result = bt_core_thread_destroy(io_thread_id);
+    bt_core_thread_fatal_on_error(result);
 }

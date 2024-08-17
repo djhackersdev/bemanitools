@@ -4,8 +4,9 @@
 #include "geninput/hid-mgr.h"
 #include "geninput/mapper.h"
 
+#include "iface-core/log.h"
+
 #include "util/array.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct action_iter {
@@ -173,7 +174,7 @@ static void analog_mapping_bind(struct analog_mapping *am)
 
     am->analog_min = ctl->value_min;
     am->analog_max = ctl->value_max;
-    am->inv_analog_range = 1.0 / ((int64_t)ctl->value_max - ctl->value_min);
+    am->inv_analog_range = 1.0 / ((int64_t) ctl->value_max - ctl->value_min);
     am->absolute = !(ctl->flags & HID_FLAG_RELATIVE);
     am->valid = true;
 
@@ -424,7 +425,7 @@ int32_t mapper_impl_get_analog_sensitivity(struct mapper *m, uint8_t analog)
     return m->analogs[analog].sensitivity;
 }
 
-bool mapper_impl_get_analog_invert(struct mapper* m, uint8_t analog)
+bool mapper_impl_get_analog_invert(struct mapper *m, uint8_t analog)
 {
     if (analog >= m->nanalogs) {
         return 0;

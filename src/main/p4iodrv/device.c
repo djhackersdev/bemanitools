@@ -2,12 +2,13 @@
 
 #include <windows.h>
 
+#include "iface-core/log.h"
+
 #include "p4io/cmd.h"
 
 #include "p4iodrv/device.h"
 #include "p4iodrv/usb.h"
 
-#include "util/log.h"
 #include "util/mem.h"
 
 struct p4iodrv_ctx {

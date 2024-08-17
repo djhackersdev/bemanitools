@@ -10,13 +10,14 @@
 #include <setupapi.h>
 // clang-format on
 
+#include "iface-core/log.h"
+
 #include "p3io/cmd.h"
 #include "p3io/guid.h"
 #include "p3io/ioctl.h"
 
 #include "p3iodrv/device.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 #define P3IO_DEVICE_FILENMAME "\\p3io"

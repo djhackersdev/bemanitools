@@ -17,17 +17,17 @@
 #include "acioemu/hdxs.h"
 #include "acioemu/icca.h"
 
-#include "bemanitools/ddrio.h"
-
 #include "ddrhook-util/_com4.h"
 
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
+#include "iface-io/ddr.h"
 
 #include "p3ioemu/uart.h"
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 
 static struct ac_io_emu com4_ac_io_emu;
 static struct ac_io_emu_hdxs com4_hdxs;
@@ -59,20 +59,24 @@ lights_dispatcher(struct ac_io_emu_hdxs *emu, const struct ac_io_message *req)
     const struct ac_io_hdxs_output *output = &req->cmd.hdxs_output;
 
     uint32_t lights = 0;
-    lights |=
-        check_panel_light(output, AC_IO_HDXS_OUT_P1_START, LIGHT_HD_P1_START);
     lights |= check_panel_light(
-        output, AC_IO_HDXS_OUT_P1_UP_DOWN, LIGHT_HD_P1_UP_DOWN);
+        output, AC_IO_HDXS_OUT_P1_START, BT_IO_DDR_HDXS_LIGHT_HD_P1_START);
     lights |= check_panel_light(
-        output, AC_IO_HDXS_OUT_P1_LEFT_RIGHT, LIGHT_HD_P1_LEFT_RIGHT);
-    lights |=
-        check_panel_light(output, AC_IO_HDXS_OUT_P2_START, LIGHT_HD_P2_START);
+        output, AC_IO_HDXS_OUT_P1_UP_DOWN, BT_IO_DDR_HDXS_LIGHT_HD_P1_UP_DOWN);
     lights |= check_panel_light(
-        output, AC_IO_HDXS_OUT_P2_UP_DOWN, LIGHT_HD_P2_UP_DOWN);
+        output,
+        AC_IO_HDXS_OUT_P1_LEFT_RIGHT,
+        BT_IO_DDR_HDXS_LIGHT_HD_P1_LEFT_RIGHT);
     lights |= check_panel_light(
-        output, AC_IO_HDXS_OUT_P2_LEFT_RIGHT, LIGHT_HD_P2_LEFT_RIGHT);
+        output, AC_IO_HDXS_OUT_P2_START, BT_IO_DDR_HDXS_LIGHT_HD_P2_START);
+    lights |= check_panel_light(
+        output, AC_IO_HDXS_OUT_P2_UP_DOWN, BT_IO_DDR_HDXS_LIGHT_HD_P2_UP_DOWN);
+    lights |= check_panel_light(
+        output,
+        AC_IO_HDXS_OUT_P2_LEFT_RIGHT,
+        BT_IO_DDR_HDXS_LIGHT_HD_P2_LEFT_RIGHT);
 
-    ddr_io_set_lights_hdxs_panel(lights);
+    bt_io_ddr_hdxs_lights_panel_set(lights);
 
     for (uint8_t i = 0; i < 4; ++i) {
         size_t light_idx = i * 3;
@@ -85,7 +89,7 @@ lights_dispatcher(struct ac_io_emu_hdxs *emu, const struct ac_io_message *req)
         uint8_t b =
             upscale_light(output->lights[light_idx + AC_IO_HDXS_BLUE].analog);
 
-        ddr_io_set_lights_hdxs_rgb(i, r, g, b);
+        bt_io_ddr_hdxs_lights_rgb_set(i, r, g, b);
     }
 }
 

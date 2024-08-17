@@ -1,217 +1,123 @@
 #define LOG_MODULE "inject-logger"
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <windows.h>
+#include "core/log-bt.h"
+#include "core/log-sink-async.h"
+#include "core/log-sink-file.h"
+#include "core/log-sink-list.h"
+#include "core/log-sink-null.h"
+#include "core/log-sink-std.h"
 
-#include "inject/logger.h"
-#include "inject/version.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "inject/logger-config.h"
 
-static FILE *log_file;
-static HANDLE log_mutex;
-
-static const char *logger_get_formatted_timestamp(void)
+static void _logger_null_sink_init()
 {
-    static char buffer[64];
-    time_t cur = 0;
-    struct tm *tm = NULL;
+    core_log_sink_t sink;
 
-    cur = time(NULL);
-    tm = localtime(&cur);
+    core_log_sink_null_open(&sink);
 
-    strftime(buffer, sizeof(buffer), "[%Y/%m/%d %H:%M:%S] ", tm);
-
-    return buffer;
+    // Size doesn't matter (but must be valid)
+    // logger is entirely disabled
+    core_log_bt_init(1024, &sink);
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_OFF);
 }
 
-static char logger_console_determine_color(const char *str)
+static bool _logger_sinks_create(
+    const logger_config_t *config,
+    core_log_sink_t *root_sink)
 {
-    log_assert(str);
+    core_log_sink_t target_sinks[2];
+    core_log_sink_t list_sink;
+    uint8_t target_sink_count;
 
-    /* Add some color to make spotting warnings/errors easier.
-        Based on debug output level identifier. */
+    log_assert(config);
+    log_assert(root_sink);
 
-    /* Avoids colored output on strings like "Windows" */
-    if (str[1] != ':') {
-        return 15;
+    target_sink_count = 0;
+
+    // Fixed order to ensure logger's first sink to write to is
+    // async and async sinks to console and file
+
+    if (config->sink_console.enable) {
+        core_log_sink_std_err_open(
+            config->sink_console.color,
+            &target_sinks[target_sink_count]);
+
+        target_sink_count++;
     }
 
-    switch (str[0]) {
-        /* green */
-        case 'M':
-            return 10;
-        /* blue */
-        case 'I':
-            return 9;
-        /* yellow */
-        case 'W':
-            return 14;
-        /* red */
-        case 'F':
-            return 12;
-        /* default console color */
-        default:
-            return 15;
-    }
-}
+    if (config->sink_file.enable) {
+        core_log_sink_file_open(
+            config->sink_file.path,
+            config->sink_file.append,
+            config->sink_file.rotate,
+            config->sink_file.max_rotations,
+            &target_sinks[target_sink_count]);
 
-static size_t logger_msg_coloring_len(const char *str)
-{
-    // Expected format example: "I:boot: my log message"
-
-    const char *ptr;
-    size_t len;
-    int colon_count;
-
-    ptr = str;
-    len = 0;
-    colon_count = 0;
-
-    while (true) {
-        // End of string = invalid log format
-        if (*ptr == '\0') {
-            return 0;
-        }
-
-        if (*ptr == ':') {
-            colon_count++;
-        }
-
-        if (colon_count == 2) {
-            // Skip current colon, next char is a space
-            return len + 1;
-        }
-
-        len++;
-        ptr++;
+        target_sink_count++;
     }
 
-    return 0;
-}
+    if (target_sink_count > 0) {
+        // Compose to single sink
+        core_log_sink_list_open(
+                target_sinks,
+                target_sink_count,
+                &list_sink);
 
-static void logger_console(
-    void *ctx, const char *chars, size_t nchars, const char *timestamp_str)
-{
-    char color;
-    size_t color_len;
-    // See "util/log.c", has to align
-    char buffer[65536];
-    char tmp;
+        // Async sink only makes sense if at least one other
+        // sink is enabled
+        if (config->sink_async.enable) {
+            core_log_sink_async_open(
+                config->msg_buffer_size_bytes,
+                config->sink_async.queue_length,
+                config->sink_async.overflow_policy,
+                &list_sink,
+                root_sink);
+        } else {
+            // "Sync" with list of sinks
+            memcpy(root_sink, &list_sink, sizeof(core_log_sink_t));
+        }
 
-    color_len = logger_msg_coloring_len(chars);
-
-    // Check if we could detect which part to color, otherwise just write the
-    // whole log message without any coloring logic
-    if (color_len > 0) {
-        color = logger_console_determine_color(chars);
-
-        strcpy(buffer, chars);
-
-        // Mask start of log message for coloring
-        tmp = buffer[color_len];
-        buffer[color_len] = '\0';
-
-        printf("%s", timestamp_str);
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
-        printf("%s", buffer);
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
-
-        // Write actual message non colored
-        buffer[color_len] = tmp;
-        printf("%s", buffer + color_len);
+        return true;
     } else {
-        printf("%s", chars);
+        memset(root_sink, 0, sizeof(core_log_sink_t));
+        return false;
     }
 }
 
-static void logger_file(
-    void *ctx, const char *chars, size_t nchars, const char *timestamp_str)
+static void _logger_with_sinks_init(const logger_config_t *config)
 {
-    if (ctx) {
-        fwrite(timestamp_str, 1, strlen(timestamp_str), (FILE *) ctx);
-        fwrite(chars, 1, nchars, (FILE *) ctx);
-        fflush((FILE *) ctx);
-    }
-}
+    core_log_sink_t sink;
+    bool has_sinks;
 
-static void logger_writer(void *ctx, const char *chars, size_t nchars)
-{
-    const char *timestamp_str;
+    log_assert(config);
 
-    // Different threads logging the same destination, e.g. debugger thread,
-    // main thread
+    has_sinks = _logger_sinks_create(config, &sink);
 
-    WaitForSingleObject(log_mutex, INFINITE);
-
-    timestamp_str = logger_get_formatted_timestamp();
-
-    logger_console(ctx, chars, nchars, timestamp_str);
-    logger_file(ctx, chars, nchars, timestamp_str);
-
-    ReleaseMutex(log_mutex);
-}
-
-static void logger_log_header()
-{
-    log_info(
-        "\n"
-        "  _        _           _   \n"
-        " (_)_ __  (_) ___  ___| |_ \n"
-        " | | '_ \\ | |/ _ \\/ __| __|\n"
-        " | | | | || |  __/ (__| |_ \n"
-        " |_|_| |_|/ |\\___|\\___|\\__|\n"
-        "        |__/               ");
-
-    log_info(
-        "Inject build date %s, gitrev %s", inject_build_date, inject_gitrev);
-}
-
-bool logger_init(const char *log_file_path)
-{
-    if (log_file_path) {
-        log_file = fopen(log_file_path, "w+");
+    if (has_sinks) {
+        core_log_bt_init(config->msg_buffer_size_bytes, &sink);
+        core_log_bt_level_set(config->level);
     } else {
-        log_file = NULL;
+        // Consider this equivalent to disabling logging entirely
+        _logger_null_sink_init();
     }
-
-    log_to_writer(logger_writer, log_file);
-
-    logger_log_header();
-
-    if (log_file_path) {
-        log_info("Log file: %s", log_file_path);
-
-        if (!log_file) {
-            log_warning(
-                "ERROR: Opening log file %s failed: %s",
-                log_file_path,
-                strerror(errno));
-            return false;
-        }
-    }
-
-    log_mutex = CreateMutex(NULL, FALSE, NULL);
-
-    return true;
 }
 
-void logger_log(const char *str)
+void logger_init(const logger_config_t *config)
 {
-    logger_writer(log_file, str, strlen(str));
-}
+    log_assert(config);
 
-void logger_finit()
-{
-    log_misc("Logger finit");
-
-    if (log_file) {
-        fclose(log_file);
+    if (!config->enable) {
+        _logger_null_sink_init();
+    } else {
+        _logger_with_sinks_init(config);
     }
 
-    CloseHandle(log_mutex);
+    core_log_bt_core_api_set();
+}
+
+void logger_fini()
+{
+    core_log_bt_fini();
 }

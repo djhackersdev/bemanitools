@@ -11,7 +11,8 @@
 
 #include "geninput/dev-list.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/mem.h"
 
 void dev_list_init(struct dev_list *devs, const GUID *class_guid)

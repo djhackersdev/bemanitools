@@ -18,13 +18,14 @@
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
 
+#include "iface-core/log.h"
+
 #include "popnhook-util/acio.h"
 
 #include "imports/avs.h"
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu popnhook_acio_emu;

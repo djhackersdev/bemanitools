@@ -6,7 +6,11 @@ ldflags_iidxhook5   := \
 deplibs_iidxhook5   := \
     avs \
 
+avslibs_iidxhook5 := \
+    avs-ext \
+
 libs_iidxhook5      := \
+    core \
     iidxhook-util \
     ezusb-emu \
     ezusb-iidx-16seg-emu \
@@ -14,15 +18,18 @@ libs_iidxhook5      := \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \
     security \
-    eamio \
     acioemu \
     hook \
     hooklib \
-    iidxio \
-    cconfig \
-    util \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    util \
+    mxml \
 
 src_iidxhook5       := \
     dllmain.c \
+    iidxhook5.c \
     ifs-snd-redir.c \

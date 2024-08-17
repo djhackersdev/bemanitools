@@ -4,7 +4,7 @@
 
 #include "ezusb-iidx/coin-cmd.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 static uint8_t ezusb_iidx_emu_node_coin_mode = 0;
 

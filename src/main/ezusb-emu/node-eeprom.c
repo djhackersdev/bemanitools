@@ -6,7 +6,7 @@
 
 #include "ezusb-iidx/eeprom-cmd.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 /* not verified, but we got calls with 3 pages only so far */
 #define EEPROM_NPAGES 3

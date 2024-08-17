@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <windows.h>
 
+#include "iface-core/log.h"
+
 #include "ViGEm/Client.h"
 
-#include "util/log.h"
 #include "vigemstub/helper.h"
 
 PVIGEM_CLIENT vigem_helper_setup(void)

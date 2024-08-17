@@ -12,6 +12,8 @@
  */
 void settings_hook_init(void);
 
+void settings_hook_fini();
+
 /**
  * Change the path where settings file are stored.
  *

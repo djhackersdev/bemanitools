@@ -1,3 +1,5 @@
+#define LOG_MODULE "ddrio-mm"
+
 #include <windows.h>
 
 #include <stdatomic.h>
@@ -5,13 +7,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "bemanitools/ddrio.h"
+#include "api/core/log.h"
+
+#include "iface-core/log.h"
 
 #include "mm/mm.h"
 
+#include "sdk/module/core/log.h"
+#include "sdk/module/io/ddr.h"
+
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct ddr_bittrans {
@@ -20,49 +26,49 @@ struct ddr_bittrans {
 };
 
 static const struct ddr_bittrans input_map[] = {
-    {0x00000001, 1 << DDR_SERVICE},
-    {0x00000002, 1 << DDR_TEST},
-    {0x00100000, 1 << DDR_P1_MENU_LEFT},
-    {0x00400000, 1 << DDR_P1_MENU_RIGHT},
-    {0x00000100, 1 << DDR_P1_START},
-    {0x00200000, 1 << DDR_P2_MENU_LEFT},
-    {0x00800000, 1 << DDR_P2_MENU_RIGHT},
-    {0x00000200, 1 << DDR_P2_START},
-    {0x00004000, 1 << DDR_P1_LEFT},
-    {0x00010000, 1 << DDR_P1_RIGHT},
-    {0x00000400, 1 << DDR_P1_UP},
-    {0x00001000, 1 << DDR_P1_DOWN},
-    {0x00008000, 1 << DDR_P2_LEFT},
-    {0x00020000, 1 << DDR_P2_RIGHT},
-    {0x00000800, 1 << DDR_P2_UP},
-    {0x00002000, 1 << DDR_P2_DOWN},
+    {0x00000001, 1 << BT_IO_DDR_SERVICE},
+    {0x00000002, 1 << BT_IO_DDR_TEST},
+    {0x00100000, 1 << BT_IO_DDR_P1_MENU_LEFT},
+    {0x00400000, 1 << BT_IO_DDR_P1_MENU_RIGHT},
+    {0x00000100, 1 << BT_IO_DDR_P1_START},
+    {0x00200000, 1 << BT_IO_DDR_P2_MENU_LEFT},
+    {0x00800000, 1 << BT_IO_DDR_P2_MENU_RIGHT},
+    {0x00000200, 1 << BT_IO_DDR_P2_START},
+    {0x00004000, 1 << BT_IO_DDR_P1_LEFT},
+    {0x00010000, 1 << BT_IO_DDR_P1_RIGHT},
+    {0x00000400, 1 << BT_IO_DDR_P1_UP},
+    {0x00001000, 1 << BT_IO_DDR_P1_DOWN},
+    {0x00008000, 1 << BT_IO_DDR_P2_LEFT},
+    {0x00020000, 1 << BT_IO_DDR_P2_RIGHT},
+    {0x00000800, 1 << BT_IO_DDR_P2_UP},
+    {0x00002000, 1 << BT_IO_DDR_P2_DOWN},
 
     /* Nonstandard */
-    {0x01000000, 1 << DDR_P1_MENU_UP},
-    {0x04000000, 1 << DDR_P1_MENU_DOWN},
-    {0x02000000, 1 << DDR_P2_MENU_UP},
-    {0x08000000, 1 << DDR_P2_MENU_DOWN},
+    {0x01000000, 1 << BT_IO_DDR_P1_MENU_UP},
+    {0x04000000, 1 << BT_IO_DDR_P1_MENU_DOWN},
+    {0x02000000, 1 << BT_IO_DDR_P2_MENU_UP},
+    {0x08000000, 1 << BT_IO_DDR_P2_MENU_DOWN},
 };
 
 static const struct ddr_bittrans extio_light_map[] = {
-    {0x00000100, 1 << LIGHT_P1_UP},
-    {0x00000200, 1 << LIGHT_P1_DOWN},
-    {0x00000400, 1 << LIGHT_P1_LEFT},
-    {0x00000800, 1 << LIGHT_P1_RIGHT},
-    {0x00010000, 1 << LIGHT_P2_UP},
-    {0x00020000, 1 << LIGHT_P2_DOWN},
-    {0x00040000, 1 << LIGHT_P2_LEFT},
-    {0x00080000, 1 << LIGHT_P2_RIGHT},
-    {0x01000000, 1 << LIGHT_NEONS},
+    {0x00000100, 1 << BT_IO_DDR_EXTIO_LIGHT_P1_UP},
+    {0x00000200, 1 << BT_IO_DDR_EXTIO_LIGHT_P1_DOWN},
+    {0x00000400, 1 << BT_IO_DDR_EXTIO_LIGHT_P1_LEFT},
+    {0x00000800, 1 << BT_IO_DDR_EXTIO_LIGHT_P1_RIGHT},
+    {0x00010000, 1 << BT_IO_DDR_EXTIO_LIGHT_P2_UP},
+    {0x00020000, 1 << BT_IO_DDR_EXTIO_LIGHT_P2_DOWN},
+    {0x00040000, 1 << BT_IO_DDR_EXTIO_LIGHT_P2_LEFT},
+    {0x00080000, 1 << BT_IO_DDR_EXTIO_LIGHT_P2_RIGHT},
+    {0x01000000, 1 << BT_IO_DDR_EXTIO_LIGHT_NEONS},
 };
 
 static const struct ddr_bittrans p3io_light_map[] = {
-    {0x00000004, 1 << LIGHT_P1_MENU},
-    {0x00000008, 1 << LIGHT_P2_MENU},
-    {0x00000010, 1 << LIGHT_P2_LOWER_LAMP},
-    {0x00000020, 1 << LIGHT_P2_UPPER_LAMP},
-    {0x00000040, 1 << LIGHT_P1_LOWER_LAMP},
-    {0x00000080, 1 << LIGHT_P1_UPPER_LAMP},
+    {0x00000004, 1 << BT_IO_DDR_P3IO_LIGHT_P1_MENU},
+    {0x00000008, 1 << BT_IO_DDR_P3IO_LIGHT_P2_MENU},
+    {0x00000010, 1 << BT_IO_DDR_P3IO_LIGHT_P2_LOWER_LAMP},
+    {0x00000020, 1 << BT_IO_DDR_P3IO_LIGHT_P2_UPPER_LAMP},
+    {0x00000040, 1 << BT_IO_DDR_P3IO_LIGHT_P1_LOWER_LAMP},
+    {0x00000080, 1 << BT_IO_DDR_P3IO_LIGHT_P1_UPPER_LAMP},
 };
 
 static bool initted;
@@ -111,19 +117,7 @@ static int ddr_io_get_lag_param(void)
     return result;
 }
 
-void ddr_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    log_to_external(misc, info, warning, fatal);
-}
-
-bool ddr_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+bool bt_io_ddr_init()
 {
     bool ok;
 
@@ -143,7 +137,7 @@ bool ddr_io_init(
     return true;
 }
 
-uint32_t ddr_io_read_pad(void)
+uint32_t bt_io_ddr_pad_read(void)
 {
     struct mm_input in;
     uint32_t i;
@@ -165,7 +159,7 @@ uint32_t ddr_io_read_pad(void)
     return pad;
 }
 
-void ddr_io_set_lights_extio(uint32_t extio_lights)
+void bt_io_ddr_extio_lights_set(uint32_t extio_lights)
 {
     uint32_t clr;
     uint32_t set;
@@ -186,7 +180,7 @@ void ddr_io_set_lights_extio(uint32_t extio_lights)
     atomic_fetch_and(&out.lights, ~clr);
 }
 
-void ddr_io_set_lights_p3io(uint32_t p3io_lights)
+void bt_io_ddr_p3io_lights_set(uint32_t p3io_lights)
 {
     uint32_t clr;
     uint32_t set;
@@ -207,13 +201,13 @@ void ddr_io_set_lights_p3io(uint32_t p3io_lights)
     atomic_fetch_and(&out.lights, ~clr);
 }
 
-void ddr_io_set_lights_hdxs_panel(uint32_t lights)
+void bt_io_ddr_hdxs_lights_panel_set(uint32_t lights)
 {
     (void) lights;
     // stubbed
 }
 
-void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
+void bt_io_ddr_hdxs_lights_rgb_set(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
 {
     (void) idx;
     (void) r;
@@ -222,11 +216,29 @@ void ddr_io_set_lights_hdxs_rgb(uint8_t idx, uint8_t r, uint8_t g, uint8_t b)
     // stubbed
 }
 
-void ddr_io_fini(void)
+void bt_io_ddr_fini(void)
 {
     if (initted) {
         mm_fini();
         DeleteCriticalSection(&cs);
         initted = false;
     }
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_ddr_init;
+    api->v1.fini = bt_io_ddr_fini;
+    api->v1.pad_read = bt_io_ddr_pad_read;
+    api->v1.extio_lights_set = bt_io_ddr_extio_lights_set;
+    api->v1.p3io_lights_set = bt_io_ddr_p3io_lights_set;
+    api->v1.hdxs_lights_panel_set = bt_io_ddr_hdxs_lights_panel_set;
+    api->v1.hdxs_lights_rgb_set = bt_io_ddr_hdxs_lights_rgb_set;
 }

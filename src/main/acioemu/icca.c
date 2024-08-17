@@ -12,7 +12,7 @@
 #include "acioemu/emu.h"
 #include "acioemu/icca.h"
 
-#include "bemanitools/eamio.h"
+#include "iface-io/eam.h"
 
 #include "util/crc.h"
 #include "util/time.h"
@@ -58,6 +58,7 @@ void ac_io_emu_icca_init(
     memset(icca, 0, sizeof(*icca));
     icca->emu = emu;
     icca->unit_no = unit_no;
+
     // queue must be started
     icca->fault = true;
 
@@ -156,20 +157,20 @@ void ac_io_emu_icca_dispatch_request(
 
                 switch (misc->subcmd) {
                     case AC_IO_ICCA_SUBCMD_CARD_SLOT_CLOSE:
-                        cmd = EAM_IO_CARD_SLOT_CMD_CLOSE;
+                        cmd = BT_IO_EAM_CARD_SLOT_CMD_CLOSE;
                         break;
 
                     case AC_IO_ICCA_SUBCMD_CARD_SLOT_OPEN:
-                        cmd = EAM_IO_CARD_SLOT_CMD_OPEN;
+                        cmd = BT_IO_EAM_CARD_SLOT_CMD_OPEN;
                         break;
 
                     case AC_IO_ICCA_SUBCMD_CARD_SLOT_EJECT:
-                        cmd = EAM_IO_CARD_SLOT_CMD_EJECT;
+                        cmd = BT_IO_EAM_CARD_SLOT_CMD_EJECT;
                         icca->engaged = false;
                         break;
 
                     case 3:
-                        cmd = EAM_IO_CARD_SLOT_CMD_READ;
+                        cmd = BT_IO_EAM_CARD_SLOT_CMD_READ;
                         break;
 
                     default:
@@ -182,7 +183,7 @@ void ac_io_emu_icca_dispatch_request(
                 }
 
                 if (cmd != 0xFF) {
-                    if (!eam_io_card_slot_cmd(icca->unit_no, cmd)) {
+                    if (!bt_io_eam_card_slot_cmd_send(icca->unit_no, cmd)) {
                         log_warning(
                             "Eamio failed to handle slot cmd %d for node %d",
                             cmd,
@@ -326,33 +327,34 @@ static void ac_io_emu_icca_send_state(
     uint8_t sensor_state;
     bool card_full_insert;
 
-    if (!eam_io_poll(icca->unit_no)) {
+    if (!bt_io_eam_poll(icca->unit_no)) {
         log_warning("Polling eamio failed");
     }
 
     memset(&resp, 0, sizeof(resp));
 
-    keypad = eam_io_get_keypad_state(icca->unit_no);
-    sensor_state = eam_io_get_sensor_state(icca->unit_no);
+    keypad = bt_io_eam_keypad_state_get(icca->unit_no);
+    sensor_state = bt_io_eam_sensor_state_get(icca->unit_no);
 
     keypad_rise = keypad & (icca->last_keypad ^ keypad);
-    card_full_insert = sensor_state & (1 << EAM_IO_SENSOR_FRONT) &&
-        sensor_state & (1 << EAM_IO_SENSOR_BACK);
+    card_full_insert = sensor_state & (1 << BT_IO_EAM_SENSOR_STATE_FRONT) &&
+        sensor_state & (1 << BT_IO_EAM_SENSOR_STATE_BACK);
 
     if (sensor_state != icca->last_sensor) {
         if (card_full_insert) {
-            if (!eam_io_card_slot_cmd(
-                    icca->unit_no, EAM_IO_CARD_SLOT_CMD_READ)) {
+            if (!bt_io_eam_card_slot_cmd_send(
+                    icca->unit_no, BT_IO_EAM_CARD_SLOT_CMD_READ)) {
                 log_warning(
-                    "EAM_IO_CARD_SLOT_CMD_READ to unit %d failed",
+                    "BT_IO_EAM_CARD_SLOT_CMD_READ to unit %d failed",
                     icca->unit_no);
             }
 
-            icca->card_result =
-                eam_io_read_card(icca->unit_no, icca->uid, sizeof(icca->uid));
+            icca->card_result = bt_io_eam_card_read(
+                icca->unit_no, icca->uid, sizeof(icca->uid));
 
             // fault if sensor says to read but we got no card
-            icca->fault = (icca->card_result == EAM_IO_CARD_NONE);
+            icca->fault =
+                (icca->card_result == BT_IO_EAM_READ_CARD_RESULT_NONE);
         } else {
             icca->fault = false;
         }
@@ -385,11 +387,11 @@ static void ac_io_emu_icca_send_state(
 
     body->sensor_state = 0;
 
-    if (sensor_state & (1 << EAM_IO_SENSOR_FRONT)) {
+    if (sensor_state & (1 << BT_IO_EAM_SENSOR_STATE_FRONT)) {
         body->sensor_state |= AC_IO_ICCA_FLAG_FRONT_SENSOR;
     }
 
-    if (sensor_state & (1 << EAM_IO_SENSOR_BACK)) {
+    if (sensor_state & (1 << BT_IO_EAM_SENSOR_STATE_BACK)) {
         body->sensor_state |= AC_IO_ICCA_FLAG_REAR_SENSOR;
     }
 

@@ -4,8 +4,13 @@
 
 #include <windows.h>
 
-#include "bemanitools/glue.h"
-#include "bemanitools/input.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
+
+#include "api/input.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 #include "geninput/hid-mgr.h"
 #include "geninput/hid.h"
@@ -14,10 +19,8 @@
 #include "geninput/mapper.h"
 
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/msg-thread.h"
 #include "util/str.h"
-#include "util/thread.h"
 
 static HINSTANCE input_hinst;
 static volatile long input_init_count;
@@ -33,28 +36,19 @@ static FILE *mapper_config_open(const char *game_type, const char *mode)
     // Try to load the old save file only if we're loading
     if (f == NULL) {
         if (strchr(mode, 'r') != NULL) {
+            log_misc("Fallback to old save file");
             str_format(path, sizeof(path), "%s_v5_00a07.bin", game_type);
             f = fopen_appdata("DJHACKERS", path, mode);
         }
     }
-    
+
     return f;
 }
 
-void input_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    log_to_external(misc, info, warning, fatal);
-}
-
-void input_init(
-    thread_create_t create, thread_join_t join, thread_destroy_t destroy)
+bool input_init()
 {
     if (InterlockedIncrement(&input_init_count) != 1) {
-        return;
+        return true;
     }
 
     log_info("Generic input subsystem is starting up");
@@ -63,9 +57,10 @@ void input_init(
 
     mapper_inst = mapper_impl_create();
 
-    thread_api_init(create, join, destroy);
     msg_thread_init(input_hinst);
     io_thread_init();
+
+    return true;
 }
 
 void input_fini(void)
@@ -225,7 +220,7 @@ void mapper_set_nlights(uint8_t nlights)
     mapper_impl_set_nlights(mapper_inst, nlights);
 }
 
-uint8_t mapper_read_analog(uint8_t analog)
+uint8_t mapper_analog_read(uint8_t analog)
 {
     return mapper_impl_read_analog(mapper_inst, analog);
 }
@@ -235,9 +230,31 @@ uint64_t mapper_update(void)
     return mapper_impl_update(mapper_inst);
 }
 
-void mapper_write_light(uint8_t light, uint8_t intensity)
+void mapper_light_write(uint8_t light, uint8_t intensity)
 {
     mapper_impl_write_light(mapper_inst, light, intensity);
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_input_api_get(bt_input_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = input_init;
+    api->v1.fini = input_fini;
+    api->v1.mapper_config_load = mapper_config_load;
+    api->v1.mapper_analog_read = mapper_analog_read;
+    api->v1.mapper_update = mapper_update;
+    api->v1.mapper_light_write = mapper_light_write;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)

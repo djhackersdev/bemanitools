@@ -15,7 +15,8 @@
 #include "geninput/hid-meta-out.h"
 #include "geninput/hid-report-out.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/mem.h"
 
 static bool

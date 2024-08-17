@@ -3,14 +3,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/ddrio.h"
-
 #include "ddrhook-util/p3io.h"
+
+#include "iface-core/log.h"
+#include "iface-io/ddr.h"
 
 #include "p3ioemu/emu.h"
 #include "p3ioemu/uart.h"
-
-#include "util/log.h"
 
 extern bool _15khz;
 extern bool standard_def;
@@ -91,14 +90,14 @@ static HRESULT p3io_ddr_read_jamma(void *ctx, uint32_t *state)
 {
     log_assert(state != NULL);
 
-    *state = ddr_io_read_pad();
+    *state = bt_io_ddr_pad_read();
 
     return S_OK;
 }
 
 static HRESULT p3io_ddr_set_outputs(void *ctx, uint32_t outputs)
 {
-    ddr_io_set_lights_p3io(outputs);
+    bt_io_ddr_p3io_lights_set(outputs);
 
     return S_OK;
 }

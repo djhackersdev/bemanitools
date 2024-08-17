@@ -7,10 +7,11 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "p3ioemu/devmgr.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static HMODULE(STDCALL *real_LoadLibraryA)(const char *name);
 

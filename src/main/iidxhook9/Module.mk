@@ -7,11 +7,16 @@ ldflags_iidxhook9   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_iidxhook9   := \
     avs \
 
+avslibs_iidxhook9 := \
+    avs-ext \
+
 libs_iidxhook9      := \
+    core \
     iidxhook-util \
     acioemu \
     asio \
@@ -20,14 +25,17 @@ libs_iidxhook9      := \
     camhook \
     d3d9exhook \
     dinput \
-    iidxio \
     hook \
     hooklib \
-    cconfig \
+    iface \
+    iface-io \
+    iface-core \
+    module \
     util \
-    eamio \
+    security \
 
 src_iidxhook9       := \
     config-io.c \
-    fs-hook.c \
     dllmain.c \
+    fs-hook.c \
+    iidxhook9.c \

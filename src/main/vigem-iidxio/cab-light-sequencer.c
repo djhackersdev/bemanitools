@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "iface-core/log.h"
+
 #include "vigem-iidxio/cab-light-sequencer.h"
 
-#include "util/log.h"
 #include "util/math.h"
 #include "util/time.h"
 

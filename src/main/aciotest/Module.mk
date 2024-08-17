@@ -1,10 +1,12 @@
 exes            += aciotest
 
 libs_aciotest     := \
+    core \
     bio2drv \
     aciodrv \
     aciodrv-proc \
     util \
+    iface-core
 
 src_aciotest      := \
     icca.c \

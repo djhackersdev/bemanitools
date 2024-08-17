@@ -15,8 +15,9 @@
 #include "geninput/io-thread.h"
 #include "geninput/pacdrive.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 /* The PacDrive appears to have a malformed descriptor for its OUT report.

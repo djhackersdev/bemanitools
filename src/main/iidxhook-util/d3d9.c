@@ -12,11 +12,12 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/vertex-shader.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

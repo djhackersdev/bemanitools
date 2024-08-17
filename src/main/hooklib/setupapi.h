@@ -15,4 +15,6 @@ struct hook_setupapi_data {
 
 void hook_setupapi_init(const struct hook_setupapi_data *data);
 
+void hook_setupapi_fini();
+
 #endif

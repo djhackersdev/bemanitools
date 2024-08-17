@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<inject>
+  <version __type="u32">1</version>
+  <debugger>
+    <app>
+      <path __type="str">bm2dx.exe</path>
+      <args __type="str"></args>
+    </app>
+    <attach_type __type="str">inject</attach_type>
+  </debugger>
+  <hooks>
+    <hook>
+      <enable __type="bool">1</enable>
+      <path __type="str">iidxhook1.dll</path>
+      <config kind="inline">
+        <hook>
+          <eamuse>
+            <!-- Magnetic card type, format XXX, 3 digit string (supports: C02, D01, E11, ECO) -->
+            <card_type __type="str">C02</card_type>
+            <!-- URL (e.g. http://my.eamuse.server:80/whatever) or IPV4 (e.g. 127.0.0.1:80) of the target eamuse server. The port is optional but defaults to 80. -->
+            <server __type="str">localhost:80</server>
+            <pcbid __type="bin">0101020304050607086F</pcbid>
+            <eamid __type="bin">0101020304050607086F</eamid>
+          </eamuse>
+          <gfx>
+            <device>
+              <!-- D3D9 device adapter (monitor), -1 to use default, 0, 1, 2 etc. to use specified adapter -->
+              <adapter __type="s8">-1</adapter>
+              <!-- Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors) -->
+              <forced_refresh_rate __type="s16">-1</forced_refresh_rate>
+              <!-- Software limit the frame rate of the rendering loop in hz, e.g. 60 or 59.95 (0.0 = no software limit) -->
+              <frame_rate_limit __type="float">0.0</frame_rate_limit>
+            </device>
+            <window>
+              <windowed __type="bool">1</windowed>
+              <framed __type="bool">1</framed>
+              <!-- Windowed height, 0 for default size -->
+              <width __type="u16">0</width>
+              <height __type="u16">0</height>
+            </window>
+            <back_buffer_scale>
+              <!-- Up-/downscale the back buffer's height. This does not change the game's rendering resolution but scales the final frame. Use this to target the native resolution of your monitor/TV, e.g. to avoid over-/underscan, bad image quality or latency caused by the monitors internal upscaler. 0 to disable this feature. Must be set in combination with the corresponding width parameter. -->
+              <width __type="u16">0</width>
+              <height __type="u16">0</height>
+              <!-- Filter type to use for up-/downscaling the back buffer. Only used if scaling feature was enabled by setting the scaling width and height parameters. Available types: none, linear, point (refer to D3DTEXTUREFILTERTYPE  for explanation). -->
+              <filter __type="str">none</filter>
+            </back_buffer_scale>
+            <game>
+              <!-- Enable/disable software monitor check/auto timebase or set a pre-determined refresh value. -1 disables this feature. 0 enables auto detecting the current refresh rate on startup. Setting any positive value > 0 allows you to set a pre-determined refresh rate (e.g. retrieved from the monitor check on newer IIDX games). Either the auto detected value or pre-determined value is used to patch any chart files in-memory to fix song synchronization issues. Requires constant refresh rate!!! -->
+              <monitor_check __type="float">-1.000000</monitor_check>
+              <!-- Fix stretched BG videos on newer GPUs. Might appear on SIRIUS and older. On 9th and 10th style this issue may only affect older BGAs (from 1st-3rd style) -->
+              <bgvideo_uv_fix __type="bool">1</bgvideo_uv_fix>
+            </game>
+          </gfx>
+          <ezusb>
+            <type __type="str">C02</type>
+            <security>
+              <boot>
+                <version __type="str">GEC02</version>
+                <seed __type="str">0:0:0</seed>
+              </boot>
+              <plug_black_mcode __type="str">GEC02JAA</plug_black_mcode>
+            </security>
+            <debug>
+              <api_call_monitoring __type="bool">0</api_call_monitoring>
+            </debug>
+          </ezusb>
+          <misc>
+            <!-- Path to store the settings, e.g. bookkeeping, operator settings. d:, e: and f: drive configuration/settings data -->
+            <settings_path __type="str">.\</settings_path>
+            <rteffect_stub __type="bool">1</rteffect_stub>
+            <disable_clock_set __type="bool">1</disable_clock_set>
+          </misc>
+        </hook>
+      </config>
+    </hook>
+  </hooks>
+  <logger>
+    <enable __type="bool">1</enable>
+    <level __type="str">misc</level>
+    <msg_buffer_size_bytes __type="u32">8192</msg_buffer_size_bytes>
+    <sinks>
+      <async>
+        <enable __type="bool">0</enable>
+        <queue_length __type="u8">64</queue_length>
+        <overflow_policy __type="str">discard_new</overflow_policy>
+      </async>
+      <console>
+        <enable __type="bool">1</enable>
+        <color __type="bool">1</color>
+      </console>
+      <file>
+        <enable __type="bool">1</enable>
+        <path __type="str">inject.log</path>
+        <append __type="bool">0</append>
+        <rotate __type="bool">0</rotate>
+        <max_rotations __type="u8">1</max_rotations>
+      </file>
+    </sinks>
+  </logger>
+  <debug>
+    <property_configs_log __type="bool">1</property_configs_log>
+    <property_api_trace_log __type="bool">0</property_api_trace_log>
+  </debug>
+</inject>

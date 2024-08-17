@@ -6,7 +6,11 @@ ldflags_iidxhook6   := \
 deplibs_iidxhook6   := \
     avs \
 
+avslibs_iidxhook6 := \
+    avs-ext \
+
 libs_iidxhook6      := \
+    core \
     iidxhook-d3d9 \
     iidxhook-util \
     ezusb-emu \
@@ -15,14 +19,16 @@ libs_iidxhook6      := \
     ezusb2-iidx-emu \
     ezusb-iidx-emu \
     security \
-    eamio \
     acioemu \
     hook \
     hooklib \
-    iidxio \
-    cconfig \
-    util \
     ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    util \
 
 src_iidxhook6       := \
     dllmain.c \
+    iidxhook6.c \

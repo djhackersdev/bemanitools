@@ -5,9 +5,13 @@
 
 #include <windows.h>
 
-#include "extiodrv/extio.h"
+#include "core/boot.h"
+#include "core/log-bt.h"
+#include "core/log-bt-ext.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
+#include "extiodrv/extio.h"
 
 int main(int argc, char **argv)
 {
@@ -22,8 +26,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "  COM_PORT: For example COM1\n");
     }
 
-    log_to_writer(log_writer_stderr, NULL);
-    log_set_level(LOG_LEVEL_MISC);
+    core_boot("extiotest");
+
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_core_api_set();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
     port = argv[1];
 

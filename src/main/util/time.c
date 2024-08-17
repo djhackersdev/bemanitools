@@ -1,6 +1,7 @@
 #include <windows.h>
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/time.h"
 
 static uint64_t counter_freq_ns;

@@ -7,9 +7,9 @@
 
 #include "hook/table.h"
 
-#include "jbhook3/options.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "jbhook3/options.h"
 
 static bool jbhook3_gfx_windowed;
 static bool jbhook3_gfx_show_cursor;

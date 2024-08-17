@@ -12,12 +12,13 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "imports/glhelper.h"
 
 #include "jbhook-util-p3io/gfx.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/time.h"
 

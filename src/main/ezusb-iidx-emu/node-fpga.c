@@ -6,8 +6,9 @@
 #include "ezusb-iidx-emu/node-fpga.h"
 #include "ezusb-iidx/fpga-cmd.h"
 
+#include "iface-core/log.h"
+
 #include "util/fs.h"
-#include "util/log.h"
 
 static uint16_t ezusb_iidx_emu_node_fpga_write_ptr;
 static uint16_t ezusb_iidx_emu_node_fpga_prog_size;

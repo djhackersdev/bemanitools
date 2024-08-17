@@ -6,8 +6,9 @@
 #include "geninput/mouse.h"
 #include "geninput/ri.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 struct ri_handle {

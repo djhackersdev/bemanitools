@@ -10,13 +10,14 @@
 #include <setupapi.h>
 // clang-format on
 
+#include "iface-core/log.h"
+
 #include "p4io/cmd.h"
 #include "p4io/guid.h"
 #include "p4io/ioctl.h"
 
 #include "p4iodrv/usb.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 HANDLE p4io_usb_open(void)

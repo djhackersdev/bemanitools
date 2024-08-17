@@ -9,9 +9,10 @@
 #include "ezusb2/cyioctl.h"
 #include "ezusb2/ezusb2.h"
 
+#include "iface-core/log.h"
+
 #include "util/crc.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define REQ_TYPE_HOST_TO_DEV 0x40

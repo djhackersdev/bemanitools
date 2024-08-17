@@ -1,11 +1,11 @@
 #ifndef SDVXHOOK2_CONFIG_IO_H
 #define SDVXHOOK2_CONFIG_IO_H
 
-#include <windows.h>
+#include <stdbool.h>
 
-#include "cconfig/cconfig.h"
+#include "api/core/config.h"
 
-struct sdvxhook2_config_io {
+typedef struct sdvxhook2_config_io {
     bool disable_card_reader_emu;
     bool disable_bio2_emu;
     bool disable_poll_limiter;
@@ -14,11 +14,9 @@ struct sdvxhook2_config_io {
     bool disable_power_hooks;
     bool disable_nvapi_hooks;
     bool com1_card_reader;
-};
-
-void sdvxhook2_config_io_init(struct cconfig *config);
+} sdvxhook2_config_io_t;
 
 void sdvxhook2_config_io_get(
-    struct sdvxhook2_config_io *config_io, struct cconfig *config);
+    const bt_core_config_t *config, sdvxhook2_config_io_t *config_out);
 
 #endif

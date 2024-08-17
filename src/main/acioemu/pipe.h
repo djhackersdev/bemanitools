@@ -7,9 +7,10 @@
 
 #include "acio/acio.h"
 
+#include "iface-core/log.h"
+
 #include "util/iobuf.h"
 #include "util/list.h"
-#include "util/log.h"
 
 /* This uses the USB convention where OUT and IN are from the host's (game's)
    perspective. So an OUT transaction comes in to us and vice versa.

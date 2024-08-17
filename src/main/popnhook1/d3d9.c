@@ -9,10 +9,11 @@
 #include "hook/pe.h"
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "popnhook1/d3d9.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 #include "hook/d3d9.h"
 

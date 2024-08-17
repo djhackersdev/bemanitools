@@ -4,8 +4,9 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 
 // ANSI/OEM Japanese; Japanese (Shift-JIS)
 #define CODEPAGE_SHIFT_JIS 932

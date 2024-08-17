@@ -7,10 +7,12 @@
 #include <windows.h>
 
 #include "hook/iohook.h"
+
+#include "iface-core/log.h"
+
 #include "p4io/cmd.h"
 #include "p4io/ioctl.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/str.h"
 
 // #define P4IOEMU_DEBUG_DUMP

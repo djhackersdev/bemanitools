@@ -3,10 +3,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "iface-core/log.h"
+
 #include "p3io/frame.h"
 
 #include "util/iobuf.h"
-#include "util/log.h"
 
 #define P3IO_FRAME_SOF 0xAA
 #define P3IO_FRAME_ESCAPE 0xFF

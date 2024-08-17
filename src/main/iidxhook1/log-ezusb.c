@@ -8,10 +8,11 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook1/log-ezusb.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 /* ------------------------------------------------------------------------- */
@@ -47,4 +48,12 @@ void ezusb_log_hook_init(void)
         NULL, "user32.dll", ezusb_log_hook_syms, lengthof(ezusb_log_hook_syms));
 
     log_info("Inserted ezusb log hooks");
+}
+
+void ezusb_log_hook_fini()
+{
+    hook_table_revert(
+        NULL, "user32.dll", ezusb_log_hook_syms, lengthof(ezusb_log_hook_syms));
+
+    log_info("Removed ezusb log hooks");
 }

@@ -1,6 +1,7 @@
 libs            += iidxhook-util
 
 libs_iidxhook-util     := \
+    core \
     util \
 
 src_iidxhook-util     := \
@@ -16,5 +17,4 @@ src_iidxhook-util     := \
     d3d9.c \
     eamuse.c \
     effector.c \
-    log-server.c \
     settings.c \

@@ -9,11 +9,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "iface-core/log.h"
+
 #include "mm/mm.h"
 
 #include "util/cmdline.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 
 DEFINE_GUID(

@@ -4,8 +4,9 @@
 
 #include "ezusb/ezusbsys2.h"
 
+#include "iface-core/log.h"
+
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/time.h"
 
 #include "msg.h"

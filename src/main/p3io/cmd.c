@@ -1,8 +1,8 @@
 #include <stddef.h>
 
-#include "p3io/cmd.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "p3io/cmd.h"
 
 uint8_t p3io_get_full_req_size(const union p3io_req_any *req)
 {

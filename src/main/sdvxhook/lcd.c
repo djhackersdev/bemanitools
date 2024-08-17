@@ -14,11 +14,12 @@
 
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+
 #include "sdvxhook/lcd.h"
 
 #include "util/hex.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static HRESULT lcd_open(struct irp *irp);

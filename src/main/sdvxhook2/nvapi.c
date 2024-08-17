@@ -13,9 +13,9 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "sdvxhook2/nvapi.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "sdvxhook2/nvapi.h"
 
 static void *my_GetProcAddress(HMODULE dll, const char *name);
 

@@ -9,8 +9,9 @@
 
 #include "config/resource.h"
 
+#include "iface-core/log.h"
+
 #include "util/array.h"
-#include "util/log.h"
 #include "util/str.h"
 #include "util/winres.h"
 

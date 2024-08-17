@@ -1,9 +1,13 @@
 LIBRARY vefxio
 
 EXPORTS
-    vefx_io_get_slider
-    vefx_io_recv
-    vefx_io_write_16seg
-    vefx_io_fini
-    vefx_io_init
-    vefx_io_set_loggers
+    ; Bemanitools 6 API
+    bt_module_core_log_api_set
+    bt_module_io_vefx_api_get
+
+    ; Direct API
+    bt_io_vefx_init
+    bt_io_vefx_fini
+    bt_io_vefx_recv
+    bt_io_vefx_slider_get
+    bt_io_vefx_16seg_send

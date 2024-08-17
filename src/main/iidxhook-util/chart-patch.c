@@ -6,10 +6,11 @@
 
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+
 #include "util/crc.h"
 #include "util/defs.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 

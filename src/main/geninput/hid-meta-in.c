@@ -14,7 +14,8 @@
 #include "geninput/hid-meta-in.h"
 #include "geninput/hid-report-in.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/mem.h"
 
 static bool

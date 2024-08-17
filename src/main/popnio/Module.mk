@@ -4,7 +4,11 @@ ldflags_popnio      := \
     -lwinmm
 
 libs_popnio         := \
-    geninput \
+    iface \
+    module \
+    iface-io \
+    iface-core \
+    util \
 
 src_popnio          := \
     popnio.c \

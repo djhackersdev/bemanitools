@@ -9,6 +9,8 @@
 
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+
 #include "p3io/cmd.h"
 #include "p3io/frame.h"
 #include "p3io/ioctl.h"
@@ -18,7 +20,6 @@
 #include "p3ioemu/uart.h"
 
 #include "util/iobuf.h"
-#include "util/log.h"
 
 static HANDLE p3io_emu_fd;
 static uint8_t p3io_emu_resp_bytes[256];

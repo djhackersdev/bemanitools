@@ -11,13 +11,15 @@
 #include "config/schema.h"
 #include "config/usages.h"
 
+#include "iface-core/log.h"
+#include "iface/input.h"
+
 #include "geninput/hid-mgr.h"
 #include "geninput/input-config.h"
 #include "geninput/mapper.h"
 
 #include "util/array.h"
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 
@@ -167,7 +169,7 @@ static INT_PTR analogs_ui_handle_tick(HWND hwnd)
     struct analogs_ui *ui;
     size_t i;
 
-    mapper_update();
+    bt_input_mapper_update();
 
     ui = (struct analogs_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -362,7 +364,8 @@ static void analog_ui_handle_init_invert(HWND hwnd)
     ui = (struct analog_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
     if (mapper_get_analog_invert(ui->def->tag)) {
-        SendMessage(GetDlgItem(hwnd, IDC_ANALOG_INVERT), BM_SETCHECK, BST_CHECKED, 0);
+        SendMessage(
+            GetDlgItem(hwnd, IDC_ANALOG_INVERT), BM_SETCHECK, BST_CHECKED, 0);
     }
 }
 
@@ -565,7 +568,7 @@ static INT_PTR analog_ui_handle_tick(HWND hwnd)
     ui = (struct analog_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     pos_ctl = GetDlgItem(hwnd, IDC_POSITION);
 
-    ui->pos = mapper_read_analog(ui->def->tag);
+    ui->pos = bt_input_mapper_analog_read(ui->def->tag);
 
     SendMessage(pos_ctl, WM_USER, 0, (LPARAM) ui->pos);
 

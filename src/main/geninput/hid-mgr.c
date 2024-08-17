@@ -4,7 +4,8 @@
 
 #include "geninput/hid-mgr.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/mem.h"
 #include "util/str.h"
 

@@ -3,12 +3,13 @@
 #include <stdbool.h>
 #include <windows.h>
 
+#include "iface-core/log.h"
+
 #include "hook/hr.h"
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "util/array.h"
-#include "util/log.h"
 #include "util/str.h"
 
 struct file_entry {

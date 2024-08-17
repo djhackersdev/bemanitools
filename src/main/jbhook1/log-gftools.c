@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "hook/table.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "hook/table.h"
 
 static int CDECL my_GFReportPuts(
     int level,

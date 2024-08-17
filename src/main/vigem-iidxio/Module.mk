@@ -8,15 +8,21 @@ cppflags_vigem-iidxio  := \
 
 ldflags_vigem-iidxio  := \
     -lsetupapi \
+    -lws2_32 \
 
 libs_vigem-iidxio     := \
-    cconfig \
-    iidxio \
-    util \
+    core \
     vigemstub \
+    module \
+    ezusb \
+    iface \
+    iface-io \
+    iface-core \
+    security \
+    util \
 
 src_vigem-iidxio      := \
     cab-16seg-sequencer.c \
     cab-light-sequencer.c \
-    main.c \
     config.c \
+    main.c \

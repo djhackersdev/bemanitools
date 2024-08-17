@@ -6,9 +6,10 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook5-cn/path.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 #define PATH_A "D:/JDZ-001/contents/"

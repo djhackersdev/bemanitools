@@ -6,8 +6,10 @@ deplibs_popnhook1	:= \
 ldflags_popnhook1   := \
     -lws2_32 \
     -liphlpapi \
+    -lshlwapi \
 
 libs_popnhook1		:= \
+    core \
     iidxhook-util \
     ezusb-emu \
     ezusb2-popn-emu \
@@ -16,13 +18,16 @@ libs_popnhook1		:= \
     acioemu \
     hook \
     hooklib \
-    eamio \
-    popnio \
-    cconfig \
     util \
     ezusb \
     security \
     popnhook-util \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    sdk-hook \
+    mxml \
 
 src_popnhook1		:= \
     avs-boot.c \
@@ -32,3 +37,4 @@ src_popnhook1		:= \
     d3d9.c \
     dllmain.c \
     filesystem.c \
+    popnhook1.c \

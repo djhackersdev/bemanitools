@@ -1,33 +1,60 @@
+#include <windows.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <windows.h>
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
 
-#include "bemanitools/eamio.h"
+#include "iface-core/log.h"
+#include "iface-io/eam.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "module/io-ext.h"
+
+static void _eamiotest_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
 
 /**
  * Tool to test your implementations of eamio.
  */
 int main(int argc, char **argv)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    module_io_t *module_io_eam;
 
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_bt_core_api_set();
 
-    if (!eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    core_log_bt_ext_init_with_stderr();
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+
+    _eamiotest_io_eam_init(&module_io_eam);
+
+    if (!bt_io_eam_init()) {
         printf("Initializing eamio failed\n");
+
+        bt_io_eam_api_clear();
+        module_io_free(&module_io_eam);
+
         return -1;
     }
 
     printf(">>> Initializing eamio successful, press enter to continue <<<\n");
 
     if (getchar() != '\n') {
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&module_io_eam);
+
         return 0;
     }
 
@@ -45,15 +72,15 @@ int main(int argc, char **argv)
         }
 
         for (uint8_t node = 0; node < 2; ++node) {
-            if (!eam_io_poll(node)) {
+            if (!bt_io_eam_poll(node)) {
                 printf("ERROR: Polling node %d failed", node);
                 return -2;
             }
 
-            uint16_t keypad = eam_io_get_keypad_state(node);
+            uint16_t keypad = bt_io_eam_keypad_state_get(node);
             uint16_t keypad_rise = ~keypad_prev[node] & keypad;
 
-            uint8_t sensors = eam_io_get_sensor_state(node);
+            uint8_t sensors = bt_io_eam_sensor_state_get(node);
 
             printf(
                 "Press escape to quit\n"
@@ -69,20 +96,20 @@ int main(int argc, char **argv)
                 "|%02X%02X%02X%02X%02X%02X%02X%02X|\n"
                 "------------------\n",
                 node,
-                (keypad & (1 << EAM_IO_KEYPAD_7)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_8)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_9)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_4)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_5)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_6)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_1)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_2)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_3)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_0)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_00)) > 0,
-                (keypad & (1 << EAM_IO_KEYPAD_DECIMAL)) > 0,
-                (sensors & (1 << EAM_IO_SENSOR_FRONT)) > 0,
-                (sensors & (1 << EAM_IO_SENSOR_BACK)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_7)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_8)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_9)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_4)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_5)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_6)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_1)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_2)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_3)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_0)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_00)) > 0,
+                (keypad & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_DECIMAL)) > 0,
+                (sensors & (1 << BT_IO_EAM_SENSOR_STATE_FRONT)) > 0,
+                (sensors & (1 << BT_IO_EAM_SENSOR_STATE_BACK)) > 0,
                 card[node][0],
                 card[node][1],
                 card[node][2],
@@ -92,24 +119,29 @@ int main(int argc, char **argv)
                 card[node][6],
                 card[node][7]);
 
-            if (sensors & (1 << EAM_IO_SENSOR_BACK)) {
-                eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_CLOSE);
-                eam_io_poll(node);
-                eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_READ);
-                eam_io_poll(node);
-                eam_io_read_card(node, card[node], 8);
+            if (sensors & (1 << BT_IO_EAM_SENSOR_STATE_BACK)) {
+                bt_io_eam_card_slot_cmd_send(
+                    node, BT_IO_EAM_CARD_SLOT_CMD_CLOSE);
+                bt_io_eam_poll(node);
+                bt_io_eam_card_slot_cmd_send(
+                    node, BT_IO_EAM_CARD_SLOT_CMD_READ);
+                bt_io_eam_poll(node);
+                bt_io_eam_card_read(node, card[node], 8);
             }
 
             if (sensors == 0) {
                 memset(card[node], 0, 8);
 
-                eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_CLOSE);
-                eam_io_poll(node);
-                eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_OPEN);
+                bt_io_eam_card_slot_cmd_send(
+                    node, BT_IO_EAM_CARD_SLOT_CMD_CLOSE);
+                bt_io_eam_poll(node);
+                bt_io_eam_card_slot_cmd_send(
+                    node, BT_IO_EAM_CARD_SLOT_CMD_OPEN);
             }
 
-            if (keypad_rise & (1 << EAM_IO_KEYPAD_DECIMAL)) {
-                eam_io_card_slot_cmd(node, EAM_IO_CARD_SLOT_CMD_EJECT);
+            if (keypad_rise & (1 << BT_IO_EAM_KEYPAD_SCAN_CODE_DECIMAL)) {
+                bt_io_eam_card_slot_cmd_send(
+                    node, BT_IO_EAM_CARD_SLOT_CMD_EJECT);
             }
 
             keypad_prev[node] = keypad;
@@ -119,7 +151,10 @@ int main(int argc, char **argv)
         Sleep(5);
     }
 
-    eam_io_fini();
+    bt_io_eam_fini();
+
+    bt_io_eam_api_clear();
+    module_io_free(&module_io_eam);
 
     return 0;
 }

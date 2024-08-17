@@ -1,13 +1,4 @@
-/* This is the source code for the VEFXIO.DLL that ships with Bemanitools 5.
-
-   If you want to add on some minor functionality like a custom 16seg display
-   or a customer slider board then feel free to extend this code with support
-   for your custom device.
-
-   This DLL is only used by the generic input variant of IIDXIO.DLL that ships
-   with Bemanitools by default. If you want to create a custom IO board that
-   provides all of the inputs for IIDX then you should replace IIDXIO.DLL
-   instead and not call into this DLL at all. */
+#define LOG_MODULE "vefxio"
 
 // clang-format off
 // Don't format because the order is important here
@@ -18,8 +9,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/input.h"
-#include "bemanitools/vefxio.h"
+#include "iface-core/log.h"
+#include "iface-io/vefx.h"
+
+#include "sdk/module/io/vefx.h"
 
 #define MSEC_PER_NOTCH 128
 
@@ -63,37 +56,7 @@ static struct vefx_io_slider vefx_io_slider[5];
 
 static void vefx_io_slider_update(uint64_t *ppad);
 
-/* Uncomment these if you need them. */
-
-#if 0
-static log_formatter_t vefx_io_log_misc;
-static log_formatter_t vefx_io_log_info;
-static log_formatter_t vefx_io_log_warning;
-static log_formatter_t vefx_io_log_fatal;
-#endif
-
-void vefx_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
-{
-    /* Uncomment this block if you have something you'd like to log.
-
-       You should probably return false from the appropriate function instead
-       of calling the fatal logger yourself though. */
-#if 0
-    vefx_io_log_misc = misc;
-    vefx_io_log_info = info;
-    vefx_io_log_warning = warning;
-    vefx_io_log_fatal = fatal;
-#endif
-}
-
-bool vefx_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+bool bt_io_vefx_init()
 {
     /* geninput should have already been initted be now so we don't do it */
     vefx_io_slider[0].pos = 8;
@@ -108,17 +71,16 @@ bool vefx_io_init(
     return true;
 }
 
-bool vefx_io_recv(uint64_t *ppad)
+bool bt_io_vefx_recv(uint64_t *ppad)
 {
     vefx_io_slider_update(ppad);
 
     return true;
 }
 
-void vefx_io_fini(void)
+void bt_io_vefx_fini(void)
 {
-    /* This function gets called as IIDX shuts down after an Alt-F4. Close your
-       connections to your IO devices here. */
+    // noop
 }
 
 static void vefx_io_slider_update(uint64_t *ppad)
@@ -170,7 +132,7 @@ static void vefx_io_slider_update(uint64_t *ppad)
     }
 }
 
-uint8_t vefx_io_get_slider(uint8_t slider_no)
+uint8_t bt_io_vefx_slider_get(uint8_t slider_no)
 {
     if (slider_no > 4) {
         return 0;
@@ -179,10 +141,26 @@ uint8_t vefx_io_get_slider(uint8_t slider_no)
     return vefx_io_slider[slider_no].pos;
 }
 
-bool vefx_io_write_16seg(const char *text)
+bool bt_io_vefx_16seg_send(const char *text)
 {
     /* Insert code to write to your 16seg display here.
        Log something and return false if you encounter an IO error. */
 
     return true;
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_io_vefx_api_get(bt_io_vefx_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_vefx_init;
+    api->v1.fini = bt_io_vefx_fini;
+    api->v1.recv = bt_io_vefx_recv;
+    api->v1.slider_get = bt_io_vefx_slider_get;
+    api->v1._16seg_send = bt_io_vefx_16seg_send;
 }

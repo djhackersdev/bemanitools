@@ -3,7 +3,7 @@
 #include "ezusb-emu/node-wdt.h"
 #include "ezusb-iidx/wdt-cmd.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 uint8_t ezusb_iidx_emu_node_wdt_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)

@@ -2,7 +2,7 @@
 
 #include "ezusb-iidx/sram.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 #include "ezusb-iidx.h"
 #include "sram-cmd.h"

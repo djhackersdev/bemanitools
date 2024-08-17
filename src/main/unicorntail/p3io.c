@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "iface-core/log.h"
+
 #include "p3io/cmd.h"
 #include "p3io/frame.h"
 
@@ -11,7 +13,6 @@
 #include "unicorntail/p3io.h"
 
 #include "util/array.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static bool p3io_match_irp_locked(const struct irp *irp);

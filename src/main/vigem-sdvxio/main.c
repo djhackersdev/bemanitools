@@ -1,21 +1,35 @@
+#include <windows.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <windows.h>
-
 #include "ViGEm/Client.h"
 
-#include "bemanitools/sdvxio.h"
-#include "util/log.h"
+#include "core/config-property-node.h"
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+#include "core/thread-crt.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/sdvx.h"
+
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "util/math.h"
-#include "util/thread.h"
+
 #include "vigemstub/helper.h"
 
-#include "vigem-sdvxio/config-vigem-sdvxio.h"
+#include "vigem-sdvxio/config.h"
 
 #define ANALOG_FIXED_SENSITIVITY 1024
+
+static module_io_t *_module_io_sdvx;
 
 int16_t convert_analog_to_s16(uint16_t val)
 {
@@ -98,59 +112,99 @@ void gpio_keylight(uint16_t gpio0, uint16_t gpio1)
     uint16_t gpio_lights = 0;
 
     gpio_lights |= check_assign_gpio(
-        gpio0, SDVX_IO_IN_GPIO_0_START, SDVX_IO_OUT_GPIO_START);
+        gpio0, BT_IO_SDVX_IN_GPIO_0_START, BT_IO_SDVX_OUT_GPIO_START);
     gpio_lights |=
-        check_assign_gpio(gpio0, SDVX_IO_IN_GPIO_0_A, SDVX_IO_OUT_GPIO_A);
+        check_assign_gpio(gpio0, BT_IO_SDVX_IN_GPIO_0_A, BT_IO_SDVX_OUT_GPIO_A);
     gpio_lights |=
-        check_assign_gpio(gpio0, SDVX_IO_IN_GPIO_0_B, SDVX_IO_OUT_GPIO_B);
+        check_assign_gpio(gpio0, BT_IO_SDVX_IN_GPIO_0_B, BT_IO_SDVX_OUT_GPIO_B);
     gpio_lights |=
-        check_assign_gpio(gpio0, SDVX_IO_IN_GPIO_0_C, SDVX_IO_OUT_GPIO_C);
+        check_assign_gpio(gpio0, BT_IO_SDVX_IN_GPIO_0_C, BT_IO_SDVX_OUT_GPIO_C);
     gpio_lights |=
-        check_assign_gpio(gpio1, SDVX_IO_IN_GPIO_1_D, SDVX_IO_OUT_GPIO_D);
-    gpio_lights |=
-        check_assign_gpio(gpio1, SDVX_IO_IN_GPIO_1_FX_L, SDVX_IO_OUT_GPIO_FX_L);
-    gpio_lights |=
-        check_assign_gpio(gpio1, SDVX_IO_IN_GPIO_1_FX_R, SDVX_IO_OUT_GPIO_FX_R);
+        check_assign_gpio(gpio1, BT_IO_SDVX_IN_GPIO_1_D, BT_IO_SDVX_OUT_GPIO_D);
+    gpio_lights |= check_assign_gpio(
+        gpio1, BT_IO_SDVX_IN_GPIO_1_FX_L, BT_IO_SDVX_OUT_GPIO_FX_L);
+    gpio_lights |= check_assign_gpio(
+        gpio1, BT_IO_SDVX_IN_GPIO_1_FX_R, BT_IO_SDVX_OUT_GPIO_FX_R);
 
-    sdvx_io_set_gpio_lights(gpio_lights);
+    bt_io_sdvx_gpio_lights_set(gpio_lights);
 }
 
 void set_pwm_brightness(uint8_t wing_pwm, uint8_t controller_pwm)
 {
     // 0-11 are the 4 wings
     for (size_t i = 0; i < 12; ++i) {
-        sdvx_io_set_pwm_light(i, wing_pwm);
+        bt_io_sdvx_pwm_light_set(i, wing_pwm);
     }
     // 12-17 are the woofer / control deck
     for (size_t i = 12; i < 18; ++i) {
-        sdvx_io_set_pwm_light(i, controller_pwm);
+        bt_io_sdvx_pwm_light_set(i, controller_pwm);
     }
+}
+
+static void _io_sdvx_init(module_io_t **module)
+{
+    bt_io_sdvx_api_t api;
+
+    module_io_ext_load_and_init(
+        "sdvxio.dll", "bt_module_io_sdvx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_sdvx_api_set(&api);
+}
+
+static void _config_load(vigem_sdvxio_config_t *config_out)
+{
+    core_property_t *property;
+    core_property_result_t property_result;
+    core_property_node_t node;
+    core_property_node_result_t node_result;
+    bt_core_config_t *config;
+
+    property_result = core_property_file_load("vigem-sdvxio.xml", &property);
+    core_property_fatal_on_error(property_result);
+
+    node_result = core_property_root_node_get(property, &node);
+    core_property_node_fatal_on_error(node_result);
+
+    core_config_property_node_init(&node, &config);
+
+    vigem_sdvxio_config_get(config, config_out);
+
+    core_config_property_node_free(&config);
+    core_property_free(&property);
 }
 
 int main(int argc, char **argv)
 {
-    log_to_writer(log_writer_stdout, NULL);
+    vigem_sdvxio_config_t config;
 
-    struct vigem_sdvxio_config config;
-    if (!get_vigem_sdvxio_config(&config)) {
-        exit(EXIT_FAILURE);
-    }
+    core_log_bt_core_api_set();
+    core_thread_crt_core_api_set();
+    core_config_property_node_core_api_set();
 
-    sdvx_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+    core_log_bt_ext_init_with_stdout();
 
-    if (!sdvx_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy)) {
+    _config_load(&config);
+
+    _io_sdvx_init(&_module_io_sdvx);
+
+    if (!bt_io_sdvx_init()) {
         log_warning("Initializing sdvxio failed");
         return -1;
     }
 
-    sdvx_io_set_amp_volume(
+    bt_io_sdvx_amp_volume_set(
         config.amp_volume, config.amp_volume, config.amp_volume);
 
     PVIGEM_CLIENT client = vigem_helper_setup();
 
     if (!client) {
         log_warning("client failed to connect failed");
+
+        bt_io_sdvx_fini();
+
+        bt_io_sdvx_api_clear();
+        module_io_free(&_module_io_sdvx);
+
         return -1;
     }
 
@@ -158,6 +212,12 @@ int main(int argc, char **argv)
 
     if (!pad) {
         log_warning("vigem_alloc pad 1 failed");
+
+        bt_io_sdvx_fini();
+
+        bt_io_sdvx_api_clear();
+        module_io_free(&_module_io_sdvx);
+
         return -1;
     }
 
@@ -176,14 +236,14 @@ int main(int argc, char **argv)
     log_info("vigem init succeeded, beginning poll loop");
 
     while (loop) {
-        sdvx_io_read_input();
+        bt_io_sdvx_input_read();
 
-        sys = sdvx_io_get_input_gpio_sys();
-        gpio0 = sdvx_io_get_input_gpio(0);
-        gpio1 = sdvx_io_get_input_gpio(1);
+        sys = bt_io_sdvx_input_gpio_sys_get();
+        gpio0 = bt_io_sdvx_input_gpio_get(0);
+        gpio1 = bt_io_sdvx_input_gpio_get(1);
 
-        vol[0] = sdvx_io_get_spinner_pos(0);
-        vol[1] = sdvx_io_get_spinner_pos(1);
+        vol[0] = bt_io_sdvx_spinner_pos_get(0);
+        vol[1] = bt_io_sdvx_spinner_pos_get(1);
 
         memset(&state, 0, sizeof(state));
 
@@ -206,21 +266,21 @@ int main(int argc, char **argv)
         }
 
         state.wButtons |= check_assign_key(
-            gpio0, SDVX_IO_IN_GPIO_0_START, XUSB_GAMEPAD_START);
-        state.wButtons |=
-            check_assign_key(sys, SDVX_IO_IN_GPIO_SYS_TEST, XUSB_GAMEPAD_BACK);
-        state.wButtons |=
-            check_assign_key(gpio0, SDVX_IO_IN_GPIO_0_A, XUSB_GAMEPAD_A);
-        state.wButtons |=
-            check_assign_key(gpio0, SDVX_IO_IN_GPIO_0_B, XUSB_GAMEPAD_B);
-        state.wButtons |=
-            check_assign_key(gpio0, SDVX_IO_IN_GPIO_0_C, XUSB_GAMEPAD_X);
-        state.wButtons |=
-            check_assign_key(gpio1, SDVX_IO_IN_GPIO_1_D, XUSB_GAMEPAD_Y);
+            gpio0, BT_IO_SDVX_IN_GPIO_0_START, XUSB_GAMEPAD_START);
         state.wButtons |= check_assign_key(
-            gpio1, SDVX_IO_IN_GPIO_1_FX_L, XUSB_GAMEPAD_LEFT_SHOULDER);
+            sys, BT_IO_SDVX_IN_GPIO_SYS_TEST, XUSB_GAMEPAD_BACK);
+        state.wButtons |=
+            check_assign_key(gpio0, BT_IO_SDVX_IN_GPIO_0_A, XUSB_GAMEPAD_A);
+        state.wButtons |=
+            check_assign_key(gpio0, BT_IO_SDVX_IN_GPIO_0_B, XUSB_GAMEPAD_B);
+        state.wButtons |=
+            check_assign_key(gpio0, BT_IO_SDVX_IN_GPIO_0_C, XUSB_GAMEPAD_X);
+        state.wButtons |=
+            check_assign_key(gpio1, BT_IO_SDVX_IN_GPIO_1_D, XUSB_GAMEPAD_Y);
         state.wButtons |= check_assign_key(
-            gpio1, SDVX_IO_IN_GPIO_1_FX_R, XUSB_GAMEPAD_RIGHT_SHOULDER);
+            gpio1, BT_IO_SDVX_IN_GPIO_1_FX_L, XUSB_GAMEPAD_LEFT_SHOULDER);
+        state.wButtons |= check_assign_key(
+            gpio1, BT_IO_SDVX_IN_GPIO_1_FX_R, XUSB_GAMEPAD_RIGHT_SHOULDER);
 
         vigem_target_x360_update(client, pad, state);
 
@@ -229,10 +289,10 @@ int main(int argc, char **argv)
         }
 
         set_pwm_brightness(config.pwm_wings, config.pwm_controller);
-        sdvx_io_write_output();
+        bt_io_sdvx_output_write();
 
-        if (check_key(sys, SDVX_IO_IN_GPIO_SYS_TEST) &&
-            check_key(sys, SDVX_IO_IN_GPIO_SYS_SERVICE)) {
+        if (check_key(sys, BT_IO_SDVX_IN_GPIO_SYS_TEST) &&
+            check_key(sys, BT_IO_SDVX_IN_GPIO_SYS_SERVICE)) {
             loop = false;
         }
 
@@ -245,10 +305,13 @@ int main(int argc, char **argv)
 
     vigem_free(client);
 
-    sdvx_io_set_amp_volume(96, 96, 96);
+    bt_io_sdvx_amp_volume_set(96, 96, 96);
     Sleep(1000);
 
-    sdvx_io_fini();
+    bt_io_sdvx_fini();
+
+    bt_io_sdvx_api_clear();
+    module_io_free(&_module_io_sdvx);
 
     return 0;
 }

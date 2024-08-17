@@ -1,0 +1,13 @@
+LIBRARY procmon
+
+EXPORTS
+    ; Bemanitools 6 API
+    bt_module_core_config_api_set
+    bt_module_core_log_api_set
+    bt_module_hook_api_get
+
+    DllMain@12 @1 NONAME
+
+    ; Direct API
+    bt_hook_main_init
+    bt_hook_main_fini

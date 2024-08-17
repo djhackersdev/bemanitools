@@ -4,10 +4,11 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook-util/effector.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static BOOL my_EnableEqualizer(int a1);
 static BOOL my_GetEqualizerStatus(LPVOID buffer);
@@ -79,4 +80,12 @@ void effector_hook_init(void)
         NULL, "rteffect.dll", effector_hook_syms, lengthof(effector_hook_syms));
 
     log_info("Inserted rteffect hooks");
+}
+
+void effector_hook_fini()
+{
+    hook_table_revert(
+        NULL, "rteffect.dll", effector_hook_syms, lengthof(effector_hook_syms));
+
+    log_info("Removed rteffect hooks");
 }

@@ -19,13 +19,14 @@
 #include "bsthook/acio.h"
 #include "bsthook/kfca.h"
 
+#include "iface-core/log.h"
+
 #include "hook/iohook.h"
 
 #include "imports/avs.h"
 
 #include "util/defs.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static struct ac_io_emu ac_io_emu;

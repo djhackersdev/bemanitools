@@ -7,7 +7,7 @@
 
 #include "aciodrv/device.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
 
 // Must be provided on init command. Actual meaning unknown right now.
 // Not providing this will not initialize the IO correctly resulting

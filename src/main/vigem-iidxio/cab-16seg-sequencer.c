@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/time.h"
 
 static const uint8_t _MAX_LEN_16SEG = 9;

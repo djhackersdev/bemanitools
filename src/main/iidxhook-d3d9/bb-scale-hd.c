@@ -4,10 +4,10 @@
 
 #include "d3d9-util/vertex.h"
 
+#include "iface-core/log.h"
+
 #include "bb-scale-hd.h"
 #include "util.h"
-
-#include "util/log.h"
 
 static bool iidxhook_d3d9_bb_scale_initialized;
 static uint16_t iidxhook_d3d9_bb_scale_hd_width;

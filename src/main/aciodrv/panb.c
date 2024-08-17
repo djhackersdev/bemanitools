@@ -5,8 +5,7 @@
 #include "aciodrv/device.h"
 #include "aciodrv/panb.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "iface-core/log.h"
 
 bool aciodrv_panb_start_auto_input(
     struct aciodrv_device_ctx *device, uint8_t node_id, uint8_t node_count)

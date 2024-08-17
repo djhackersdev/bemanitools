@@ -10,9 +10,10 @@
 #include "hook/iohook.h"
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
 #include "util/fs.h"
-#include "util/log.h"
 #include "util/mem.h"
 #include "util/str.h"
 
@@ -97,6 +98,14 @@ void settings_hook_init(void)
         NULL, "kernel32.dll", settings_hook_syms, lengthof(settings_hook_syms));
 
     log_info("Inserted settings hooks, settings path: %s", settings_path);
+}
+
+void settings_hook_fini()
+{
+    hook_table_revert(
+        NULL, "kernel32.dll", settings_hook_syms, lengthof(settings_hook_syms));
+
+    log_info("Removed settings hooks for settings path: %s", settings_path);
 }
 
 void settings_hook_set_path(const char *path)

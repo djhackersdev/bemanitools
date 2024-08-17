@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "iface-core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/pe.h"
 #include "hook/table.h"
@@ -10,7 +12,6 @@
 #include "sdvxhook/gfx.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 
 static HRESULT STDCALL my_CreateDevice(
     IDirect3D9 *self,

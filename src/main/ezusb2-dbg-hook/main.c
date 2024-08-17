@@ -10,13 +10,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "core/log-bt-ext.h"
+#include "core/log-bt.h"
+#include "core/log-sink-std.h"
+
 #include "ezusb2/cyioctl.h"
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/cmdline.h"
 #include "util/hex.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static HANDLE STDCALL my_CreateFileW(
@@ -367,14 +372,16 @@ static void ezusb2_dbg_hook_terminate_process()
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        FILE *file;
         int argc;
         char **argv;
         wchar_t *buffer;
         uint32_t args_success;
 
-        file = fopen("ezusb2_dbg.log", "w+");
-        log_to_writer(log_writer_file, file);
+        core_log_bt_core_api_set();
+
+        core_log_bt_ext_init_with_stderr_and_file(
+            "ezusb2_dbg.log", false, false, 0);
+        core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
 
         hook_table_apply(
             NULL,

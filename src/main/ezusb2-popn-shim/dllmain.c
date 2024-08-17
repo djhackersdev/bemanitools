@@ -11,9 +11,9 @@
 
 #include "hooklib/setupapi.h"
 
-#include "ezusb2-popn-shim/proxy.h"
+#include "iface-core/log.h"
 
-#include "util/log.h"
+#include "ezusb2-popn-shim/proxy.h"
 
 #define EZUSB_REAL_DLL_FILENAME "ezusb.dll"
 

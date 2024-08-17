@@ -17,6 +17,10 @@
 
 #include <stdio.h>
 
+#include "camhook/cam.h"
+
+#include "iface-core/log.h"
+
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
@@ -24,7 +28,6 @@
 #include "camhook/cam-detect.h"
 
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
 
 #define CAMHOOK_NUM_LAYOUTS 3

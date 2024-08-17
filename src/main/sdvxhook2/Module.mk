@@ -7,26 +7,34 @@ ldflags_sdvxhook2   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_sdvxhook2   := \
     avs \
 
+avslibs_sdvxhook2 := \
+    avs-ext \
+
 libs_sdvxhook2      := \
+    core \
     acioemu \
     bio2emu \
     camhook \
     d3d9exhook \
-    sdvxio \
     hook \
     hooklib \
-    cconfig \
     util \
-    eamio \
+    iface \
+    iface-io \
+    iface-core \
+    module \
+    security \
 
 src_sdvxhook2       := \
     acio.c \
     bi2a.c \
-    dllmain.c \
     config-io.c \
+    dllmain.c \
     nvapi.c \
     power.c \
+    sdvxhook2.c \

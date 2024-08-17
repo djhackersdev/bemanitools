@@ -9,10 +9,12 @@ ldflags_jbhook2   := \
     -liphlpapi \
     -lopengl32 \
 
+avslibs_jbhook2 := \
+    avs-ext \
+
 libs_jbhook2       := \
+    core \
     acioemu \
-    eamio \
-    jbio \
     jbhook-util \
     jbhook-util-p3io \
     p3ioemu \
@@ -22,6 +24,10 @@ libs_jbhook2       := \
     hooklib \
     security \
     util \
+    iface \
+    iface-io \
+    iface-core \
+    module \
 
 src_jbhook2        := \
     dllmain.c \

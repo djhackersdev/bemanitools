@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include "iface-core/log.h"
+
 #include "hook/table.h"
 
 #include "hooklib/app.h"
@@ -7,7 +9,6 @@
 #include "imports/avs.h"
 #include "imports/eapki.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static dll_entry_init_t hook_dll_entry_init;

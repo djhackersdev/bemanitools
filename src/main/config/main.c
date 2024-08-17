@@ -14,14 +14,27 @@
 #include "config/spinner.h"
 #include "config/usages.h"
 
+#include "core/boot.h"
+#include "core/log-bt.h"
+#include "core/log-bt-ext.h"
+#include "core/thread-crt.h"
+
 #include "eamio/eam-config.h"
 
 #include "geninput/input-config.h"
 
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface-io/eam.h"
+#include "iface/input.h"
+
+#include "module/input-ext.h"
+#include "module/input.h"
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 #include "util/str.h"
-#include "util/thread.h"
 #include "util/winres.h"
 
 HPROPSHEETPAGE
@@ -32,7 +45,7 @@ HPROPSHEETPAGE
 eam_ui_tab_create(
     HINSTANCE inst,
     const struct schema *schema,
-    const struct eam_io_config_api *eam_io_config_api);
+    const bt_io_eam_config_api_t *eam_io_config_api);
 
 static void my_fatal(const char *module, const char *fmt, ...)
 {
@@ -49,6 +62,17 @@ static void my_fatal(const char *module, const char *fmt, ...)
     ExitProcess(-1);
 }
 
+static void log_api_set()
+{
+    bt_core_log_api_t api;
+
+    core_log_bt_core_api_get(&api);
+
+    api.v1.fatal = my_fatal;
+
+    bt_core_log_api_set(&api);
+}
+
 int main(int argc, char **argv)
 {
     INITCOMMONCONTROLSEX iccx;
@@ -56,16 +80,35 @@ int main(int argc, char **argv)
     HPROPSHEETPAGE psp[4];
     PROPSHEETHEADER psh;
     intptr_t result;
-    const struct eam_io_config_api *eam_io_config_api;
+    const bt_io_eam_config_api_t *eam_io_config_api;
     const struct schema *schema;
     wchar_t text[1024];
     int max_light;
     size_t i;
+    bt_input_api_t input_api;
+    module_input_t *module_input;
+    bt_io_eam_api_t eam_api;
+    module_io_t *module_io_eam;
+
+    // TODO turn this into optional parameters, same for log level and output to
+    // file
+    AttachConsole(ATTACH_PARENT_PROCESS);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+    freopen("CONIN$", "r", stdin);
+
+    core_boot("config");
+
+    core_log_bt_ext_init_with_stderr();
+
+    core_log_bt_level_set(CORE_LOG_BT_LOG_LEVEL_MISC);
+    core_log_bt_core_api_set();
+
+    core_thread_crt_core_api_set();
+
+    log_api_set();
 
     inst = GetModuleHandle(NULL);
-
-    log_to_writer(log_writer_debug, NULL);
-    log_to_external(log_impl_misc, log_impl_info, log_impl_warning, my_fatal);
 
     usages_init(inst);
 
@@ -96,14 +139,16 @@ int main(int argc, char **argv)
         }
     }
 
-    input_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-    input_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
+    module_input_ext_load_and_init("geninput.dll", &module_input);
+    module_input_api_get(module_input, &input_api);
+    bt_input_api_set(&input_api);
 
-    eam_io_set_loggers(
-        log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
-    eam_io_init(crt_thread_create, crt_thread_join, crt_thread_destroy);
-    eam_io_config_api = eam_io_get_config_api();
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", &module_io_eam);
+    module_io_api_get(module_io_eam, &eam_api);
+    bt_io_eam_api_set(&eam_api);
+
+    eam_io_config_api = bt_io_eam_config_api_get();
 
     // calculate these and check against the loaded config
     max_light = -1;
@@ -114,11 +159,14 @@ int main(int argc, char **argv)
         }
     }
 
-    if (!mapper_config_load(schema->name)) {
+    if (!bt_input_mapper_config_load(schema->name)) {
         log_info("Initializing empty config for %s", schema->name);
 
+        log_info(">>>>1");
         mapper_set_nlights((uint8_t) (max_light + 1));
+        log_info(">>>>1");
         mapper_set_nanalogs((uint8_t) schema->nanalogs);
+        log_info(">>>>1");
     } else {
         // make sure that these are right
 
@@ -167,10 +215,16 @@ int main(int argc, char **argv)
         mapper_config_save(schema->name);
     }
 
-    eam_io_fini();
-    input_fini();
+    bt_io_eam_fini();
+    bt_input_fini();
     spinner_fini(inst);
     usages_fini();
+
+    bt_input_api_clear();
+    bt_io_eam_api_clear();
+
+    module_input_free(&module_input);
+    module_io_free(&module_io_eam);
 
     return EXIT_SUCCESS;
 }

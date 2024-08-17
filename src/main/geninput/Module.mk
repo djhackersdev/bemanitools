@@ -5,7 +5,10 @@ ldflags_geninput    := \
     -lsetupapi \
 
 libs_geninput       := \
+    core \
     util \
+    iface-core \
+    iface \
 
 src_geninput        := \
     dev-list.c \

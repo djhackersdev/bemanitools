@@ -83,7 +83,7 @@
  * Structure to represent a Konami mcode which is used to identify games and
  * different hardware/software revisions.
  */
-struct security_mcode {
+typedef struct security_mcode {
     char header;
     char unkn;
     /* Identify the game and version, e.g. IIDX 12 */
@@ -91,7 +91,7 @@ struct security_mcode {
     char region;
     char cabinet;
     char revision;
-};
+} security_mcode_t;
 
 /**
  * Default mcode used to identify white eamuse roundplugs.

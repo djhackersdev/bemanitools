@@ -12,12 +12,12 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "bemanitools/ddrio.h"
-
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+#include "iface-io/ddr.h"
+
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 static HRESULT extio_open(struct irp *irp);
@@ -108,7 +108,7 @@ static HRESULT extio_write(struct irp *irp)
     if (irp->write.nbytes >= sizeof(lights)) {
         lights_be = (const uint32_t *) irp->write.bytes;
         lights = _byteswap_ulong(*lights_be);
-        ddr_io_set_lights_extio(lights);
+        bt_io_ddr_extio_lights_set(lights);
 
         extio_pending = true;
     } else {

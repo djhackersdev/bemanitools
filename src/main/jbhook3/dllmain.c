@@ -5,18 +5,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bemanitools/eamio.h"
-#include "bemanitools/jbio.h"
-
 #include "hook/iohook.h"
 #include "hook/table.h"
 
 #include "hooklib/adapter.h"
-#include "hooklib/app.h"
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
-#include "imports/avs.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+
+#include "iface-io/eam.h"
+#include "iface-io/jb.h"
 
 #include "jbhook3/gfx.h"
 #include "jbhook3/options.h"
@@ -25,18 +25,45 @@
 #include "jbhook-util/eamuse.h"
 #include "jbhook-util/p4io.h"
 
+#include "module/io-ext.h"
+#include "module/io.h"
+
 #include "p4ioemu/device.h"
 #include "p4ioemu/setupapi.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/hook.h"
 
 #include "security/id.h"
 
 #include "util/defs.h"
-#include "util/log.h"
-#include "util/thread.h"
 
 static struct options options;
+static module_io_t *jbhook_module_io_jb;
+static module_io_t *jbhook_module_io_eam;
 
-static bool my_dll_entry_init(char *sidcode, struct property_node *param)
+static void _jbhook3_io_jb_init(module_io_t **module)
+{
+    bt_io_jb_api_t api;
+
+    module_io_ext_load_and_init("jbio.dll", "bt_module_io_jb_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_jb_api_set(&api);
+}
+
+static void _jbhook3_io_eam_init(module_io_t **module)
+{
+    bt_io_eam_api_t api;
+
+    module_io_ext_load_and_init(
+        "eamio.dll", "bt_module_io_eam_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_eam_api_set(&api);
+}
+
+static bool
+_jbhook3_main_init(HMODULE game_module, const bt_core_config_t *config_)
 {
     bool eam_io_ok;
     bool jb_io_ok;
@@ -45,6 +72,14 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     jb_io_ok = false;
 
     log_info("--- Begin jbhook dll_entry_init ---");
+
+    options_init_from_cmdline(&options);
+
+    if (!options.disable_adapteremu) {
+        adapter_hook_init();
+    }
+
+    jbhook_util_eamuse_hook_init();
 
     iohook_push_handler(p4ioemu_dispatch_irp);
     iohook_push_handler(jbhook_util_ac_io_port_dispatch_irp);
@@ -62,11 +97,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_p4ioemu) {
         log_info("Starting up jubeat IO backend");
 
-        jb_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        _jbhook3_io_jb_init(&jbhook_module_io_jb);
 
-        jb_io_ok =
-            jb_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        jb_io_ok = bt_io_jb_init();
 
         if (!jb_io_ok) {
             goto fail;
@@ -79,11 +112,9 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!options.disable_cardemu) {
         log_info("Starting up card reader backend");
 
-        eam_io_set_loggers(
-            log_impl_misc, log_impl_info, log_impl_warning, log_impl_fatal);
+        _jbhook3_io_eam_init(&jbhook_module_io_eam);
 
-        eam_io_ok =
-            eam_io_init(avs_thread_create, avs_thread_join, avs_thread_destroy);
+        eam_io_ok = bt_io_eam_init();
 
         if (!eam_io_ok) {
             goto fail;
@@ -96,65 +127,71 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info("---  End  jbhook dll_entry_init ---");
 
-    bool ret = app_hook_invoke_init(sidcode, param);
-
-    return ret;
+    return true;
 
 fail:
     if (eam_io_ok) {
-        eam_io_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&jbhook_module_io_eam);
     }
 
     if (jb_io_ok) {
-        jb_io_fini();
+        bt_io_jb_fini();
+
+        bt_io_jb_api_clear();
+        module_io_free(&jbhook_module_io_jb);
     }
 
     return false;
 }
 
-static bool my_dll_entry_main(void)
+static void _jbhook3_main_fini()
 {
-    bool result;
-
-    result = app_hook_invoke_main();
-
-    log_info("Shutting down card reader backend");
-    eam_io_fini();
-
-    log_info("Shutting down Jubeat IO backend");
-    jb_io_fini();
-
     if (!options.disable_cardemu) {
+        log_info("Shutting down card reader backend");
+
         jbhook_util_ac_io_port_fini();
+        bt_io_eam_fini();
+
+        bt_io_eam_api_clear();
+        module_io_free(&jbhook_module_io_eam);
     }
 
     if (!options.disable_p4ioemu) {
+        log_info("Shutting down Jubeat IO backend");
+
         p4ioemu_fini();
+
+        bt_io_jb_fini();
+
+        bt_io_jb_api_clear();
+        module_io_free(&jbhook_module_io_jb);
     }
 
     options_fini(&options);
+}
 
-    return result;
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_hook_api_get(bt_hook_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.main_init = _jbhook3_main_init;
+    api->v1.main_fini = _jbhook3_main_fini;
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
-    if (reason != DLL_PROCESS_ATTACH) {
-        return TRUE;
-    }
-
-    log_to_external(
-        log_body_misc, log_body_info, log_body_warning, log_body_fatal);
-
-    options_init_from_cmdline(&options);
-
-    app_hook_init(my_dll_entry_init, my_dll_entry_main);
-
-    if (!options.disable_adapteremu) {
-        adapter_hook_init();
-    }
-
-    jbhook_util_eamuse_hook_init();
-
     return TRUE;
 }

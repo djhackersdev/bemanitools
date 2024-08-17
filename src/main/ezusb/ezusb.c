@@ -7,7 +7,8 @@
 #include "ezusb/ezusb.h"
 #include "ezusb/ezusbsys2.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/str.h"
 
 static bool ezusb_reset(HANDLE handle, bool hold)

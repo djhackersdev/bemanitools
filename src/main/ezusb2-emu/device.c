@@ -22,12 +22,13 @@
 
 #include "hook/iohook.h"
 
+#include "iface-core/log.h"
+
 #include "imports/avs.h"
 
 #include "util/fs.h"
 #include "util/hex.h"
 #include "util/iobuf.h"
-#include "util/log.h"
 #include "util/str.h"
 
 // The max buffer size in iidx's ezusb client library is 4096 for the initial

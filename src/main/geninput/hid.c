@@ -4,7 +4,8 @@
 #include "geninput/dev-list.h"
 #include "geninput/hid.h"
 
-#include "util/log.h"
+#include "iface-core/log.h"
+
 #include "util/str.h"
 
 wchar_t *hid_ri_init_name(const GUID *class_guid, const char *dev_node)

@@ -5,8 +5,8 @@
 #include "aciodrv/device.h"
 #include "aciodrv/panb.h"
 
-#include "util/log.h"
-#include "util/thread.h"
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
 
 static int auto_poll_proc(void *auto_poll_param);
 static int auto_poll_threadid;
@@ -40,6 +40,8 @@ static int auto_poll_proc(void *param)
 
 bool aciodrv_proc_panb_init(struct aciodrv_device_ctx *device)
 {
+    bt_core_thread_result_t result;
+
     log_assert(device);
 
     if (!aciodrv_panb_start_auto_input(device, 0, AC_IO_PANB_NUM_NODES)) {
@@ -49,8 +51,10 @@ bool aciodrv_proc_panb_init(struct aciodrv_device_ctx *device)
     auto_poll_stop = false;
     InitializeCriticalSection(&keypair_lock);
     InitializeCriticalSection(&auto_poll_stop_lock);
-    auto_poll_threadid =
-        thread_create(auto_poll_proc, (void *) device, 0x4000, 0);
+
+    result = bt_core_thread_create(
+        auto_poll_proc, (void *) device, 0x4000, 0, &auto_poll_threadid);
+    bt_core_thread_fatal_on_error(result);
 
     return true;
 }
@@ -76,12 +80,17 @@ bool aciodrv_proc_panb_get_state(uint8_t *button_state)
 
 void aciodrv_proc_panb_fini(struct aciodrv_device_ctx *device)
 {
+    bt_core_thread_result_t result;
+
     EnterCriticalSection(&auto_poll_stop_lock);
     auto_poll_stop = true;
     LeaveCriticalSection(&auto_poll_stop_lock);
 
-    thread_join(auto_poll_threadid, NULL);
-    thread_destroy(auto_poll_threadid);
+    result = bt_core_thread_join(auto_poll_threadid, NULL);
+    bt_core_thread_fatal_on_error(result);
+
+    result = bt_core_thread_destroy(auto_poll_threadid);
+    bt_core_thread_fatal_on_error(result);
 
     DeleteCriticalSection(&keypair_lock);
     DeleteCriticalSection(&auto_poll_stop_lock);

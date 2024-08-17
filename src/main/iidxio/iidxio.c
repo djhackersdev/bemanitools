@@ -1,12 +1,4 @@
-/* This is the source code for the IIDXIO.DLL that ships with Bemanitools 5.
-
-   If you want to add on some minor functionality like a custom 16seg display
-   or a customer slider board then see vefxio.
-
-   If you want to make a completely custom IO board that handles all input and
-   lighting then you'd be better off writing your own from scratch. Consult
-   the "bemanitools" header files included by this source file for detailed
-   information about the API you'll need to implement. */
+#define LOG_MODULE "iidxio"
 
 // clang-format off
 // Don't format because the order is important here
@@ -17,9 +9,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bemanitools/iidxio.h"
-#include "bemanitools/input.h"
-#include "bemanitools/vefxio.h"
+#include "api/core/log.h"
+#include "api/core/thread.h"
+
+#include "iface-core/log.h"
+#include "iface-core/thread.h"
+#include "iface-io/vefx.h"
+#include "iface/input.h"
+
+#include "main/module/input-ext.h"
+#include "main/module/input.h"
+#include "main/module/io-ext.h"
+#include "main/module/io.h"
+
+#include "sdk/module/core/log.h"
+#include "sdk/module/core/thread.h"
+#include "sdk/module/input.h"
+#include "sdk/module/io/iidx.h"
 
 #define MSEC_PER_NOTCH 8
 
@@ -92,126 +98,114 @@ static const struct iidx_io_tt_inputs iidx_io_tt_inputs[2] = {
      IIDX_IO_P2_START},
 };
 
+static module_input_t *_iidx_io_module_input;
+static module_io_t *_iidx_io_module_vefx;
+
 static struct iidx_io_tt iidx_io_tt[2];
 static uint8_t iidx_io_sys;
 static uint8_t iidx_io_panel;
 static uint16_t iidx_io_keys;
 
-/* Uncomment these if you need them. */
-
-#if 0
-static log_formatter_t iidx_io_log_misc;
-static log_formatter_t iidx_io_log_info;
-static log_formatter_t iidx_io_log_warning;
-static log_formatter_t iidx_io_log_fatal;
-#endif
-
-void iidx_io_set_loggers(
-    log_formatter_t misc,
-    log_formatter_t info,
-    log_formatter_t warning,
-    log_formatter_t fatal)
+static void _bt_io_iidx_module_input_init(module_input_t **module)
 {
-    /* Pass logger functions on to geninput so that it has somewhere to write
-       its own log output. */
+    bt_input_api_t api;
 
-    input_set_loggers(misc, info, warning, fatal);
-
-    /* Pass logger functions on to vefx_io so that it has somewhere to write
-       its own log output. */
-
-    vefx_io_set_loggers(misc, info, warning, fatal);
-
-    /* Uncomment this block if you have something you'd like to log.
-
-       You should probably return false from the appropriate function instead
-       of calling the fatal logger yourself though. */
-
-#if 0
-    iidx_io_log_misc = misc;
-    iidx_io_log_info = info;
-    iidx_io_log_warning = warning;
-    iidx_io_log_fatal = fatal;
-#endif
+    module_input_ext_load_and_init("geninput.dll", module);
+    module_input_api_get(*module, &api);
+    bt_input_api_set(&api);
 }
 
-bool iidx_io_init(
-    thread_create_t thread_create,
-    thread_join_t thread_join,
-    thread_destroy_t thread_destroy)
+static void _bt_io_iidx_module_vefx_init(module_io_t **module)
 {
-    vefx_io_init(thread_create, thread_join, thread_destroy);
+    bt_io_vefx_api_t api;
+
+    module_io_ext_load_and_init(
+        "vefxio.dll", "bt_module_io_vefx_api_get", module);
+    module_io_api_get(*module, &api);
+    bt_io_vefx_api_set(&api);
+}
+
+bool bt_io_iidx_init()
+{
+    bool result;
+
+    _bt_io_iidx_module_input_init(&_iidx_io_module_input);
+    _bt_io_iidx_module_vefx_init(&_iidx_io_module_vefx);
+
+    result = bt_io_vefx_init();
+
+    if (!result) {
+        log_warning("Initializing vefx failed");
+        return false;
+    }
+
     timeBeginPeriod(1);
 
-    input_init(thread_create, thread_join, thread_destroy);
-    mapper_config_load("iidx");
+    result = bt_input_init();
+
+    if (!result) {
+        log_warning("Initializing input failed");
+        return false;
+    }
 
     iidx_io_tt[0].stab_dir = +1;
     iidx_io_tt[1].stab_dir = +1;
 
-    /* Initialize your own IO devices here. Log something and then return
-       false if the initialization fails. */
-
-    return true;
+    return bt_input_mapper_config_load("iidx");
 }
 
-void iidx_io_fini(void)
+void bt_io_iidx_fini(void)
 {
-    /* This function gets called as IIDX shuts down after an Alt-F4. Close your
-       connections to your IO devices here. */
+    bt_input_fini();
+    bt_input_api_clear();
+    module_input_free(&_iidx_io_module_input);
 
-    input_fini();
-    vefx_io_fini();
+    bt_io_vefx_fini();
+    bt_io_vefx_api_clear();
+    module_io_free(&_iidx_io_module_vefx);
+
     timeEndPeriod(1);
 }
 
-/* Total number of light bits is 33. That's slightly annoying. So, we pack
-   the neons bit into an unused start btns light. The entire 32-bit word is
-   then sent to geninput for output light mapping. */
-
-void iidx_io_ep1_set_deck_lights(uint16_t deck_lights)
+void bt_io_iidx_ep1_deck_lights_set(uint16_t deck_lights)
 {
     uint8_t i;
 
     for (i = 0x00; i < 0x0E; i++) {
-        mapper_write_light(i, deck_lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(i, deck_lights & (1 << i) ? 255 : 0);
     }
 }
 
-void iidx_io_ep1_set_panel_lights(uint8_t panel_lights)
+void bt_io_iidx_ep1_panel_lights_set(uint8_t panel_lights)
 {
     uint8_t i;
 
     for (i = 0x00; i < 0x04; i++) {
-        mapper_write_light(0x18 + i, panel_lights & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(
+            0x18 + i, panel_lights & (1 << i) ? 255 : 0);
     }
 }
 
-void iidx_io_ep1_set_top_lamps(uint8_t top_lamps)
+void bt_io_iidx_ep1_top_lamps_set(uint8_t top_lamps)
 {
     uint8_t i;
 
     for (i = 0x00; i < 0x08; i++) {
-        mapper_write_light(0x10 + i, top_lamps & (1 << i) ? 255 : 0);
+        bt_input_mapper_light_write(0x10 + i, top_lamps & (1 << i) ? 255 : 0);
     }
 }
 
-void iidx_io_ep1_set_top_neons(bool top_neons)
+void bt_io_iidx_ep1_top_neons_set(bool top_neons)
 {
-    mapper_write_light(0x1F, top_neons ? 255 : 0);
+    bt_input_mapper_light_write(0x1F, top_neons ? 255 : 0);
 }
 
-bool iidx_io_ep1_send(void)
+bool bt_io_iidx_ep1_send(void)
 {
-    /* The generic input stack currently initiates lighting sends and input
-       reads simultaneously, though this might change later. Perform all of our
-       I/O immediately before reading out the inputs so that the input state is
-       as fresh as possible. */
-
     return true;
 }
 
-bool iidx_io_ep2_recv(void)
+bool bt_io_iidx_ep2_recv(void)
 {
     uint32_t now;
     uint64_t pad;
@@ -220,8 +214,8 @@ bool iidx_io_ep2_recv(void)
     /* Update all of our input state here. */
 
     now = timeGetTime();
-    pad = (uint64_t) mapper_update();
-    vefx_io_recv(&pad);
+    pad = (uint64_t) bt_input_mapper_update();
+    bt_io_vefx_recv(&pad);
 
     for (i = 0; i < 2; i++) {
         iidx_io_tt_update(now, pad, i);
@@ -292,10 +286,10 @@ static void iidx_io_tt_update(uint32_t now, uint64_t pad, int i)
 
     /* Snapshot analog spinner state as well. */
 
-    iidx_io_tt[i].analog_pos = mapper_read_analog(i);
+    iidx_io_tt[i].analog_pos = bt_input_mapper_analog_read(i);
 }
 
-uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
+uint8_t bt_io_iidx_ep2_turntable_get(uint8_t player_no)
 {
     if (player_no > 1) {
         return 0;
@@ -304,27 +298,57 @@ uint8_t iidx_io_ep2_get_turntable(uint8_t player_no)
     return iidx_io_tt[player_no].pos + iidx_io_tt[player_no].analog_pos;
 }
 
-uint8_t iidx_io_ep2_get_slider(uint8_t slider_no)
+uint8_t bt_io_iidx_ep2_slider_get(uint8_t slider_no)
 {
-    return vefx_io_get_slider(slider_no);
+    return bt_io_vefx_slider_get(slider_no);
 }
 
-uint8_t iidx_io_ep2_get_sys(void)
+uint8_t bt_io_iidx_ep2_sys_get(void)
 {
     return iidx_io_sys;
 }
 
-uint8_t iidx_io_ep2_get_panel(void)
+uint8_t bt_io_iidx_ep2_panel_get(void)
 {
     return iidx_io_panel;
 }
 
-uint16_t iidx_io_ep2_get_keys(void)
+uint16_t bt_io_iidx_ep2_keys_get(void)
 {
     return iidx_io_keys;
 }
 
-bool iidx_io_ep3_write_16seg(const char *text)
+bool bt_io_iidx_ep3_16seg_send(const char *text)
 {
-    return vefx_io_write_16seg(text);
+    return bt_io_vefx_16seg_send(text);
+}
+
+void bt_module_core_log_api_set(const bt_core_log_api_t *api)
+{
+    bt_core_log_api_set(api);
+}
+
+void bt_module_core_thread_api_set(const bt_core_thread_api_t *api)
+{
+    bt_core_thread_api_set(api);
+}
+
+void bt_module_io_iidx_api_get(bt_io_iidx_api_t *api)
+{
+    api->version = 1;
+
+    api->v1.init = bt_io_iidx_init;
+    api->v1.fini = bt_io_iidx_fini;
+    api->v1.ep1_deck_lights_set = bt_io_iidx_ep1_deck_lights_set;
+    api->v1.ep1_panel_lights_set = bt_io_iidx_ep1_panel_lights_set;
+    api->v1.ep1_top_lamps_set = bt_io_iidx_ep1_top_lamps_set;
+    api->v1.ep1_top_neons_set = bt_io_iidx_ep1_top_neons_set;
+    api->v1.ep1_send = bt_io_iidx_ep1_send;
+    api->v1.ep2_recv = bt_io_iidx_ep2_recv;
+    api->v1.ep2_turntable_get = bt_io_iidx_ep2_turntable_get;
+    api->v1.ep2_slider_get = bt_io_iidx_ep2_slider_get;
+    api->v1.ep2_sys_get = bt_io_iidx_ep2_sys_get;
+    api->v1.ep2_panel_get = bt_io_iidx_ep2_panel_get;
+    api->v1.ep2_keys_get = bt_io_iidx_ep2_keys_get;
+    api->v1.ep3_16seg_send = bt_io_iidx_ep3_16seg_send;
 }

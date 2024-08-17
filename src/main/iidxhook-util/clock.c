@@ -4,8 +4,9 @@
 
 #include "hook/table.h"
 
+#include "iface-core/log.h"
+
 #include "util/defs.h"
-#include "util/log.h"
 
 static BOOL STDCALL my_SetLocalTime(const SYSTEMTIME *lpSystemTime);
 static BOOL(STDCALL *real_SetLocalTime)(const SYSTEMTIME *lpSystemTime);
@@ -29,4 +30,12 @@ void iidxhook_util_clock_hook_init(void)
         NULL, "kernel32.dll", clock_hook_syms, lengthof(clock_hook_syms));
 
     log_info("Inserted clock hooks");
+}
+
+void iidxhook_util_clock_hook_fini()
+{
+    hook_table_revert(
+        NULL, "kernel32.dll", clock_hook_syms, lengthof(clock_hook_syms));
+
+    log_info("Removed clock hooks");
 }

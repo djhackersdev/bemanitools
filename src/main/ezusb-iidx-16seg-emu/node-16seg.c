@@ -4,11 +4,10 @@
 
 #include <string.h>
 
-#include "bemanitools/iidxio.h"
+#include "iface-core/log.h"
+#include "iface-io/iidx.h"
 
 #include "ezusb-iidx/seg16-cmd.h"
-
-#include "util/log.h"
 
 uint8_t ezusb_iidx_emu_node_16seg_process_cmd(
     uint8_t cmd_id, uint8_t cmd_data, uint8_t cmd_data2)
@@ -38,5 +37,5 @@ bool ezusb_iidx_emu_node_16seg_write_packet(
     memcpy(_16seg, pkg->payload, 9);
     _16seg[9] = '\0';
 
-    return iidx_io_ep3_write_16seg(_16seg);
+    return bt_io_iidx_ep3_16seg_send(_16seg);
 }

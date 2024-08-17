@@ -1,0 +1,1 @@
+Version/release: https://github.com/ssbssa/dwarfstack/releases/tag/2.2

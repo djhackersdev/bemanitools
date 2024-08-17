@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<vigem-sdvxio>
+  <enable_keylight __type="bool">1</enable_keylight>
+  <use_relative_analog __type="bool">0</use_relative_analog>
+  <pwm_wings __type="s32">128</pwm_wings>
+  <pwm_controller __type="s32">64</pwm_controller>
+  <amp_volume __type="s32">48</amp_volume>
+</vigem-sdvxio>

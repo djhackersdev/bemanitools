@@ -7,9 +7,10 @@
 
 #include "imports/avs.h"
 
+#include "iface-core/log.h"
+
 #include "iidxhook5/ifs-snd-redir.h"
 
-#include "util/log.h"
 #include "util/str.h"
 
 static void *(*real_avs_fs_open)(const char *path, int mode, int flags);
