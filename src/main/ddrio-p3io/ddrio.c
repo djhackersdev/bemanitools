@@ -6,22 +6,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "cconfig/cconfig-main.h"
-
 #include "ddrio-p3io/config.h"
 
 #include "extiodrv/device.h"
 #include "extiodrv/extio.h"
 
+#include "iface-core/config.h"
 #include "iface-core/log.h"
 
 #include "p3iodrv/ddr.h"
 #include "p3iodrv/device.h"
 
+#include "sdk/module/configure.h"
 #include "sdk/module/core/log.h"
 #include "sdk/module/io/ddr.h"
 
-static struct ddrio_p3io_config _ddr_io_p3io_config;
+static ddrio_p3io_config_t _ddr_io_p3io_config;
 static HANDLE _ddr_io_p3io_handle;
 static HANDLE _ddr_io_extio_handle;
 
@@ -249,36 +249,9 @@ static HRESULT _ddr_io_flush_and_reset(HANDLE p3io_handle, HANDLE extio_handle)
     return hr;
 }
 
-static void _ddr_io_config_init(struct ddrio_p3io_config *config_ddrio_p3io)
-{
-    struct cconfig *config;
-
-    config = cconfig_init();
-
-    ddrio_p3io_config_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--ddrio-p3io-config",
-            "ddrio-p3io.conf",
-            "--help",
-            "-h",
-            "ddrio-p3io",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    ddrio_p3io_config_get(config_ddrio_p3io, config);
-
-    cconfig_finit(config);
-}
-
 bool bt_io_ddr_init()
 {
     HRESULT hr;
-
-    _ddr_io_config_init(&_ddr_io_p3io_config);
 
     hr = _ddr_io_p3io_init(&_ddr_io_p3io_handle);
 
@@ -420,9 +393,21 @@ void bt_io_ddr_fini(void)
     }
 }
 
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
     bt_core_log_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    ddrio_p3io_config_get(config, &_ddr_io_p3io_config);
+
+    return true;
 }
 
 void bt_module_io_ddr_api_get(bt_io_ddr_api_t *api)
