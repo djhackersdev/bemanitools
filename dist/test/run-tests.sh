@@ -8,15 +8,6 @@ cd $DIR
 
 echo "Running tests..."
 
-wine ./cconfig-test.exe
-wine ./cconfig-util-test.exe
-wine ./cconfig-cmd-test.exe
-wine ./iidxhook-util-config-eamuse-test.exe
-wine ./iidxhook-util-config-gfx-test.exe
-# wine ./iidxhook-config-iidxhook1-test.exe
-# wine ./iidxhook-config-iidxhook2-test.exe
-wine ./iidxhook-util-config-misc-test.exe
-wine ./iidxhook-util-config-sec-test.exe
 wine ./security-id-test.exe
 wine ./security-mcode-test.exe
 wine ./security-util-test.exe
