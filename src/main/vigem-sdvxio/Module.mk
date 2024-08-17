@@ -8,17 +8,18 @@ cppflags_vigem-sdvxio  := \
 
 ldflags_vigem-sdvxio  := \
     -lsetupapi \
+    -lws2_32 \
 
 libs_vigem-sdvxio     := \
     core \
-    cconfig \
-    util \
     vigemstub \
     module \
     iface \
     iface-io \
     iface-core \
+    security \
+    util \
 
 src_vigem-sdvxio      := \
+    config.c \
     main.c \
-    config-vigem-sdvxio.c \

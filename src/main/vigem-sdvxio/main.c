@@ -7,8 +7,10 @@
 
 #include "ViGEm/Client.h"
 
+#include "core/config-property-node.h"
 #include "core/log-bt-ext.h"
 #include "core/log-bt.h"
+#include "core/log-sink-std.h"
 #include "core/thread-crt.h"
 
 #include "iface-core/log.h"
@@ -23,7 +25,7 @@
 
 #include "vigemstub/helper.h"
 
-#include "vigem-sdvxio/config-vigem-sdvxio.h"
+#include "vigem-sdvxio/config.h"
 
 #define ANALOG_FIXED_SENSITIVITY 1024
 
@@ -149,17 +151,39 @@ static void _io_sdvx_init(module_io_t **module)
     bt_io_sdvx_api_set(&api);
 }
 
+static void _config_load(vigem_sdvxio_config_t *config_out)
+{
+    core_property_t *property;
+    core_property_result_t property_result;
+    core_property_node_t node;
+    core_property_node_result_t node_result;
+    bt_core_config_t *config;
+
+    property_result = core_property_file_load("vigem-sdvxio.xml", &property);
+    core_property_fatal_on_error(property_result);
+
+    node_result = core_property_root_node_get(property, &node);
+    core_property_node_fatal_on_error(node_result);
+
+    core_config_property_node_init(&node, &config);
+
+    vigem_sdvxio_config_get(config, config_out);
+
+    core_config_property_node_free(&config);
+    core_property_free(&property);
+}
+
 int main(int argc, char **argv)
 {
-    core_thread_crt_core_api_set();
+    vigem_sdvxio_config_t config;
+
     core_log_bt_core_api_set();
+    core_thread_crt_core_api_set();
+    core_config_property_node_core_api_set();
 
     core_log_bt_ext_init_with_stdout();
 
-    struct vigem_sdvxio_config config;
-    if (!get_vigem_sdvxio_config(&config)) {
-        exit(EXIT_FAILURE);
-    }
+    _config_load(&config);
 
     _io_sdvx_init(&_module_io_sdvx);
 

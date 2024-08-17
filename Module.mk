@@ -682,6 +682,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		dist/sdvx/eamio-icca.xml \
 		dist/sdvx/sdvxio-bio2.xml \
 		dist/sdvx/sdvxio-kfca.xml \
+		dist/sdvx/vigem-sdvxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -695,6 +696,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		dist/sdvx/eamio-icca.xml \
 		dist/sdvx/sdvxio-bio2.xml \
 		dist/sdvx/sdvxio-kfca.xml \
+		dist/sdvx/vigem-sdvxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
