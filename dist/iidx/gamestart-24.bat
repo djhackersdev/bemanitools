@@ -48,5 +48,4 @@ cd /d %CONTENT_DIR%
 
 %BEMANITOOLS_DIR%\launcher.exe^
   %BEMANITOOLS_DIR%\launcher-24.xml^
-  --config %BEMANITOOLS_DIR%\iidxhook-24.conf^
   %*

@@ -33,3 +33,4 @@ libs_iidxhook7      := \
 
 src_iidxhook7       := \
     dllmain.c \
+    iidxhook7.c \

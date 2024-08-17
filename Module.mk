@@ -430,10 +430,6 @@ $(zipdir)/iidx-21-to-24.zip: \
 		dist/iidx/gamestart-22.bat \
 		dist/iidx/gamestart-23.bat \
 		dist/iidx/gamestart-24.bat \
-		dist/iidx/iidxhook-21.conf \
-		dist/iidx/iidxhook-22.conf \
-		dist/iidx/iidxhook-23.conf \
-		dist/iidx/iidxhook-24.conf \
 		dist/iidx/launcher-21.xml \
 		dist/iidx/launcher-22.xml \
 		dist/iidx/launcher-23.xml \
