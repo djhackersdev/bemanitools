@@ -28,6 +28,7 @@ libs_sdvxhook2-cn      := \
     iface-io \
     iface-core \
     module \
+    security \
 
 src_sdvxhook2-cn       := \
     acio.c \

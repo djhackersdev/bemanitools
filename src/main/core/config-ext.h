@@ -3,6 +3,9 @@
 
 #include "iface-core/config.h"
 
+#include "security/id.h"
+#include "security/mcode.h"
+
 #include "util/net.h"
 
 void bt_core_config_ext_s8_get(
@@ -32,6 +35,8 @@ void bt_core_config_ext_bin_get(
 void bt_core_config_ext_str_get(
     const bt_core_config_t *config, const char *path, char *value, size_t len);
 void bt_core_config_ext_net_addr_get(const bt_core_config_t *config, const char *path, struct net_addr *addr);
+void bt_core_config_ext_security_id_get(const bt_core_config_t *config, const char *path, security_id_t *id);
+void bt_core_config_ext_security_mcode_get(const bt_core_config_t *config, const char *path, security_mcode_t *mcode);
 
 bool bt_core_config_ext_s8_optional_get(
     const bt_core_config_t *config, const char *path, int8_t *value);
@@ -60,5 +65,7 @@ bool bt_core_config_ext_bin_optional_get(
 bool bt_core_config_ext_str_optional_get(
     const bt_core_config_t *config, const char *path, char *value, size_t len);
 bool bt_core_config_ext_net_addr_optional_get(const bt_core_config_t *config, const char *path, struct net_addr *addr);
+bool bt_core_config_ext_security_id_optional_get(const bt_core_config_t *config, const char *path, security_id_t *id);
+bool bt_core_config_ext_security_mcode_optional_get(const bt_core_config_t *config, const char *path, security_mcode_t *mcode);
 
 #endif

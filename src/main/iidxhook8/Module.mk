@@ -31,6 +31,7 @@ libs_iidxhook8      := \
     iface-core \
     module \
     util \
+    security \
     
 src_iidxhook8       := \
     config-io.c \

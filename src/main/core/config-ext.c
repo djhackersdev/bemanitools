@@ -1,6 +1,9 @@
 #include "iface-core/config.h"
 #include "iface-core/log.h"
 
+#include "security/id.h"
+#include "security/mcode.h"
+
 #include "util/net.h"
 
 void bt_core_config_ext_s8_get(
@@ -128,6 +131,28 @@ void bt_core_config_ext_net_addr_get(const bt_core_config_t *config, const char 
 
     if (!net_str_parse(buffer, addr)) {
         log_fatal("Cannot parse server address: %s", buffer);
+    }
+}
+
+void bt_core_config_ext_security_id_get(const bt_core_config_t *config, const char *path, security_id_t *id)
+{
+    char buffer[16];
+
+    bt_core_config_ext_bin_get(config, path, buffer, sizeof(buffer));
+
+    if (!security_id_parse(buffer, id)) {
+        log_fatal("Cannot parse security id: %s", buffer);
+    }
+}
+
+void bt_core_config_ext_security_mcode_get(const bt_core_config_t *config, const char *path, security_mcode_t *mcode)
+{
+    char buffer[16];
+
+    bt_core_config_ext_str_get(config, path, buffer, sizeof(buffer));
+
+    if (!security_mcode_parse(buffer, mcode)) {
+        log_fatal("Cannot parse security mcode: %s", buffer);
     }
 }
 
@@ -391,6 +416,42 @@ bool bt_core_config_ext_net_addr_optional_get(const bt_core_config_t *config, co
 
     if (!net_str_parse(buffer, addr)) {
         log_fatal("Cannot parse server address: %s", buffer);
+    }
+
+    return true;
+}
+
+bool bt_core_config_ext_security_id_optional_get(const bt_core_config_t *config, const char *path, security_id_t *id)
+{
+    char buffer[16];
+    bool result;
+
+    result = bt_core_config_ext_bin_optional_get(config, path, buffer, sizeof(buffer));
+
+    if (!result) {
+        return false;
+    }
+
+    if (!security_id_parse(buffer, id)) {
+        log_fatal("Cannot parse security id: %s", buffer);
+    }
+
+    return true;
+}
+
+bool bt_core_config_ext_security_mcode_optional_get(const bt_core_config_t *config, const char *path, security_mcode_t *mcode)
+{
+    char buffer[16];
+    bool result;
+
+    result = bt_core_config_ext_str_optional_get(config, path, buffer, sizeof(buffer));
+
+    if (!result) {
+        return false;
+    }
+
+    if (!security_mcode_parse(buffer, mcode)) {
+        log_fatal("Cannot parse security mcode: %s", buffer);
     }
 
     return true;

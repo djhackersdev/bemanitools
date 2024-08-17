@@ -9,11 +9,11 @@
 /**
  * Structure of a security id, e.g. PCBID or EAMID.
  */
-struct security_id {
+typedef struct security_id {
     uint8_t header;
     uint8_t id[8];
     uint8_t checksum;
-};
+} security_id_t;
 
 /**
  * "Default" security id with updated header and cheacksum ready for use.
