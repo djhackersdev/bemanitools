@@ -3,36 +3,30 @@
 Lose list of TODOs/notes/thoughts that might or might not need to worked on. Some of these are
 already sorted and moved to separate sub-sections outlining some kind of "roadmap".
 
-## Alpha 2
-
-goal: fix inefficient logging causing stuttering and unify across launcher/inject
-
-new plan:
-* bt-log as its own async logging engine with ring buffer
-* log sink needs to be setup with a mutex to ensure log messages aren't split
-  * since AVS and btools log engines are async then, this is fine
-* can also simplify the whole logging API stuff since there is only one API impl
-  needed
-
-* avs log server in iidx-utils (and also for other games where needed?)
-  move to bt-core and make it a generic and improved async log sink
-* replace inject logging through debug api with unified logging through bemanitools 6 api
-  * also solves issue with blocking logging on OutputDebugStr that needs synchronized
-
-## Alpha 3
-
-goal: migrate and cleanup iidxhooks
-
-* use new bemanitools hook api in iidxhooks
-* iat hook impl in launcher not complete and working, yet
-
 ## Alpha 4
 
-goal: configuration unification and cleanup, iidxhooks
+* rename bt_module_configure_do to bt_module_configure_load as we don't want to imply to actually configure anything, but just load configuration
+* use config-ext helpers in iidxconfig for dongle mcodes, pcbid, eamid
+* have private verify functions in all config modules that check valid values and ranges
+* update security/mcode with knowledge from arcade-docs -> see macros
+* rethink a bunch of configuration values and if they even must be exposed, e.g. dongle mcode on ddrhook1 which
+  must even have the same value to boot correctly
+* have separate verify parameter functions in all config modules, see iidxhook-util/gfx-config
+* have cleaner config defaults included in dist package here targeted for "living room arcade" use
+  with sane defaults that have a high likelihood that the game just runs on most off-the-shelf hardware
+* implement fini function in iidxhook2, 3, 4 etc. -> cleanup hook modules
+* inline iidxhook-util d3d9 config stuff -> config class + module
+* reflect optional in configuration API? it's quite a mess of using -1 and stuff to reflect that something is not there. with xml, the value can be kept empty simply to reflect that or leaving out the node entirely
+
+goal: migrate and cleanup all old/inject (iidx)hooks
 
 * deprecate cconfig and replace with core-config everywhere, e.g. in IO libs
-* command line tooling unification: command arg parsing, common command args like setting log level/enabling/disabling log file
 * Support config api, required implementation for modules such as IO once being used, see modules/io-ext -> TODOs next to api inits
+
+## Alpha 5 - command line stuff
+
+* have some unified tooling in core for this? -> works well together with existing config API
+* command line tooling unification: command arg parsing, common command args like setting log level/enabling/disabling log file
 * command line overrides for hook (and other?) configurations managed in
   inject and launcher, transparent to hook which just gets the final config
 * improve command line tool/usage docs by following the man page style format with sections name, synopsis description, options etc.
@@ -44,8 +38,42 @@ goal: configuration unification and cleanup, iidxhooks
   as well as allowing hooks and other things to define arbitrary short versions
   e.g. -w for windowed
 
+## Alpha ??? - cleanup pass + stabilize iidxhook
+
+go through all iidxhook modules and check for stuff like TODOs or anything that 
+could benefit from a little tidying up
+
+* dissolve iidxhook-util and instead have earliest appearance and share with successive
+modules
+* consolidate loading of iidxio and eamio code in separate modules iidxio-module, eamio-module
+in iidxhook1, then re-use on later iidxhooks
+
+## Alpha ??? - inject native bemanitools 6 hook API support
+
+* inject
+  * Modify loading of hooks -> need to call btapi thread + log set functions somehow
+  * Modify hooking to hook main_init and main_fini of hook before and after the main function of the exe
+    * Load exe (PE) file, resolve references but don't call the start() function, yet
+    * Run the start() function with hook main_init and main_finit before and after that -> issue if exe has nothing, not even heap etc. initialized?
+    * Which functions can i use from hooklib for that? 
+      * Requires writing our own PE loader for executables?
+      * See hook/process -> process_hijack_startup and hook/pe 
+
+bemanitools: new tool called “loader” that’s a PE loader with additional btools 6 api. also supports generic hooks with just DllMain as it supports loading of arbitrary DLLs. should work trapping BT ApI before start() function because DllMain methods were called even earlier already. just need to make sure BT hook stuff is called after the entire process is set up and all dependencies loaded
+
+push back loader idea as inject still works fine with the debugger idea and everything else.
+also check my own references and read up to refresh my mind how windows loads executables/PE files
+regarding the stages/steps it takes before writing the bemanitools loader that replaces inject
+
+* use new bemanitools hook api in iidxhooks 
+  * replace inject logging through debug api with unified logging through bemanitools 6 api
+
 ## TBD/unsorted
 
+* jbhook1: gfx hooks partially broken due to change in hooking setup/bootstrapping, see TODO in jbhook1
+* sidcode backpropagation required and currently broken for sdvxhook2 and jbhook (?) at least (marked with TODO)
+* meson as build system: requires getting rid of all the special AVS sauce in the current build system -> planned to load and resolve AVS libs dynamically, pre-requisite
+* iat hook impl in launcher not complete and working, yet
 * dynamically load AVS to get rid of all the static linking and different AVS
   version builds -> cleans up build process significantly and also makes
   switching to a new/different build system easier
