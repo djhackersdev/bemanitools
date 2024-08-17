@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="Shift-JIS"?>
+<vigem-ddrio>
+  <enable_reactive_light __type="bool">1</enable_reactive_light>
+</vigem-ddrio>

@@ -834,6 +834,7 @@ $(zipdir)/ddr-hwio-x86.zip: \
 		build/bin/indep-32/extiotest.exe \
 		build/bin/indep-32/p3io-ddr-tool.exe \
 		build/bin/indep-32/vigem-ddrio.exe \
+		dist/ddr/vigem-ddrio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -846,6 +847,7 @@ $(zipdir)/ddr-hwio-x64.zip: \
 		build/bin/indep-64/extiotest.exe \
 		build/bin/indep-64/p3io-ddr-tool.exe \
 		build/bin/indep-64/vigem-ddrio.exe \
+		dist/ddr/vigem-ddrio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
