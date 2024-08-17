@@ -20,4 +20,8 @@ void iidxhook9_config_io_init(struct cconfig *config);
 void iidxhook9_config_io_get(
     struct iidxhook9_config_io *config_io, struct cconfig *config);
 
+void iidxhook9_config_io_get2(
+    const bt_core_config_t *config,
+    struct iidxhook9_config_io *config_io);
+
 #endif

@@ -475,10 +475,6 @@ $(zipdir)/iidx-27-to-30.zip: \
 		dist/iidx/gamestart-28.bat \
 		dist/iidx/gamestart-29.bat \
 		dist/iidx/gamestart-30.bat \
-		dist/iidx/iidxhook-27.conf \
-		dist/iidx/iidxhook-28.conf \
-		dist/iidx/iidxhook-29.conf \
-		dist/iidx/iidxhook-30.conf \
 		dist/iidx/launcher-27.xml \
 		dist/iidx/launcher-28.xml \
 		dist/iidx/launcher-29.xml \

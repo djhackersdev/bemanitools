@@ -5,6 +5,8 @@
 
 #include "cconfig/cconfig.h"
 
+#include "iface-core/config.h"
+
 struct asiohook_config_asio {
     bool force_asio;
     bool force_wasapi;
@@ -15,5 +17,9 @@ void asiohook_config_init(struct cconfig *config);
 
 void asiohook_config_asio_get(
     struct asiohook_config_asio *config_asio, struct cconfig *config);
+
+void asiohook_config_asio_get2(
+    const bt_core_config_t *config,
+    struct asiohook_config_asio *config_asio);
 
 #endif

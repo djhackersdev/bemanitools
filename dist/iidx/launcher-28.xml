@@ -60,6 +60,90 @@
       <path __type="str">iidxhook9.dll</path>
       <config kind="inline">
         <hook>
+          <adapter>
+            <!-- IP of adapter to force override with -->
+            <override_ip __type="str"></override_ip>
+          </adapter>
+          <asio>
+            <!-- Force ASIO audio mode/device (if applicable / TDJ default) -->
+            <force_asio __type="bool">false</force_asio>
+            <!-- Force WASAPI audio mode (if applicable / LDJ default) -->
+            <force_asio __type="bool">true</force_asio>
+            <!-- The ASIO device name to use -->
+            <force_asio __type="bool">XONAR SOUND CARD(64)</force_asio>
+          </asio>
+          <gfx>
+            <device>
+              <!-- D3D9ex device adapter (monitor), -1 to use default, 0, 1, 2 etc. to use specified adapter -->
+              <adapter __type="s32">-1</adapter>
+              <!-- Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors) -->
+              <forced_refresh_rate __type="s32">-1</forced_refresh_rate>
+              <!-- Orientation to force monitor into, -1 to use default, 0, 1, 2, 3 to do 0, 90, 180, 270 degrees -->
+              <force_orientation __type="s32">-1</force_orientation>
+              <!-- Force a screen resolution (width), -1 to disable. Use this if the game does not auto detect your monitor's resolution properly, e.g. 1368x768 instead of 1280x720. -->
+              <force_screen_res>
+                <width __type="s32">-1</width>
+                <height __type="s32">-1</height>
+              </force_screen_res>
+            </device>
+            <window>
+              <!-- Run the game windowed -->
+              <windowed __type="bool">1</windowed>
+              <!-- Run the game in a framed window (requires windowed option) -->
+              <framed __type="bool">1</framed>
+              <!-- Confine mouse cursor to window -->
+              <confined __type="bool">0</confined>
+              <!-- Windowed width, -1 for default size -->
+              <width __type="s32">-1</width>
+              <!-- Windowed height, -1 for default size -->
+              <height __type="s32">-1</height>
+              <!-- Windowed X, -1 for default X position -->
+              <x __type="s32">-1</x>
+              <!-- Windowed Y, -1 for default Y position -->
+              <y __type="s32">-1</y>
+            </window>
+            <back_buffer_scale>
+              <!-- Up-/downscale the back buffer's height. This does not change the game's rendering resolution but scales the final frame. Use this to target the native resolution of your monitor/TV, e.g. to avoid over-/underscan, bad image quality or latency caused by the monitors internal upscaler. 0 to disable this feature. Must be set in combination with the corresponding width parameter. -->
+              <width __type="s32">0</width>
+              <height __type="s32">0</height>
+              <!-- Filter type to use for up-/downscaling the back buffer. Only used if scaling feature was enabled by setting the scaling width and height parameters. Available types: none, linear, point (refer to D3DTEXTUREFILTERTYPE  for explanation). -->
+              <filter __type="str">none</filter>
+            </back_buffer_scale>
+          </gfx>
+          <camera>
+            <!-- Disables the camera emulation -->
+            <disable_emu __type="bool">0</disable_emu>
+            <!-- Camera port layout (0 = LDJ, 1 = CLDJ/TDJ-JA, 2 = TDJ-JB) -->
+            <port_layout __type="s16">1</port_layout>
+            <device_1>
+              <!-- Disable camera 1. Use, i.e., if you only have one camera and want it to be mapped to camera 2 ingame. -->
+              <disable __type="bool">0</disable>
+              <!-- Override camera device ID 1 detection (copy from device manager, do not escape) Leave blank to automatically detect -->
+              <id __type="str"></id>
+            </device_1>
+            <device_2>
+              <!-- Disable camera 2. Use, i.e., if you have more than one camera but only want to map camera 1 ingame. -->
+              <disable __type="bool">0</disable>
+              <!-- Override camera device ID 2 detection (copy from device manager, do not escape) Leave blank to automatically detect -->
+              <id __type="str"></id>
+            </device_2>
+          </camera>
+          <io>
+            <!-- Disable card reader emulation and enable usage of real card reader hardware on COM1 (for games supporting slotted readers) -->
+            <disable_card_reader_emu __type="bool">0</disable_card_reader_emu>
+            <!-- Disable BIO2 emulation and enable usage of real BIO2 hardware -->
+            <disable_bio2_emu __type="bool">0</disable_bio2_emu>
+            <!-- Disables the poll limiter, warning very high CPU usage may arise -->
+            <disable_poll_limiter __type="bool">0</disable_poll_limiter>
+            <!-- Lightning cab mode (requires additional IO emulation) -->
+            <lightning_mode __type="bool">0</lightning_mode>
+            <!-- Disable camera connection -->
+            <disable_cams __type="bool">1</disable_cams>
+            <!-- Disables the built in file hooks, requiring manual file creation -->
+            <disable_file_hooks __type="bool">0</disable_file_hooks>
+            <!-- Turntable sensitivity multiplier (1.0 is default) -->
+            <tt_multiplier __type="float">1.0</tt_multiplier>
+          </io>
         </hook>
       </config>
     </pre_avs>

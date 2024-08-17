@@ -3,6 +3,8 @@
 
 #include "cconfig/cconfig.h"
 
+#include "iface-core/config.h"
+
 /**
  * Config struct for d3d9exhook
  *
@@ -37,5 +39,9 @@ void d3d9exhook_config_gfx_init(struct cconfig *config);
  */
 void d3d9exhook_config_gfx_get(
     struct d3d9exhook_config_gfx *config_gfx, struct cconfig *config);
+
+void d3d9exhook_config_gfx_get2(
+    const bt_core_config_t *config,
+    struct d3d9exhook_config_gfx *config_gfx);
 
 #endif
