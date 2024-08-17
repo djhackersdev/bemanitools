@@ -7,6 +7,7 @@ ldflags_iidxhook8   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_iidxhook8   := \
     avs \
@@ -34,3 +35,4 @@ libs_iidxhook8      := \
 src_iidxhook8       := \
     config-io.c \
     dllmain.c \
+    iidxhook8.c \

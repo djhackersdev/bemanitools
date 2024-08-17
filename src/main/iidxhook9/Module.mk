@@ -7,6 +7,7 @@ ldflags_iidxhook9   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_iidxhook9   := \
     avs \

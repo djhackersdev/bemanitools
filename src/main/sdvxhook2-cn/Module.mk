@@ -7,6 +7,7 @@ ldflags_sdvxhook2-cn   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_sdvxhook2-cn   := \
     avs \

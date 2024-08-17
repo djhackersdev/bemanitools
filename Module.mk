@@ -453,8 +453,6 @@ $(zipdir)/iidx-25-to-26.zip: \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-25.bat \
 		dist/iidx/gamestart-26.bat \
-		dist/iidx/iidxhook-25.conf \
-		dist/iidx/iidxhook-26.conf \
 		dist/iidx/launcher-25.xml \
 		dist/iidx/launcher-26.xml \
 		dist/shared/ea3-ident.xml \

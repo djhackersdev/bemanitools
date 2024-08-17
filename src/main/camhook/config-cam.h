@@ -5,6 +5,8 @@
 
 #include "cconfig/cconfig.h"
 
+#include "iface-core/config.h"
+
 #define CAMHOOK_CONFIG_CAM_MAX 2
 
 struct camhook_config_cam {
@@ -23,6 +25,12 @@ void camhook_config_cam_init(
 void camhook_config_cam_get(
     struct camhook_config_cam *config_cam,
     struct cconfig *config,
+    size_t num_cams,
+    bool use_port_layout);
+
+void camhook_config_cam_get2(
+    const bt_core_config_t *config,
+    struct camhook_config_cam *config_cam,
     size_t num_cams,
     bool use_port_layout);
 
