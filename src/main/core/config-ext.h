@@ -33,4 +33,32 @@ void bt_core_config_ext_str_get(
     const bt_core_config_t *config, const char *path, char *value, size_t len);
 void bt_core_config_ext_net_addr_get(const bt_core_config_t *config, const char *path, struct net_addr *addr);
 
+bool bt_core_config_ext_s8_optional_get(
+    const bt_core_config_t *config, const char *path, int8_t *value);
+bool bt_core_config_ext_u8_optional_get(
+    const bt_core_config_t *config, const char *path, uint8_t *value);
+bool bt_core_config_ext_s16_optional_get(
+    const bt_core_config_t *config, const char *path, int16_t *value);
+bool bt_core_config_ext_u16_optional_get(
+    const bt_core_config_t *config, const char *path, uint16_t *value);
+bool bt_core_config_ext_s32_optional_get(
+    const bt_core_config_t *config, const char *path, int32_t *value);
+bool bt_core_config_ext_u32_optional_get(
+    const bt_core_config_t *config, const char *path, uint32_t *value);
+bool bt_core_config_ext_s64_optional_get(
+    const bt_core_config_t *config, const char *path, int64_t *value);
+bool bt_core_config_ext_u64_optional_get(
+    const bt_core_config_t *config, const char *path, uint64_t *value);
+bool bt_core_config_ext_float_optional_get(
+    const bt_core_config_t *config, const char *path, float *value);
+bool bt_core_config_ext_double_optional_get(
+    const bt_core_config_t *config, const char *path, double *value);
+bool bt_core_config_ext_bool_optional_get(
+    const bt_core_config_t *config, const char *path, bool *value);
+bool bt_core_config_ext_bin_optional_get(
+    const bt_core_config_t *config, const char *path, void *value, size_t len);
+bool bt_core_config_ext_str_optional_get(
+    const bt_core_config_t *config, const char *path, char *value, size_t len);
+bool bt_core_config_ext_net_addr_optional_get(const bt_core_config_t *config, const char *path, struct net_addr *addr);
+
 #endif
