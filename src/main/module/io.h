@@ -20,6 +20,7 @@ void module_io_core_log_api_set(
     const module_io_t *module, const bt_core_log_api_t *api);
 void module_io_core_thread_api_set(
     const module_io_t *module, const bt_core_thread_api_t *api);
+bool module_io_configure_do(const module_io_t *module, const bt_core_config_t *config);
 
 void module_io_api_get(const module_io_t *module, void *api);
 

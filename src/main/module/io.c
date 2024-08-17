@@ -7,6 +7,7 @@
 #include "iface-core/log.h"
 
 #include "main/module/core.h"
+#include "main/module/configure.h"
 #include "main/module/io.h"
 #include "main/module/module.h"
 
@@ -21,6 +22,7 @@ struct module_io {
     bt_module_core_config_api_set_t core_config_api_set;
     bt_module_core_log_api_set_t core_log_api_set;
     bt_module_core_thread_api_set_t core_thread_api_set;
+    bt_module_configure_do_t configure_do;
 
     module_io_api_get_t api_get;
     // Keep for debug logging
@@ -39,6 +41,9 @@ _module_io_resolve(module_io_t *module, const char *api_get_func_name)
     module->core_thread_api_set =
         (bt_module_core_thread_api_set_t) module_func_optional_resolve(
             module->module, "bt_module_core_thread_api_set");
+    module->configure_do =
+        (bt_module_configure_do_t) module_func_optional_resolve(
+            module->module, "bt_module_configure_do");
 
     module->api_get = (module_io_api_get_t) module_func_required_resolve(
         module->module, api_get_func_name);
@@ -120,6 +125,28 @@ void module_io_core_thread_api_set(
         module_func_post_invoke_log(
             module->module, "bt_module_core_thread_api_set");
     }
+}
+
+bool module_io_configure_do(const module_io_t *module, const bt_core_config_t *config)
+{
+    bool result;
+
+    log_assert(module);
+    log_assert(config);
+
+    result = true;
+
+    if (module->configure_do) {
+        module_func_pre_invoke_log(
+            module->module, "bt_module_configure_do");
+
+        result = module->configure_do(config);
+
+        module_func_post_invoke_log(
+            module->module, "bt_module_configure_do");
+    }
+
+    return result;
 }
 
 void module_io_api_get(const module_io_t *module, void *api)
