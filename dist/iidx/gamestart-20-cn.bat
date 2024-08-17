@@ -57,8 +57,5 @@ if not exist dev\nvram mkdir dev\nvram
 if not exist dev\raw mkdir dev\raw
 
 %BEMANITOOLS_DIR%\inject.exe^
-  %BEMANITOOLS_DIR%\iidxhook5-cn.dll^
-  %REVISION_DIR%\bm2dx.exe^
-  -D^
-  --config %BEMANITOOLS_DIR%\iidxhook-20-cn.conf^
+  %BEMANITOOLS_DIR%\inject-20-cn.xml^
   %*

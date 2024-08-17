@@ -3,6 +3,7 @@ avsdlls         += iidxhook5-cn
 ldflags_iidxhook5-cn   := \
     -liphlpapi \
     -lws2_32 \
+    -lshlwapi \
 
 deplibs_iidxhook5-cn   := \
     avs \
@@ -28,8 +29,10 @@ libs_iidxhook5-cn      := \
     module \
     util \
     mxml \
+    sdk-hook \
 
 src_iidxhook5-cn       := \
     avs-boot.c \
-    path.c \
     dllmain.c \
+    iidxhook5-cn.c \
+    path.c \

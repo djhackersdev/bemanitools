@@ -412,7 +412,7 @@ $(zipdir)/iidx-20-cn.zip: \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20-cn.bat \
-		dist/iidx/iidxhook-20-cn.conf \
+		dist/iidx/inject-20-cn.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
