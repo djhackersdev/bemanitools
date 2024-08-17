@@ -523,7 +523,7 @@ $(zipdir)/jb-01.zip: \
 		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-01.bat \
-		dist/jb/jbhook-01.conf \
+		dist/jb/inject-01.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -538,7 +538,7 @@ $(zipdir)/jb-02.zip: \
 		dist/dwarfstack/32/dwarfstack.dll \
 		dist/jb/config.bat \
 		dist/jb/gamestart-02.bat \
-		dist/jb/jbhook-02.conf \
+		dist/jb/inject-02.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
