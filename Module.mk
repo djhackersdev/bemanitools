@@ -358,7 +358,7 @@ $(zipdir)/iidx-18-cn.zip: \
 		build/bin/indep-32/inject.exe \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-18-cn.bat \
-		dist/iidx/iidxhook-18-cn.conf \
+		dist/iidx/inject-18-cn.xml \
 		dist/iidx/vefx.txt \
 		| $(zipdir)/
 	$(V)echo ... $@
