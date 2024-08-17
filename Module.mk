@@ -667,7 +667,6 @@ $(zipdir)/sdvx-05-cn.zip: \
 		build/bin/indep-64/sdvxio.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart-cn.bat \
-		dist/sdvx5/sdvxhook2-cn.conf \
 		dist/sdvx5/launcher-cn.xml \
 		dist/shared/ea3-ident.xml \
 		dist/shared/ea3-license.xml \
@@ -683,6 +682,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
 		dist/sdvx/eamio-icca.xml \
+		dist/sdvx/sdvxio-bio2.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -694,6 +694,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
 		dist/sdvx/eamio-icca.xml \
+		dist/sdvx/sdvxio-bio2.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

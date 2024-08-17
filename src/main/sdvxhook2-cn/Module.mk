@@ -22,7 +22,6 @@ libs_sdvxhook2-cn      := \
     d3d9exhook \
     hook \
     hooklib \
-    cconfig \
     util \
     iface \
     iface-io \
@@ -32,7 +31,8 @@ libs_sdvxhook2-cn      := \
 
 src_sdvxhook2-cn       := \
     acio.c \
-    kfca.c \
-    dllmain.c \
     config-cn.c \
+    dllmain.c \
+    kfca.c \
+    sdvxhook2-cn.c \
     unis-version.c \

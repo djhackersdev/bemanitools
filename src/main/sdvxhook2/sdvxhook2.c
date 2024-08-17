@@ -175,8 +175,6 @@ _sdvxhook2_main_init(HMODULE game_module, const bt_core_config_t *config)
 
     adapter_hook_override(_sdvxhook2_config_adapter.override_ip);
 
-    log_info("--- End sdvxhook dll_entry_init ---");
-
     return true;
 }
 

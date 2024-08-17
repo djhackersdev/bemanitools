@@ -20,6 +20,18 @@ set CONTENT_DIR=%CD%\..
 set BEMANITOOLS_DIR=%CONTENT_DIR%\bemanitools
 set MODULES_DIR=%CONTENT_DIR%\modules
 
+if not exist "%BEMANITOOLS_DIR%" (
+    echo The bemanitools directory "%BEMANITOOLS_DIR%" does not exist.
+    pause
+    exit 1
+)
+
+if not exist "%MODULES_DIR%" (
+    echo The game modules directory "%MODULES_DIR%" does not exist.
+    pause
+    exit 1
+)
+
 :: Keep that data vanilla, no need to copy these around anymore
 :: Just add them to the env PATH so launcher can find the libs and game executable
 :: Remark: This also requires admin privileges to propage correctly to launcher
@@ -31,4 +43,6 @@ set PATH=^
 :: Current working dir is the game's root folder
 cd /d %CONTENT_DIR%
 
-%BEMANITOOLS_DIR%\launcher %BEMANITOOLS_DIR%\launcher-cn.xml --config %BEMANITOOLS_DIR%\sdvxhook2-cn.conf %*
+%BEMANITOOLS_DIR%\launcher.exe^
+  %BEMANITOOLS_DIR%\launcher-cn.xml^
+  %*
