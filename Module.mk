@@ -616,7 +616,7 @@ $(zipdir)/jb-hwio.zip: \
 		build/bin/indep-32/eamio-icca.dll \
 		build/bin/indep-32/jbio-magicbox.dll \
 		build/bin/indep-32/jbio-p4io.dll \
-		dist/jb/jbio-h44b.conf \
+		dist/jb/jbio-h44b.xml \
 		dist/jb/eamio-icca.xml \
 		| $(zipdir)/
 	$(V)echo ... $@

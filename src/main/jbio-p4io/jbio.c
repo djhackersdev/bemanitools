@@ -9,9 +9,8 @@
 
 #include "api/core/log.h"
 
-#include "cconfig/cconfig-main.h"
-
 #include "iface-acio/mgr.h"
+#include "iface-core/config.h"
 #include "iface-core/log.h"
 
 #include "jbio-p4io/config-h44b.h"
@@ -21,8 +20,12 @@
 
 #include "p4iodrv/device.h"
 
+#include "sdk/module/core/config.h"
+#include "sdk/module/configure.h"
 #include "sdk/module/core/log.h"
 #include "sdk/module/io/jb.h"
+
+static h44b_config_t _jbio_p4io_config_h44b;
 
 static struct p4iodrv_ctx *p4io_ctx;
 static uint16_t jb_io_panels;
@@ -47,29 +50,6 @@ static void _bt_io_jb_module_acio_mgr_init(module_acio_mgr_t **module)
 
 bool bt_io_jb_init()
 {
-    struct cconfig *config;
-    struct h44b_config config_h44b;
-
-    config = cconfig_init();
-
-    jbio_config_h44b_init(config);
-
-    if (!cconfig_main_config_init(
-            config,
-            "--h44b-config",
-            "jbio-h44b.conf",
-            "--help",
-            "-h",
-            "jbio-h44b",
-            CCONFIG_CMD_USAGE_OUT_STDOUT)) {
-        cconfig_finit(config);
-        exit(EXIT_FAILURE);
-    }
-
-    jbio_config_h44b_get(&config_h44b, config);
-
-    cconfig_finit(config);
-
     _bt_io_jb_module_acio_mgr_init(&acio_mgr_module);
 
     p4io_ctx = p4iodrv_open();
@@ -79,7 +59,7 @@ bool bt_io_jb_init()
 
     // some people use p4io just for acio_mgrs and have no lights. Soft fail
     // when h44b is not able to be connected instead of returning false
-    lights_present = jb_io_h44b_init(config_h44b.port, config_h44b.baud);
+    lights_present = jb_io_h44b_init(_jbio_p4io_config_h44b.port, _jbio_p4io_config_h44b.baud);
     if (!lights_present) {
         log_warning("Could not connect to H44B, lights disabled");
     }
@@ -239,9 +219,21 @@ bool bt_io_jb_coin_blocker_set(bool blocked)
     return p4iodrv_cmd_coinstock(p4io_ctx, coin);
 }
 
+void bt_module_core_config_api_set(const bt_core_config_api_t *api)
+{
+    bt_core_config_api_set(api);
+}
+
 void bt_module_core_log_api_set(const bt_core_log_api_t *api)
 {
     bt_core_log_api_set(api);
+}
+
+bool bt_module_configure_do(const bt_core_config_t *config)
+{
+    jbio_config_h44b_get(config, &_jbio_p4io_config_h44b);
+
+    return true;
 }
 
 void bt_module_io_jb_api_get(bt_io_jb_api_t *api)
