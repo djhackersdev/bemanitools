@@ -393,7 +393,6 @@ $(zipdir)/iidx-20.zip: \
 		build/bin/indep-32/vefxio.dll \
 		dist/iidx/config.bat \
 		dist/iidx/gamestart-20.bat \
-		dist/iidx/iidxhook-20.conf \
 		dist/iidx/launcher-20.xml \
 		dist/shared/ea3-ident.xml \
 		dist/shared/ea3-license.xml \

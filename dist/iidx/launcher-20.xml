@@ -68,6 +68,37 @@
       <path __type="str">iidxhook6.dll</path>
       <config kind="inline">
         <hook>
+          <gfx>
+            <device>
+              <!-- D3D9 device adapter (monitor), -1 to use default, 0, 1, 2 etc. to use specified adapter -->
+              <adapter __type="s8">-1</adapter>
+              <!-- Forced refresh rate, -1 to not force any (try 59 or 60 if monitor check fails to lock on high refresh rate monitors) -->
+              <forced_refresh_rate __type="s16">-1</forced_refresh_rate>
+              <!-- Software limit the frame rate of the rendering loop in hz, e.g. 60 or 59.95 (0.0 = no software limit) -->
+              <frame_rate_limit __type="float">0.0</frame_rate_limit>
+              <!-- Patch the GPU device ID detection (leave empty to disable), format XXXX:YYYY, two 4 digit hex numbers (vid:pid). Examples: 1002:7146 (RV515, Radeon X1300), 1002:95C5 (RV620 LE, Radeon HD3450) -->
+              <pci_id_vid __type="str">1002</pci_id_vid>
+              <pci_id_pid __type="str">7146</pci_id_pid>
+            </device>
+            <window>
+              <windowed __type="bool">1</windowed>
+              <framed __type="bool">1</framed>
+              <!-- Windowed height, 0 for default size -->
+              <width __type="u16">0</width>
+              <height __type="u16">0</height>
+            </window>
+            <back_buffer_scale>
+              <!-- Up-/downscale the back buffer's height. This does not change the game's rendering resolution but scales the final frame. Use this to target the native resolution of your monitor/TV, e.g. to avoid over-/underscan, bad image quality or latency caused by the monitors internal upscaler. 0 to disable this feature. Must be set in combination with the corresponding width parameter. -->
+              <width __type="u16">0</width>
+              <height __type="u16">0</height>
+              <!-- Filter type to use for up-/downscaling the back buffer. Only used if scaling feature was enabled by setting the scaling width and height parameters. Available types: none, linear, point (refer to D3DTEXTUREFILTERTYPE  for explanation). -->
+              <filter __type="str">none</filter>
+            </back_buffer_scale>
+          </gfx>
+          <io>
+            <disable_card_reader_emu __type="bool">0</disable_card_reader_emu>
+            <disable_io_emu __type="bool">0</disable_io_emu>
+          </io>
         </hook>
       </config>
     </hook>

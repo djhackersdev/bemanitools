@@ -32,3 +32,4 @@ libs_iidxhook6      := \
 
 src_iidxhook6       := \
     dllmain.c \
+    iidxhook6.c \
