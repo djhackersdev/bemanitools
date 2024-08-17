@@ -27,6 +27,9 @@ void bt_io_iidx_api_set(const bt_io_iidx_api_t *api)
     }
 
     if (api->version == 1) {
+        BT_IO_IIDX_ASSERT_IMPLEMENTED(api->v1.init, "bt_io_iidx_init");
+        BT_IO_IIDX_ASSERT_IMPLEMENTED(api->v1.fini, "bt_io_iidx_fini");
+
         BT_IO_IIDX_ASSERT_IMPLEMENTED(
             api->v1.ep1_deck_lights_set, "bt_io_iidx_ep1_deck_lights_set");
         BT_IO_IIDX_ASSERT_IMPLEMENTED(
