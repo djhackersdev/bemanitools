@@ -208,9 +208,7 @@ include src/main/vigem-sdvxio/Module.mk
 include src/main/vigem-ddrio/Module.mk
 include src/main/vigemstub/Module.mk
 
-include src/test/cconfig/Module.mk
 include src/test/d3d9hook/Module.mk
-include src/test/iidxhook-util/Module.mk
 include src/test/security/Module.mk
 include src/test/test/Module.mk
 include src/test/util/Module.mk
@@ -906,15 +904,8 @@ $(zipdir)/doc.zip: \
 $(BUILDDIR)/tests.zip: \
 		build/bin/indep-32/iidxhook1.dll \
 		build/bin/avs2_0-32/iidxhook2.dll \
-		build/bin/indep-32/cconfig-test.exe \
-		build/bin/indep-32/cconfig-util-test.exe \
-		build/bin/indep-32/cconfig-cmd-test.exe \
 		build/bin/indep-32/d3d9hook.dll \
 		build/bin/indep-32/d3d9hook-test.exe \
-		build/bin/indep-32/iidxhook-util-config-eamuse-test.exe \
-		build/bin/indep-32/iidxhook-util-config-gfx-test.exe \
-		build/bin/indep-32/iidxhook-util-config-misc-test.exe \
-		build/bin/indep-32/iidxhook-util-config-sec-test.exe \
 		dist/dwarfstack/32/dwarfstack.dll \
 		build/bin/indep-32/inject.exe \
 		build/bin/indep-32/security-id-test.exe \
