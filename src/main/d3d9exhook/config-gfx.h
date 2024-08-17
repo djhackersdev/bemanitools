@@ -9,7 +9,7 @@
  * Note: forced_refresh_rate sets the monitor's refresh rate
  * (it does not limit FPS or anything)
  */
-struct d3d9exhook_config_gfx {
+typedef struct d3d9exhook_config_gfx {
     bool framed;
     bool windowed;
     bool confined;
@@ -25,10 +25,10 @@ struct d3d9exhook_config_gfx {
         int32_t width;
         int32_t height;
     } force_screen_res;
-};
+} d3d9exhook_config_gfx_t;
 
 void d3d9exhook_config_gfx_get(
     const bt_core_config_t *config,
-    struct d3d9exhook_config_gfx *config_gfx);
+    d3d9exhook_config_gfx_t *config_gfx);
 
 #endif

@@ -7,6 +7,7 @@ ldflags_sdvxhook2   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -lws2_32 \
 
 deplibs_sdvxhook2   := \
     avs \
@@ -22,17 +23,18 @@ libs_sdvxhook2      := \
     d3d9exhook \
     hook \
     hooklib \
-    cconfig \
     util \
     iface \
     iface-io \
     iface-core \
     module \
+    security \
 
 src_sdvxhook2       := \
     acio.c \
     bi2a.c \
-    dllmain.c \
     config-io.c \
+    dllmain.c \
     nvapi.c \
     power.c \
+    sdvxhook2.c \

@@ -8,7 +8,7 @@
 
 void camhook_config_cam_get(
     const bt_core_config_t *config,
-    struct camhook_config_cam *config_cam,
+    camhook_config_cam_t *config_cam,
     size_t num_cams,
     bool use_port_layout)
 {

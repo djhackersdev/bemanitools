@@ -8,7 +8,7 @@
 
 void d3d9exhook_config_gfx_get(
     const bt_core_config_t *config,
-    struct d3d9exhook_config_gfx *config_gfx)
+    d3d9exhook_config_gfx_t *config_gfx)
 {
     bt_core_config_s32_get(config, "gfx/device/adapter", &config_gfx->device_adapter);
     bt_core_config_s32_get(config, "gfx/device/forced_refresh_rate", &config_gfx->forced_refresh_rate);

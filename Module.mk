@@ -650,7 +650,6 @@ $(zipdir)/sdvx-05-to-06.zip: \
 		build/bin/indep-64/sdvxio.dll \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
-		dist/sdvx5/sdvxhook2.conf \
 		dist/sdvx5/launcher.xml \
 		dist/shared/ea3-ident.xml \
 		dist/shared/ea3-license.xml \
