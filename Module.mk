@@ -494,7 +494,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/vigem-iidxio.exe \
 		dist/iidx/eamio-icca.xml \
 		dist/iidx/iidxio-bio2.xml \
-		dist/iidx/vigem-iidxio.conf \
+		dist/iidx/vigem-iidxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -508,7 +508,7 @@ $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/vigem-iidxio.exe \
 		dist/iidx/eamio-icca.xml \
 		dist/iidx/iidxio-bio2.xml \
-		dist/iidx/vigem-iidxio.conf \
+		dist/iidx/vigem-iidxio.xml \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
