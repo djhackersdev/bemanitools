@@ -135,6 +135,7 @@ include src/main/ezusb2-popn-shim/Module.mk
 include src/main/ezusb2-tool/Module.mk
 include src/main/ezusb2/Module.mk
 include src/main/geninput/Module.mk
+include src/main/hdr-histogram/Module.mk
 include src/main/hook/Module.mk
 include src/main/hooklib/Module.mk
 include src/main/iidx-bio2-exit-hook/Module.mk
@@ -154,9 +155,11 @@ include src/main/iidxhook6/Module.mk
 include src/main/iidxhook7/Module.mk
 include src/main/iidxhook8/Module.mk
 include src/main/iidxhook9/Module.mk
+include src/main/iidxio-async/Module.mk
 include src/main/iidxio-bio2/Module.mk
 include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
+include src/main/iidxio-perf/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxiotest/Module.mk
 include src/main/inject/Module.mk
@@ -456,9 +459,11 @@ $(zipdir)/iidx-27-to-30.zip: \
 $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/aciomgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/iidxio-async.dll \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
 		build/bin/indep-32/iidxio-ezusb2.dll \
+		build/bin/indep-32/iidxio-perf.dll \
 		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-32/vigem-iidxio.exe \
 		dist/iidx/vigem-iidxio.conf \
@@ -469,9 +474,11 @@ $(zipdir)/iidx-hwio-x86.zip: \
 $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/aciomgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
+		build/bin/indep-64/iidxio-async.dll \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
+		build/bin/indep-64/iidxio-perf.dll \
 		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-64/vigem-iidxio.exe \
 		dist/iidx/vigem-iidxio.conf \
