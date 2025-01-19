@@ -261,7 +261,8 @@ skip:
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        log_to_writer(log_writer_debug, NULL);
+        // TODO switched to null writer to see if it addresses performance issues
+        log_to_writer(log_writer_null, NULL);
 
         /* Bootstrap hook for further init tasks (see above) */
 
