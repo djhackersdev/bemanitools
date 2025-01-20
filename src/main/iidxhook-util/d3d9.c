@@ -13,6 +13,7 @@
 #include "hook/table.h"
 
 #include "iidxhook-util/d3d9.h"
+#include "iidxhook-util/frame-graph.h"
 #include "iidxhook-util/vertex-shader.h"
 
 #include "util/defs.h"
@@ -232,7 +233,7 @@ iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp *irp)
         "hDeviceWindow %p, Windowed %d, "
         "EnableAutoDepthStencil "
         "%d, AutoDepthStencilFormat %d, Flags %lX, "
-        "FullScreen_RefreshRateInHz %d",
+        "FullScreen_RefreshRateInHz %d, PresentationInterval %d",
         irp->args.ctx_create_device.pp->BackBufferWidth,
         irp->args.ctx_create_device.pp->BackBufferHeight,
         irp->args.ctx_create_device.pp->BackBufferFormat,
@@ -244,7 +245,8 @@ iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp *irp)
         irp->args.ctx_create_device.pp->EnableAutoDepthStencil,
         irp->args.ctx_create_device.pp->AutoDepthStencilFormat,
         irp->args.ctx_create_device.pp->Flags,
-        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz);
+        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz,
+        irp->args.ctx_create_device.pp->PresentationInterval);
 }
 
 static void
@@ -266,6 +268,9 @@ static void iidxhook_util_d3d9_fix_create_device_apply_window_mode(
     log_assert(irp);
     log_assert(irp->op == HOOK_D3D9_IRP_OP_CTX_CREATE_DEVICE);
     D3DPRESENT_PARAMETERS *pp = irp->args.ctx_create_device.pp;
+
+    // TODO temporarily remove vsync for testing
+    pp->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
     if (iidxhook_util_d3d9_config.windowed) {
         pp->Windowed = TRUE;
@@ -1190,7 +1195,14 @@ iidxhook_util_d3d9_irp_handler(struct hook_d3d9_irp *irp)
 
             return hook_d3d9_irp_invoke_next(irp);
 
+        // TODO is there always ever just a single scene being rendered?
+        case HOOK_D3D9_IRP_OP_DEV_END_SCENE:
+            DrawFrameGraph(irp->args.dev_present.self);
+
+            return hook_d3d9_irp_invoke_next(irp);
+
         case HOOK_D3D9_IRP_OP_DEV_PRESENT:
+            
             iidxhook_util_d3d9_scale_render_target_to_back_buffer(irp);
             iidxhook_util_d3d9_set_back_buffer_rt(irp);
 

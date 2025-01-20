@@ -27,6 +27,8 @@
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
+#include "iidxhook-d3d9/frame-pace.h"
+
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/clock.h"
@@ -52,6 +54,9 @@
 
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
+    // Order is important for performance, frame pacing must come at the very end
+    // to include all timings from any prior hooks
+    //iidxhook_d3d9_frame_pace_d3d9_irp_handler,
 };
 
 static HANDLE STDCALL my_OpenProcess(DWORD, BOOL, DWORD);
@@ -68,6 +73,8 @@ static void
 iidxhook3_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
 {
     struct iidxhook_util_d3d9_config d3d9_config;
+
+    iidxhook_d3d9_frame_pace_init(GetCurrentThreadId(), 60.0);
 
     iidxhook_util_d3d9_init_config(&d3d9_config);
 
@@ -246,8 +253,7 @@ skip:
 BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 {
     if (reason == DLL_PROCESS_ATTACH) {
-        // TODO switched to null writer to see if it addresses performance issues
-        log_to_writer(log_writer_null, NULL);
+        log_to_writer(log_writer_debug, NULL);
 
         /* Bootstrap hook for further init tasks (see above) */
 

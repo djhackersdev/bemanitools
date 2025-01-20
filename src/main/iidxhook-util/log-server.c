@@ -118,15 +118,15 @@ log_post(char level, const char *module, const char *fmt, va_list ap)
 {
     // TODO test if this addresses performance issues and stuttering
     // TODO measure time how long waiting takes here?
-    // if (WaitForSingleObject(log_rv_producer, INFINITE)) {
-    //     return;
-    // }
+    if (WaitForSingleObject(log_rv_producer, INFINITE)) {
+        return;
+    }
 
-    // log_rv_level = level;
-    // log_rv_module = module;
-    // str_vformat(log_rv_buffer, sizeof(log_rv_buffer), fmt, ap);
+    log_rv_level = level;
+    log_rv_module = module;
+    str_vformat(log_rv_buffer, sizeof(log_rv_buffer), fmt, ap);
 
-    // ReleaseSemaphore(log_rv_consumer, 1, NULL);
+    ReleaseSemaphore(log_rv_consumer, 1, NULL);
 }
 
 #define LOG_POST_IMPL(name, level)                             \
