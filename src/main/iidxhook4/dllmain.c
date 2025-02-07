@@ -27,12 +27,17 @@
 
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/chart-patch.h"
+#include "iidxhook-util/config-debug.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
 #include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/log-server.h"
 #include "iidxhook-util/settings.h"
+
+#include "imgui-bt/imgui-d3d9-hook.h"
+
+#include "imgui-debug/frame-perf-graph.h"
 
 #include "imports/avs.h"
 
@@ -48,9 +53,21 @@
 
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
+    imgui_hook_d3d9_irp_handler,
 };
 
 static struct iidxhook_config_io config_io;
+
+static void iidxhook4_setup_imgui_debug_components(const struct iidxhook_config_debug *config_debug)
+{
+    imgui_bt_component_t debug_frame_graph_component;
+
+    if (config_debug->enable_frame_perf_graph) {
+        imgui_debug_frame_perf_graph_init(60.0f, &debug_frame_graph_component);
+
+        imgui_d3d9_hook_init(&debug_frame_graph_component, 1);
+    }
+}
 
 static void
 iidxhook4_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
@@ -101,6 +118,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 {
     struct cconfig *config;
 
+    struct iidxhook_config_debug config_debug;
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook_config_misc config_misc;
 
@@ -111,6 +129,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     config = cconfig_init();
 
+    iidxhook_config_debug_init(config);
     iidxhook_config_gfx_init(config);
     iidxhook_config_io_init(config);
     iidxhook_config_misc_init(config);
@@ -124,6 +143,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         exit(EXIT_FAILURE);
     }
 
+    iidxhook_config_debug_get(&config_debug, config);
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook_config_io_get(&config_io, config);
     iidxhook_config_misc_get(&config_misc, config);
@@ -132,6 +152,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     log_info(IIDXHOOK4_INFO_HEADER);
     log_info("Initializing iidxhook...");
+
+    iidxhook4_setup_imgui_debug_components(&config_debug);
 
     iidxhook4_setup_d3d9_hooks(&config_gfx);
 

@@ -2,6 +2,9 @@ avsdlls         += iidxhook4
 
 ldflags_iidxhook4   := \
     -liphlpapi \
+    -ld3d9 \
+    -ldwmapi\
+    -lgdi32 \
 
 deplibs_iidxhook4   := \
     avs \
@@ -22,6 +25,9 @@ libs_iidxhook4      := \
     cconfig \
     util \
     ezusb \
+    imgui-bt \
+    imgui-debug \
+    imgui \
 
 src_iidxhook4       := \
     dllmain.c \

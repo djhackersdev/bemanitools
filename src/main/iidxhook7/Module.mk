@@ -3,6 +3,8 @@ avsdlls         += iidxhook7
 ldflags_iidxhook7   := \
     -liphlpapi \
     -ld3d9 \
+    -ldwmapi\
+    -lgdi32 \
 
 deplibs_iidxhook7   := \
     avs \
@@ -24,6 +26,9 @@ libs_iidxhook7      := \
     iidxio \
     util \
     ezusb \
+    imgui-bt \
+    imgui-debug \
+    imgui \
 
 src_iidxhook7       := \
     dllmain.c \

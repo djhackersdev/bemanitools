@@ -25,6 +25,7 @@
 #include "iidxhook4-cn/path.h"
 
 #include "iidxhook-util/chart-patch.h"
+#include "iidxhook-util/config-debug.h"
 #include "iidxhook-util/config-eamuse.h"
 #include "iidxhook-util/config-gfx.h"
 #include "iidxhook-util/config-io.h"
@@ -32,6 +33,10 @@
 #include "iidxhook-util/config-sec.h"
 #include "iidxhook-util/d3d9.h"
 #include "iidxhook-util/settings.h"
+
+#include "imgui-bt/imgui-d3d9-hook.h"
+
+#include "imgui-debug/frame-perf-graph.h"
 
 #include "security/rp-sign-key.h"
 
@@ -51,6 +56,7 @@ static bool iidxhook_init_check;
 
 static const hook_d3d9_irp_handler_t iidxhook_d3d9_handlers[] = {
     iidxhook_util_d3d9_irp_handler,
+    imgui_hook_d3d9_irp_handler,
 };
 
 static const struct hook_symbol init_hook_syms[] = {
@@ -60,6 +66,17 @@ static const struct hook_symbol init_hook_syms[] = {
 };
 
 static struct iidxhook_config_io config_io;
+
+static void iidxhook4_cn_setup_imgui_debug_components(const struct iidxhook_config_debug *config_debug)
+{
+    imgui_bt_component_t debug_frame_graph_component;
+
+    if (config_debug->enable_frame_perf_graph) {
+        imgui_debug_frame_perf_graph_init(60.0f, &debug_frame_graph_component);
+
+        imgui_d3d9_hook_init(&debug_frame_graph_component, 1);
+    }
+}
 
 static void
 iidxhook4_cn_setup_d3d9_hooks(const struct iidxhook_config_gfx *config_gfx)
@@ -117,6 +134,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 {
     struct cconfig *config;
 
+    struct iidxhook_config_debug config_debug;
     struct iidxhook_util_config_eamuse config_eamuse;
     struct iidxhook_config_gfx config_gfx;
     struct iidxhook_config_sec config_sec;
@@ -134,6 +152,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
 
     config = cconfig_init();
 
+    iidxhook_config_debug_init(config);
     iidxhook_util_config_eamuse_init(config);
     iidxhook_config_gfx_init(config);
     iidxhook_config_io_init(config);
@@ -148,6 +167,7 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
         exit(EXIT_FAILURE);
     }
 
+    iidxhook_config_debug_get(&config_debug, config);
     iidxhook_util_config_eamuse_get(&config_eamuse, config);
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook_config_io_get(&config_io, config);
@@ -173,6 +193,8 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     ezusb_iidx_emu_node_security_plug_set_plug_black_mcode(
         &config_sec.black_plug_mcode);
     ezusb_iidx_emu_node_security_plug_set_pcbid(&config_eamuse.pcbid);
+
+    iidxhook4_cn_setup_imgui_debug_components(&config_debug);
 
     iidxhook4_cn_setup_d3d9_hooks(&config_gfx);
 
