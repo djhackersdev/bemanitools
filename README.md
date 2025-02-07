@@ -122,6 +122,7 @@ The following games are supported with their corresponding hook-libraries.
 - ir-beat-patch-9/10: Patch the IR beat phase on IIDX 9 and 10
 - [mempatch-hook](doc/tools/mempatch-hook.md): Patch raw memory locations in the target process
   based on the provided configuration
+- [nvgpu](doc/tools/nvgpu.md): Command line tool to configure and tweak the NVIDIA GPU driver
 - [pcbidgen](doc/tools/pcbidgen.md): Konami PCBID generator tool
 - [ViGEm clients](doc/vigem/README.md): Expose BT5 APIs as XBOX game controllers to play any games
   with real cabinet hardware.
