@@ -3,6 +3,9 @@ dlls		    += iidxhook1
 ldflags_iidxhook1   := \
     -lws2_32 \
     -liphlpapi \
+    -ld3d9 \
+    -ldwmapi\
+    -lgdi32 \
 
 libs_iidxhook1      := \
     iidxhook-util \
@@ -18,6 +21,9 @@ libs_iidxhook1      := \
     cconfig \
     util \
     ezusb \
+    imgui-bt \
+    imgui-debug \
+    imgui \
 
 src_iidxhook1       := \
     config-iidxhook1.c \

@@ -3,6 +3,9 @@ avsdlls         += iidxhook4-cn
 ldflags_iidxhook4-cn   := \
     -liphlpapi \
     -lws2_32 \
+    -ld3d9 \
+    -ldwmapi\
+    -lgdi32 \
 
 deplibs_iidxhook4-cn   := \
     avs \
@@ -20,6 +23,9 @@ libs_iidxhook4-cn      := \
     cconfig \
     util \
     ezusb \
+    imgui-bt \
+    imgui-debug \
+    imgui \
 
 src_iidxhook4-cn       := \
     avs-boot.c \

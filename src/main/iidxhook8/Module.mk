@@ -7,6 +7,9 @@ ldflags_iidxhook8   := \
     -lmf \
     -lmfplat \
     -lole32 \
+    -ld3d9 \
+    -ldwmapi\
+    -lgdi32 \
 
 deplibs_iidxhook8   := \
     avs \
@@ -24,7 +27,10 @@ libs_iidxhook8      := \
     cconfig \
     util \
     eamio \
-    
+    imgui-bt \
+    imgui-debug \
+    imgui \
+
 src_iidxhook8       := \
     config-io.c \
     dllmain.c \
