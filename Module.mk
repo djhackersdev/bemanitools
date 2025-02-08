@@ -159,6 +159,7 @@ include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxiotest/Module.mk
+include src/main/imgui/Module.mk
 include src/main/inject/Module.mk
 include src/main/jbio-magicbox/Module.mk
 include src/main/jbio-p4io/Module.mk
