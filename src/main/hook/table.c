@@ -15,7 +15,16 @@ static const size_t apiset_prefix_len = sizeof(apiset_prefix) - 1;
 static void hook_table_apply_to_all(
     const char *depname, const struct hook_symbol *syms, size_t nsyms);
 
+static void hook_table_revert_to_all(
+    const char *depname, const struct hook_symbol *syms, size_t nsyms);
+
 static void hook_table_apply_to_iid(
+    HMODULE target,
+    const pe_iid_t *iid,
+    const struct hook_symbol *syms,
+    size_t nsyms);
+
+static void hook_table_revert_to_iid(
     HMODULE target,
     const pe_iid_t *iid,
     const struct hook_symbol *syms,
@@ -44,6 +53,23 @@ static void hook_table_apply_to_all(
     }
 }
 
+static void hook_table_revert_to_all(
+    const char *depname, const struct hook_symbol *syms, size_t nsyms)
+{
+    const peb_dll_t *dll;
+    HMODULE pe;
+
+    for (dll = peb_dll_get_first(); dll != NULL; dll = peb_dll_get_next(dll)) {
+        pe = peb_dll_get_base(dll);
+
+        if (pe == NULL) {
+            continue; /* ?? Happens sometimes. */
+        }
+
+        hook_table_revert(pe, depname, syms, nsyms);
+    }
+}
+
 void hook_table_apply(
     HMODULE target,
     const char *depname,
@@ -68,6 +94,35 @@ void hook_table_apply(
 
             if (hook_table_match_module(target, iid_name, depname)) {
                 hook_table_apply_to_iid(target, iid, syms, nsyms);
+            }
+        }
+    }
+}
+
+void hook_table_revert(
+    HMODULE target,
+    const char *depname,
+    const struct hook_symbol *syms,
+    size_t nsyms)
+{
+    const pe_iid_t *iid;
+    const char *iid_name;
+
+    assert(depname != NULL);
+    assert(syms != NULL || nsyms == 0);
+
+    if (target == NULL) {
+        /*  Call out, which will then call us back repeatedly. Awkward, but
+            viewed from the outside it's good for usability. */
+
+        hook_table_revert_to_all(depname, syms, nsyms);
+    } else {
+        for (iid = pe_iid_get_first(target); iid != NULL;
+             iid = pe_iid_get_next(target, iid)) {
+            iid_name = pe_iid_get_name(target, iid);
+
+            if (hook_table_match_module(target, iid_name, depname)) {
+                hook_table_revert_to_iid(target, iid, syms, nsyms);
             }
         }
     }

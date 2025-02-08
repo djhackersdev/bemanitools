@@ -154,11 +154,13 @@ include src/main/iidxhook6/Module.mk
 include src/main/iidxhook7/Module.mk
 include src/main/iidxhook8/Module.mk
 include src/main/iidxhook9/Module.mk
+include src/main/iidxio-async/Module.mk
 include src/main/iidxio-bio2/Module.mk
 include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxiotest/Module.mk
+include src/main/imgui/Module.mk
 include src/main/inject/Module.mk
 include src/main/jbio-magicbox/Module.mk
 include src/main/jbio-p4io/Module.mk
@@ -172,6 +174,8 @@ include src/main/jbhook3/Module.mk
 include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
+include src/main/nv/Module.mk
+include src/main/nvgpu/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
@@ -232,6 +236,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb2-dbg-hook.dll \
 		build/bin/indep-32/ezusb2-tool.exe \
 		build/bin/indep-32/ezusb-tool.exe \
+		build/bin/indep-32/nvgpu.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -246,6 +251,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
 		build/bin/indep-64/mempatch-hook.dll \
+		build/bin/indep-64/nvgpu.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -292,7 +298,7 @@ $(zipdir)/iidx-13.zip: \
 	$(V)zip -j $@ $^
 
 $(zipdir)/iidx-14-to-17.zip: \
-		build/bin/avs2_0-32/iidxhook3.dll \
+		build/bin/avs2_803-32/iidxhook3.dll \
 		build/bin/indep-32/config.exe \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
@@ -456,6 +462,7 @@ $(zipdir)/iidx-27-to-30.zip: \
 $(zipdir)/iidx-hwio-x86.zip: \
 		build/bin/indep-32/aciomgr.dll \
 		build/bin/indep-32/eamio-icca.dll \
+		build/bin/indep-32/iidxio-async.dll \
 		build/bin/indep-32/iidxio-bio2.dll \
 		build/bin/indep-32/iidxio-ezusb.dll \
 		build/bin/indep-32/iidxio-ezusb2.dll \
@@ -469,6 +476,7 @@ $(zipdir)/iidx-hwio-x86.zip: \
 $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/aciomgr.dll \
 		build/bin/indep-64/eamio-icca.dll \
+		build/bin/indep-64/iidxio-async.dll \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
@@ -710,6 +718,8 @@ $(zipdir)/ddr-14-to-18.zip: \
 		build/bin/indep-32/eamio.dll \
 		build/bin/indep-32/geninput.dll \
 		dist/ddr/config.bat \
+		dist/ddr/gamestart-17.bat \
+		dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-14.bat \
 		dist/ddr/gamestart-15.bat \
 		dist/ddr/gamestart-16.bat \
@@ -728,6 +738,8 @@ $(zipdir)/ddr-16-to-18-x64.zip: \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \
 		dist/ddr/config.bat \
+		dist/ddr/gamestart-17.bat \
+		dist/ddr/gamestart-18.bat \
 		dist/ddr/gamestart-16.bat \
 		dist/ddr/gamestart-17.bat \
 		dist/ddr/gamestart-18.bat \
