@@ -4,6 +4,9 @@ ldflags_iidxhook3   := \
     -lws2_32 \
     -liphlpapi \
 
+deplibs_iidxhook3   := \
+    avs \
+
 libs_iidxhook3      := \
     iidxhook-util \
     ezusb-emu \
@@ -22,4 +25,5 @@ libs_iidxhook3      := \
     ezusb \
 
 src_iidxhook3       := \
+    avs-boot.c \
     dllmain.c \

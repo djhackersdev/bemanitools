@@ -19,12 +19,14 @@ EXPORTS
     property_destroy @146 NONAME
     property_desc_to_buffer @147 NONAME
     property_insert_read @149 NONAME
+    property_clear_error @158 NONAME == XCnbrep700009d
+    property_get_error @159 NONAME == XCnbrep700009e
     property_search @162 NONAME
     property_node_create @163 NONAME
     property_node_name @168 NONAME == XCnbrep70000a7
     property_node_remove @164 NONAME
     property_node_type @169 NONAME == XCnbrep70000a8
-    property_node_clone @165 NONAME
+    property_node_clone @165 NONAME == XCnbrep70000a4
     property_node_traversal @167 NONAME
     property_node_refdata @166 NONAME == XCnbrep70000a5
     property_node_datasize @171 NONAME == XCnbrep70000aa
