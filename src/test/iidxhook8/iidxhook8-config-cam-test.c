@@ -13,8 +13,8 @@ static void test_config_cam_defaults()
 
     config = cconfig_init();
 
-    camhook_config_cam_init(config, 2);
-    camhook_config_cam_get(&config_cam, config, 2);
+    camhook_config_cam_init(config, 2, false);
+    camhook_config_cam_get(&config_cam, config, 2, false);
 
     cconfig_finit(config);
 
@@ -30,13 +30,13 @@ static void test_config_cam()
 
     config = cconfig_init();
 
-    camhook_config_cam_init(config, 2);
+    camhook_config_cam_init(config, 2, false);
 
     cconfig_set2(config, "cam.disable_emu", "true");
     cconfig_set2(config, "cam.device_id1", "asdjkasd");
     cconfig_set2(config, "cam.device_id2", "1234");
 
-    camhook_config_cam_get(&config_cam, config, 2);
+    camhook_config_cam_get(&config_cam, config, 2, false);
 
     cconfig_finit(config);
 
@@ -52,13 +52,13 @@ static void test_config_cam_invalid_values()
 
     config = cconfig_init();
 
-    camhook_config_cam_init(config, 2);
+    camhook_config_cam_init(config, 2, false);
 
     cconfig_set2(config, "cam.disable_emu", "123");
     cconfig_set2(config, "cam.device_id1", "asdjkasd");
     cconfig_set2(config, "cam.device_id2", "1234");
 
-    camhook_config_cam_get(&config_cam, config, 2);
+    camhook_config_cam_get(&config_cam, config, 2, false);
 
     cconfig_finit(config);
 
