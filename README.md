@@ -119,6 +119,8 @@ The following games are supported with their corresponding hook-libraries.
   - [extiotest](doc/tools/extiotest.md)
 - [aciotest](doc/tools/aciotest.md): Command line tool to quickly test ACIO devices
 - config: UI input/output configuration tool when using the default bemanitools API (geninput)
+- [d3d9-monitor-check](doc/tools/d3d9-monitor-check.md): Command line tool to check the monitor refresh rate of the
+  current GPU + monitor configuration
 - ir-beat-patch-9/10: Patch the IR beat phase on IIDX 9 and 10
 - [mempatch-hook](doc/tools/mempatch-hook.md): Patch raw memory locations in the target process
   based on the provided configuration
