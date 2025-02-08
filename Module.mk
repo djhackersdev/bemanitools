@@ -173,6 +173,8 @@ include src/main/jbhook3/Module.mk
 include src/main/launcher/Module.mk
 include src/main/mempatch-hook/Module.mk
 include src/main/mm/Module.mk
+include src/main/nv/Module.mk
+include src/main/nvgpu/Module.mk
 include src/main/p3io/Module.mk
 include src/main/p3iodrv/Module.mk
 include src/main/p3ioemu/Module.mk
@@ -233,6 +235,7 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb2-dbg-hook.dll \
 		build/bin/indep-32/ezusb2-tool.exe \
 		build/bin/indep-32/ezusb-tool.exe \
+		build/bin/indep-32/nvgpu.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -247,6 +250,7 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/iidx-ezusb2-exit-hook.dll \
 		build/bin/indep-64/jbiotest.exe \
 		build/bin/indep-64/mempatch-hook.dll \
+		build/bin/indep-64/nvgpu.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
