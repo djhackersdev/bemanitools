@@ -100,6 +100,8 @@ include src/main/bstio/Module.mk
 include src/main/camhook/Module.mk
 include src/main/cconfig/Module.mk
 include src/main/config/Module.mk
+include src/main/d3d9-frame-graph-hook/Module.mk
+include src/main/d3d9-monitor-check/Module.mk
 include src/main/d3d9-util/Module.mk
 include src/main/d3d9exhook/Module.mk
 include src/main/ddrhook-util/Module.mk
@@ -159,6 +161,9 @@ include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxiotest/Module.mk
+include src/main/imgui/Module.mk
+include src/main/imgui-bt/Module.mk
+include src/main/imgui-debug/Module.mk
 include src/main/inject/Module.mk
 include src/main/jbio-magicbox/Module.mk
 include src/main/jbio-p4io/Module.mk
@@ -235,6 +240,8 @@ $(zipdir)/tools.zip: \
 		build/bin/indep-32/ezusb2-tool.exe \
 		build/bin/indep-32/ezusb-tool.exe \
 		build/bin/indep-32/nvgpu.exe \
+		build/bin/indep-32/d3d9-frame-graph-hook.dll \
+		build/bin/indep-32/d3d9-monitor-check.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -250,6 +257,8 @@ $(zipdir)/tools-x64.zip: \
 		build/bin/indep-64/jbiotest.exe \
 		build/bin/indep-64/mempatch-hook.dll \
 		build/bin/indep-64/nvgpu.exe \
+		build/bin/indep-64/d3d9-frame-graph-hook.dll \
+		build/bin/indep-64/d3d9-monitor-check.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
