@@ -1,0 +1,18 @@
+LIBRARY iidxio
+
+EXPORTS
+    iidx_io_ep1_send
+    iidx_io_ep1_set_deck_lights
+    iidx_io_ep1_set_panel_lights
+    iidx_io_ep1_set_top_lamps
+    iidx_io_ep1_set_top_neons
+    iidx_io_ep2_get_keys
+    iidx_io_ep2_get_panel
+    iidx_io_ep2_get_sys
+    iidx_io_ep2_get_slider
+    iidx_io_ep2_get_turntable
+    iidx_io_ep2_recv
+    iidx_io_ep3_write_16seg
+    iidx_io_fini
+    iidx_io_init
+    iidx_io_set_loggers

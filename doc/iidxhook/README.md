@@ -48,6 +48,8 @@ Available implementations that can be swapped out depending on which kind of IO 
 use:
 
 - `iidxio`: Default implementation supporting keyboard, mouse and USB game controllers
+- [iidxio-async](iidxhook/iidxio-async.md): Shim implementation that runs another iidxio implementation in a dedicated
+  thread
 - [iidxio-bio2](iidxhook/iidxio-bio2.md): Support BIO2 hardware
 - [iidxio-ezusb](iidxhook/iidxio-ezusb.md): Support C02 ezusb FX hardware
 - [iidxio-ezusb2](iidxhook/iidxio-ezusb2.md): Support IO2 ezusb FX2 hardware
