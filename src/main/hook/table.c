@@ -101,6 +101,34 @@ static void hook_table_apply_to_iid(
     }
 }
 
+static void hook_table_revert_to_iid(
+    HMODULE target,
+    const pe_iid_t *iid,
+    const struct hook_symbol *syms,
+    size_t nsyms)
+{
+    struct pe_iat_entry iate;
+    size_t i;
+    size_t j;
+    const struct hook_symbol *sym;
+
+    i = 0;
+
+    while (pe_iid_get_iat_entry(target, iid, i++, &iate) == S_OK) {
+        for (j = 0; j < nsyms; j++) {
+            sym = &syms[j];
+
+            if (hook_table_match_proc(&iate, sym)) {
+                // Only revert-able if the original pointer was stored
+                // previously
+                if (sym->link != NULL && *sym->link != NULL) {
+                    pe_patch(iate.ppointer, sym->link, sizeof(*sym->link));
+                }
+            }
+        }
+    }
+}
+
 static bool hook_table_match_module(
     HMODULE target, const char *iid_name, const char *depname)
 {
