@@ -93,6 +93,12 @@ The syntax for the "key=value" is the same as in the config file. Make sure to h
 However, if a parameter is specifed in the configuration file and as a command line argument, the
 command line argument overrides the config file's value.
 
+# Note on camhook
+
+The cammera hook (camhook) is used to allow other class compliant cameras to be used. Depending on the variant of the game, you will need to select the correct camera port layout.
+
+For original LDJ, this is always 0, for conversion kit LDJ and original TDJ-JA, this is 1, and for TDJ-JB this will be 2 (this case is rare / you will know if this is needed on your setup).
+
 # Eamuse network setup
 
 If you want to run the games online, you need a valid PCBID and the service URL. Open
