@@ -1,0 +1,4 @@
+LIBRARY d3d9-frame-graph-hook
+
+EXPORTS
+    DllMain@12 @1 NONAME
