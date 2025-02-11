@@ -71,6 +71,7 @@ The following games are supported with their corresponding hook-libraries.
   - Beatmania IIDX 28 BISTROVER (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
   - Beatmania IIDX 29 CASTHOUR (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
   - Beatmania IIDX 30 RESIDENT (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+  - Beatmania IIDX 31 EPOLIS (`iidx-27-to-31.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
 - [jubeat](doc/jbhook/README.md)
   - jubeat (`jb-01.zip`): [jbhook1](doc/jbhook/jbhook1.md)
   - jubeat ripples (`jb-02.zip`): [jbhook1](doc/jbhook/jbhook1.md)
