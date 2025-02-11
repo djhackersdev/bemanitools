@@ -6,6 +6,7 @@ The following games are compatible with this version of iidxhook:
 - BISTROVER
 - CASTHOUR
 - RESIDENT
+- EPOLIS
 
 The games must be bootstrapped using [launcher](../launcher.md).
 
@@ -57,7 +58,7 @@ unpacked data looks like this:
   - Unpack the package containing iidxhook9 into the root folder so iidxhook9.dll and all other
     files are located in the same folder as *data*, *prop*, *bm2dx.dll*, etc.
 
-- For version 30
+- For version 30-31
 
   - Unpack the package containing iidxhook9 into the `modules` folder so iidxhook9.dll and all other
     files are located in the same folder as the game's DLLs, e.g. *bm2dx.dll*, etc.
