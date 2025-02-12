@@ -25,6 +25,8 @@ EXPORTS
     property_desc_to_buffer @201 NONAME
     property_destroy @264 NONAME
     property_insert_read @23 NONAME
+    property_clear_error @573 NONAME
+    property_get_error @573 NONAME
     property_node_create @316 NONAME
     property_node_datasize @249 NONAME
     property_node_name @255 NONAME

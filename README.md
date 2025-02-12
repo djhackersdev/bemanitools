@@ -71,6 +71,7 @@ The following games are supported with their corresponding hook-libraries.
   - Beatmania IIDX 28 BISTROVER (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
   - Beatmania IIDX 29 CASTHOUR (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
   - Beatmania IIDX 30 RESIDENT (`iidx-27-to-30.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
+  - Beatmania IIDX 31 EPOLIS (`iidx-27-to-31.zip`): [iidxhook9](doc/iidxhook/iidxhook9.md)
 - [jubeat](doc/jbhook/README.md)
   - jubeat (`jb-01.zip`): [jbhook1](doc/jbhook/jbhook1.md)
   - jubeat ripples (`jb-02.zip`): [jbhook1](doc/jbhook/jbhook1.md)
@@ -124,6 +125,7 @@ The following games are supported with their corresponding hook-libraries.
 - ir-beat-patch-9/10: Patch the IR beat phase on IIDX 9 and 10
 - [mempatch-hook](doc/tools/mempatch-hook.md): Patch raw memory locations in the target process
   based on the provided configuration
+- [nvgpu](doc/tools/nvgpu.md): Command line tool to configure and tweak the NVIDIA GPU driver
 - [pcbidgen](doc/tools/pcbidgen.md): Konami PCBID generator tool
 - [ViGEm clients](doc/vigem/README.md): Expose BT5 APIs as XBOX game controllers to play any games
   with real cabinet hardware.

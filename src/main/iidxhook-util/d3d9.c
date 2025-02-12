@@ -232,7 +232,7 @@ iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp *irp)
         "hDeviceWindow %p, Windowed %d, "
         "EnableAutoDepthStencil "
         "%d, AutoDepthStencilFormat %d, Flags %lX, "
-        "FullScreen_RefreshRateInHz %d",
+        "FullScreen_RefreshRateInHz %d, PresentationInterval %d",
         irp->args.ctx_create_device.pp->BackBufferWidth,
         irp->args.ctx_create_device.pp->BackBufferHeight,
         irp->args.ctx_create_device.pp->BackBufferFormat,
@@ -244,7 +244,13 @@ iidxhook_util_d3d9_log_create_device_params(struct hook_d3d9_irp *irp)
         irp->args.ctx_create_device.pp->EnableAutoDepthStencil,
         irp->args.ctx_create_device.pp->AutoDepthStencilFormat,
         irp->args.ctx_create_device.pp->Flags,
-        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz);
+        irp->args.ctx_create_device.pp->FullScreen_RefreshRateInHz,
+        irp->args.ctx_create_device.pp->PresentationInterval);
+
+    if (irp->args.ctx_create_device.pp->PresentationInterval != D3DPRESENT_INTERVAL_ONE) {
+        log_warning("PresentationInterval is not 1, i.e. VSYNC is OFF (!): %d",
+            irp->args.ctx_create_device.pp->PresentationInterval);
+    }
 }
 
 static void
