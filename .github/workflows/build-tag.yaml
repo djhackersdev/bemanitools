@@ -35,7 +35,7 @@ jobs:
           cd ..
 
       - name: "Upload artifact"
-        uses: "actions/upload-artifact@v2"
+        uses: "actions/upload-artifact@v4"
         with:
           name: bemanitools-${{ github.sha }}
           retention-days: 90
