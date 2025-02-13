@@ -27,6 +27,8 @@
 #include "hooklib/rs232.h"
 #include "hooklib/setupapi.h"
 
+#include "iidxhook3/avs-boot.h"
+
 #include "iidxhook-util/acio.h"
 #include "iidxhook-util/chart-patch.h"
 #include "iidxhook-util/clock.h"
@@ -35,7 +37,6 @@
 #include "iidxhook-util/config-misc.h"
 #include "iidxhook-util/config-sec.h"
 #include "iidxhook-util/d3d9.h"
-#include "iidxhook-util/eamuse.h"
 #include "iidxhook-util/settings.h"
 
 #include "security/rp-sign-key.h"
@@ -176,10 +177,8 @@ my_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
     ezusb_iidx_emu_node_security_plug_set_pcbid(&config_eamuse.pcbid);
     ezusb_iidx_emu_node_security_plug_set_eamid(&config_eamuse.eamid);
 
-    /* eAmusement server IP */
-
-    eamuse_set_addr(&config_eamuse.server);
-    eamuse_check_connection();
+    iidxhook3_avs_boot_init();
+    iidxhook3_avs_boot_set_eamuse_addr(&config_eamuse.server);
 
     /* Settings paths */
 
@@ -259,7 +258,6 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD reason, void *ctx)
 
         acp_hook_init();
         adapter_hook_init();
-        eamuse_hook_init();
         settings_hook_init();
     }
 
