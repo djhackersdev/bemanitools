@@ -10,15 +10,20 @@
 struct camhook_config_cam {
     bool disable_emu;
     size_t num_devices;
+    int port_layout;
     char device_id[CAMHOOK_CONFIG_CAM_MAX][MAX_PATH];
     bool disable_camera[CAMHOOK_CONFIG_CAM_MAX];
 };
 
-void camhook_config_cam_init(struct cconfig *config, size_t num_cams);
+void camhook_config_cam_init(
+    struct cconfig *config,
+    size_t num_cams,
+    bool use_port_layout);
 
 void camhook_config_cam_get(
     struct camhook_config_cam *config_cam,
     struct cconfig *config,
-    size_t num_cams);
+    size_t num_cams,
+    bool use_port_layout);
 
 #endif
