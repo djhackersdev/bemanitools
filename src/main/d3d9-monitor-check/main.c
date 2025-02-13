@@ -40,12 +40,12 @@ static void _print_synopsis()
     printfln_err("Available commands:");
     printfln_err("  adapter: Query adapter information");
     printfln_err("  modes: Query adapter modes");
-    printfln_err("  run <width> <height> <refresh_rate> [--total-warm-up-frame-count n]  [--total-frame-count n] [--windowed] [--vsync-off]: Run the monitor check. Ensure that the mandatory parameters for width, height and refresh rate are values that are supported by the adapter's mode. Use the \"modes\" subcommand to get a list of supported modes.");
+    printfln_err("  run <width> <height> <refresh_rate> [--warm-up-secs n] [--total-secs n] [--windowed] [--vsync-off]: Run the monitor check. Ensure that the mandatory parameters for width, height and refresh rate are values that are supported by the adapter's mode. Use the \"modes\" subcommand to get a list of supported modes.");
     printfln_err("    width: Width of the rendering resolution to run the test at");
     printfln_err("    height: Height of the rendering resolution to run the test at");
     printfln_err("    refresh_rate: Target refresh rate to run the test at");
-    printfln_err("    total-warm-up-frame-count: Optional. Number of frames to warm-up before executing the main run that counts towards the measurement results");
-    printfln_err("    total-frame-count: Optional. Total number of frames to run the test for that count towards the measurement results");
+    printfln_err("    warm-up-secs: Optional. Number of seconds to warm-up before executing the main run that counts towards the measurement results");
+    printfln_err("    total-secs: Optional. Total number of seconds to run the test for that count towards the measurement results");
     printfln_err("    windowed: Optional. Run the test in windowed mode (not recommended)");
     printfln_err("    vsync-off: Optional. Run the test with vsync off (not recommended)");
 }
@@ -581,10 +581,13 @@ static bool _cmd_run(int argc, char **argv)
     uint32_t width;
     uint32_t height;
     uint32_t refresh_rate;
-    uint32_t total_warm_up_frame_count;
-    uint32_t total_frame_count;
+    uint32_t warm_up_seconds;
+    uint32_t total_seconds;
     bool windowed;
     bool vsync_off;
+
+    uint32_t total_warm_up_frame_count;
+    uint32_t total_frame_count;
 
     if (argc < 3) {
         _print_synopsis();
@@ -617,38 +620,38 @@ static bool _cmd_run(int argc, char **argv)
     }
 
     // Sane defaults
-    total_warm_up_frame_count = 500;
-    total_frame_count = 1000;
+    warm_up_seconds = 10;
+    total_seconds = 20;
     windowed = false;
     vsync_off = false;
 
     for (int i = 3; i < argc; i++) {
-        if (!strcmp(argv[i], "--total-warm-up-frame-count")) {
+        if (!strcmp(argv[i], "--warm-up-secs")) {
             if (i + 1 < argc) {
-                total_warm_up_frame_count = atoi(argv[++i]); 
+                warm_up_seconds = atoi(argv[++i]); 
 
-                if (total_warm_up_frame_count == 0) {
+                if (warm_up_seconds == 0) {
                     _print_synopsis();
-                    printfln_err("ERROR: Invalid total warm-up frame count: %d", total_warm_up_frame_count);
+                    printfln_err("ERROR: Invalid warm-up seconds: %d", warm_up_seconds);
                     return false;
                 }
             } else {
                 _print_synopsis();
-                printfln_err("ERROR: Missing argument for --total-warm-up-frame-count");
+                printfln_err("ERROR: Missing argument for --warm-up-secs");
                 return false;
             }
-        } else if (!strcmp(argv[i], "--total-frame-count")) {
+        } else if (!strcmp(argv[i], "--total-secs")) {
             if (i + 1 < argc) {
-                total_frame_count = atoi(argv[++i]);
+                total_seconds = atoi(argv[++i]);
                 
-                if (total_frame_count == 0) {
+                if (total_seconds == 0) {
                     _print_synopsis();
-                    printfln_err("ERROR: Invalid total frame count: %d", total_frame_count);
+                    printfln_err("ERROR: Invalid total seconds: %d", total_seconds);
                     return false;
                 }
             } else {
                 _print_synopsis();
-                printfln_err("ERROR: Missing argument for --total-frame-count");
+                printfln_err("ERROR: Missing argument for --total-secs");
                 return false;
             }
         } else if (!strcmp(argv[i], "--windowed")) {
@@ -657,6 +660,9 @@ static bool _cmd_run(int argc, char **argv)
             vsync_off = true;
         }
     }
+
+    total_warm_up_frame_count = warm_up_seconds * refresh_rate;
+    total_frame_count = total_seconds * refresh_rate;
 
     return _run(width, height, refresh_rate, total_warm_up_frame_count, total_frame_count, windowed, vsync_off);
 }
