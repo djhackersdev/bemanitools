@@ -30,6 +30,11 @@
     nv_api->NvAPI_GetErrorMessage(status, error_str); \
     fprintf(stderr, fmt ", reason: %s\n", ##__VA_ARGS__, error_str);
 
+typedef struct displayconfig_path_info {
+    NvU32 path_info_count;
+    NV_DISPLAYCONFIG_PATH_INFO *path_info;
+} displayconfig_path_info_t;
+
 static bool _session_destroy(const nv_api_t *nv_api, NvDRSSessionHandle session)
 {
     assert(nv_api);
@@ -138,6 +143,150 @@ static bool _profile_setting_set(
     }
 
     return true;
+}
+
+static void _display_config_free(displayconfig_path_info_t *displayconfig_path_info)
+{
+    assert(displayconfig_path_info);
+    assert(displayconfig_path_info->path_info);
+
+    for (NvU32 i = 0; i < displayconfig_path_info->path_info_count; i++) {
+        assert(displayconfig_path_info->path_info[i].sourceModeInfo);
+        assert(displayconfig_path_info->path_info[i].targetInfo);
+
+        for (NvU32 j = 0; j < displayconfig_path_info->path_info[i].targetInfoCount; j++) {
+            assert(displayconfig_path_info->path_info[i].targetInfo[i].details);
+
+            free(displayconfig_path_info->path_info[i].targetInfo[i].details);
+        }
+
+        free(displayconfig_path_info->path_info[i].targetInfo);
+        free(displayconfig_path_info->path_info[i].sourceModeInfo);
+    }
+
+    free(displayconfig_path_info->path_info);
+}
+
+static bool _display_config_get(const nv_api_t *nv_api, displayconfig_path_info_t *displayconfig_path_info)
+{
+    NvAPI_Status status;
+
+    assert(nv_api);
+    assert(displayconfig_path_info);
+
+    // TODO we need a total of three calls to GetDisplayConfig: https://github.com/NVIDIA/nvapi/blob/d08488fcc82eef313b0464db37d2955709691e94/Sample_Code/DisplayConfiguration/DisplayConfiguration.cpp#L68
+
+    status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count , NULL);
+
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config path info count");
+        return false;
+    }
+
+    displayconfig_path_info->path_info = (NV_DISPLAYCONFIG_PATH_INFO*)
+        xmalloc(sizeof(NV_DISPLAYCONFIG_PATH_INFO) * displayconfig_path_info->path_info_count);
+    memset(displayconfig_path_info->path_info, 0, sizeof(NV_DISPLAYCONFIG_PATH_INFO) * displayconfig_path_info->path_info_count);
+
+    for (NvU32 i = 0; i < displayconfig_path_info->path_info_count; i++) {
+        displayconfig_path_info->path_info[i].version = NV_DISPLAYCONFIG_PATH_INFO_VER;
+    }
+
+    status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count, displayconfig_path_info->path_info);
+
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config target info counts");
+
+        free(displayconfig_path_info->path_info);
+
+        return false;
+    }
+
+    for (NvU32 i = 0; i < displayconfig_path_info->path_info_count; i++) {
+        if (displayconfig_path_info->path_info[i].version == NV_DISPLAYCONFIG_PATH_INFO_VER1 ||
+                displayconfig_path_info->path_info[i].version == NV_DISPLAYCONFIG_PATH_INFO_VER2) {
+            displayconfig_path_info->path_info[i].sourceModeInfo =
+                (NV_DISPLAYCONFIG_SOURCE_MODE_INFO*) xmalloc(sizeof(NV_DISPLAYCONFIG_SOURCE_MODE_INFO));
+        } else {
+#ifdef NV_DISPLAYCONFIG_PATH_INFO_VER3
+            displayconfig_path_info->path_info[i].sourceModeInfo =(NV_DISPLAYCONFIG_SOURCE_MODE_INFO*) malloc(
+                displayconfig_path_info->path_info[i].sourceModeInfoCount * sizeof(NV_DISPLAYCONFIG_SOURCE_MODE_INFO));
+#endif
+        }
+
+        memset(displayconfig_path_info->path_info[i].sourceModeInfo, 0, sizeof(NV_DISPLAYCONFIG_SOURCE_MODE_INFO));
+
+        displayconfig_path_info->path_info[i].targetInfo = (NV_DISPLAYCONFIG_PATH_TARGET_INFO*) xmalloc(
+            displayconfig_path_info->path_info[i].targetInfoCount * sizeof(NV_DISPLAYCONFIG_PATH_TARGET_INFO));
+   
+        memset(displayconfig_path_info->path_info[i].targetInfo, 0,
+            displayconfig_path_info->path_info[i].targetInfoCount * sizeof(NV_DISPLAYCONFIG_PATH_TARGET_INFO));
+        
+        for (NvU32 j = 0 ; j < displayconfig_path_info->path_info[i].targetInfoCount ; j++) {
+            displayconfig_path_info->path_info[i].targetInfo[j].details =
+                (NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO*) xmalloc(sizeof(NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO));    
+            memset(displayconfig_path_info->path_info[i].targetInfo[j].details, 0,
+                sizeof(NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO));
+            displayconfig_path_info->path_info[i].targetInfo[j].details->version =
+                NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER;
+        }
+    }
+
+    status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count, displayconfig_path_info->path_info);
+
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config");
+
+        _display_config_free(displayconfig_path_info);
+
+        return false;
+    }
+
+    return true;
+}
+
+static bool _display_config_set(const nv_api_t *nv_api, displayconfig_path_info_t *displayconfig_path_info)
+{
+    NvAPI_Status status;
+
+    assert(nv_api);
+    assert(displayconfig_path_info);
+
+    printfln_err("Validating display config...");
+
+    status = nv_api->NvAPI_DISP_SetDisplayConfig(displayconfig_path_info->path_info_count, displayconfig_path_info->path_info, NV_DISPLAYCONFIG_VALIDATE_ONLY);
+    
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Validating display config");
+        return false;
+    }
+
+    printfln_err("Saving display config...");
+
+    status = nv_api->NvAPI_DISP_SetDisplayConfig(displayconfig_path_info->path_info_count, displayconfig_path_info->path_info, NV_DISPLAYCONFIG_SAVE_TO_PERSISTENCE | NV_DISPLAYCONFIG_DRIVER_RELOAD_ALLOWED);
+
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Saving display config");
+        return false;
+    }
+
+    return true;
+}
+
+static bool _display_config_visit(displayconfig_path_info_t *displayconfig_path_info, NvU32 display_id, bool (*display_config_filter)(NV_DISPLAYCONFIG_PATH_TARGET_INFO *target_info))
+{
+    NV_DISPLAYCONFIG_PATH_TARGET_INFO *target_info;
+
+    for (NvU32 i = 0; i < displayconfig_path_info->path_info_count; i++) {
+        target_info = &displayconfig_path_info->path_info[i].targetInfo[i];
+
+        if (display_id != 0 && target_info->displayId != display_id) {
+            continue;
+        }
+
+        return display_config_filter(target_info);
+    }
+
+    return false;
 }
 
 static void _ensure_drs_settings_folder_exists()
@@ -368,6 +517,58 @@ static bool _profile_gpu_power_state_max(const nv_api_t *nv_api, const char *pro
     return _settings_save_and_session_destroy(nv_api, session);
 }
 
+static bool _display_primary_display_id(const nv_api_t *nv_api)
+{
+    NvAPI_Status status;
+    NvPhysicalGpuHandle gpu_handle[NVAPI_MAX_PHYSICAL_GPUS];
+    NvU32 gpu_count;
+    NvU32 display_id_count;
+    NV_GPU_DISPLAYIDS *display_ids;
+ 
+    assert(nv_api);
+    
+    status = nv_api->NvAPI_EnumPhysicalGPUs(gpu_handle, &gpu_count);
+
+    if (status != NVAPI_OK) {
+        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Enumerating physical GPUs");
+        return false;
+    }
+
+    // Assuming first physical GPU, first display = primary display
+    if (gpu_count > 0) {
+        status = nv_api->NvAPI_GPU_GetConnectedDisplayIds(gpu_handle[0], NULL, &display_id_count, 0);
+
+        if (status != NVAPI_OK) {
+            PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting connected display count of GPU");
+            return false;
+        }
+
+        if (display_id_count > 0) {
+            display_ids = (NV_GPU_DISPLAYIDS*) xmalloc(sizeof(NV_GPU_DISPLAYIDS) * display_id_count);
+            
+            for (NvU32 j = 0; j < display_id_count; j++) {
+                display_ids[j].version = NV_GPU_DISPLAYIDS_VER;
+            }
+
+            status = nv_api->NvAPI_GPU_GetConnectedDisplayIds(gpu_handle[0], display_ids, &display_id_count, 0);
+
+            if (status != NVAPI_OK) {
+                free(display_ids);
+                PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting connected display ids of GPU");
+                return false;
+            }
+
+            printfln_out("0x%lX", display_ids[0].displayId);
+
+            free(display_ids);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static bool _displays_list(const nv_api_t *nv_api)
 {
     NvAPI_Status status;
@@ -459,493 +660,472 @@ static bool _displays_list(const nv_api_t *nv_api)
     return true;    
 }
 
-static bool _display_config_get(const nv_api_t *nv_api, NvU32 display_id)
+static bool _display_config_print(const nv_api_t *nv_api, NvU32 display_id)
 {
-    NvU32 target_info_count;
-    NV_DISPLAYCONFIG_PATH_INFO display_config;
-    NvAPI_Status status;
+    displayconfig_path_info_t displayconfig_path_info;
     NV_DISPLAYCONFIG_PATH_TARGET_INFO_V2 *target_info;
     NV_DISPLAYCONFIG_SOURCE_MODE_INFO_V1 *source_mode_info;
 
     assert(nv_api);
 
-    status = nv_api->NvAPI_DISP_GetDisplayConfig(&target_info_count, NULL);
-
-    if (status != NVAPI_OK) {
-        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config count");
-        return false;
-    }
-
-    memset(&display_config, 0, sizeof(NV_DISPLAYCONFIG_PATH_INFO));
-
-    display_config.version = NV_DISPLAYCONFIG_PATH_INFO_VER;
-    display_config.targetInfoCount = target_info_count;
-    display_config.targetInfo = (NV_DISPLAYCONFIG_PATH_TARGET_INFO_V2*) xmalloc(sizeof(NV_DISPLAYCONFIG_PATH_TARGET_INFO_V2) * target_info_count);
-    display_config.sourceModeInfo = (NV_DISPLAYCONFIG_SOURCE_MODE_INFO_V1*) xmalloc(sizeof(NV_DISPLAYCONFIG_SOURCE_MODE_INFO_V1) * target_info_count);
-
-    status = nv_api->NvAPI_DISP_GetDisplayConfig(&target_info_count, &display_config);
-
-    if (status != NVAPI_OK) {
-        PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config");
-
-        free(display_config.targetInfo);
-        free(display_config.sourceModeInfo);
-
-        return false;
-    }
+    _display_config_get(nv_api, &displayconfig_path_info);
 
     if (display_id != 0) {
         printfln_err("Applying display ID filter: %lX", display_id);
     }
 
-    printfln_err("Num total display configs: %ld", display_config.targetInfoCount);
+    printfln_err("Num total adapters in config: %ld", displayconfig_path_info.path_info_count);
 
-    for (NvU32 i = 0; i < display_config.targetInfoCount; i++) {
-        target_info = &display_config.targetInfo[i];
-        source_mode_info = &display_config.sourceModeInfo[i];
+    for (NvU32 i = 0; i < displayconfig_path_info.path_info_count; i++) {
+        printfln_err("Num total displays in adapter: %ld", displayconfig_path_info.path_info[i].targetInfoCount);
 
-        if (display_id != 0 && target_info->displayId != display_id) {
-            continue;
+        for (NvU32 j = 0; j < displayconfig_path_info.path_info[i].targetInfoCount; j++) {
+            target_info = &displayconfig_path_info.path_info[i].targetInfo[j];
+            source_mode_info = &displayconfig_path_info.path_info[i].sourceModeInfo[j];
+
+            if (display_id != 0 && target_info->displayId != display_id) {
+                continue;
+            }
+
+            printfln_out("--------------------------------");
+            printfln_out("Adapter source ID %ld", displayconfig_path_info.path_info[i].sourceId);
+            printfln_out("Display ID: %lX", target_info->displayId);
+            printfln_out("Resolution width: %ld", source_mode_info->resolution.width);
+            printfln_out("Resolution height: %ld", source_mode_info->resolution.height);
+            printfln_out("Color depth: %d", source_mode_info->colorFormat);
+            printfln_out("Position x: %d", source_mode_info->position.x);
+            printfln_out("Position y: %d", source_mode_info->position.y);
+            printfln_out("Spanning orientation: %d", source_mode_info->spanningOrientation);
+            printfln_out("GDI primary: %d", source_mode_info->bGDIPrimary);
+            printfln_out("SLI focus: %d", source_mode_info->bSLIFocus);
+
+            if (target_info->details) {
+                switch (target_info->details->rotation) {
+                    case NV_ROTATE_0:
+                        printfln_out("Rotation: 0 degrees");
+                        break;
+                    case NV_ROTATE_90:
+                        printfln_out("Rotation: 90 degrees");
+                        break;
+                    case NV_ROTATE_180:
+                        printfln_out("Rotation: 180 degrees");
+                        break;
+                    case NV_ROTATE_270:
+                        printfln_out("Rotation: 270 degrees");
+                        break;
+                    case NV_ROTATE_IGNORED:
+                        printfln_out("Rotation: ignored");
+                        break;
+                    default:
+                        printfln_out("Rotation: unknown (%d)", target_info->details->rotation);
+                        break;
+                }
+
+                switch (target_info->details->scaling) {
+                    case NV_SCALING_DEFAULT:
+                        printfln_out("Scaling: default");
+                        break;
+                    case NV_SCALING_GPU_SCALING_TO_CLOSEST:
+                        printfln_out("Scaling: GPU scaling to closest");
+                        break;
+                    case NV_SCALING_GPU_SCALING_TO_NATIVE:
+                        printfln_out("Scaling: GPU scaling to native");
+                        break;
+                    case NV_SCALING_GPU_SCANOUT_TO_NATIVE:
+                        printfln_out("Scaling: GPU scanout to native");
+                        break;
+                    case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_NATIVE:
+                        printfln_out("Scaling: GPU scaling to aspect scanout to native");
+                        break;
+                    case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_CLOSEST:
+                        printfln_out("Scaling: GPU scaling to aspect scanout to closest");
+                        break;
+                    case NV_SCALING_GPU_SCANOUT_TO_CLOSEST:
+                        printfln_out("Scaling: GPU scanout to closest");
+                        break;
+                    case NV_SCALING_GPU_INTEGER_ASPECT_SCALING:
+                        printfln_out("Scaling: GPU integer aspect scaling");
+                        break;
+                    default:
+                        printfln_out("Scaling: unknown (%d)", target_info->details->scaling);
+                        break;
+                }
+
+                printfln_out("Refresh rate (non interlaced): %ld", target_info->details->refreshRate1K * 1000);
+                printfln_out("Interlaced: %d", target_info->details->interlaced);
+                printfln_out("Primary: %d", target_info->details->primary);
+                printfln_out("Disable virtual mode support: %d", target_info->details->disableVirtualModeSupport);
+                printfln_out("Is preferred unscaled target: %d", target_info->details->isPreferredUnscaledTarget);
+
+                switch (target_info->details->connector) {
+                    case NVAPI_GPU_CONNECTOR_VGA_15_PIN:
+                        printfln_out("Connector: VGA 15 Pin");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_COMPOSITE:
+                        printfln_out("Connector: TV Composite");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_SVIDEO:
+                        printfln_out("Connector: TV S-Video");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_HDTV_COMPONENT:
+                        printfln_out("Connector: TV HDTV Component");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_SCART:
+                        printfln_out("Connector: TV SCART");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_COMPOSITE_SCART_ON_EIAJ4120:
+                        printfln_out("Connector: TV Composite SCART on EIAJ4120");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_TV_HDTV_EIAJ4120:
+                        printfln_out("Connector: TV HDTV EIAJ4120");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_PC_POD_HDTV_YPRPB:
+                        printfln_out("Connector: PC POD HDTV YPRPB");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_PC_POD_SVIDEO:
+                        printfln_out("Connector: PC POD S-Video");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_PC_POD_COMPOSITE:
+                        printfln_out("Connector: PC POD Composite");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DVI_I_TV_SVIDEO:
+                        printfln_out("Connector: DVI-I TV S-Video");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DVI_I_TV_COMPOSITE:
+                        printfln_out("Connector: DVI-I TV Composite");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DVI_I:
+                        printfln_out("Connector: DVI-I");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DVI_D:
+                        printfln_out("Connector: DVI-D");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_ADC:
+                        printfln_out("Connector: ADC");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_LFH_DVI_I_1:
+                        printfln_out("Connector: LFH DVI-I 1");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_LFH_DVI_I_2:
+                        printfln_out("Connector: LFH DVI-I 2");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_SPWG:
+                        printfln_out("Connector: SPWG");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_OEM:
+                        printfln_out("Connector: OEM");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DISPLAYPORT_EXTERNAL:
+                        printfln_out("Connector: DisplayPort External");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DISPLAYPORT_INTERNAL:
+                        printfln_out("Connector: DisplayPort Internal");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_DISPLAYPORT_MINI_EXT:
+                        printfln_out("Connector: DisplayPort Mini External");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_HDMI_A:
+                        printfln_out("Connector: HDMI A");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_HDMI_C_MINI:
+                        printfln_out("Connector: HDMI C Mini");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_1:
+                        printfln_out("Connector: LFH DisplayPort 1");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_2:
+                        printfln_out("Connector: LFH DisplayPort 2");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_VIRTUAL_WFD:
+                        printfln_out("Connector: Virtual WFD");
+                        break;
+                    case NVAPI_GPU_CONNECTOR_USB_C:
+                        printfln_out("Connector: USB C");
+                        break;
+                    default:
+                        printfln_out("Connector: unknown (%d)", target_info->details->connector);
+                        break;
+                }
+
+                switch (target_info->details->tvFormat) {
+                    case NV_DISPLAY_TV_FORMAT_NONE:
+                        printfln_out("TV format: none");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_NTSCM:
+                        printfln_out("TV format: SD NTSC-M");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_NTSCJ:
+                        printfln_out("TV format: SD NTSC-J");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_PALM:
+                        printfln_out("TV format: SD PAL-M");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_PALBDGH:
+                        printfln_out("TV format: SD PAL-BDGH");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_PALN:
+                        printfln_out("TV format: SD PAL-N");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_PALNC:
+                        printfln_out("TV format: SD PAL-NC");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_576i:
+                        printfln_out("TV format: SD 576i");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_480i:
+                        printfln_out("TV format: SD 480i");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_ED_480p:
+                        printfln_out("TV format: ED 480p");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_ED_576p:
+                        printfln_out("TV format: ED 576p");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_720p:
+                        printfln_out("TV format: HD 720p");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_1080i:
+                        printfln_out("TV format: HD 1080i");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_1080p:
+                        printfln_out("TV format: HD 1080p");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_720p50:
+                        printfln_out("TV format: HD 720p50");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_1080p24:
+                        printfln_out("TV format: HD 1080p24");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_1080i50:
+                        printfln_out("TV format: HD 1080i50");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_1080p50:
+                        printfln_out("TV format: HD 1080p50");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_3840:
+                        printfln_out("TV format: UHD 4Kp30 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_3840:
+                        printfln_out("TV format: UHD 4Kp25 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_3840:
+                        printfln_out("TV format: UHD 4Kp24 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_SMPTE:
+                        printfln_out("TV format: UHD 4Kp24 SMPTE");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_3840:
+                        printfln_out("TV format: UHD 4Kp50 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_3840:
+                        printfln_out("TV format: UHD 4Kp60 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_4096:
+                        printfln_out("TV format: UHD 4Kp30 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_4096:
+                        printfln_out("TV format: UHD 4Kp25 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_4096:
+                        printfln_out("TV format: UHD 4Kp24 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_4096:
+                        printfln_out("TV format: UHD 4Kp50 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_4096:
+                        printfln_out("TV format: UHD 4Kp60 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp24_7680:
+                        printfln_out("TV format: UHD 8Kp24 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp25_7680:
+                        printfln_out("TV format: UHD 8Kp25 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp30_7680:
+                        printfln_out("TV format: UHD 8Kp30 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp48_7680:
+                        printfln_out("TV format: UHD 8Kp48 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp50_7680:
+                        printfln_out("TV format: UHD 8Kp50 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp60_7680:
+                        printfln_out("TV format: UHD 8Kp60 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp100_7680:
+                        printfln_out("TV format: UHD 8Kp100 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_8Kp120_7680:
+                        printfln_out("TV format: UHD 8Kp120 7680");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_3840:
+                        printfln_out("TV format: UHD 4Kp48 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_4096:
+                        printfln_out("TV format: UHD 4Kp48 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_3840:
+                        printfln_out("TV format: UHD 4Kp100 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_4096:
+                        printfln_out("TV format: UHD 4Kp100 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_4096:
+                        printfln_out("TV format: UHD 4Kp120 4096");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_3840:
+                        printfln_out("TV format: UHD 4Kp120 3840");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_5120:
+                        printfln_out("TV format: UHD 4Kp100 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_5120:
+                        printfln_out("TV format: UHD 4Kp120 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_5120:
+                        printfln_out("TV format: UHD 4Kp24 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_5120:
+                        printfln_out("TV format: UHD 4Kp25 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_5120:
+                        printfln_out("TV format: UHD 4Kp30 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_5120:
+                        printfln_out("TV format: UHD 4Kp48 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_5120:
+                        printfln_out("TV format: UHD 4Kp50 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_5120:
+                        printfln_out("TV format: UHD 4Kp60 5120");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp24_10240:
+                        printfln_out("TV format: UHD 10Kp24 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp25_10240:
+                        printfln_out("TV format: UHD 10Kp25 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp30_10240:
+                        printfln_out("TV format: UHD 10Kp30 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp48_10240:
+                        printfln_out("TV format: UHD 10Kp48 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp50_10240:
+                        printfln_out("TV format: UHD 10Kp50 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp60_10240:
+                        printfln_out("TV format: UHD 10Kp60 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp100_10240:
+                        printfln_out("TV format: UHD 10Kp100 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_UHD_10Kp120_10240:
+                        printfln_out("TV format: UHD 10Kp120 10240");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_SD_OTHER:
+                        printfln_out("TV format: SD Other");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_ED_OTHER:
+                        printfln_out("TV format: ED Other");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_HD_OTHER:
+                        printfln_out("TV format: HD Other");
+                        break;
+                    case NV_DISPLAY_TV_FORMAT_ANY:
+                        printfln_out("TV format: Any");
+                        break;
+                    default:
+                        printfln_out("TV format: unknown (%d)", target_info->details->tvFormat);
+                        break;
+                }
+
+                switch (target_info->details->timingOverride) {
+                    case NV_TIMING_OVERRIDE_CURRENT:
+                        printfln_out("Timing override: current");
+                        break;
+                    case NV_TIMING_OVERRIDE_AUTO:
+                        printfln_out("Timing override: auto");
+                        break;
+                    case NV_TIMING_OVERRIDE_EDID:
+                        printfln_out("Timing override: EDID");
+                        break;
+                    case NV_TIMING_OVERRIDE_DMT:
+                        printfln_out("Timing override: VESA DMT");
+                        break;
+                    case NV_TIMING_OVERRIDE_DMT_RB:
+                        printfln_out("Timing override: VESA DMT RB");
+                        break;
+                    case NV_TIMING_OVERRIDE_CVT:
+                        printfln_out("Timing override: VESA CVT");
+                        break;
+                    case NV_TIMING_OVERRIDE_CVT_RB:
+                        printfln_out("Timing override: VESA CVT RB");
+                        break;
+                    case NV_TIMING_OVERRIDE_GTF:
+                        printfln_out("Timing override: VESA GTF");
+                        break;
+                    case NV_TIMING_OVERRIDE_EIA861:
+                        printfln_out("Timing override: EIA 861x pre-defined timing");
+                        break;
+                    case NV_TIMING_OVERRIDE_ANALOG_TV:
+                        printfln_out("Timing override: analog SD/HDTV timing");
+                        break;
+                    case NV_TIMING_OVERRIDE_CUST:
+                        printfln_out("Timing override: NV custom timings");
+                        break;
+                    case NV_TIMING_OVERRIDE_NV_PREDEFINED:
+                        printfln_out("Timing override: NV pre-defined timing (basically the PsF timings)");
+                        break;
+                    case NV_TIMING_OVERRIDE_NV_ASPR:
+                        printfln_out("Timing override: NV ASPR");
+                        break;
+                    case NV_TIMING_OVERRIDE_SDI:
+                        printfln_out("Timing override: SDI");
+                        break;
+                    case NV_TIMING_OVRRIDE_MAX:
+                        printfln_out("Timing override: max");
+                        break;
+                    default:
+                        printfln_out("Timing override: unknown (%d)", target_info->details->timingOverride);
+                        break;
+                }
+
+                printfln_out("Override custom (backend raster) timing");
+
+                printfln_out("Horizontal visible: %d", target_info->details->timing.HVisible);
+                printfln_out("Horizontal border: %d", target_info->details->timing.HBorder);
+                printfln_out("Horizontal front porch: %d", target_info->details->timing.HFrontPorch);
+                printfln_out("Horizontal sync width: %d", target_info->details->timing.HSyncWidth);
+                printfln_out("Horizontal total: %d", target_info->details->timing.HTotal);
+                printfln_out("Horizontal sync polarity: %s", target_info->details->timing.HSyncPol == 1 ? "negative" : "positive");
+
+                printfln_out("Vertical visible: %d", target_info->details->timing.VVisible);
+                printfln_out("Vertical border: %d", target_info->details->timing.VBorder);
+                printfln_out("Vertical front porch: %d", target_info->details->timing.VFrontPorch);
+                printfln_out("Vertical sync width: %d", target_info->details->timing.VSyncWidth);
+                printfln_out("Vertical total: %d", target_info->details->timing.VTotal);
+                printfln_out("Vertical sync polarity: %s", target_info->details->timing.VSyncPol == 1 ? "negative" : "positive");
+
+                printfln_out("Interlaced: %s", target_info->details->timing.interlaced == 1 ? "interlaced" : "progressive");
+                printfln_out("Pixel clock: %lu kHz", target_info->details->timing.pclk * 10);
+
+                printfln_out("Flag: 0x%lX", target_info->details->timing.etc.flag);
+                printfln_out("Logical refresh rate to present: %d", target_info->details->timing.etc.rr);
+                printfln_out("Physical vertical refresh rate: %f Hz", target_info->details->timing.etc.rrx1k * 0.001);
+                printfln_out("Display aspect ratio: %lu:%lu", target_info->details->timing.etc.aspect >> 16, target_info->details->timing.etc.aspect & 0xFFFF);
+                printfln_out("Bit-wise pixel repetition factor (1 = no pixel repetition, 2 = each pixel repeats twice horizontally, etc.): %d", target_info->details->timing.etc.rep);
+                printfln_out("Timing status: 0x%lX", target_info->details->timing.etc.status);
+                printfln_out("Timing name: %s", target_info->details->timing.etc.name);
+            }
+
+            printfln_out("--------------------------------");
         }
-
-        printfln_out("--------------------------------");
-        printfln_out("Display ID: %lX", target_info->displayId);
-        printfln_out("Resolution width: %ld", source_mode_info->resolution.width);
-        printfln_out("Resolution height: %ld", source_mode_info->resolution.height);
-        printfln_out("Color depth: %d", source_mode_info->colorFormat);
-        printfln_out("Position x: %d", source_mode_info->position.x);
-        printfln_out("Position y: %d", source_mode_info->position.y);
-        printfln_out("Spanning orientation: %d", source_mode_info->spanningOrientation);
-        printfln_out("GDI primary: %d", source_mode_info->bGDIPrimary);
-        printfln_out("SLI focus: %d", source_mode_info->bSLIFocus);
-
-        if (target_info->details) {
-            switch (target_info->details->rotation) {
-                case NV_ROTATE_0:
-                    printfln_out("Rotation: 0 degrees");
-                    break;
-                case NV_ROTATE_90:
-                    printfln_out("Rotation: 90 degrees");
-                    break;
-                case NV_ROTATE_180:
-                    printfln_out("Rotation: 180 degrees");
-                    break;
-                case NV_ROTATE_270:
-                    printfln_out("Rotation: 270 degrees");
-                    break;
-                case NV_ROTATE_IGNORED:
-                    printfln_out("Rotation: ignored");
-                    break;
-                default:
-                    printfln_out("Rotation: unknown (%d)", target_info->details->rotation);
-                    break;
-            }
-
-            switch (target_info->details->scaling) {
-                case NV_SCALING_DEFAULT:
-                    printfln_out("Scaling: default");
-                    break;
-                case NV_SCALING_GPU_SCALING_TO_CLOSEST:
-                    printfln_out("Scaling: GPU scaling to closest");
-                    break;
-                case NV_SCALING_GPU_SCALING_TO_NATIVE:
-                    printfln_out("Scaling: GPU scaling to native");
-                    break;
-                case NV_SCALING_GPU_SCANOUT_TO_NATIVE:
-                    printfln_out("Scaling: GPU scanout to native");
-                    break;
-                case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_NATIVE:
-                    printfln_out("Scaling: GPU scaling to aspect scanout to native");
-                    break;
-                case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_CLOSEST:
-                    printfln_out("Scaling: GPU scaling to aspect scanout to closest");
-                    break;
-                case NV_SCALING_GPU_SCANOUT_TO_CLOSEST:
-                    printfln_out("Scaling: GPU scanout to closest");
-                    break;
-                case NV_SCALING_GPU_INTEGER_ASPECT_SCALING:
-                    printfln_out("Scaling: GPU integer aspect scaling");
-                    break;
-                default:
-                    printfln_out("Scaling: unknown (%d)", target_info->details->scaling);
-                    break;
-            }
-
-            printfln_out("Refresh rate (non interlaced): %ld", target_info->details->refreshRate1K * 1000);
-            printfln_out("Interlaced: %d", target_info->details->interlaced);
-            printfln_out("Primary: %d", target_info->details->primary);
-            printfln_out("Disable virtual mode support: %d", target_info->details->disableVirtualModeSupport);
-            printfln_out("Is preferred unscaled target: %d", target_info->details->isPreferredUnscaledTarget);
-
-            switch (target_info->details->connector) {
-                case NVAPI_GPU_CONNECTOR_VGA_15_PIN:
-                    printfln_out("Connector: VGA 15 Pin");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_COMPOSITE:
-                    printfln_out("Connector: TV Composite");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_SVIDEO:
-                    printfln_out("Connector: TV S-Video");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_HDTV_COMPONENT:
-                    printfln_out("Connector: TV HDTV Component");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_SCART:
-                    printfln_out("Connector: TV SCART");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_COMPOSITE_SCART_ON_EIAJ4120:
-                    printfln_out("Connector: TV Composite SCART on EIAJ4120");
-                    break;
-                case NVAPI_GPU_CONNECTOR_TV_HDTV_EIAJ4120:
-                    printfln_out("Connector: TV HDTV EIAJ4120");
-                    break;
-                case NVAPI_GPU_CONNECTOR_PC_POD_HDTV_YPRPB:
-                    printfln_out("Connector: PC POD HDTV YPRPB");
-                    break;
-                case NVAPI_GPU_CONNECTOR_PC_POD_SVIDEO:
-                    printfln_out("Connector: PC POD S-Video");
-                    break;
-                case NVAPI_GPU_CONNECTOR_PC_POD_COMPOSITE:
-                    printfln_out("Connector: PC POD Composite");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DVI_I_TV_SVIDEO:
-                    printfln_out("Connector: DVI-I TV S-Video");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DVI_I_TV_COMPOSITE:
-                    printfln_out("Connector: DVI-I TV Composite");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DVI_I:
-                    printfln_out("Connector: DVI-I");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DVI_D:
-                    printfln_out("Connector: DVI-D");
-                    break;
-                case NVAPI_GPU_CONNECTOR_ADC:
-                    printfln_out("Connector: ADC");
-                    break;
-                case NVAPI_GPU_CONNECTOR_LFH_DVI_I_1:
-                    printfln_out("Connector: LFH DVI-I 1");
-                    break;
-                case NVAPI_GPU_CONNECTOR_LFH_DVI_I_2:
-                    printfln_out("Connector: LFH DVI-I 2");
-                    break;
-                case NVAPI_GPU_CONNECTOR_SPWG:
-                    printfln_out("Connector: SPWG");
-                    break;
-                case NVAPI_GPU_CONNECTOR_OEM:
-                    printfln_out("Connector: OEM");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DISPLAYPORT_EXTERNAL:
-                    printfln_out("Connector: DisplayPort External");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DISPLAYPORT_INTERNAL:
-                    printfln_out("Connector: DisplayPort Internal");
-                    break;
-                case NVAPI_GPU_CONNECTOR_DISPLAYPORT_MINI_EXT:
-                    printfln_out("Connector: DisplayPort Mini External");
-                    break;
-                case NVAPI_GPU_CONNECTOR_HDMI_A:
-                    printfln_out("Connector: HDMI A");
-                    break;
-                case NVAPI_GPU_CONNECTOR_HDMI_C_MINI:
-                    printfln_out("Connector: HDMI C Mini");
-                    break;
-                case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_1:
-                    printfln_out("Connector: LFH DisplayPort 1");
-                    break;
-                case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_2:
-                    printfln_out("Connector: LFH DisplayPort 2");
-                    break;
-                case NVAPI_GPU_CONNECTOR_VIRTUAL_WFD:
-                    printfln_out("Connector: Virtual WFD");
-                    break;
-                case NVAPI_GPU_CONNECTOR_USB_C:
-                    printfln_out("Connector: USB C");
-                    break;
-                default:
-                    printfln_out("Connector: unknown (%d)", target_info->details->connector);
-                    break;
-            }
-
-            switch (target_info->details->tvFormat) {
-                case NV_DISPLAY_TV_FORMAT_NONE:
-                    printfln_out("TV format: none");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_NTSCM:
-                    printfln_out("TV format: SD NTSC-M");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_NTSCJ:
-                    printfln_out("TV format: SD NTSC-J");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_PALM:
-                    printfln_out("TV format: SD PAL-M");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_PALBDGH:
-                    printfln_out("TV format: SD PAL-BDGH");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_PALN:
-                    printfln_out("TV format: SD PAL-N");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_PALNC:
-                    printfln_out("TV format: SD PAL-NC");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_576i:
-                    printfln_out("TV format: SD 576i");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_480i:
-                    printfln_out("TV format: SD 480i");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_ED_480p:
-                    printfln_out("TV format: ED 480p");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_ED_576p:
-                    printfln_out("TV format: ED 576p");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_720p:
-                    printfln_out("TV format: HD 720p");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_1080i:
-                    printfln_out("TV format: HD 1080i");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_1080p:
-                    printfln_out("TV format: HD 1080p");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_720p50:
-                    printfln_out("TV format: HD 720p50");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_1080p24:
-                    printfln_out("TV format: HD 1080p24");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_1080i50:
-                    printfln_out("TV format: HD 1080i50");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_1080p50:
-                    printfln_out("TV format: HD 1080p50");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_3840:
-                    printfln_out("TV format: UHD 4Kp30 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_3840:
-                    printfln_out("TV format: UHD 4Kp25 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_3840:
-                    printfln_out("TV format: UHD 4Kp24 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_SMPTE:
-                    printfln_out("TV format: UHD 4Kp24 SMPTE");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_3840:
-                    printfln_out("TV format: UHD 4Kp50 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_3840:
-                    printfln_out("TV format: UHD 4Kp60 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_4096:
-                    printfln_out("TV format: UHD 4Kp30 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_4096:
-                    printfln_out("TV format: UHD 4Kp25 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_4096:
-                    printfln_out("TV format: UHD 4Kp24 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_4096:
-                    printfln_out("TV format: UHD 4Kp50 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_4096:
-                    printfln_out("TV format: UHD 4Kp60 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp24_7680:
-                    printfln_out("TV format: UHD 8Kp24 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp25_7680:
-                    printfln_out("TV format: UHD 8Kp25 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp30_7680:
-                    printfln_out("TV format: UHD 8Kp30 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp48_7680:
-                    printfln_out("TV format: UHD 8Kp48 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp50_7680:
-                    printfln_out("TV format: UHD 8Kp50 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp60_7680:
-                    printfln_out("TV format: UHD 8Kp60 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp100_7680:
-                    printfln_out("TV format: UHD 8Kp100 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_8Kp120_7680:
-                    printfln_out("TV format: UHD 8Kp120 7680");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_3840:
-                    printfln_out("TV format: UHD 4Kp48 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_4096:
-                    printfln_out("TV format: UHD 4Kp48 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_3840:
-                    printfln_out("TV format: UHD 4Kp100 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_4096:
-                    printfln_out("TV format: UHD 4Kp100 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_4096:
-                    printfln_out("TV format: UHD 4Kp120 4096");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_3840:
-                    printfln_out("TV format: UHD 4Kp120 3840");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp100_5120:
-                    printfln_out("TV format: UHD 4Kp100 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp120_5120:
-                    printfln_out("TV format: UHD 4Kp120 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp24_5120:
-                    printfln_out("TV format: UHD 4Kp24 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp25_5120:
-                    printfln_out("TV format: UHD 4Kp25 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp30_5120:
-                    printfln_out("TV format: UHD 4Kp30 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp48_5120:
-                    printfln_out("TV format: UHD 4Kp48 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp50_5120:
-                    printfln_out("TV format: UHD 4Kp50 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_4Kp60_5120:
-                    printfln_out("TV format: UHD 4Kp60 5120");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp24_10240:
-                    printfln_out("TV format: UHD 10Kp24 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp25_10240:
-                    printfln_out("TV format: UHD 10Kp25 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp30_10240:
-                    printfln_out("TV format: UHD 10Kp30 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp48_10240:
-                    printfln_out("TV format: UHD 10Kp48 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp50_10240:
-                    printfln_out("TV format: UHD 10Kp50 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp60_10240:
-                    printfln_out("TV format: UHD 10Kp60 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp100_10240:
-                    printfln_out("TV format: UHD 10Kp100 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_UHD_10Kp120_10240:
-                    printfln_out("TV format: UHD 10Kp120 10240");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_SD_OTHER:
-                    printfln_out("TV format: SD Other");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_ED_OTHER:
-                    printfln_out("TV format: ED Other");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_HD_OTHER:
-                    printfln_out("TV format: HD Other");
-                    break;
-                case NV_DISPLAY_TV_FORMAT_ANY:
-                    printfln_out("TV format: Any");
-                    break;
-                default:
-                    printfln_out("TV format: unknown (%d)", target_info->details->tvFormat);
-                    break;
-            }
-
-            switch (target_info->details->timingOverride) {
-                case NV_TIMING_OVERRIDE_CURRENT:
-                    printfln_out("Timing override: current");
-                    break;
-                case NV_TIMING_OVERRIDE_AUTO:
-                    printfln_out("Timing override: auto");
-                    break;
-                case NV_TIMING_OVERRIDE_EDID:
-                    printfln_out("Timing override: EDID");
-                    break;
-                case NV_TIMING_OVERRIDE_DMT:
-                    printfln_out("Timing override: VESA DMT");
-                    break;
-                case NV_TIMING_OVERRIDE_DMT_RB:
-                    printfln_out("Timing override: VESA DMT RB");
-                    break;
-                case NV_TIMING_OVERRIDE_CVT:
-                    printfln_out("Timing override: VESA CVT");
-                    break;
-                case NV_TIMING_OVERRIDE_CVT_RB:
-                    printfln_out("Timing override: VESA CVT RB");
-                    break;
-                case NV_TIMING_OVERRIDE_GTF:
-                    printfln_out("Timing override: VESA GTF");
-                    break;
-                case NV_TIMING_OVERRIDE_EIA861:
-                    printfln_out("Timing override: EIA 861x pre-defined timing");
-                    break;
-                case NV_TIMING_OVERRIDE_ANALOG_TV:
-                    printfln_out("Timing override: analog SD/HDTV timing");
-                    break;
-                case NV_TIMING_OVERRIDE_CUST:
-                    printfln_out("Timing override: NV custom timings");
-                    break;
-                case NV_TIMING_OVERRIDE_NV_PREDEFINED:
-                    printfln_out("Timing override: NV pre-defined timing (basically the PsF timings)");
-                    break;
-                case NV_TIMING_OVERRIDE_NV_ASPR:
-                    printfln_out("Timing override: NV ASPR");
-                    break;
-                case NV_TIMING_OVERRIDE_SDI:
-                    printfln_out("Timing override: SDI");
-                    break;
-                case NV_TIMING_OVRRIDE_MAX:
-                    printfln_out("Timing override: max");
-                    break;
-                default:
-                    printfln_out("Timing override: unknown (%d)", target_info->details->timingOverride);
-                    break;
-            }
-
-            printfln_out("Override custom (backend raster) timing");
-
-            printfln_out("Horizontal visible: %d", target_info->details->timing.HVisible);
-            printfln_out("Horizontal border: %d", target_info->details->timing.HBorder);
-            printfln_out("Horizontal front porch: %d", target_info->details->timing.HFrontPorch);
-            printfln_out("Horizontal sync width: %d", target_info->details->timing.HSyncWidth);
-            printfln_out("Horizontal total: %d", target_info->details->timing.HTotal);
-            printfln_out("Horizontal sync polarity: %s", target_info->details->timing.HSyncPol == 1 ? "negative" : "positive");
-
-            printfln_out("Vertical visible: %d", target_info->details->timing.VVisible);
-            printfln_out("Vertical border: %d", target_info->details->timing.VBorder);
-            printfln_out("Vertical front porch: %d", target_info->details->timing.VFrontPorch);
-            printfln_out("Vertical sync width: %d", target_info->details->timing.VSyncWidth);
-            printfln_out("Vertical total: %d", target_info->details->timing.VTotal);
-            printfln_out("Vertical sync polarity: %s", target_info->details->timing.VSyncPol == 1 ? "negative" : "positive");
-
-            printfln_out("Interlaced: %s", target_info->details->timing.interlaced == 1 ? "interlaced" : "progressive");
-            printfln_out("Pixel clock: %lu kHz", target_info->details->timing.pclk * 10);
-
-            printfln_out("Flag: 0x%lX", target_info->details->timing.etc.flag);
-            printfln_out("Logical refresh rate to present: %d", target_info->details->timing.etc.rr);
-            printfln_out("Physical vertical refresh rate: %f Hz", target_info->details->timing.etc.rrx1k * 0.001);
-            printfln_out("Display aspect ratio: %lu:%lu", target_info->details->timing.etc.aspect >> 16, target_info->details->timing.etc.aspect & 0xFFFF);
-            printfln_out("Bit-wise pixel repetition factor (1 = no pixel repetition, 2 = each pixel repeats twice horizontally, etc.): %d", target_info->details->timing.etc.rep);
-            printfln_out("Timing status: 0x%lX", target_info->details->timing.etc.status);
-            printfln_out("Timing name: %s", target_info->details->timing.etc.name);
-        }
-
-        printfln_out("--------------------------------");
     }
 
-    free(display_config.targetInfo);
-    free(display_config.sourceModeInfo);
+    _display_config_free(&displayconfig_path_info);
 
     return true;
 }
@@ -1033,6 +1213,48 @@ static bool _custom_resolution_set(
     return true;
 }
 
+static bool _display_config_gpu_scaling_enable_filter(NV_DISPLAYCONFIG_PATH_TARGET_INFO *target_info)
+{
+    if (target_info->details == NULL) {
+        printfln_err("ERROR: No details found for target info");
+        return false;
+    }
+
+    if (target_info->details->scaling == NV_SCALING_GPU_SCALING_TO_NATIVE) {
+        printfln_err("GPU scaling to native resolution is already enabled");
+        return false;
+    } else {
+        target_info->details->scaling = NV_SCALING_GPU_SCALING_TO_NATIVE;
+        printfln_err("Enabling GPU scaling to native resolution");
+        return true;
+    }
+}
+
+static bool _display_config_gpu_scaling_to_native_resolution_enable(const nv_api_t *nv_api, NvU32 display_id)
+{
+    displayconfig_path_info_t displayconfig_path_info;
+    bool changes_to_save;
+
+    assert(nv_api);
+
+    if (!_display_config_get(nv_api, &displayconfig_path_info)) {
+        return false;
+    }
+
+    changes_to_save = _display_config_visit(&displayconfig_path_info, display_id, _display_config_gpu_scaling_enable_filter);
+
+    if (changes_to_save) {
+        if (!_display_config_set(nv_api, &displayconfig_path_info)) {
+            _display_config_free(&displayconfig_path_info);
+            return false;
+        }
+    }
+
+    _display_config_free(&displayconfig_path_info);
+
+    return true;
+}
+
 // -------------------------------------------------------------------------------------------------
 
 static void _print_synopsis()
@@ -1051,13 +1273,15 @@ static void _print_synopsis()
     printfln_err("    gpu-power-state-max <profile_name>  Set GPU power state to maximum for the driver profile");
     printfln_err("");
     printfln_err("  display");
+    printfln_err("    primary-display-id            Print the ID of the primary display");
     printfln_err("    list                          List all connected displays and their display IDs");
-    printfln_err("    config-get [display_id]       Get the current display configurations. Optionally, specify a display ID to get the configuration of that display only");
+    printfln_err("    config [display_id]           Print the current display configurations. Optionally, specify a display ID to get the configuration of that display only");
     printfln_err("    custom-resolution-set <display_id> <screen_width> <screen_height> <screen_refresh_rate>");
     printfln_err("                                  Set a custom display mode with the given parameters for the given display ID. The settings are persisted immediately. Ensure you tested these before with the custom-display-test command.");
     printfln_err("    custom-resolution-test <display_id> <screen_width> <screen_height> <screen_refresh_rate> [--test-timeout-secs n]");
     printfln_err("                                  Test a custom display mode for a limited amount of time. This will revert the display mode after the given amount of seconds and not persist the changes.");
     printfln_err("                                  test-timeout-secs: Optional. Number of seconds to test the custom display mode for. Default is 10 seconds.");
+    printfln_err("    gpu-scaling-to-native-resolution-enable <display_id> Enable GPU scaling to native resolution for the given display ID");
 }
 
 static bool _cmd_nv_info(const nv_api_t *nv_api)
@@ -1142,12 +1366,17 @@ static bool _cmd_profile_gpu_power_state_max(const nv_api_t *nv_api, int argc, c
     return _profile_gpu_power_state_max(nv_api, profile_name);
 }
 
+static bool _cmd_display_primary_display_id(const nv_api_t *nv_api)
+{
+    return _display_primary_display_id(nv_api);
+}
+
 static bool _cmd_display_list(const nv_api_t *nv_api)
 {
     return _displays_list(nv_api);
 }
 
-static bool _cmd_display_config_get(const nv_api_t *nv_api, int argc, char **argv)
+static bool _cmd_display_config(const nv_api_t *nv_api, int argc, char **argv)
 {
     uint32_t display_id;
 
@@ -1161,7 +1390,7 @@ static bool _cmd_display_config_get(const nv_api_t *nv_api, int argc, char **arg
         display_id = 0;
     }
 
-    return _display_config_get(nv_api, display_id);
+    return _display_config_print(nv_api, display_id);
 }
 
 static bool _cmd_custom_resolution_set(const nv_api_t *nv_api, int argc, char **argv)
@@ -1252,6 +1481,25 @@ static bool _cmd_custom_resolution_test(const nv_api_t *nv_api, int argc, char *
         test_only_timeout_sec);
 }
 
+static bool _cmd_display_gpu_scaling_to_native_resolution_enable(const nv_api_t *nv_api, int argc, char **argv)
+{
+    uint32_t display_id;
+
+    if (argc < 1) {
+        _print_synopsis();
+        printfln_err("ERROR: Insufficient arguments");
+        return false;
+    }
+    
+    if (argv[0][0] == '0' && argv[0][1] == 'x') {
+        display_id = strtoul(argv[0] + 2, NULL, 16);
+    } else {
+        display_id = strtoul(argv[0], NULL, 10);
+    }
+
+    return _display_config_gpu_scaling_to_native_resolution_enable(nv_api, display_id); 
+}
+
 // -------------------------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -1319,14 +1567,18 @@ int main(int argc, char **argv)
             result = false;
         }
     } else if (!strcmp(command, "display")) {
-        if (!strcmp(sub_command, "list")) {
+        if (!strcmp(sub_command, "primary-display-id")) {
+            result = _cmd_display_primary_display_id(&nv_api);
+        } else if (!strcmp(sub_command, "list")) {
             result = _cmd_display_list(&nv_api);
-        } else if (!strcmp(sub_command, "config-get")) {
-            result = _cmd_display_config_get(&nv_api, argc - 3, argv + 3);
+        } else if (!strcmp(sub_command, "config")) {
+            result = _cmd_display_config(&nv_api, argc - 3, argv + 3);
         } else if (!strcmp(sub_command, "custom-resolution-set")) {
             result = _cmd_custom_resolution_set(&nv_api, argc - 3, argv + 3);
         } else if (!strcmp(sub_command, "custom-resolution-test")) {
             result = _cmd_custom_resolution_test(&nv_api, argc - 3, argv + 3);
+        } else if (!strcmp(sub_command, "gpu-scaling-to-native-resolution-enable")) {
+            result = _cmd_display_gpu_scaling_to_native_resolution_enable(&nv_api, argc - 3, argv + 3);
         } else {
             printfln_err("ERROR: Unknown sub-command: %s", sub_command);
             _print_synopsis();
