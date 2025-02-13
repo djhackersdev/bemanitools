@@ -228,6 +228,16 @@ static void _draw_text(IDirect3DDevice9 *device, ID3DXFont *font, uint32_t font_
     ID3DXFont_DrawText(font, NULL, text, -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
 }
 
+static bool _is_esc_key_pressed()
+{
+    return GetAsyncKeyState(VK_ESCAPE) & 0x8000;
+}
+
+static bool _is_esc_key_released()
+{
+    return !(GetAsyncKeyState(VK_ESCAPE) & 0x8000);
+}
+
 static bool _adapter()
 {
     IDirect3D9 *d3d;
@@ -433,7 +443,12 @@ static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_
             break;
         }
 
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+        if (_is_esc_key_pressed()) {
+            // Avoid multi triggering with further key evaluations
+            while (!_is_esc_key_released()) {
+                Sleep(10);
+            }
+
             exit_loop = true;
             break;
         }
@@ -532,22 +547,53 @@ static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_
     } else {
         _draw_text(device, font, font_height, text_offset_x, text_offset_y * 6, "Status: Finished");
     }
-    
+
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 7, 
         "Total warm-up frame count: %d", warm_up_frame_count);
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 8, 
         "Total sample frame count: %d", frame_count);
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 9, 
-        "Avg frame time: %.3f ms", total_elapsed_us / frame_count / 1000.0f);
+        "Avg frame time: %.3f ms", total_elapsed_us > 0 && frame_count > 0 ? total_elapsed_us / frame_count / 1000.0f : 0);
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 10, 
-        "Avg refresh rate: %.3f Hz", 1000.0f / (total_elapsed_us / frame_count / 1000.0f));
+        "Avg refresh rate: %.3f Hz", total_elapsed_us > 0 && frame_count > 0 ? 1000.0f / (total_elapsed_us / frame_count / 1000.0f) : 0);
 
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 12, "Exiting in 5 seconds ...");
+    _draw_text(device, font, font_height, text_offset_x, text_offset_y * 13, "Press ESC to exit immediately");
 
     IDirect3DDevice9_EndScene(device);
     IDirect3DDevice9_Present(device, NULL, NULL, NULL, NULL);
 
-    Sleep(5000);
+    exit_loop = false;
+
+    for (uint32_t i = 0; i < 5000 / 10; i++) {
+        // Required to not make windows think we are stuck and not responding
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) {
+                exit_loop = true;
+                break;
+            }
+
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        if (exit_loop) {
+            break;
+        }
+
+        // Allow quick exit
+        if (_is_esc_key_pressed()) {
+            // Avoid multi triggering with further key evaluations
+            while (!_is_esc_key_released()) {
+                Sleep(10);
+            }
+
+            exit_loop = true;
+            break;
+        }
+
+        Sleep(10);
+    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -555,8 +601,8 @@ static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_
     printfln_out("GPU: %s", identifier.Description);
     printfln_out("Spec: %d x %d @ %d hz, %s, vsync %s", width, height, refresh_rate, 
         windowed ? "windowed" : "fullscreen", vsync_off ? "off" : "on");
-    printfln_out("Avg frame time (ms): %.3f", total_elapsed_us / frame_count / 1000.0f);
-    printfln_out("Avg refresh rate (hz): %.3f", 1000.0f / (total_elapsed_us / frame_count / 1000.0f));
+    printfln_out("Avg frame time (ms): %.3f", total_elapsed_us > 0 && frame_count > 0 ? total_elapsed_us / frame_count / 1000.0f : 0);
+    printfln_out("Avg refresh rate (hz): %.3f", total_elapsed_us > 0 && frame_count > 0 ? 1000.0f / (total_elapsed_us / frame_count / 1000.0f) : 0);
 
     ID3DXFont_Release(font);
     IDirect3DDevice9_Release(device);
