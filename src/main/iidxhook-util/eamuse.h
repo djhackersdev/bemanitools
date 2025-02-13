@@ -5,7 +5,7 @@
 
 /**
  * Hook various calls resolving the service address to connect to
- * the eamuse server for the old IIDX games (9th to Sirius)
+ * the eamuse server for the old IIDX games (9th to DistorteD)
  */
 void eamuse_hook_init(void);
 

@@ -20,5 +20,5 @@ src_util        := \
     str.c \
     thread.c \
     time.c \
+    winerr.c \
     winres.c \
-
