@@ -1055,8 +1055,9 @@ static void _print_synopsis()
     printfln_err("    config-get [display_id]       Get the current display configurations. Optionally, specify a display ID to get the configuration of that display only");
     printfln_err("    custom-resolution-set <display_id> <screen_width> <screen_height> <screen_refresh_rate>");
     printfln_err("                                  Set a custom display mode with the given parameters for the given display ID. The settings are persisted immediately. Ensure you tested these before with the custom-display-test command.");
-    printfln_err("    custom-resolution-test <display_id> <screen_width> <screen_height> <screen_refresh_rate> <test_seconds>");
+    printfln_err("    custom-resolution-test <display_id> <screen_width> <screen_height> <screen_refresh_rate> [--test-timeout-secs n]");
     printfln_err("                                  Test a custom display mode for a limited amount of time. This will revert the display mode after the given amount of seconds and not persist the changes.");
+    printfln_err("                                  test-timeout-secs: Optional. Number of seconds to test the custom display mode for. Default is 10 seconds.");
 }
 
 static bool _cmd_nv_info(const nv_api_t *nv_api)
@@ -1220,11 +1221,24 @@ static bool _cmd_custom_resolution_test(const nv_api_t *nv_api, int argc, char *
     screen_width = atoi(argv[1]);
     screen_height = atoi(argv[2]);
     screen_refresh_rate = atof(argv[3]);
-    test_only_timeout_sec = atoi(argv[4]);
 
-    if (test_only_timeout_sec == 0) {
-        printfln_err("ERROR: Time out parameter must be greater than 0");
-        return false;
+    // Sane defaults for optional parameters
+    test_only_timeout_sec = 10;
+
+    for (int i = 4; i < argc; i++) {
+        if (!strcmp(argv[i], "--test-timeout-secs")) {
+            if (i + 1 < argc) {
+                test_only_timeout_sec = atoi(argv[++i]);
+
+                if (test_only_timeout_sec == 0) {
+                    printfln_err("ERROR: Time out parameter must be greater than 0");
+                    return false;
+                }
+            } else {
+                printfln_err("ERROR: Missing argument for --test-timeout-secs");
+                return false;
+            }
+        }
     }
 
     printf_err("Testing custom resolution for display ID %u: %dx%d@%f, timeout %d seconds\n", display_id, screen_width, screen_height, screen_refresh_rate, test_only_timeout_sec);

@@ -40,7 +40,7 @@ micro stuttering.
   first
   * For example, for IIDX 31 which runs in native 1920x1080 with a monitor also having that as its native resolution,
     having the monitor id `0x12345678` and the monitor check yielding a value of ~`59.9345`, run 
-    `nvgpu display custom-resolution-test 1920 1080 59.9345 10`
+    `nvgpu display custom-resolution-test 1920 1080 59.9345`
   * Observe if the test is successful and the display doesn't turn blank or displays a glitched image for ~10 seconds
 * Run `nvgpu display custom-resolution-set` with the previously tested settings to apply the custom display mode
   * For example, `nvgpu display custom-resolution-set 0x12345678 1920 1080 59.9345`
@@ -72,7 +72,7 @@ micro stuttering.
   first
   * For example, for IIDX 31 which runs in native 1920x1080 with a monitor also having that as its native resolution,
     having the monitor id `0x12345678` and the monitor check yielding a value of ~`59.9345`, run 
-    `nvgpu display custom-resolution-test 1920 1080 59.9345 10`
+    `nvgpu display custom-resolution-test 1920 1080 59.9345`
   * Observe if the test is successful and the display doesn't turn blank or displays a glitched image for ~10 seconds
 * Run `nvgpu display custom-resolution-set` with the previously tested settings to apply the custom display mode
   * For example, `nvgpu display custom-resolution-set 0x12345678 1920 1080 59.9345`
