@@ -8,4 +8,5 @@ libs_camhook := \
 
 src_camhook := \
     cam.c \
+    cam-detect.c \
     config-cam.c \
