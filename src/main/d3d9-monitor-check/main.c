@@ -40,12 +40,13 @@ static void _print_synopsis()
     printfln_err("Available commands:");
     printfln_err("  adapter: Query adapter information");
     printfln_err("  modes: Query adapter modes");
-    printfln_err("  run <width> <height> <refresh_rate> [--warm-up-secs n] [--total-secs n] [--windowed] [--vsync-off]: Run the monitor check. Ensure that the mandatory parameters for width, height and refresh rate are values that are supported by the adapter's mode. Use the \"modes\" subcommand to get a list of supported modes.");
+    printfln_err("  run <width> <height> <refresh_rate> [--warm-up-secs n] [--total-secs n] [--results-timeout-secs n] [--windowed] [--vsync-off]: Run the monitor check. Ensure that the mandatory parameters for width, height and refresh rate are values that are supported by the adapter's mode. Use the \"modes\" subcommand to get a list of supported modes.");
     printfln_err("    width: Width of the rendering resolution to run the test at");
     printfln_err("    height: Height of the rendering resolution to run the test at");
     printfln_err("    refresh_rate: Target refresh rate to run the test at");
     printfln_err("    warm-up-secs: Optional. Number of seconds to warm-up before executing the main run that counts towards the measurement results");
     printfln_err("    total-secs: Optional. Total number of seconds to run the test for that count towards the measurement results");
+    printfln_err("    results-timeout-secs: Optional. Number of seconds to display final result after the test before exiting");
     printfln_err("    windowed: Optional. Run the test in windowed mode (not recommended)");
     printfln_err("    vsync-off: Optional. Run the test with vsync off (not recommended)");
 }
@@ -318,7 +319,8 @@ static bool _modes()
     return true;
 }
 
-static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_t total_warm_up_frame_count, uint32_t total_frame_count, bool windowed, bool vsync_off)
+static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_t total_warm_up_frame_count,
+        uint32_t total_frame_count, uint32_t results_timeout_seconds, bool windowed, bool vsync_off)
 {
     HWND hwnd;
     IDirect3D9 *d3d;
@@ -557,7 +559,8 @@ static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 10, 
         "Avg refresh rate: %.3f Hz", total_elapsed_us > 0 && frame_count > 0 ? 1000.0f / (total_elapsed_us / frame_count / 1000.0f) : 0);
 
-    _draw_text(device, font, font_height, text_offset_x, text_offset_y * 12, "Exiting in 5 seconds ...");
+    _draw_text(device, font, font_height, text_offset_x, text_offset_y * 12, "Exiting in %d seconds ...",
+        results_timeout_seconds);
     _draw_text(device, font, font_height, text_offset_x, text_offset_y * 13, "Press ESC to exit immediately");
 
     IDirect3DDevice9_EndScene(device);
@@ -565,7 +568,7 @@ static bool _run(uint32_t width, uint32_t height, uint32_t refresh_rate, uint32_
 
     exit_loop = false;
 
-    for (uint32_t i = 0; i < 5000 / 10; i++) {
+    for (uint32_t i = 0; i < results_timeout_seconds * 1000 / 10; i++) {
         // Required to not make windows think we are stuck and not responding
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
@@ -629,6 +632,7 @@ static bool _cmd_run(int argc, char **argv)
     uint32_t refresh_rate;
     uint32_t warm_up_seconds;
     uint32_t total_seconds;
+    uint32_t results_timeout_seconds;
     bool windowed;
     bool vsync_off;
 
@@ -668,6 +672,7 @@ static bool _cmd_run(int argc, char **argv)
     // Sane defaults
     warm_up_seconds = 10;
     total_seconds = 20;
+    results_timeout_seconds = 5;
     windowed = false;
     vsync_off = false;
 
@@ -700,6 +705,13 @@ static bool _cmd_run(int argc, char **argv)
                 printfln_err("ERROR: Missing argument for --total-secs");
                 return false;
             }
+        } else if (!strcmp(argv[i], "--results-timeout-secs")) {
+            if (i + 1 < argc) {
+                results_timeout_seconds = atoi(argv[++i]);
+            } else {
+                _print_synopsis();
+                printfln_err("ERROR: Missing argument for --results-timeout-secs");
+            }
         } else if (!strcmp(argv[i], "--windowed")) {
             windowed = true;
         } else if (!strcmp(argv[i], "--vsync-off")) {
@@ -710,7 +722,7 @@ static bool _cmd_run(int argc, char **argv)
     total_warm_up_frame_count = warm_up_seconds * refresh_rate;
     total_frame_count = total_seconds * refresh_rate;
 
-    return _run(width, height, refresh_rate, total_warm_up_frame_count, total_frame_count, windowed, vsync_off);
+    return _run(width, height, refresh_rate, total_warm_up_frame_count, total_frame_count, results_timeout_seconds, windowed, vsync_off);
 }
 
 int main(int argc, char **argv)
