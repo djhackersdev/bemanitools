@@ -106,7 +106,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook_config_gfx_init(config);
     iidxhook8_config_io_init(config);
-    camhook_config_cam_init(config, 2);
+    camhook_config_cam_init(config, 2, false);
 
     if (!cconfig_hook_config_init(
             config,
@@ -119,7 +119,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     iidxhook_config_gfx_get(&config_gfx, config);
     iidxhook8_config_io_get(&iidxhook8_config_io, config);
-    camhook_config_cam_get(&config_cam, config, 2);
+    camhook_config_cam_get(&config_cam, config, 2, false);
 
     cconfig_finit(config);
 

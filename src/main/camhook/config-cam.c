@@ -7,6 +7,9 @@
 #define CAMHOOK_CONFIG_CAM_DISABLE_EMU_KEY "cam.disable_emu"
 #define CAMHOOK_CONFIG_CAM_DEFAULT_DISABLE_EMU_VALUE false
 
+#define CAMHOOK_CONFIG_CAM_PORT_LAYOUT_KEY "cam.port_layout"
+#define CAMHOOK_CONFIG_CAM_DEFAULT_PORT_LAYOUT_VALUE 0
+
 // the following four arrays are based on CAMHOOK_CONFIG_CAM_MAX
 // please insert more elements if more cams are added
 const char *camhook_config_disable_camera[CAMHOOK_CONFIG_CAM_MAX] = {
@@ -30,13 +33,21 @@ const char *camhook_config_device_default_values[CAMHOOK_CONFIG_CAM_MAX] = {
     "",
 };
 
-void camhook_config_cam_init(struct cconfig *config, size_t num_cams)
+void camhook_config_cam_init(struct cconfig *config, size_t num_cams, bool use_port_layout)
 {
     cconfig_util_set_bool(
         config,
         CAMHOOK_CONFIG_CAM_DISABLE_EMU_KEY,
         CAMHOOK_CONFIG_CAM_DEFAULT_DISABLE_EMU_VALUE,
         "Disables the camera emulation");
+
+    if (use_port_layout) {
+        cconfig_util_set_int(
+            config,
+            CAMHOOK_CONFIG_CAM_PORT_LAYOUT_KEY,
+            CAMHOOK_CONFIG_CAM_DEFAULT_PORT_LAYOUT_VALUE,
+            "Camera port layout (0 = LDJ, 1 = CLDJ/TDJ-JA, 2 = TDJ-JB)");
+    }
 
     for (size_t i = 0; i < num_cams; ++i) {
         cconfig_util_set_bool(
@@ -56,7 +67,8 @@ void camhook_config_cam_init(struct cconfig *config, size_t num_cams)
 void camhook_config_cam_get(
     struct camhook_config_cam *config_cam,
     struct cconfig *config,
-    size_t num_cams)
+    size_t num_cams,
+    bool use_port_layout)
 {
     config_cam->num_devices = num_cams;
 
@@ -71,6 +83,21 @@ void camhook_config_cam_get(
             CAMHOOK_CONFIG_CAM_DISABLE_EMU_KEY,
             CAMHOOK_CONFIG_CAM_DEFAULT_DISABLE_EMU_VALUE);
     }
+
+    if (use_port_layout) {
+        if (!cconfig_util_get_int(
+                config,
+                CAMHOOK_CONFIG_CAM_PORT_LAYOUT_KEY,
+                &config_cam->port_layout,
+                CAMHOOK_CONFIG_CAM_DEFAULT_PORT_LAYOUT_VALUE)) {
+            log_warning(
+                "Invalid value for key '%s' specified, fallback "
+                "to default '%d'",
+                CAMHOOK_CONFIG_CAM_PORT_LAYOUT_KEY,
+                CAMHOOK_CONFIG_CAM_DEFAULT_PORT_LAYOUT_VALUE);
+        }
+    }
+
     for (size_t i = 0; i < num_cams; ++i) {
         if (!cconfig_util_get_bool(
                 config,
