@@ -174,7 +174,9 @@ static bool _display_config_get(const nv_api_t *nv_api, displayconfig_path_info_
     assert(nv_api);
     assert(displayconfig_path_info);
 
-    status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count , NULL);
+    displayconfig_path_info->path_info_count = 0;
+
+    status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count, NULL);
 
     if (status != NVAPI_OK) {
         PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Getting display config path info count");
