@@ -6,6 +6,7 @@ The following games are compatible with this version of iidxhook:
 - BISTROVER
 - CASTHOUR
 - RESIDENT
+- EPOLIS
 
 The games must be bootstrapped using [launcher](../launcher.md).
 
@@ -57,7 +58,7 @@ unpacked data looks like this:
   - Unpack the package containing iidxhook9 into the root folder so iidxhook9.dll and all other
     files are located in the same folder as *data*, *prop*, *bm2dx.dll*, etc.
 
-- For version 30
+- For version 30-31
 
   - Unpack the package containing iidxhook9 into the `modules` folder so iidxhook9.dll and all other
     files are located in the same folder as the game's DLLs, e.g. *bm2dx.dll*, etc.
@@ -92,6 +93,12 @@ The syntax for the "key=value" is the same as in the config file. Make sure to h
 
 However, if a parameter is specifed in the configuration file and as a command line argument, the
 command line argument overrides the config file's value.
+
+# Note on camhook
+
+The cammera hook (camhook) is used to allow other class compliant cameras to be used. Depending on the variant of the game, you will need to select the correct camera port layout.
+
+For original LDJ, this is always 0, for conversion kit LDJ and original TDJ-JA, this is 1, and for TDJ-JB this will be 2 (this case is rare / you will know if this is needed on your setup).
 
 # Eamuse network setup
 
