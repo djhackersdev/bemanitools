@@ -18,12 +18,10 @@
 
 /* ------------------------------------------------------------------------- */
 
-static unsigned long STDCALL my_inet_addr(const char *cp);
 static int STDCALL
 my_connect(SOCKET s, const struct sockaddr *addr, int addrlen);
 static struct hostent FAR *STDCALL my_gethostbyname(const char *nameB);
 
-static unsigned long(STDCALL *real_inet_addr)(const char *cp);
 static int(STDCALL *real_connect)(
     SOCKET s, const struct sockaddr *addr, int addrlen);
 static struct hostent FAR *(STDCALL *real_gethostbyname)(const char *nameB);
@@ -33,10 +31,6 @@ static const struct hook_symbol eamuse_hook_syms[] = {
     /*  WS2_32.DLL's SDK import lib generates ordinal imports, so these
        ordinals are a frozen aspect of the Win32 ABI. */
 
-    {.name = "inet_addr",
-     .ordinal = 11,
-     .patch = my_inet_addr,
-     .link = (void **) &real_inet_addr},
     {.name = "connect",
      .ordinal = 4,
      .patch = my_connect,
@@ -53,26 +47,6 @@ static struct net_addr eamuse_server_addr;
 static struct net_addr eamuse_server_addr_resolved;
 
 /* ------------------------------------------------------------------------- */
-
-static unsigned long STDCALL my_inet_addr(const char *cp)
-{
-    char *tmp;
-
-    /* for a stock machine connected to the eamuse router,
-       the game wants to connect to the standard domain
-       services.konami.eamuse.fun
-       depending on the router you got, it will be services.hostname.my.router
-       so we catch that and turn it into any ip we want */
-
-    /* bugfix win10: don't just catch services.konami... because
-       win10 is doing some weird stuff and this call also contains
-       various IP addresses. Always return the server address */
-    tmp = net_addr_to_str(&eamuse_server_addr_resolved);
-    log_misc("my_inet_addr: '%s' -> %s", cp, tmp);
-    free(tmp);
-
-    return eamuse_server_addr_resolved.ipv4.addr;
-}
 
 static int STDCALL
 my_connect(SOCKET s, const struct sockaddr *addr, int addrlen)
@@ -102,14 +76,13 @@ my_connect(SOCKET s, const struct sockaddr *addr, int addrlen)
 
 static struct hostent FAR *STDCALL my_gethostbyname(const char *name)
 {
+    // IIDX 9-13 use the `services` domain (not `services.eamuse.konami.fun`).
+    if (strcmp(name, "services") != 0) {
+        return real_gethostbyname(name);
+    }
+
     char *tmp;
 
-    /* for doc, checkout the other detour of inetaddr above
-       this call is used starting GOLD (not used on pre GOLD) */
-
-    /* bugfix win10: don't just catch services.konami... because
-       win10 is doing some weird stuff and this call also contains
-       various IP addresses. Always return the server address */
     tmp = net_addr_to_str(&eamuse_server_addr_resolved);
     log_misc("my_gethostbyname: '%s' to ip %s", name, tmp);
     free(tmp);
