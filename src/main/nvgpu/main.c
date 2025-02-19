@@ -174,8 +174,6 @@ static bool _display_config_get(const nv_api_t *nv_api, displayconfig_path_info_
     assert(nv_api);
     assert(displayconfig_path_info);
 
-    // TODO we need a total of three calls to GetDisplayConfig: https://github.com/NVIDIA/nvapi/blob/d08488fcc82eef313b0464db37d2955709691e94/Sample_Code/DisplayConfiguration/DisplayConfiguration.cpp#L68
-
     status = nv_api->NvAPI_DISP_GetDisplayConfig(&displayconfig_path_info->path_info_count , NULL);
 
     if (status != NVAPI_OK) {
