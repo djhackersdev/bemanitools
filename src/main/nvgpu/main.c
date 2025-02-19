@@ -333,7 +333,7 @@ static bool _nv_info(const nv_api_t *nv_api)
     return true;
 }
 
-static bool _profile_create(const nv_api_t *nv_api, const char *profile_name)
+static bool _profile_create(const nv_api_t *nv_api, const char *profile_name, bool overwrite_exists)
 {
     NvDRSSessionHandle session;
     NVDRS_PROFILE profile;
@@ -357,6 +357,26 @@ static bool _profile_create(const nv_api_t *nv_api, const char *profile_name)
     printfln_err("Creating profile %s...", profile_name);
 
     status = nv_api->NvAPI_DRS_CreateProfile(session, &profile, &profile_handle);
+
+    if (status == NVAPI_PROFILE_NAME_IN_USE && overwrite_exists) {
+        printfln_err("Profile %s already exists, enabled overwrite existing...", profile_name);
+
+        if (!_profile_get(nv_api, profile_name, session, &profile_handle)) {
+            _session_destroy(nv_api, session);
+
+            return false;
+        }
+
+        status = nv_api->NvAPI_DRS_DeleteProfile(session, profile_handle);
+        
+        if (status != NVAPI_OK) {
+            PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Deleting existing profile");
+            return false;
+        }
+
+        // Retry
+        status = nv_api->NvAPI_DRS_CreateProfile(session, &profile, &profile_handle);
+    }
 
     if (status != NVAPI_OK) {
         PRINT_ERR_WITH_NVAPI_MESSAGE(status, "ERROR: Creating driver profile");
@@ -1267,7 +1287,8 @@ static void _print_synopsis()
     printfln_err("    info                            Print information about the NVAPI module and driver");
     printfln_err("");
     printfln_err("  profile");
-    printfln_err("    create <profile_name>         Create a new driver profile with the given name");
+    printfln_err("    create <profile_name> [--overwrite-exists]");  
+    printfln_err("                                  Create a new driver profile with the given name. If the profile already exists, the --overwrite-exists flag can be used to overwrite the existing profile.");
     printfln_err("    delete <profile_name>         Delete an existing driver profile");
     printfln_err("    application-add <profile_name> <application_name>");
     printfln_err("                                  Add an application to the driver profile. This will apply the profile to the application when the driver detects a process being launched, e.g. MyApplication.exe");
@@ -1294,6 +1315,7 @@ static bool _cmd_nv_info(const nv_api_t *nv_api)
 static bool _cmd_profile_create(const nv_api_t *nv_api, int argc, char **argv)
 {
     const char *profile_name;
+    bool overwrite_exists;
 
     if (argc < 1) {
         _print_synopsis();
@@ -1303,7 +1325,15 @@ static bool _cmd_profile_create(const nv_api_t *nv_api, int argc, char **argv)
 
     profile_name = argv[0];
 
-    return _profile_create(nv_api, profile_name);
+    overwrite_exists = false;
+
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--overwrite-exists")) {
+            overwrite_exists = true;
+        }
+    }
+
+    return _profile_create(nv_api, profile_name, overwrite_exists);
 }
 
 static bool _cmd_profile_delete(const nv_api_t *nv_api, int argc, char **argv)
