@@ -666,7 +666,9 @@ static bool _display_config_print(const nv_api_t *nv_api, NvU32 display_id)
 
     assert(nv_api);
 
-    _display_config_get(nv_api, &displayconfig_path_info);
+    if (!_display_config_get(nv_api, &displayconfig_path_info)) {
+        return false;
+    }
 
     if (display_id != 0) {
         printfln_err("Applying display ID filter: %lX", display_id);
