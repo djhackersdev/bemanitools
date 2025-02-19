@@ -10,4 +10,13 @@ libs_d3d9-monitor-check     := \
     util \
 
 src_d3d9-monitor-check      := \
+    cmdline.c \
+    font.c \
+    gfx.c \
+    input.c \
+    interactive.c \
     main.c \
+    menu.c \
+    refresh-rate-test.c \
+    response-time-test.c \
+    vsync-test.c
