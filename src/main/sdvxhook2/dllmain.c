@@ -79,7 +79,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     sdvxhook2_config_io_init(config);
     d3d9exhook_config_gfx_init(config);
-    camhook_config_cam_init(config, 1);
+    camhook_config_cam_init(config, 1, false);
     hooklib_config_adapter_init(config);
 
     if (!cconfig_hook_config_init(
@@ -91,7 +91,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     sdvxhook2_config_io_get(&config_io, config);
-    camhook_config_cam_get(&config_cam, config, 1);
+    camhook_config_cam_get(&config_cam, config, 1, false);
     d3d9exhook_config_gfx_get(&config_gfx, config);
     hooklib_config_adapter_get(&config_adapter, config);
 

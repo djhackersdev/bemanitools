@@ -1287,7 +1287,8 @@ static void _print_synopsis()
     printfln_err("    info                            Print information about the NVAPI module and driver");
     printfln_err("");
     printfln_err("  profile");
-    printfln_err("    create <profile_name>         Create a new driver profile with the given name");
+    printfln_err("    create <profile_name> [--overwrite-exists]");  
+    printfln_err("                                  Create a new driver profile with the given name. If the profile already exists, the --overwrite-exists flag can be used to overwrite the existing profile.");
     printfln_err("    delete <profile_name>         Delete an existing driver profile");
     printfln_err("    application-add <profile_name> <application_name>");
     printfln_err("                                  Add an application to the driver profile. This will apply the profile to the application when the driver detects a process being launched, e.g. MyApplication.exe");
