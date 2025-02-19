@@ -13,8 +13,10 @@ BUILDDIR        ?= build
 
 builddir_docker 	  := $(BUILDDIR)/docker
 
-docker_container_name := "bemanitools-build"
-docker_image_name     := "bemanitools-build:latest"
+docker_build_container_name := "bemanitools-build"
+docker_build_image_name     := "bemanitools-build:latest"
+docker_dev_container_name := "bemanitools-dev"
+docker_dev_image_name     := "bemanitools-dev:latest"
 
 depdir                := $(BUILDDIR)/dep
 objdir                := $(BUILDDIR)/obj
@@ -28,7 +30,7 @@ cppflags              := -I src -I src/main -I src/test -DGITREV=$(gitrev)
 cflags                := -O2 -pipe -ffunction-sections -fdata-sections \
                           -Wall -std=c99 -DPSAPI_VERSION=1
 cflags_release        := -Werror
-ldflags		          := -Wl,--gc-sections -static-libgcc
+ldflags		          := -Wl,--gc-sections -static -static-libgcc -static-libstdc++
 
 #
 # The first target that GNU Make encounters becomes the default target.
@@ -41,6 +43,7 @@ FORCE:
 
 .PHONY: \
 build-docker \
+dev-docker \
 clean \
 code-format \
 doc-format \
@@ -89,21 +92,38 @@ version:
 	$(V)echo "$(gitrev)" > version
 
 build-docker:
-	$(V)docker rm -f $(docker_container_name) 2> /dev/null || true
+	$(V)docker rm -f $(docker_build_container_name) 2> /dev/null || true
 	$(V)docker \
 		build \
-		-t $(docker_image_name) \
-		-f Dockerfile \
+		-t $(docker_build_image_name) \
+		-f Dockerfile.build \
 		.
 	$(V)docker \
 		run \
 		--volume $(shell pwd):/bemanitools \
-		--name $(docker_container_name) \
-		$(docker_image_name)
+		--name $(docker_build_container_name) \
+		$(docker_build_image_name)
+
+dev-docker:
+	$(V)docker rm -f $(docker_dev_container_name) 2> /dev/null || true
+	$(V)docker \
+		build \
+		-t $(docker_dev_image_name) \
+		-f Dockerfile.dev \
+		.
+	$(V)docker \
+		run \
+		--interactive \
+		--tty \
+		--volume $(shell pwd):/bemanitools \
+		--name $(docker_dev_container_name) \
+		$(docker_dev_image_name)
 
 clean-docker:
-	$(V)docker rm -f $(docker_container_name) || true
-	$(V)docker image rm -f $(docker_image_name) || true
+	$(V)docker rm -f $(docker_dev_container_name) || true
+	$(V)docker image rm -f $(docker_dev_image_name) || true
+	$(V)docker rm -f $(docker_build_container_name) || true
+	$(V)docker image rm -f $(docker_build_image_name) || true
 	$(V)rm -rf $(BUILDDIR)
 
 #
@@ -136,8 +156,10 @@ modules		:= $(dlls) $(exes) $(libs) $(avsdlls) $(avsexes) $(testdlls) $(testexes
 define t_moddefs
 
 cppflags_$3	+= $(cppflags) -DBUILD_MODULE=$3
+cxxflags_$3	+= $(cxxflags)  # Add C++-specific flags
 cflags_$3	+= $(cflags)
 release: cflags_$3	+= $(cflags_release)
+release: cxxflags_$3	+= $(cxxflags_release)  # Add C++-specific release flags
 ldflags_$3	+= $(ldflags)
 srcdir_$3	?= src/main/$3
 
@@ -192,9 +214,11 @@ abslib_$1_$2_$3	:= $$(libs_$3:%=$$(bindir_$1_indep)/lib%.a)
 absdpl_$1_$2_$3	:= $$(deplibs_$3:%=$$(bindir_$1_$2)/lib%.a)
 objdir_$1_$2_$3	:= $(objdir)/$$(subdir_$1_$2)/$3
 obj_$1_$2_$3	:=	$$(src_$3:%.c=$$(objdir_$1_$2_$3)/%.o) \
+			$$(cppsrc_$3:%.cpp=$$(objdir_$1_$2_$3)/%.o) \
 			$$(rc_$3:%.rc=$$(objdir_$1_$2_$3)/%_rc.o)
 
-deps		+= $$(src_$3:%.c=$$(depdir_$1_$2_$3)/%.d)
+deps		+= $$(src_$3:%.c=$$(depdir_$1_$2_$3)/%.d) \
+		   $$(cppsrc_$3:%.cpp=$$(depdir_$1_$2_$3)/%.d)
 
 $$(depdir_$1_$2_$3):
 	$(V)mkdir -p $$@
@@ -203,16 +227,24 @@ $$(objdir_$1_$2_$3):
 	$(V)mkdir -p $$@
 
 $$(volatile_$3:%.c=$$(objdir_$1_$2_$3)/%.o): FORCE
+$$(volatile_cpp_$3:%.cpp=$$(objdir_$1_$2_$3)/%.o): FORCE
 
 $$(objdir_$1_$2_$3)/%.o: $$(srcdir_$3)/%.c \
 		| $$(depdir_$1_$2_$3) $$(objdir_$1_$2_$3)
-	$(V)echo ... $$@
+	$(V)echo \(.c\) ... $$@
 	$(V)$$(toolchain_$1)gcc $$(cflags_$3) $$(cppflags_$3) \
 		-MMD -MF $$(depdir_$1_$2_$3)/$$*.d -MT $$@ -MP \
 		-DAVS_VERSION=$2 -c -o $$@ $$<
 
+$$(objdir_$1_$2_$3)/%.o: $$(srcdir_$3)/%.cpp \
+		| $$(depdir_$1_$2_$3) $$(objdir_$1_$2_$3)
+	$(V)echo \(.cpp\) ... $$@
+	$(V)$$(toolchain_$1)g++ $$(cxxflags_$3) $$(cppflags_$3) \
+		-MMD -MF $$(depdir_$1_$2_$3)/$$*.d -MT $$@ -MP \
+		-DAVS_VERSION=$2 -c -o $$@ $$<
+
 $$(objdir_$1_$2_$3)/%_rc.o: $$(srcdir_$3)/%.rc
-	$(V)echo ... $$@ [windres]
+	$(V)echo \(.rc\) ... $$@ [windres]
 	$(V)$$(toolchain_$1)windres $$(cppflags_$3) $$< $$@
 
 endef
@@ -224,7 +256,7 @@ define t_archive
 $(t_compile)
 
 $$(bindir_$1_$2)/lib$3.a: $$(obj_$1_$2_$3) | $$(bindir_$1_$2)
-	$(V)echo ... $$@
+	$(V)echo \(.a\) ... $$@
 	$(V)$$(toolchain_$1)ar r $$@ $$^ 2> /dev/null
 	$(V)$$(toolchain_$1)ranlib $$@
 
@@ -242,8 +274,8 @@ implib_$1_$2_$3	:= $$(bindir_$1_$2)/lib$3.a
 $$(dll_$1_$2_$3) $$(implib_$1_$2_$3):	$$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) \
 					$$(absdpl_$1_$2_$3) \
 					$$(srcdir_$3)/$3.def | $$(bindir_$1_$2)
-	$(V)echo ... $$(dll_$1_$2_$3)
-	$(V)$$(toolchain_$1)gcc -shared \
+	$(V)echo \(.dll\) ... $$(dll_$1_$2_$3)
+	$(V)$$(toolchain_$1)g++ -shared \
 		-o $$(dll_$1_$2_$3) -Wl,--out-implib,$$(implib_$1_$2_$3) \
 		-Wl,--start-group $$^ -Wl,--end-group $$(ldflags_$3)
 	$(V)$$(toolchain_$1)strip $$(dll_$1_$2_$3)
@@ -261,8 +293,8 @@ exe_$1_$2_$3	:= $$(bindir_$1_$2)/$3.exe
 
 $$(exe_$1_$2_$3): $$(obj_$1_$2_$3) $$(abslib_$1_$2_$3) $$(absdpl_$1_$2_$3) \
 		| $$(bindir_$1_$2)
-	$(V)echo ... $$@
-	$(V)$$(toolchain_$1)gcc -o $$@ $$^ $$(ldflags_$3)
+	$(V)echo \(.exe\) ... $$@
+	$(V)$$(toolchain_$1)g++ -o $$@ $$^ $$(ldflags_$3)
 	$(V)$$(toolchain_$1)strip $$@
 
 endef
@@ -274,7 +306,7 @@ define t_import
 impdef_$1_$2_$3	?= src/imports/import_$1_$2_$3.def
 
 $$(bindir_$1_$2)/lib$3.a: $$(impdef_$1_$2_$3) | $$(bindir_$1_$2)
-	$(V)echo ... $$@ [dlltool]
+	$(V)echo \(.a\) ... $$@ [dlltool]
 	$(V)$$(toolchain_$1)dlltool --kill-at -l $$@ -d $$<
 
 endef
