@@ -143,16 +143,7 @@ This can be related to various issues:
 start "" /relatime "gamestart.bat"
 ```
 
-- Enforce v-sync enabled in your GPU settings.
-- Ensure that you have a constant refresh rate around the 60 hz (59.9xx or 60.0xx) that is not
-  jumping around. Use the timebase feature of one of the newer games to check that or enable
-  iidxhook's timebase and check the log output for the determined value. Run this a few times and
-  check if the results differ.
-- Use iidxhook's frame rate limiter feature (see further below) to software lock the refresh rate.
-  This might be necessary on Windows 7 and newer for D3D8 games, e.g. iidx 9 to 12, which seem to
-  ignore GPU side v-sync.
-- Use iidxhook's auto timebase feature (see further below) or set a pre-determined value to cut down
-  start-up times.
+Also refer to the [iidx-syncbook](iidx-syncbook.md).
 
 ## "NETWORK WARNING" instead of "NETWORK OK"
 
@@ -165,15 +156,7 @@ This can be caused by:
 
 ## My songs are offsync
 
-The built-in monitor check just determines if the game should sync to either 59.94 hz (S-Video
-setting) or 60.04 hz (VGA setting). If you don't have a setup that runs on (as close as possible)
-these values:
-
-- Make sure your machine's refresh rate is stable, e.g. 60.00x hz.
-- If you don't get a close to 59.94hz (S-Video setting) or 60.04 hz (VGA setting) refresh rate, go
-  an set the output mode in the operator menu to "VGA" to enforce the game to run chart syncing on
-  60.04 hz refresh rate (even if your setup does not have that value). Next, use the software
-  monitor check/auto timebase that's built into iidxhook (refer to cmd help/configfile).
+Refer to the [iidx-syncbook](iidx-syncbook.md).
 
 ## My game runs too fast
 
@@ -210,6 +193,8 @@ despite having the codec (CLVSD.ax) installed, remove the debug flag (*-D*) from
 CLVSD.ax codec which has the debugger checks removed.
 
 ## I used the auto timebase option and/or limited my refresh rate but the songs are still going offsync
+
+Refer to the [iidx-syncbook](iidx-syncbook.md) if you haven't already.
 
 There aren't many options left. The old games were developed for specific hardware and are not
 guaranteed to work well on (especially) newer hardware. Multiple monitor setups can also have a bad

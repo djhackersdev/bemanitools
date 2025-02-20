@@ -159,11 +159,7 @@ This can be related to various issues:
 start "" /relatime "gamestart.bat"
 ```
 
-- Enforce v-sync enabled in your GPU settings.
-- Ensure that you have a constant refresh rate around the 60 hz (59.9xx or 60.0xx) that is not
-  jumping around. Use the timebase feature of one of the newer games to check that or enable
-  iidxhook's timebase and check the log output for the determined value. Run this a few times and
-  check if the results differ.
+Also refer to the [iidx-syncbook](iidx-syncbook.md).
 
 ## "NETWORK WARNING" instead of "NETWORK OK"
 
@@ -176,11 +172,7 @@ This can be caused by:
 
 ## My songs are offsync
 
-From IIDX 20 (or Lincle very final revision) onwards, the game comes with a built-in auto timebase
-option ("monitor check" on startup) which dynamically, detects the refresh rate of your current
-setup. Thus, BT5's timebase option is not included from this hook version onwards, anymore. Ensure
-that refresh rate displayed is very stable, e.g. 60.00x hz, and the game should be able to provide
-you with a smooth and sync game experience.
+Refer to the [iidx-syncbook](iidx-syncbook.md).
 
 ## My game runs too fast
 
