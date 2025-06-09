@@ -7,7 +7,26 @@ given in tags. The pipeline will pick this up and cuts out the relevant section 
 
 ### Features
 
+- Major overhaul of [IIDX sync and performance settings](doc/iidxhook/iidx-syncbook.md)
+  documentation. Supports users in configuring their systems to run any IIDX version with proper
+  display timings, smooth frame rates and sync game-play
+- Add `iidxio-async.dll` wrapper/shim library to drive another iidxio in a dedicated IO thread, see
+  [documentation](doc/iidxhook/iidxio-async.md) for details 
+- Add `nvgpu` tool to configure NVIDIA GPUs and create a custom timing profile, see
+  [documentation](doc/tools/nvgpu.md) for details
+- Add `d3d9-frame-graph-hook.dll` that can be added as a hook to
+  either `launcher.exe` or `inject.exe` to display a graph of the frame times of the game's render
+  for debugging and performance analysis
+- feat: Add `d3d9-monitor-check` tool to run different music game relevant monitor tests including
+  a re-implementation of the infamous IIDX “monitor check” as a separate tool for testing and
+  debugging. See [documentation](doc/tools/d3d9-monitor-check.md) for details
+
 ### Fixes
+
+- iidxhook9: Work around reverb issue from Windows 26100.3476
+- iidxhook9: fix camhook for new style camera detection
+  - `cam.port_layout` added to .conf files of iidx 27 to 30
+- In general, a lot of internal cleanup
 
 ## 5.48
 
