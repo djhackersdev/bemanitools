@@ -18,61 +18,8 @@ cannot be measured on application level.
 
 Simply run the tool without any arguments to get a full synopsis of available commands.
 
-## Example usage for modern IIDX
+## Example usage for IIDX
 
-### Custom GPU profile
-
-The following creates a custom profile to address potential performance concerns such as not 100% smooth scrolling and
-micro stuttering.
-
-* Create a custom profile: `nvgpu profile create launcher`
-* Add the launcher application to the profile: `nvgpu profile application-add launcher launcher.exe`
-  * This will apply to any (IIDX) game running with `launcher.exe`
-* Set GPU power state to maximum for the profile: `nvgpu profile gpu-power-state-max launcher`
-
-### Custom timing
-
-* Run the game and observe the monitor check screen (requires IIDX 20+)
-* Take note of the refresh rate of the monitor that is determined by the game
-* Exit the game
-* Run `nvgpu display list` to get the display ID of the monitor you want to change use that ID in the following commands
-* Run `nvgpu display custom-resolution-test` with your display ID and monitor settings to test the custom configuration
-  first
-  * For example, for IIDX 31 which runs in native 1920x1080 with a monitor also having that as its native resolution,
-    having the monitor id `0x12345678` and the monitor check yielding a value of ~`59.9345`, run 
-    `nvgpu display custom-resolution-test 1920 1080 59.9345`
-  * Observe if the test is successful and the display doesn't turn blank or displays a glitched image for ~10 seconds
-* Run `nvgpu display custom-resolution-set` with the previously tested settings to apply the custom display mode
-  * For example, `nvgpu display custom-resolution-set 0x12345678 1920 1080 59.9345`
-
-## Example usage for legacy IIDX
-
-Legacy IIDX concerns any game prior to IIDX 20 that introduced the monitor check screen. The game engine was expecting
-a the display/GPU/driver to perform at specific refresh rate timings in order to provide correct timing and audio
-playback for the game. To this date (i.e. IIDX 31), the game engine never re-syncs audio playback during gameplay.
-Therefore any flaky and incorrect timing will result in audio desynchronization either early on or throughout a song.
-
-### Custom GPU profile
-
-The following creates a custom profile to address potential performance concerns such as not 100% smooth scrolling and
-micro stuttering.
-
-* Create a custom profile: `nvgpu profile create bm2dx`
-* Add the launcher application to the profile: `nvgpu profile application-add bm2dx bm2dx.exe`
-  * This will apply to any (IIDX) game running with an executable named `bm2fx.exe`
-* Set GPU power state to maximum for the profile: `nvgpu profile gpu-power-state-max bm2dx`
-
-### Custom timing
-
-* Use a modern game and it to observe the monitor check screen (requires IIDX 20+)
-* Take note of the refresh rate of the monitor that is determined by the game
-* Exit the game
-* Run `nvgpu display list` to get the display ID of the monitor you want to change use that ID in the following commands
-* Run `nvgpu display custom-resolution-test` with your display ID and monitor settings to test the custom configuration
-  first
-  * For example, for IIDX 31 which runs in native 1920x1080 with a monitor also having that as its native resolution,
-    having the monitor id `0x12345678` and the monitor check yielding a value of ~`59.9345`, run 
-    `nvgpu display custom-resolution-test 1920 1080 59.9345`
-  * Observe if the test is successful and the display doesn't turn blank or displays a glitched image for ~10 seconds
-* Run `nvgpu display custom-resolution-set` with the previously tested settings to apply the custom display mode
-  * For example, `nvgpu display custom-resolution-set 0x12345678 1920 1080 59.9345`
+Refer to the dedicated [iidx-syncbook](../iidxhook/iidx-syncbook.md) documentation for details on
+how to use `nvgpu` to configure your system to run IIDX versions with proper display timings, smooth
+frame rates and sync game-play.
