@@ -27,6 +27,7 @@
 
 #include "iidxhook9/config-io.h"
 #include "iidxhook9/fs-hook.h"
+#include "iidxhook9/reverbfix.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -164,6 +165,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         // redirect F:\ drive to vfs (used for video recording)
         iidxhook9_fs_hooks_init();
     }
+
+    reverbfixhook_init();
 
     rs232_hook_init();
     rs232_hook_limit_hooks();

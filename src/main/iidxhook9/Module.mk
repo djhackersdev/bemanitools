@@ -30,4 +30,5 @@ libs_iidxhook9      := \
 src_iidxhook9       := \
     config-io.c \
     fs-hook.c \
+    reverbfix.c \
     dllmain.c \
