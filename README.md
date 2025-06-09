@@ -1,6 +1,6 @@
 # Bemanitools 5
 
-Version: `5.50`
+Version: `5.49`
 
 [Changelog](CHANGELOG.md)
 
