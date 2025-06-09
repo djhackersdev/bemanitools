@@ -34,6 +34,15 @@ static void *my_avs_fs_mount(const char *dest, const char *src, const char *fs_t
 
         return real_avs_fs_mount(dest, dev_folder_drive, fs_type, options);
     }
+    if (src[0] == 'e' && src[1] == ':' && src[2] == '/' && src[3] == '\0') {
+        const char* dev_folder_drive = "dev/vfs/drive_e/";
+        log_misc("Redirecting %s to %s", src, dev_folder_drive);
+
+        CreateDirectoryA("dev/vfs/", NULL);
+        CreateDirectoryA("dev/vfs/drive_e/", NULL);
+
+        return real_avs_fs_mount(dest, dev_folder_drive, fs_type, options);
+    }
 
     return real_avs_fs_mount(dest, src, fs_type, options);
 }
