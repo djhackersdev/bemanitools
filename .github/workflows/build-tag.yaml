@@ -49,7 +49,7 @@ jobs:
     steps:
       # This already extracts the contents of the artifact
       - name: "Download artifact"
-        uses: "actions/download-artifact@v2"
+        uses: "actions/download-artifact@v4"
         with:
           name: bemanitools-${{ github.sha }}
 
