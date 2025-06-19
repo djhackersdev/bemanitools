@@ -160,6 +160,7 @@ include src/main/iidxio-async/Module.mk
 include src/main/iidxio-bio2/Module.mk
 include src/main/iidxio-ezusb/Module.mk
 include src/main/iidxio-ezusb2/Module.mk
+include src/main/iidxio-lightning/Module.mk
 include src/main/iidxio/Module.mk
 include src/main/iidxiotest/Module.mk
 include src/main/imgui/Module.mk
@@ -195,6 +196,8 @@ include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
 include src/main/sdvxio-bio2/Module.mk
 include src/main/sdvxio-kfca/Module.mk
+include src/main/sdvxio-tbs/Module.mk
+include src/main/sdvxio-valk/Module.mk
 include src/main/sdvxio/Module.mk
 include src/main/security/Module.mk
 include src/main/unicorntail/Module.mk
@@ -490,6 +493,7 @@ $(zipdir)/iidx-hwio-x64.zip: \
 		build/bin/indep-64/iidxio-bio2.dll \
 		build/bin/indep-64/iidxio-ezusb.dll \
 		build/bin/indep-64/iidxio-ezusb2.dll \
+		build/bin/indep-64/iidxio-lightning.dll \
 		dist/iidx/iidxio-bio2.conf \
 		build/bin/indep-64/vigem-iidxio.exe \
 		dist/iidx/vigem-iidxio.conf \
@@ -644,6 +648,8 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/eamio-icca.dll \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
+		build/bin/indep-64/sdvxio-tbs.dll \
+		build/bin/indep-64/sdvxio-valk.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
