@@ -14,6 +14,7 @@
 #include "eamio/eam-config.h"
 #include "eamio/eam-impl.h"
 #include "eamio/eam-s11n.h"
+#include "eamio/eam-scard.h"
 
 #include "util/fs.h"
 #include "util/log.h"
@@ -24,10 +25,17 @@ static void eam_handle_hotplug_msg(WPARAM wparam, const DEV_BROADCAST_HDR *hdr);
 static FILE *eam_io_config_open(const char *mode);
 static void eam_io_config_load(void);
 static void eam_io_config_save(void);
+static bool eam_io_get_scard(void);
+static void eam_io_set_scard(bool scard);
+static bool eam_io_get_mux_keypad(void);
+static void eam_io_set_mux_keypad(bool mux_keypad);
+static bool eam_io_get_mux_scard(void);
+static void eam_io_set_mux_scard(bool mux_scard);
 static bool eam_io_get_autogen(void);
 static void eam_io_set_autogen(bool autogen);
-static bool eam_io_get_alt_10k(void);
-static void eam_io_set_alt_10k(bool alt_10k);
+static bool eam_io_do_keypads_conflict(void);
+static bool eam_io_get_alt_10k(uint8_t unit_no);
+static void eam_io_set_alt_10k(uint8_t unit_no, bool alt_10k);
 static struct hid_stub *eam_io_get_keypad_device(uint8_t unit_no);
 static void eam_io_set_keypad_device(uint8_t unit_no, struct hid_stub *hid);
 static const char *eam_io_get_card_path(uint8_t unit_no);
@@ -46,6 +54,14 @@ static const struct eam_io_config_api eam_io_config_api = {
     .set_keypad_device = eam_io_set_keypad_device,
     .get_card_path = eam_io_get_card_path,
     .set_card_path = eam_io_set_card_path,
+    .get_scard = eam_io_get_scard,
+    .set_scard = eam_io_set_scard,
+    .get_mux_keypad = eam_io_get_mux_keypad,
+    .set_mux_keypad = eam_io_set_mux_keypad,
+    .get_mux_scard = eam_io_get_mux_scard,
+    .set_mux_scard = eam_io_set_mux_scard,
+    .do_keypads_conflict = eam_io_do_keypads_conflict,
+    .get_scard_reader_name = eam_scard_get_reader_name,
 };
 
 void msg_window_setup(HWND hwnd)
@@ -99,7 +115,7 @@ void msg_window_teardown(HWND hwnd)
 
 static FILE *eam_io_config_open(const char *mode)
 {
-    return fopen_appdata("DJHACKERS", "eam_v4_22.bin", mode);
+    return fopen_appdata("DJHACKERS", "eam_v5_49a.bin", mode);
 }
 
 void eam_io_set_loggers(
@@ -161,6 +177,7 @@ void eam_io_fini(void)
     msg_thread_fini();
     eam_impl_destroy(eam_inst);
     input_fini();
+    eam_scard_fini();
 }
 
 const struct eam_io_config_api *eam_io_get_config_api(void)
@@ -182,6 +199,36 @@ static void eam_io_config_save(void)
     fclose(f);
 }
 
+static bool eam_io_get_scard(void)
+{
+    return eam_impl_get_scard(eam_inst);
+}
+
+static void eam_io_set_scard(bool scard)
+{
+    eam_impl_set_scard(eam_inst, scard);
+}
+
+static bool eam_io_get_mux_keypad(void)
+{
+    return eam_impl_get_mux_keypad(eam_inst);
+}
+
+static void eam_io_set_mux_keypad(bool mux_keypad)
+{
+    eam_impl_set_mux_keypad(eam_inst, mux_keypad);
+}
+
+static bool eam_io_get_mux_scard(void)
+{
+    return eam_impl_get_mux_scard(eam_inst);
+}
+
+static void eam_io_set_mux_scard(bool mux_scard)
+{
+    eam_impl_set_mux_scard(eam_inst, mux_scard);
+}
+
 static bool eam_io_get_autogen(void)
 {
     return eam_impl_get_autogen(eam_inst);
@@ -192,14 +239,19 @@ static void eam_io_set_autogen(bool autogen)
     eam_impl_set_autogen(eam_inst, autogen);
 }
 
-static bool eam_io_get_alt_10k(void)
+static bool eam_io_do_keypads_conflict(void)
 {
-    return eam_impl_get_alt_10k(eam_inst);
+    return eam_impl_do_keypads_conflict(eam_inst);
 }
 
-static void eam_io_set_alt_10k(bool alt_10k)
+static bool eam_io_get_alt_10k(uint8_t unit_no)
 {
-    eam_impl_set_alt_10k(eam_inst, alt_10k);
+    return eam_impl_get_alt_10k(eam_inst, unit_no);
+}
+
+static void eam_io_set_alt_10k(uint8_t unit_no, bool alt_10k)
+{
+    eam_impl_set_alt_10k(eam_inst, unit_no, alt_10k);
 }
 
 static struct hid_stub *eam_io_get_keypad_device(uint8_t unit_no)
@@ -229,16 +281,28 @@ uint16_t eam_io_get_keypad_state(uint8_t unit_no)
 
 uint8_t eam_io_get_sensor_state(uint8_t unit_no)
 {
-    if (eam_impl_get_sensor_state(eam_inst, unit_no)) {
+    bool has_card;
+
+    if (eam_io_get_scard()) {
+        has_card = eam_scard_is_present(unit_no);
+    } else {
+        has_card = eam_impl_get_sensor_state(eam_inst, unit_no);
+    }
+
+    if (has_card) {
         return (1 << EAM_IO_SENSOR_FRONT) | (1 << EAM_IO_SENSOR_BACK);
     } else {
         return 0x00;
-    }
+    }    
 }
 
 uint8_t eam_io_read_card(uint8_t unit_no, uint8_t *card_id, uint8_t nbytes)
 {
-    return eam_impl_read_card(eam_inst, unit_no, card_id, nbytes);
+    if (eam_io_get_scard()) {
+        return eam_scard_read(unit_no, card_id, nbytes);
+    } else {
+        return eam_impl_read_card(eam_inst, unit_no, card_id, nbytes);
+    }
 }
 
 bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
@@ -249,11 +313,14 @@ bool eam_io_card_slot_cmd(uint8_t unit_no, uint8_t cmd)
 
 bool eam_io_poll(uint8_t unit_no)
 {
-    // ignored
+    if (eam_io_get_scard()) {
+        eam_scard_poll(unit_no);
+    }
+	
     return true;
 }
 
-BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *ctx)
+BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, void *scard)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         eam_hinst = hinst;

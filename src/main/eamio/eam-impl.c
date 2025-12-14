@@ -10,8 +10,10 @@
 #include "bemanitools/eamio.h"
 
 #include "eamio/eam-impl.h"
+#include "eamio/eam-scard.h"
 
 #include "geninput/hid-mgr.h"
+#include "geninput/kbd-naive.h"
 
 #include "util/defs.h"
 #include "util/fs.h"
@@ -31,6 +33,7 @@ struct eam_unit {
     uint8_t drive_no;
     uint32_t sensor_time;
     bool sensor_hot;
+    bool alt_10k;
 };
 
 struct eam {
@@ -41,8 +44,9 @@ struct eam {
     CRITICAL_SECTION lock;
     struct eam_unit units[EAM_UNIT_COUNT];
     bool autogen;
-    bool alt_10k;
-    bool mux;
+    bool scard;
+    bool mux_keypad;
+    bool mux_scard;
 };
 
 static const uint32_t eam_keypad_usages[EAM_IO_KEYPAD_COUNT + 1] = {
@@ -76,7 +80,7 @@ static const uint32_t eam_keypad_usages_alt[EAM_IO_KEYPAD_COUNT + 1] = {
     /* Sensor                   = */ 0x0007002A /* Backspace */
 };
 
-static uint8_t eam_impl_get_active_unit(void);
+static bool eam_impl_is_active_unit(struct eam *eam, uint8_t unit_no);
 static void eam_impl_bind_keypad(struct eam *eam, uint8_t unit_no);
 static bool eam_impl_autogen(struct eam_unit *unit, uint8_t *card_id);
 
@@ -96,6 +100,7 @@ struct eam *eam_impl_create(void)
 
         unit->card_path = NULL;
         unit->hid = NULL;
+        unit->alt_10k = false;
 
         for (btn_no = 0; btn_no < lengthof(unit->keypad_ctls); btn_no++) {
             unit->keypad_ctls[btn_no] = (size_t) -1;
@@ -108,15 +113,62 @@ struct eam *eam_impl_create(void)
     }
 
     eam->autogen = false;
-    eam->alt_10k = false;
-    eam->mux = false;
+    eam->scard = false;
+    eam->mux_keypad = false;
+    eam->mux_scard = false;
 
     return eam;
 }
 
-static uint8_t eam_impl_get_active_unit(void)
+static bool eam_impl_is_active_unit(struct eam *eam, uint8_t unit_no)
 {
-    return GetKeyState(VK_NUMLOCK) & 0x0001;
+    log_assert(lengthof(eam->units) == 2);
+
+    if (eam->mux_keypad && eam_impl_do_keypads_conflict(eam)) {
+        // Determine active unit by numlock state
+        return (GetKeyState(VK_NUMLOCK) & 0x0001) == unit_no;
+    } else {
+        return true;
+    }
+}
+
+bool eam_impl_get_scard(struct eam *eam)
+{
+    return eam->scard;
+}
+void eam_impl_set_scard(struct eam *eam, bool scard)
+{
+    eam->scard = scard != false;
+
+    if (eam->scard) {
+        eam_scard_init(eam->mux_scard);
+    } else {
+        eam_scard_fini();
+    }
+}
+
+bool eam_impl_get_mux_keypad(struct eam *eam)
+{
+    return eam->mux_keypad;
+}
+void eam_impl_set_mux_keypad(struct eam *eam, bool mux_keypad)
+{
+    eam->mux_keypad = mux_keypad != false;
+}
+
+bool eam_impl_get_mux_scard(struct eam *eam)
+{
+    return eam->mux_scard;
+}
+void eam_impl_set_mux_scard(struct eam *eam, bool mux_scard)
+{
+    eam->mux_scard = mux_scard != false;
+
+    if (eam->scard) {
+        // reinit so we can remap the readers
+        eam_scard_fini();
+        eam_scard_init(eam->mux_scard);
+    }
 }
 
 bool eam_impl_get_autogen(struct eam *eam)
@@ -129,20 +181,40 @@ void eam_impl_set_autogen(struct eam *eam, bool autogen)
     eam->autogen = autogen != false;
 }
 
-bool eam_impl_get_alt_10k(struct eam *eam)
+bool eam_impl_do_keypads_conflict(struct eam *eam)
 {
-    return eam->alt_10k;
-}
+    log_assert(lengthof(eam->units) == 2);
 
-void eam_impl_set_alt_10k(struct eam *eam, bool alt_10k)
-{
-    int i;
-
-    for (i = 0; i < lengthof(eam->units); i++) {
-        eam->units[i].bound_ctls = false;
+    // 1. To conflict, both must have an assigned hid device
+    if (eam->units[0].hid == NULL || eam->units[1].hid == NULL) {
+        return false;
     }
 
-    eam->alt_10k = alt_10k != false;
+    // 2. To conflict, both must use the same keys (i.e. numpad vs top row)
+    if (eam->units[0].alt_10k != eam->units[1].alt_10k) {
+        // keypads are not using the same keys. mux not necessary
+        return false;
+    }
+
+    // 3. To conflict, the hids must be the same or either be the naive kbd
+    return (eam->units[0].hid == eam->units[1].hid ||
+            kbd_is_naive(eam->units[0].hid) || 
+            kbd_is_naive(eam->units[1].hid));
+}
+
+bool eam_impl_get_alt_10k(struct eam *eam, uint8_t unit_no)
+{
+    log_assert(unit_no < lengthof(eam->units));
+
+    return eam->units[unit_no].alt_10k;
+}
+
+void eam_impl_set_alt_10k(struct eam *eam, uint8_t unit_no, bool alt_10k)
+{
+    log_assert(unit_no < lengthof(eam->units));
+
+    eam->units[unit_no].bound_ctls = false;
+    eam->units[unit_no].alt_10k = alt_10k != false;
 }
 
 struct hid_stub *eam_impl_get_keypad_device(struct eam *eam, uint8_t unit_no)
@@ -159,8 +231,6 @@ void eam_impl_set_keypad_device(
 
     eam->units[unit_no].hid = hid;
     eam->units[unit_no].bound_ctls = false;
-
-    eam->mux = hid != NULL && eam->units[0].hid == eam->units[1].hid;
 }
 
 const char *eam_impl_get_card_path(struct eam *eam, uint8_t unit_no)
@@ -203,7 +273,7 @@ uint16_t eam_impl_get_keypad_state(struct eam *eam, uint8_t unit_no)
 
     log_assert(unit_no < lengthof(eam->units));
 
-    if (eam->mux && eam_impl_get_active_unit() != unit_no) {
+    if (!eam_impl_is_active_unit(eam, unit_no)) {
         return 0;
     }
 
@@ -247,7 +317,7 @@ static void eam_impl_bind_keypad(struct eam *eam, uint8_t unit_no)
         return;
     }
 
-    if (eam->alt_10k) {
+    if (eam->units[unit_no].alt_10k) {
         usages = eam_keypad_usages_alt;
     } else {
         usages = eam_keypad_usages;
@@ -327,7 +397,7 @@ bool eam_impl_get_sensor_state(struct eam *eam, uint8_t unit_no)
     /* Bump cooldown as long as sensor button is held
        (cooldown timer might also be set by a USB hotplug event) */
 
-    if (value != 0 && (!eam->mux || eam_impl_get_active_unit() == unit_no)) {
+    if (value != 0 && eam_impl_is_active_unit(eam, unit_no)) {
         unit->sensor_time = now + EAM_SENSOR_COOLDOWN;
         unit->sensor_hot = true;
     }

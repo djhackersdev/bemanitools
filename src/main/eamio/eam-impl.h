@@ -15,10 +15,17 @@
 struct eam;
 
 struct eam *eam_impl_create(void);
+bool eam_impl_get_scard(struct eam *eam);
+void eam_impl_set_scard(struct eam *eam, bool scard);
+bool eam_impl_get_mux_keypad(struct eam *eam);
+void eam_impl_set_mux_keypad(struct eam *eam, bool mux_keypad);
+bool eam_impl_get_mux_scard(struct eam *eam);
+void eam_impl_set_mux_scard(struct eam *eam, bool mux_scard);
 bool eam_impl_get_autogen(struct eam *eam);
 void eam_impl_set_autogen(struct eam *eam, bool autogen);
-bool eam_impl_get_alt_10k(struct eam *eam);
-void eam_impl_set_alt_10k(struct eam *eam, bool alt_10k);
+bool eam_impl_do_keypads_conflict(struct eam *eam);
+bool eam_impl_get_alt_10k(struct eam *eam, uint8_t unit_no);
+void eam_impl_set_alt_10k(struct eam *eam, uint8_t unit_no, bool alt_10k);
 struct hid_stub *eam_impl_get_keypad_device(struct eam *eam, uint8_t unit_no);
 void eam_impl_set_keypad_device(
     struct eam *eam, uint8_t unit_no, struct hid_stub *hid);

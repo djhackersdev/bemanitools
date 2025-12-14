@@ -5,6 +5,7 @@
 #include "eamio/eam-s11n.h"
 
 #include "util/fs.h"
+#include "util/log.h"
 
 struct eam *eam_impl_config_load(FILE *f)
 {
@@ -16,6 +17,9 @@ struct eam *eam_impl_config_load(FILE *f)
     char *dev_node;
     bool autogen;
     bool alt_10k;
+    bool scard;
+    bool mux_keypad;
+    bool mux_scard;
     bool has_card_path;
     bool has_hid;
 
@@ -25,12 +29,22 @@ struct eam *eam_impl_config_load(FILE *f)
         goto early_fail;
     }
 
-    if (!read_u8(f, &alt_10k)) {
+    if (!read_u8(f, &scard)) {
+        goto early_fail;
+    }
+
+    if (!read_u8(f, &mux_keypad)) {
+        goto early_fail;
+    }
+
+    if (!read_u8(f, &mux_scard)) {
         goto early_fail;
     }
 
     eam_impl_set_autogen(eam, autogen);
-    eam_impl_set_alt_10k(eam, alt_10k);
+    eam_impl_set_mux_keypad(eam, mux_keypad);
+    eam_impl_set_mux_scard(eam, mux_scard);
+    eam_impl_set_scard(eam, scard);
 
     if (!read_u8(f, &nunits) || nunits != EAM_UNIT_COUNT) {
         goto early_fail;
@@ -46,6 +60,11 @@ struct eam *eam_impl_config_load(FILE *f)
         if (!read_u8(f, &has_hid)) {
             goto late_fail;
         }
+
+        if (!read_u8(f, &alt_10k)) {
+            goto late_fail;
+        }    
+        eam_impl_set_alt_10k(eam, unit_no, alt_10k);
 
         if (has_card_path) {
             if (!read_str(f, &card_path)) {
@@ -89,26 +108,36 @@ void eam_impl_config_save(struct eam *eam, FILE *f)
     uint8_t unit_no;
     bool autogen;
     bool alt_10k;
+    bool scard;
+    bool mux_keypad;
+    bool mux_scard;
     bool has_card_path;
     bool has_hid;
 
     autogen = eam_impl_get_autogen(eam);
-    alt_10k = eam_impl_get_alt_10k(eam);
+    scard = eam_impl_get_scard(eam);
+    mux_keypad = eam_impl_get_mux_keypad(eam);
+    mux_scard = eam_impl_get_mux_scard(eam);
+    
     nunits = EAM_UNIT_COUNT;
 
     write_u8(f, &autogen);
-    write_u8(f, &alt_10k);
+    write_u8(f, &scard);
+    write_u8(f, &mux_keypad);
+    write_u8(f, &mux_scard);
     write_u8(f, &nunits);
 
     for (unit_no = 0; unit_no < EAM_UNIT_COUNT; unit_no++) {
         card_path = eam_impl_get_card_path(eam, unit_no);
         hid = eam_impl_get_keypad_device(eam, unit_no);
+        alt_10k = eam_impl_get_alt_10k(eam, unit_no);
 
         has_card_path = card_path != NULL;
         has_hid = hid != NULL;
 
         write_u8(f, &has_card_path);
         write_u8(f, &has_hid);
+        write_u8(f, &alt_10k);
 
         if (has_card_path) {
             write_str(f, card_path);
