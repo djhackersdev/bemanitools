@@ -56,9 +56,14 @@ static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp);
 static INT_PTR eam_ui_handle_activate(HWND hwnd);
 static INT_PTR eam_ui_handle_passivate(HWND hwnd);
 static INT_PTR eam_ui_handle_tick(HWND hwnd);
-static INT_PTR eam_ui_handle_change_alt_10k(HWND hwnd);
+static INT_PTR eam_ui_handle_change_scard(HWND hwnd);
+static INT_PTR eam_ui_handle_change_mux_keypad(HWND hwnd);
+static INT_PTR eam_ui_handle_change_mux_scard(HWND hwnd);
 static INT_PTR eam_ui_handle_change_autogen(HWND hwnd);
 static INT_PTR eam_ui_handle_fini(HWND hwnd);
+static HWND eam_mux_keypad_dlg;
+static HWND *eam_unit_dlgs;
+static uint8_t eam_num_units;
 
 static INT_PTR CALLBACK
 eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -66,8 +71,10 @@ static INT_PTR
 eam_unit_ui_handle_init(HWND hwnd, const struct eam_unit_def *def);
 static void eam_unit_ui_handle_init_devs(HWND hwnd);
 static void eam_unit_ui_handle_init_path(HWND hwnd);
+static void eam_unit_ui_handle_init_alt_10k(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_browse(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_change_device(HWND hwnd);
+static INT_PTR eam_unit_ui_handle_change_alt_10k(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_tick(HWND hwnd);
 static INT_PTR eam_unit_ui_handle_fini(HWND hwnd);
 
@@ -110,11 +117,17 @@ eam_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             switch (HIWORD(wparam)) {
                 case BN_CLICKED:
                     switch (LOWORD(wparam)) {
+                        case IDC_SCARD:
+                            return eam_ui_handle_change_scard(hwnd);
+
+                        case IDC_MUX_KEYPAD:
+                            return eam_ui_handle_change_mux_keypad(hwnd);
+
+                        case IDC_MUX_SCARD:
+                            return eam_ui_handle_change_mux_scard(hwnd);
+
                         case IDC_AUTOGEN:
                             return eam_ui_handle_change_autogen(hwnd);
-
-                        case IDC_ALT_10K:
-                            return eam_ui_handle_change_alt_10k(hwnd);
 
                         default:
                             return FALSE;
@@ -163,8 +176,16 @@ static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
     inst = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     schema = (struct schema *) psp->lParam;
 
-    ypos = 0;
+    eam_unit_dlgs = xmalloc(sizeof(HWND) * schema->nunits);
+    eam_num_units = schema->nunits;
 
+    GetWindowRect(GetDlgItem(hwnd, IDC_SCARD), &r);
+    if (eam_io_config_api->get_scard()) {
+        SendMessage(GetDlgItem(hwnd, IDC_SCARD), BM_SETCHECK, BST_CHECKED, 0);
+    }
+    
+    ypos = r.bottom - r.top + 8; // todo the +8 is hacky bc the bottom is hella big
+    
     for (i = 0; i < schema->nunits; i++) {
         child = CreateDialogParam(
             inst,
@@ -172,6 +193,7 @@ static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
             hwnd,
             eam_unit_ui_dlg_proc,
             (LPARAM) &schema->units[i]);
+        eam_unit_dlgs[i] = child;
 
         GetWindowRect(child, &r);
         SetWindowPos(
@@ -182,14 +204,30 @@ static INT_PTR eam_ui_handle_init(HWND hwnd, const PROPSHEETPAGE *psp)
         *array_append(HWND, &ui->children) = child;
     }
 
+    eam_mux_keypad_dlg = GetDlgItem(hwnd, IDC_MUX_KEYPAD);
+    if (eam_io_config_api->get_mux_keypad()) {
+        SendMessage(eam_mux_keypad_dlg, BM_SETCHECK, BST_CHECKED, 0);
+    }
+
+    if (eam_io_config_api->get_mux_scard()) {
+        SendMessage(GetDlgItem(hwnd, IDC_MUX_SCARD), BM_SETCHECK, BST_CHECKED, 0);
+    }
+
     if (eam_io_config_api->get_autogen()) {
         SendMessage(GetDlgItem(hwnd, IDC_AUTOGEN), BM_SETCHECK, BST_CHECKED, 0);
     }
 
-    if (eam_io_config_api->get_alt_10k()) {
-        SendMessage(GetDlgItem(hwnd, IDC_ALT_10K), BM_SETCHECK, BST_CHECKED, 0);
-    }
+    // invoke scard change handler so we can toggle card file / smartcard stuff
+    eam_ui_handle_change_scard(hwnd);
+    // invoke a keypad-related change handler so the keypad mux option updates
+    eam_unit_ui_handle_change_alt_10k(eam_unit_dlgs[0]);
 
+    // if only one reader is present, disablo mux options
+    if (schema->nunits == 1) {
+        EnableWindow(GetDlgItem(hwnd, IDC_MUX_KEYPAD), false);
+        EnableWindow(GetDlgItem(hwnd, IDC_MUX_SCARD), false);
+    }
+    
     return TRUE;
 }
 
@@ -225,15 +263,68 @@ static INT_PTR eam_ui_handle_tick(HWND hwnd)
     return TRUE;
 }
 
-static INT_PTR eam_ui_handle_change_alt_10k(HWND hwnd)
+static INT_PTR eam_ui_handle_change_scard(HWND hwnd)
 {
     HWND btn;
-    bool alt_10k;
+    bool scard;
+    size_t i;
 
-    btn = GetDlgItem(hwnd, IDC_ALT_10K);
-    alt_10k = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    btn = GetDlgItem(hwnd, IDC_SCARD);
+    scard = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
 
-    eam_io_config_api->set_alt_10k(alt_10k);
+    eam_io_config_api->set_scard(scard);
+
+    // toggle state of card file vs scard components
+    EnableWindow(GetDlgItem(hwnd, IDC_AUTOGEN), !scard);
+    EnableWindow(GetDlgItem(hwnd, IDC_MUX_SCARD), scard);
+    for (i = 0; i < eam_num_units; i++) {
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_CARD_TEXT), !scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_CARD_PATH), !scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_BROWSE), !scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_TEXT), scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_READER_NAME), scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_CARD_TEXT), scard);
+        ShowWindow(GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_IS_PRESENT), scard);
+
+        if (scard) {
+            SetWindowTextA(
+                GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_READER_NAME),
+                eam_io_config_api->get_scard_reader_name(i));
+        }
+    }
+
+    return TRUE;
+}
+
+static INT_PTR eam_ui_handle_change_mux_keypad(HWND hwnd)
+{
+    HWND btn;
+    bool mux_keypad;
+
+    btn = GetDlgItem(hwnd, IDC_MUX_KEYPAD);
+    mux_keypad = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
+
+    eam_io_config_api->set_mux_keypad(mux_keypad);
+
+    return TRUE;
+}
+
+static INT_PTR eam_ui_handle_change_mux_scard(HWND hwnd)
+{
+    HWND btn;
+    bool mux_scard;
+    size_t i;
+
+    btn = GetDlgItem(hwnd, IDC_MUX_SCARD);
+    mux_scard = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
+
+    eam_io_config_api->set_mux_scard(mux_scard);
+
+    for (i = 0; i < eam_num_units; i++) {
+        SetWindowTextA(
+            GetDlgItem(eam_unit_dlgs[i], IDC_SCARD_READER_NAME),
+            eam_io_config_api->get_scard_reader_name(i));
+    }
 
     return TRUE;
 }
@@ -294,6 +385,15 @@ eam_unit_ui_dlg_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                             return FALSE;
                     }
 
+                case IDC_ALT_10K:
+                    switch (HIWORD(wparam)) {
+                        case BN_CLICKED:
+                            return eam_unit_ui_handle_change_alt_10k(hwnd);
+
+                        default:
+                            return FALSE;
+                    }                    
+
                 default:
                     return FALSE;
             }
@@ -326,6 +426,7 @@ eam_unit_ui_handle_init(HWND hwnd, const struct eam_unit_def *def)
 
     eam_unit_ui_handle_init_devs(hwnd);
     eam_unit_ui_handle_init_path(hwnd);
+    eam_unit_ui_handle_init_alt_10k(hwnd);
 
     return TRUE;
 }
@@ -401,6 +502,17 @@ static void eam_unit_ui_handle_init_path(HWND hwnd)
     }
 }
 
+static void eam_unit_ui_handle_init_alt_10k(HWND hwnd)
+{
+    struct eam_unit_ui *ui;
+    
+    ui = (struct eam_unit_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    
+    if (eam_io_config_api->get_alt_10k(ui->def->unit_no)) {
+        SendMessage(GetDlgItem(hwnd, IDC_ALT_10K), BM_SETCHECK, BST_CHECKED, 0);
+    }
+}
+
 static INT_PTR eam_unit_ui_handle_browse(HWND hwnd)
 {
     struct eam_unit_ui *ui;
@@ -451,6 +563,28 @@ static INT_PTR eam_unit_ui_handle_change_device(HWND hwnd)
         eam_io_config_api->set_keypad_device(ui->def->unit_no, hid);
     }
 
+    // enable the keypad mux option if the devices/keys conflict
+    EnableWindow(eam_mux_keypad_dlg, eam_io_config_api->do_keypads_conflict());
+
+    return TRUE;
+}
+
+static INT_PTR eam_unit_ui_handle_change_alt_10k(HWND hwnd)
+{
+    struct eam_unit_ui *ui;
+    HWND btn;
+    bool alt_10k;
+
+    ui = (struct eam_unit_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+    btn = GetDlgItem(hwnd, IDC_ALT_10K);
+    alt_10k = SendMessage(btn, BM_GETCHECK, 0, 0) == BST_CHECKED;
+
+    eam_io_config_api->set_alt_10k(ui->def->unit_no, alt_10k);
+
+    // enable the keypad mux option if the devices/keys conflict
+    EnableWindow(eam_mux_keypad_dlg, eam_io_config_api->do_keypads_conflict());
+
     return TRUE;
 }
 
@@ -459,14 +593,28 @@ static INT_PTR eam_unit_ui_handle_tick(HWND hwnd)
     struct eam_unit_ui *ui;
     uint16_t state;
     wchar_t state_str[9];
+    bool card_present;
 
+    // keypad state
     ui = (struct eam_unit_ui *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     state = eam_io_get_keypad_state(ui->def->unit_no);
 
     wstr_format(state_str, lengthof(state_str), L"%04x", state);
 
     SetWindowText(GetDlgItem(hwnd, IDC_KEYPAD_STATE), state_str);
+    
+    // smartcard state
+    if (eam_io_config_api->get_scard()) {
+        
+        eam_io_poll(ui->def->unit_no);
 
+        card_present = eam_io_get_sensor_state(ui->def->unit_no);
+            
+        SetWindowText(
+            GetDlgItem(hwnd, IDC_SCARD_IS_PRESENT), 
+            (card_present ? L"YES" : L"NO"));
+    }
+    
     return TRUE;
 }
 
