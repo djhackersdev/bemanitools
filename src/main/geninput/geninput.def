@@ -28,6 +28,7 @@ EXPORTS
     light_iter_is_valid
     light_iter_next
     light_iter_free
+    kbd_is_naive
     mapper_config_load
     mapper_config_save
     mapper_clear_action_map

@@ -89,7 +89,8 @@ static void kbd_static_init(void)
     }
 }
 
-void kbd_create(struct hid_ri **hid_ri, const char *dev_node)
+void kbd_create(
+    struct hid_ri **hid_ri, const char *dev_node, const wchar_t *name_override)
 {
     struct kbd *kbd;
     char *tmp;
@@ -98,7 +99,11 @@ void kbd_create(struct hid_ri **hid_ri, const char *dev_node)
 
     kbd = xcalloc(sizeof(*kbd));
     kbd->super.vptr = &kbd_vtbl;
-    kbd->name = hid_ri_init_name(&kbd_guid, dev_node);
+    if (name_override) {
+        kbd->name = wstr_dup(name_override);
+    } else {
+        kbd->name = hid_ri_init_name(&kbd_guid, dev_node);
+    }
 
     *hid_ri = &kbd->super;
 

@@ -23,6 +23,7 @@ src_geninput        := \
     io-thread.c \
     kbd.c \
     kbd-data.c \
+    kbd-naive.c \
     mapper.c \
     mapper-s11n.c \
     mouse.c \
