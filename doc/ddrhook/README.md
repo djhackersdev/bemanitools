@@ -40,6 +40,7 @@ use:
 
 - `ddrio`: Default implementation supporting keyboard, mouse and USB game controllers
 - ddrio-mm: Support Minimaid custom interface
+- ddrio-mm-aux: Minimaid custom interface + default implementation (i.e. augment minimaid with normal hid use)
 - [ddrio-smx](ddrio-smx.md): Support for StepManiaX dance platforms
 - [ddrio-p3io](ddrio-p3io.md): P3IO + EXTIO driver implementation
 - [ddrio-async](ddrio-async.md): Wrapper/shim library to drive another ddrio in a dedicated IO
