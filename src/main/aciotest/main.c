@@ -12,6 +12,7 @@
 #include "aciotest/handler.h"
 #include "aciotest/icca.h"
 #include "aciotest/kfca.h"
+#include "aciotest/mdxf.h"
 #include "aciotest/panb.h"
 #include "aciotest/rvol.h"
 
@@ -36,6 +37,13 @@ static bool aciotest_assign_handler(
     if (product_type == AC_IO_NODE_TYPE_KFCA) {
         handler->init = aciotest_kfca_handler_init;
         handler->update = aciotest_kfca_handler_update;
+
+        return true;
+    }
+
+    if (product_type == AC_IO_NODE_TYPE_MDXF) {
+        handler->init = aciotest_mdxf_handler_init;
+        handler->update = aciotest_mdxf_handler_update;
 
         return true;
     }

@@ -109,6 +109,7 @@ include src/main/ddrhook1/Module.mk
 include src/main/ddrhook2/Module.mk
 include src/main/ddrio-async/Module.mk
 include src/main/ddrio-p3io/Module.mk
+include src/main/ddrio-p4io/Module.mk
 include src/main/ddrio-mm/Module.mk
 include src/main/ddrio-smx/Module.mk
 include src/main/ddriotest/Module.mk
@@ -760,6 +761,7 @@ $(zipdir)/ddr-16-to-18-x64.zip: \
 $(zipdir)/ddr-hwio-x86.zip: \
 		build/bin/indep-32/ddrio-async.dll \
 		build/bin/indep-32/ddrio-p3io.dll \
+		build/bin/indep-32/ddrio-p4io.dll \
 		build/bin/indep-32/ddrio-mm.dll \
 		build/bin/indep-32/ddrio-smx.dll \
 		build/bin/indep-32/extiotest.exe \
@@ -772,6 +774,7 @@ $(zipdir)/ddr-hwio-x86.zip: \
 $(zipdir)/ddr-hwio-x64.zip: \
 		build/bin/indep-64/ddrio-async.dll \
 		build/bin/indep-64/ddrio-p3io.dll \
+		build/bin/indep-64/ddrio-p4io.dll \
 		build/bin/indep-64/ddrio-mm.dll \
 		build/bin/indep-64/ddrio-smx.dll \
 		build/bin/indep-64/extiotest.exe \

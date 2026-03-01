@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     // outputs
     uint32_t extio_lights = 0;
     uint32_t p3io_lights = 0;
+    uint32_t hdxs_lights = 0;
 
     bool loop = true;
     uint8_t cnt = 0;
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
     while (loop) {
         ddr_io_set_lights_extio(extio_lights);
         ddr_io_set_lights_p3io(p3io_lights);
+        ddr_io_set_lights_hdxs_panel(hdxs_lights);
 
         pad = ddr_io_read_pad();
 
@@ -182,6 +184,46 @@ int main(int argc, char **argv)
             p3io_lights &= ~(1 << LIGHT_P2_MENU);
         }
 
+        if ((pad & (1 << DDR_P1_START)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P1_START);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P1_START);
+        }
+
+        if ((pad & (1 << DDR_P1_MENU_UP)) > 0 ||
+            (pad & (1 << DDR_P1_MENU_DOWN)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P1_UP_DOWN);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P1_UP_DOWN);
+        }
+
+        if ((pad & (1 << DDR_P1_MENU_LEFT)) > 0 ||
+            (pad & (1 << DDR_P1_MENU_RIGHT)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P1_LEFT_RIGHT);
+        }
+
+        if ((pad & (1 << DDR_P2_START)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P2_START);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P2_START);
+        }
+
+        if ((pad & (1 << DDR_P2_MENU_UP)) > 0 ||
+            (pad & (1 << DDR_P2_MENU_DOWN)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P2_UP_DOWN);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P2_UP_DOWN);
+        }
+
+        if ((pad & (1 << DDR_P2_MENU_LEFT)) > 0 ||
+            (pad & (1 << DDR_P2_MENU_RIGHT)) > 0) {
+            hdxs_lights |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
+        } else {
+            hdxs_lights &= ~(1 << LIGHT_HD_P2_LEFT_RIGHT);
+        }
+
         /* avoid CPU banging */
         Sleep(1);
         ++cnt;
@@ -217,9 +259,11 @@ int main(int argc, char **argv)
                     n = scanf("%d", &state);
 
                     if (n > 0) {
-                        extio_lights |= (1 << LIGHT_NEONS);
-                    } else {
-                        extio_lights &= ~(1 << LIGHT_NEONS);
+                        if (state > 0) {
+                            extio_lights |= (1 << LIGHT_NEONS);
+                        } else {
+                            extio_lights &= ~(1 << LIGHT_NEONS);
+                        }
                     }
 
                     break;
@@ -272,6 +316,13 @@ int main(int argc, char **argv)
                     p3io_lights |= (1 << LIGHT_P2_UPPER_LAMP);
                     p3io_lights |= (1 << LIGHT_P2_LOWER_LAMP);
 
+                    hdxs_lights |= (1 << LIGHT_HD_P1_START);
+                    hdxs_lights |= (1 << LIGHT_HD_P1_UP_DOWN);
+                    hdxs_lights |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
+                    hdxs_lights |= (1 << LIGHT_HD_P2_START);
+                    hdxs_lights |= (1 << LIGHT_HD_P2_UP_DOWN);
+                    hdxs_lights |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
+
                     break;
                 }
 
@@ -284,6 +335,13 @@ int main(int argc, char **argv)
                     p3io_lights &= ~(1 << LIGHT_P1_LOWER_LAMP);
                     p3io_lights &= ~(1 << LIGHT_P2_UPPER_LAMP);
                     p3io_lights &= ~(1 << LIGHT_P2_LOWER_LAMP);
+
+                    hdxs_lights &= ~(1 << LIGHT_HD_P1_START);
+                    hdxs_lights &= ~(1 << LIGHT_HD_P1_UP_DOWN);
+                    hdxs_lights &= ~(1 << LIGHT_HD_P1_LEFT_RIGHT);
+                    hdxs_lights &= ~(1 << LIGHT_HD_P2_START);
+                    hdxs_lights &= ~(1 << LIGHT_HD_P2_UP_DOWN);
+                    hdxs_lights &= ~(1 << LIGHT_HD_P2_LEFT_RIGHT);
 
                     break;
                 }

@@ -13,4 +13,5 @@ src_aciotest      := \
     rvol.c \
     bi2a-iidx.c \
     bi2a-sdvx.c \
+    mdxf.c \
     main.c \
